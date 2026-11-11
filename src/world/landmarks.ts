@@ -8,6 +8,7 @@ import { hash01 } from '../core/math';
 import type { WorldCollision } from './collision';
 import type { Footprint } from './footprint';
 import { GeomBuilder } from './geom';
+import type { MaterialSet } from '../render/textures';
 import * as P from './palette';
 
 const SLATE = new THREE.Color('#3a3e46');
@@ -27,11 +28,14 @@ function prism(gb: GeomBuilder, cx: number, cz: number, r: number, sides: number
 }
 
 function spire(gb: GeomBuilder, cx: number, cz: number, r: number, sides: number, y0: number, h: number, color: THREE.Color, rot = 0) {
+  const prev = gb.curMat;
+  gb.curMat = M.slate;
   for (let i = 0; i < sides; i++) {
     const a0 = rot + (i / sides) * Math.PI * 2, a1 = rot + ((i + 1) / sides) * Math.PI * 2;
     const am = (a0 + a1) / 2;
     gb.tri([cx + Math.cos(a0) * r, y0, cz + Math.sin(a0) * r], [cx + Math.cos(a1) * r, y0, cz + Math.sin(a1) * r], [cx, y0 + h, cz], color, [Math.cos(am), 0.4, Math.sin(am)]);
   }
+  gb.curMat = prev;
 }
 
 /** Rotated box (square tower) aligned with the footprint axis. */
@@ -53,6 +57,8 @@ function towerBox(gb: GeomBuilder, cx: number, cz: number, ux: number, uz: numbe
   return c;
 }
 
+let M = { stone: 0, slate: 0, brick: 0, grass: 0 };
+
 export interface LandmarkResult {
   group: THREE.Group;
   extraPois: { n: string; x: number; z: number; k: string }[];
@@ -63,9 +69,12 @@ export function buildLandmarks(
   pois: { n: string; x: number; z: number; k: string }[],
   col: WorldCollision,
   buildingMat: THREE.Material,
+  set: MaterialSet,
 ): LandmarkResult {
   const group = new THREE.Group();
   const gb = new GeomBuilder();
+  M = { stone: set.index.stone + 0.5, slate: set.index.roofSlate + 0.5, brick: set.index.brickOld + 0.5, grass: set.index.plaster + 0.5 };
+  gb.curMat = M.stone;
   const extraPois: LandmarkResult['extraPois'] = [];
 
   for (const f of footprints) {
@@ -145,10 +154,10 @@ function sulpitius(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: TH
     [R * 0.56, 6.8], [R * 0.4, 7.6], [R * 0.18, 8.4], [R * 0.16, 10.2], [R * 0.3, 10.6], [0.05, 12.2],
   ];
   for (const [r, y] of pts) prof.push(new THREE.Vector2(r, y));
-  const lathe = new THREE.LatheGeometry(prof, 12);
+  const lathe = new THREE.LatheGeometry(prof, 24);
   const pot = new THREE.Mesh(
     lathe,
-    new THREE.MeshStandardMaterial({ color: '#3d4a48', roughness: 0.55, metalness: 0.35, flatShading: true }),
+    new THREE.MeshStandardMaterial({ color: '#39443f', roughness: 0.5, metalness: 0.55 }),
   );
   pot.position.set(tx, H + 4, tz);
   pot.castShadow = true;
@@ -165,9 +174,9 @@ function sulpitius(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: TH
 function basilica(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: THREE.Group) {
   const r = Math.min(f.hw, f.hu) * 0.62;
   const cx = (f.minX + f.maxX) / 2, cz = (f.minZ + f.maxZ) / 2;
-  const stone = new THREE.Color('#d8cdb6');
+  const stone = new THREE.Color('#cdc2ab');
   prism(gb, cx, cz, r * 0.95, 7, 0, 22, stone, 0);
-  prism(gb, cx, cz, r * 1.02, 7, 21, 23, new THREE.Color('#bfb29a'), 0);
+  prism(gb, cx, cz, r * 1.02, 7, 21, 23, new THREE.Color('#b5a88f'), 0);
   prism(gb, cx, cz, r * 0.66, 14, 23, 30, stone, 0);
   col.addColumn(cx, cz, r, 30);
   const prof: THREE.Vector2[] = [];
@@ -177,8 +186,8 @@ function basilica(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: THR
     prof.push(new THREE.Vector2(Math.cos(a) * R, Math.sin(a) * R * 1.15));
   }
   const dome = new THREE.Mesh(
-    new THREE.LatheGeometry(prof, 14),
-    new THREE.MeshStandardMaterial({ color: '#4a6474', roughness: 0.45, metalness: 0.3, flatShading: true }),
+    new THREE.LatheGeometry(prof, 28),
+    new THREE.MeshStandardMaterial({ color: '#465a60', roughness: 0.45, metalness: 0.5 }),
   );
   dome.position.set(cx, 30, cz);
   dome.castShadow = true;
@@ -223,7 +232,8 @@ function cannon(group: THREE.Group, x: number, z: number) {
 
 // --- city gate: two round towers with conical roofs
 function gate(gb: GeomBuilder, x: number, z: number, col: WorldCollision) {
-  const brick = new THREE.Color('#8e4632');
+  const brick = new THREE.Color('#8e5a44');
+  gb.curMat = M.brick;
   for (const s of [-1, 1]) {
     const tx = x + s * 6, tz = z;
     prism(gb, tx, tz, 3, 10, 0, 13, brick);
@@ -231,11 +241,13 @@ function gate(gb: GeomBuilder, x: number, z: number, col: WorldCollision) {
     col.addColumn(tx, tz, 3, 13);
   }
   prism(gb, x, z, 3.2, 4, 7, 11, brick, Math.PI / 4, 3.2);
+  gb.curMat = M.stone;
 }
 
 // --- Tafelrondmotte: grassy castle mound
 function motte(gb: GeomBuilder, x: number, z: number, col: WorldCollision) {
-  const grass = new THREE.Color('#6f9446');
+  const grass = new THREE.Color('#5d7a3a');
+  gb.curMat = M.grass;
   const rings = [
     [26, 0],
     [20, 3.5],
@@ -245,43 +257,25 @@ function motte(gb: GeomBuilder, x: number, z: number, col: WorldCollision) {
   for (let i = 0; i < rings.length - 1; i++) prism(gb, x, z, rings[i][0], 18, rings[i][1], rings[i + 1][1], grass, 0, rings[i + 1][0]);
   col.addColumn(x, z, 14, 6.5);
   col.addColumn(x, z, 20, 3.5);
+  gb.curMat = M.stone;
 }
 
-// --- The Root-Oak (fantasy): a vast oak that should not be there
+// --- The Root-Oak (fantasy): the tree itself is planted by the tree system at
+// three times natural size; here we add what should not be there — the lights.
 function rootOak(group: THREE.Group, x: number, z: number, col: WorldCollision) {
   const g = new THREE.Group();
-  const bark = new THREE.MeshStandardMaterial({ color: '#4a3a2c', roughness: 1, flatShading: true });
-  const leaf = new THREE.MeshStandardMaterial({ color: '#41602f', roughness: 0.95, flatShading: true });
-  const glow = new THREE.MeshStandardMaterial({ color: '#b8f0c8', emissive: '#7fe0a8', emissiveIntensity: 1.6 });
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 4.2, 22, 9), bark);
-  trunk.position.y = 11;
-  g.add(trunk);
-  for (let i = 0; i < 7; i++) {
-    const a = (i / 7) * Math.PI * 2;
-    const root = new THREE.Mesh(new THREE.ConeGeometry(1.4, 12, 6), bark);
-    root.position.set(Math.cos(a) * 5, 1.2, Math.sin(a) * 5);
-    root.rotation.set(Math.sin(a) * 1.25, 0, -Math.cos(a) * 1.25);
-    g.add(root);
-  }
+  const glow = new THREE.MeshStandardMaterial({ color: '#b8f0c8', emissive: '#7fe0a8', emissiveIntensity: 3.0 });
+  const geo = new THREE.IcosahedronGeometry(0.16, 1);
   const r = (s: number) => hash01(s);
-  for (let i = 0; i < 14; i++) {
-    const c = new THREE.Mesh(new THREE.IcosahedronGeometry(6 + r(i) * 5, 0), leaf);
-    const a = r(i + 50) * Math.PI * 2;
-    const d = r(i + 90) * 11;
-    c.position.set(Math.cos(a) * d, 22 + r(i + 30) * 12, Math.sin(a) * d);
-    c.scale.y = 0.7;
-    g.add(c);
-  }
-  for (let i = 0; i < 40; i++) {
-    const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.25, 0), glow);
-    m.position.set((r(i + 200) - 0.5) * 30, 2 + r(i + 300) * 34, (r(i + 400) - 0.5) * 30);
+  for (let i = 0; i < 60; i++) {
+    const m = new THREE.Mesh(geo, glow);
+    const a = r(i + 200) * Math.PI * 2, d = 4 + r(i + 400) * 22;
+    m.position.set(Math.cos(a) * d, 2 + r(i + 300) * 44, Math.sin(a) * d);
     m.userData.float = r(i + 500) * 10;
     g.add(m);
   }
-  g.scale.setScalar(1.55);
   g.position.set(x, 0, z);
-  g.traverse((o) => (o.castShadow = o !== g));
   g.name = 'rootOak';
   group.add(g);
-  col.addColumn(x, z, 7, 52);
+  col.addColumn(x, z, 3.5, 30);
 }

@@ -17,6 +17,8 @@ export class Hud {
   private card = el('discovery');
   private loc = el('loc');
   private prompt = el('prompt');
+  private toast = el('toast');
+  private toastTimer = 0;
   private help: HTMLElement;
   private map = el('map');
   private mapCanvas = document.createElement('canvas');
@@ -42,14 +44,14 @@ export class Hud {
       <tr><td>Shift</td><td>Boost (flying) · run (on foot)</td></tr>
       <tr><td>E</td><td>Land · mount · call your dragon</td></tr>
       <tr><td>WASD</td><td>Walk (on foot) · Space jump</td></tr>
-      <tr><td>M · T · H</td><td>Map · time of day · hide help</td></tr>
+      <tr><td>M · T · H</td><td>Map · change the light · hide help</td></tr>
       <tr><td>Gamepad</td><td>LS steer · RS camera · RT/LT speed · A climb · B dive · X boost · Y land/mount</td></tr>
       </table>`,
     );
     this.map.appendChild(this.mapCanvas);
     this.map.appendChild(el('legend', 'DIEST &amp; THE DEMER VALLEY — press M to close'));
     root.append(
-      this.compass, this.card, this.loc, this.prompt, this.help, this.map,
+      this.compass, this.card, this.loc, this.prompt, this.toast, this.help, this.map,
       el('attrib', 'Map data © OpenStreetMap contributors'),
       this.overlay,
     );
@@ -77,10 +79,14 @@ export class Hud {
     const cta = el('cta', 'CLICK TO TAKE FLIGHT');
     const small = el('small', 'Best with mouse &amp; keyboard or a gamepad · headphones recommended');
     this.overlay.append(cta, small);
-    this.overlay.addEventListener('click', () => {
-      this.overlay.classList.add('hidden');
-      onStart();
-    });
+    this.overlay.addEventListener(
+      'click',
+      () => {
+        this.overlay.classList.add('hidden');
+        onStart();
+      },
+      { once: true },
+    );
   }
 
   setLoading(msg: string) {
@@ -93,6 +99,14 @@ export class Hud {
       this.overlay.innerHTML = '<h2>PAUSED</h2><div class="cta">CLICK TO RESUME</div>';
       this.overlay.classList.remove('hidden');
     } else this.overlay.classList.add('hidden');
+  }
+
+  /** Brief message at the bottom of the screen (time of day, quality changes). */
+  flash(text: string) {
+    this.toast.textContent = text;
+    this.toast.classList.add('show');
+    clearTimeout(this.toastTimer);
+    this.toastTimer = window.setTimeout(() => this.toast.classList.remove('show'), 2600);
   }
 
   toggleHelp() {

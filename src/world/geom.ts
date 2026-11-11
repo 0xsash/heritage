@@ -1,8 +1,10 @@
-// Non-indexed geometry accumulator with flat normals, vertex colours and the
-// custom `aWall` attribute used by the building shader:
-//   aWall = (u, v, eaveHeight) on walls   → windows, brick speckle
-//   aWall = (0, 0, -1)          on roofs   → tile bands
-//   aWall = (0, 0, -2)          plain      → no pattern
+// Non-indexed geometry accumulator with flat normals, vertex colours (the
+// surface tint) and two custom attributes read by the surface shaders:
+//   aMat  = material layer + per-object random seed in the fraction
+//   aWall = meaning depends on the shader. Buildings:
+//     (u, v, eaveHeight)   walls  → windows, doors, grime
+//     (u, v, -1)           roofs  → u along the ridge, v up the slope
+//     (0, 0, -2)           plain  → texture projected from world position
 
 import * as THREE from 'three';
 
@@ -11,6 +13,9 @@ export class GeomBuilder {
   nrm: number[] = [];
   col: number[] = [];
   wall: number[] = [];
+  mat: number[] = [];
+  /** material layer (integer part) + per-object seed (fraction) for the next triangles */
+  curMat = 0;
 
   get vertexCount() {
     return this.pos.length / 3;
@@ -44,6 +49,7 @@ export class GeomBuilder {
     }
     const d = [0, 0, -2];
     this.wall.push(...(wa ?? d), ...(wb ?? d), ...(wc ?? d));
+    this.mat.push(this.curMat, this.curMat, this.curMat);
   }
 
   quad(
@@ -62,6 +68,7 @@ export class GeomBuilder {
     g.setAttribute('normal', new THREE.Float32BufferAttribute(this.nrm, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
     g.setAttribute('aWall', new THREE.Float32BufferAttribute(this.wall, 3));
+    g.setAttribute('aMat', new THREE.Float32BufferAttribute(this.mat, 1));
     g.computeBoundingSphere();
     g.computeBoundingBox();
     return g;

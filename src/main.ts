@@ -7,42 +7,71 @@ import { CameraRig } from './camera/rig';
 import { Input } from './core/input';
 import { clamp } from './core/math';
 import { Player } from './player/player';
+import { Post } from './render/post';
+import { loadMaterialSet, type MaterialInfo } from './render/textures';
 import { Hud } from './ui/hud';
 import { Atmosphere } from './world/sky';
+import { loadTreeAtlas } from './world/trees';
 import type { WorldData } from './world/types';
 import { World } from './world/world';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const uiRoot = document.getElementById('ui')!;
+const asset = (p: string) => new URL(p, document.baseURI).toString();
+const nextFrame = () => new Promise((r) => setTimeout(r, 20));
+
+type Quality = 'low' | 'medium' | 'high';
 
 async function boot() {
   const params = new URLSearchParams(location.search);
-  const lowQ = params.has('lowq');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', logarithmicDepthBuffer: true });
-  renderer.setPixelRatio(lowQ ? 0.75 : Math.min(window.devicePixelRatio, 1.5));
+  const quality: Quality = params.has('lowq') ? 'low' : ((params.get('q') as Quality) ?? 'high');
+  const lowQ = quality === 'low';
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: lowQ, powerPreference: 'high-performance', logarithmicDepthBuffer: true });
+  const maxRatio = lowQ ? 0.8 : Math.min(window.devicePixelRatio, 1.5);
+  let ratio = params.has('dpr') ? parseFloat(params.get('dpr')!) : maxRatio;
+  renderer.setPixelRatio(ratio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = !lowQ;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMapping = THREE.NoToneMapping; // tone mapping happens in the final post pass
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
   const input = new Input(canvas);
   const sound = new Sound();
 
-  // --- load the world
-  const res = await fetch(new URL('world/diest.json', document.baseURI).toString());
-  const data = (await res.json()) as WorldData;
-  const world = new World(data);
-  const hud = new Hud(uiRoot, world);
-  hud.showTitle('Unrolling the map of Diest…');
-  await new Promise((r) => setTimeout(r, 30));
+  // --- load everything
+  const [data, meta] = await Promise.all([
+    fetch(asset('world/diest.json')).then((r) => r.json() as Promise<WorldData>),
+    fetch(asset('textures/materials.json')).then((r) => r.json() as Promise<Record<string, MaterialInfo[]>>),
+  ]);
+  const stub = { discoveries: [], data } as unknown as World;
+  let hud = new Hud(uiRoot, stub);
+  hud.showTitle('Grinding pigments…');
+  await nextFrame();
+  const [build, ground, trees] = await Promise.all([
+    loadMaterialSet('build', meta, renderer, lowQ),
+    loadMaterialSet('ground', meta, renderer, lowQ),
+    loadTreeAtlas(renderer),
+  ]);
+  hud.setLoading('Unrolling the map of Diest…');
+  await nextFrame();
+  const world = new World(data, { build, ground, trees });
   world.build((m) => hud.setLoading(m));
+  uiRoot.innerHTML = '';
+  hud = new Hud(uiRoot, world);
+  hud.showTitle('Priming the sky…');
   hud.initMarks();
   scene.add(world.group);
 
-  const atmo = new Atmosphere(scene, renderer);
+  const atmo = new Atmosphere(scene, renderer, quality === 'high' ? 4096 : quality === 'medium' ? 2048 : 0);
   const rig = new CameraRig(window.innerWidth / window.innerHeight, world.collision);
+  const post = new Post(renderer, scene, rig.camera, quality);
+  atmo.onChange = (look) => {
+    post.setLook(look);
+    world.uniforms.uNight.value = look.night;
+  };
+  await atmo.init(params.get('sky') ?? 'golden');
 
   const player = new Player(world.collision, {
     trauma: (t) => rig.addTrauma(t),
@@ -57,14 +86,15 @@ async function boot() {
   player.spawn(sx, 95, sz, Math.atan2(-sx, -sz));
   rig.yaw = player.yaw;
 
-  window.addEventListener('resize', () => {
+  const resize = () => {
+    renderer.setPixelRatio(ratio);
     renderer.setSize(window.innerWidth, window.innerHeight);
+    post.composer.setPixelRatio(ratio);
+    post.setSize(window.innerWidth, window.innerHeight);
     rig.camera.aspect = window.innerWidth / window.innerHeight;
     rig.camera.updateProjectionMatrix();
-  });
-
-  // Warm up shaders before the curtain lifts.
-  renderer.compile(scene, rig.camera);
+  };
+  window.addEventListener('resize', resize);
 
   let running = false;
   let paused = false;
@@ -86,29 +116,22 @@ async function boot() {
     // and only where pointer lock actually works (embedded pages fall back to drag-look).
     paused = !locked && input.device === 'kbm' && input.lockSupported;
     hud.pauseOverlay(paused);
-    if (paused) {
-      const resume = () => {
-        hud.overlay.removeEventListener('click', resume);
-        input.requestLock();
-      };
-      hud.overlay.addEventListener('click', resume);
-    }
+    if (paused) hud.overlay.addEventListener('click', () => input.requestLock(), { once: true });
   });
 
-  // Debug/screenshot hooks
-  if (params.has('t')) {
-    atmo.time = parseFloat(params.get('t')!);
-    atmo.apply(true);
-  }
+  // Debug / screenshot hooks
   if (params.has('autostart')) {
     running = true;
     uiRoot.querySelector('.overlay')?.classList.add('hidden');
   }
-  (window as unknown as { belfort: object }).belfort = { player, rig, world, atmo, scene, renderer };
+  (window as unknown as { belfort: object }).belfort = { player, rig, world, atmo, scene, renderer, post };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
   let mapOpen = false;
+  // Dynamic resolution: hold a playable frame rate on weaker GPUs.
+  const adaptive = !params.has('dpr') && !lowQ;
+  let fpsFrames = 0, fpsTime = 0;
 
   function frame() {
     requestAnimationFrame(frame);
@@ -116,7 +139,10 @@ async function boot() {
     input.poll();
     if (running && !paused) {
       if (input.consume('help')) hud.toggleHelp();
-      if (input.consume('time')) atmo.advance();
+      if (input.consume('time')) {
+        atmo.advance();
+        setTimeout(() => hud.flash(atmo.look.label.toUpperCase()), 400);
+      }
       if (input.consume('map')) mapOpen = hud.toggleMap();
       if (!mapOpen) player.update(dt, input, rig.yaw, rig.pitch);
       rig.update(dt, input, player);
@@ -125,28 +151,27 @@ async function boot() {
     }
 
     player.focus(focus);
-    atmo.update(dt, focus);
+    atmo.update(rig.camera.position, focus, Math.max(0, rig.camera.position.y));
     world.cull(rig.camera.position);
-    world.uniforms.uNight.value = atmo.night;
     world.uniforms.uTime.value += dt;
-    world.demerMat.emissiveIntensity = 0.45 + Math.sin(world.uniforms.uTime.value * 0.7) * 0.15 + atmo.night * 0.6;
+    world.demerMat.emissiveIntensity = 0.3 + Math.sin(world.uniforms.uTime.value * 0.7) * 0.12 + atmo.night * 0.7;
     if (world.oak) {
-      for (const m of world.oak.children) {
-        if (m.userData.float !== undefined) m.position.y += Math.sin(world.uniforms.uTime.value * 0.8 + m.userData.float) * 0.01;
-      }
+      for (const m of world.oak.children) m.position.y += Math.sin(world.uniforms.uTime.value * 0.8 + m.userData.float) * 0.012;
     }
 
     // discoveries
     const px = player.onFoot ? player.heroPos.x : player.pos.x;
     const pz = player.onFoot ? player.heroPos.z : player.pos.z;
     const py = player.onFoot ? player.heroPos.y : player.pos.y;
-    for (const d of world.discoveries) {
-      if (d.found) continue;
-      const r = d.r + (player.onFoot ? 0 : Math.min(py * 0.5, 120));
-      if ((d.x - px) ** 2 + (d.z - pz) ** 2 < r * r) {
-        d.found = true;
-        hud.discover(d);
-        sound.chime(d.key === 'Sint-Sulpitius en Dionysiuskerk');
+    if (running && !paused) {
+      for (const d of world.discoveries) {
+        if (d.found) continue;
+        const r = d.r + (player.onFoot ? 0 : Math.min(py * 0.5, 120));
+        if ((d.x - px) ** 2 + (d.z - pz) ** 2 < r * r) {
+          d.found = true;
+          hud.discover(d);
+          sound.chime(d.key === 'Sint-Sulpitius en Dionysiuskerk');
+        }
       }
     }
 
@@ -166,8 +191,22 @@ async function boot() {
 
     sound.wind(player.onFoot ? 0 : player.speed, player.boostTime > 0);
     hud.update(dt, rig.yaw, px, pz);
-    renderer.render(scene, rig.camera);
+    post.render(dt);
     input.endFrame();
+
+    if (adaptive && running && !paused) {
+      fpsFrames++;
+      fpsTime += dt;
+      if (fpsTime >= 1.5) {
+        const fps = fpsFrames / fpsTime;
+        fpsFrames = 0;
+        fpsTime = 0;
+        const prev = ratio;
+        if (fps < 38) ratio = Math.max(0.55, ratio * 0.86);
+        else if (fps > 57 && ratio < maxRatio) ratio = Math.min(maxRatio, ratio * 1.07);
+        if (ratio !== prev) resize();
+      }
+    }
   }
 
   function nearestTown(x: number, z: number) {
@@ -178,6 +217,8 @@ async function boot() {
     return 'The Demer valley';
   }
 
+  // Compile shaders before the curtain lifts, then hand over to the player.
+  post.render(0);
   frame();
 }
 

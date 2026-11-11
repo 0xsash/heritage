@@ -1,155 +1,221 @@
-// Low Countries skies: physical sky dome, a sun that drives light colour and
-// fog, a cold moon at night (when the windows of Diest light up), stars, and
-// low-poly cumulus to give flight a sense of speed.
+// Low Countries skies. Each time-of-day preset is a real photographed sky
+// (Poly Haven, CC0; see tools/assets/build_skies.py): a 4K panorama for the
+// visible dome and an HDR environment for image-based lighting, with a
+// directional sun/moon added on top so it can cast shadows.
 
 import * as THREE from 'three';
-import { Sky } from 'three/examples/jsm/objects/Sky.js';
-import { clamp, lerp, rng, smoothstep } from '../core/math';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { clamp } from '../core/math';
+
+interface SkyData {
+  id: string;
+  sun: [number, number, number];
+  horizon: [number, number, number];
+  zenith: [number, number, number];
+}
+
+export interface Look {
+  label: string;
+  sunColor: string;
+  sunIntensity: number;
+  envIntensity: number;
+  fogDensity: number;
+  /** 0..1 how many windows are lit */
+  night: number;
+  exposure: number;
+  stars: number;
+  /** split-toning (shadow tint, highlight tint) and saturation for the grade pass */
+  shadowTint: [number, number, number];
+  highlightTint: [number, number, number];
+  saturation: number;
+  /** light the scene from this elevation (degrees) instead of the photographed sun's, keeping its compass direction */
+  lightElevation?: number;
+}
+
+// Flemish Masters grading: cool, slightly green-blue glazed shadows; warm, creamy lights.
+const LOOKS: Record<string, Look> = {
+  golden: {
+    label: 'Golden hour', sunColor: '#ffb574', sunIntensity: 5.2, envIntensity: 1.75, fogDensity: 0.00015, night: 0.2, exposure: 1.08, stars: 0,
+    shadowTint: [0.96, 0.99, 1.05], highlightTint: [1.06, 1.0, 0.88], saturation: 1.1, lightElevation: 17,
+  },
+  day: {
+    label: 'High summer', sunColor: '#fff0d8', sunIntensity: 4.8, envIntensity: 1.25, fogDensity: 0.00008, night: 0, exposure: 0.95, stars: 0,
+    shadowTint: [0.97, 0.99, 1.04], highlightTint: [1.04, 1.0, 0.93], saturation: 1.08,
+  },
+  storm: {
+    label: 'Storm light', sunColor: '#b8c2d0', sunIntensity: 0.9, envIntensity: 1.5, fogDensity: 0.00026, night: 0.45, exposure: 1.0, stars: 0,
+    shadowTint: [0.95, 0.98, 1.03], highlightTint: [1.02, 1.0, 0.96], saturation: 0.86,
+  },
+  night: {
+    label: 'Moonlit night', sunColor: '#8fa8dc', sunIntensity: 0.42, envIntensity: 2.6, fogDensity: 0.00018, night: 1, exposure: 2.4, stars: 1,
+    shadowTint: [0.88, 0.96, 1.12], highlightTint: [1.05, 0.98, 0.88], saturation: 0.9,
+  },
+};
+const ORDER = ['golden', 'night', 'storm', 'day'];
+
+const asset = (p: string) => new URL(p, document.baseURI).toString();
 
 export class Atmosphere {
-  sky = new Sky();
-  sun = new THREE.DirectionalLight('#fff1d6', 3);
-  hemi = new THREE.HemisphereLight('#bcd2e8', '#5a5838', 1.1);
-  stars: THREE.Points;
-  clouds = new THREE.Group();
-  /** 0..1, 0 = midnight, 0.5 = noon */
-  time = 0.69;
+  sun = new THREE.DirectionalLight('#ffffff', 3);
+  dome: THREE.Mesh;
   night = 0;
+  look: Look = LOOKS.golden;
+  current = 'golden';
+  sunDir = new THREE.Vector3(0.3, 0.8, 0.5).normalize();
+  private data = new Map<string, SkyData>();
+  private cache = new Map<string, { bg: THREE.Texture; env: THREE.Texture }>();
   private pmrem: THREE.PMREMGenerator;
-  private envScene = new THREE.Scene();
-  private envSky = new Sky();
-  private envRT: THREE.WebGLRenderTarget | null = null;
-  private sunDir = new THREE.Vector3();
+  private domeMat: THREE.ShaderMaterial;
+  private loading = false;
+  onChange?: (look: Look) => void;
 
-  constructor(private scene: THREE.Scene, private renderer: THREE.WebGLRenderer) {
-    this.sky.scale.setScalar(30000);
-    // The sky shader writes at the far plane; ground layers don't write depth,
-    // so the sky must draw first or it paints over the fields.
-    this.sky.renderOrder = -100;
-    scene.add(this.sky);
-    this.envSky.scale.setScalar(1000);
-    this.envScene.add(this.envSky);
+  constructor(private scene: THREE.Scene, private renderer: THREE.WebGLRenderer, private shadowSize: number) {
     this.pmrem = new THREE.PMREMGenerator(renderer);
+    this.domeMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uSky: { value: null },
+        uHorizon: { value: new THREE.Color() },
+        uStars: { value: 0 },
+      },
+      vertexShader: /* glsl */ `
+        varying vec3 vDir;
+        void main() {
+          vDir = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform sampler2D uSky;
+        uniform vec3 uHorizon;
+        uniform float uStars;
+        varying vec3 vDir;
+        float h31(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
+        void main() {
+          vec3 d = normalize(vDir);
+          vec2 uv = vec2(atan(d.z, d.x) * 0.15915494 + 0.5, asin(clamp(d.y, -1.0, 1.0)) * 0.31830989 + 0.5);
+          vec3 c = pow(texture2D(uSky, uv).rgb, vec3(2.2));
+          c = c / max(1.0 - c, 0.025);            // undo the x/(1+x) compression → HDR
+          // tiny, sharp stars in the clear parts of the night sky
+          vec3 cell = floor(d * 260.0);
+          float star = step(0.9972, h31(cell)) * smoothstep(0.02, 0.2, d.y);
+          c += uStars * star * (0.25 + 0.75 * h31(cell + 7.0)) * vec3(0.9, 0.95, 1.0) * 0.35;
+          // below the horizon the panorama is a mirror image: fade to haze instead
+          c = mix(uHorizon, c, smoothstep(-0.03, 0.02, d.y));
+          gl_FragColor = vec4(c, 1.0);
+        }`,
+      side: THREE.BackSide,
+      depthTest: false,
+      depthWrite: false,
+      fog: false,
+      toneMapped: false,
+    });
+    this.dome = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 24), this.domeMat);
+    this.dome.scale.setScalar(9000);
+    this.dome.renderOrder = -1000;
+    this.dome.frustumCulled = false;
+    scene.add(this.dome);
 
-    this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
-    const s = this.sun.shadow.camera;
-    s.left = -140; s.right = 140; s.top = 140; s.bottom = -140; s.near = 10; s.far = 1200;
-    this.sun.shadow.bias = -0.0004;
-    this.sun.shadow.normalBias = 0.6;
-    scene.add(this.sun, this.sun.target, this.hemi);
-
-    // stars
-    const r = rng(77);
-    const pts: number[] = [];
-    for (let i = 0; i < 1800; i++) {
-      const u = r() * 2 - 1, th = r() * Math.PI * 2;
-      const y = Math.abs(u);
-      const rr = Math.sqrt(1 - u * u);
-      pts.push(Math.cos(th) * rr * 9000, y * 9000 + 200, Math.sin(th) * rr * 9000);
-    }
-    const sg = new THREE.BufferGeometry();
-    sg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    this.stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: '#dfe8ff', size: 14, sizeAttenuation: true, transparent: true, opacity: 0, depthWrite: false, fog: false }));
-    this.stars.renderOrder = -99;
-    scene.add(this.stars);
-
-    this.buildClouds();
-    scene.add(this.clouds);
-    scene.fog = new THREE.Fog('#c9d6df', 600, 7500);
-    this.apply(true);
+    this.sun.castShadow = shadowSize > 0;
+    if (shadowSize > 0) this.sun.shadow.mapSize.set(shadowSize, shadowSize);
+    this.sun.shadow.camera.near = 10;
+    this.sun.shadow.camera.far = 2600;
+    scene.add(this.sun, this.sun.target);
+    scene.fog = new THREE.FogExp2('#c9d6df', 0.00012);
   }
 
-  private buildClouds() {
-    const r = rng(1566);
-    const mat = new THREE.MeshLambertMaterial({ color: '#ffffff', flatShading: false, transparent: true, opacity: 0.86, emissive: '#8f98a6', depthWrite: false });
-    const geo = new THREE.IcosahedronGeometry(1, 2);
-    for (let i = 0; i < 70; i++) {
-      const c = new THREE.Group();
-      const n = 6 + Math.floor(r() * 7);
-      for (let k = 0; k < n; k++) {
-        const m = new THREE.Mesh(geo, mat);
-        const s = 22 + r() * 34;
-        m.scale.set(s * 1.4, s * 0.55, s);
-        m.position.set((r() - 0.5) * 170, (r() - 0.2) * 14 + s * 0.15, (r() - 0.5) * 80);
-        c.add(m);
+  async init(start: string) {
+    const res = await fetch(asset('sky/skies.json'));
+    const json = (await res.json()) as { presets: SkyData[] };
+    for (const p of json.presets) this.data.set(p.id, p);
+    await this.setPreset(this.data.has(start) ? start : 'golden');
+  }
+
+  private async load(id: string) {
+    let c = this.cache.get(id);
+    if (c) return c;
+    const [bg, hdr] = await Promise.all([
+      new THREE.TextureLoader().loadAsync(asset(`sky/${id}_bg.jpg`)),
+      new RGBELoader().loadAsync(asset(`sky/${id}_env.hdr`)),
+    ]);
+    bg.colorSpace = THREE.NoColorSpace;
+    bg.generateMipmaps = false;
+    bg.minFilter = THREE.LinearFilter;
+    bg.wrapS = THREE.RepeatWrapping;
+    hdr.mapping = THREE.EquirectangularReflectionMapping;
+    const env = this.pmrem.fromEquirectangular(hdr).texture;
+    hdr.dispose();
+    c = { bg, env };
+    this.cache.set(id, c);
+    return c;
+  }
+
+  async setPreset(id: string) {
+    if (this.loading) return;
+    this.loading = true;
+    try {
+      const tex = await this.load(id);
+      const d = this.data.get(id)!;
+      const look = LOOKS[id];
+      this.current = id;
+      this.look = look;
+      this.night = look.night;
+      this.domeMat.uniforms.uSky.value = tex.bg;
+      this.domeMat.uniforms.uHorizon.value.setRGB(d.horizon[0], d.horizon[1], d.horizon[2]);
+      this.domeMat.uniforms.uStars.value = look.stars;
+      this.scene.environment = tex.env;
+      this.scene.environmentIntensity = look.envIntensity;
+      this.sunDir.set(d.sun[0], d.sun[1], d.sun[2]).normalize();
+      if (look.lightElevation !== undefined) {
+        const e = (look.lightElevation * Math.PI) / 180;
+        const h = Math.hypot(d.sun[0], d.sun[2]) || 1;
+        this.sunDir.set((d.sun[0] / h) * Math.cos(e), Math.sin(e), (d.sun[2] / h) * Math.cos(e));
       }
-      c.position.set(-7500 + r() * 12000, 260 + r() * 260, -4500 + r() * 9000);
-      c.rotation.y = r() * Math.PI;
-      this.clouds.add(c);
+      this.sun.color.set(look.sunColor);
+      this.sun.intensity = look.sunIntensity;
+      const fog = this.scene.fog as THREE.FogExp2;
+      fog.color.setRGB(d.horizon[0], d.horizon[1], d.horizon[2]);
+      fog.density = look.fogDensity;
+      this.renderer.toneMappingExposure = look.exposure;
+      this.onChange?.(look);
+    } finally {
+      this.loading = false;
     }
   }
 
-  advance(step = 0.08) {
-    this.time = (this.time + step) % 1;
-    this.apply(true);
+  /** Cycle to the next time of day. */
+  advance() {
+    const i = ORDER.indexOf(this.current);
+    void this.setPreset(ORDER[(i + 1) % ORDER.length]);
   }
 
-  /** Recompute lights/sky. `env` re-bakes the environment map (expensive). */
-  apply(env: boolean) {
-    const ang = (this.time - 0.25) * Math.PI * 2; // sunrise at 0.25
-    const elev = Math.sin(ang);
-    // sun travels east → south → west
-    this.sunDir.set(-Math.cos(ang) * 0.9, elev, 0.45).normalize();
-    const day = smoothstep(-0.08, 0.2, elev);
-    const golden = 1 - smoothstep(0.05, 0.45, elev);
-    this.night = 1 - smoothstep(-0.15, 0.05, elev);
-
-    const u = this.sky.material.uniforms;
-    u.turbidity.value = lerp(4, 9, golden);
-    u.rayleigh.value = lerp(1.2, 2.8, golden);
-    u.mieCoefficient.value = 0.006;
-    u.mieDirectionalG.value = 0.86;
-    const skySun = this.sunDir.clone();
-    if (skySun.y < -0.05) skySun.y = -0.05;
-    u.sunPosition.value.copy(skySun);
-    this.envSky.material.uniforms.sunPosition.value.copy(skySun);
-    for (const k of ['turbidity', 'rayleigh', 'mieCoefficient', 'mieDirectionalG'] as const)
-      this.envSky.material.uniforms[k].value = u[k].value;
-
-    // light: warm low sun, cool moonlight
-    const sunCol = new THREE.Color('#fff4e0').lerp(new THREE.Color('#ffb070'), golden * 0.8);
-    const moonCol = new THREE.Color('#7f95c8');
-    this.sun.color.copy(sunCol).lerp(moonCol, this.night);
-    this.sun.intensity = lerp(0.9, lerp(2.2, 3.2, 1 - golden), day);
-    this.hemi.intensity = lerp(0.75, 1.15, day);
-    this.hemi.color.set('#bcd2e8').lerp(new THREE.Color('#4d5f92'), this.night);
-    this.hemi.groundColor.set('#5a5838').lerp(new THREE.Color('#1c1f28'), this.night);
-
-    const fog = this.scene.fog as THREE.Fog;
-    const fogDay = new THREE.Color('#c8d5de').lerp(new THREE.Color('#e3c39e'), golden * 0.7);
-    fog.color.copy(fogDay).lerp(new THREE.Color('#141b2b'), this.night);
-    (this.stars.material as THREE.PointsMaterial).opacity = this.night;
-    this.sky.visible = this.night < 0.98;
-    this.renderer.toneMappingExposure = lerp(0.62, 0.55, golden) + this.night * 0.35;
-    this.scene.background = this.night > 0.98 ? new THREE.Color('#0b1020') : null;
-
-    if (env) {
-      this.envRT?.dispose();
-      this.envRT = this.pmrem.fromScene(this.envScene, 0, 0.1, 2000);
-      this.scene.environment = this.envRT.texture;
-      this.scene.environmentIntensity = lerp(0.15, 0.55, day);
+  /**
+   * Keep the sky centred on the camera and fit the shadow map around the
+   * player: tight and crisp near the ground, wide when flying high.
+   */
+  update(camPos: THREE.Vector3, focus: THREE.Vector3, altitude: number) {
+    this.dome.position.copy(camPos);
+    if (!this.sun.castShadow) {
+      this.sun.position.copy(focus).addScaledVector(this.sunDir, 1000);
+      this.sun.target.position.copy(focus);
+      return;
     }
-  }
-
-  update(dt: number, focus: THREE.Vector3) {
-    // shadows follow the player
-    const moonDir = this.night > 0.5 ? new THREE.Vector3(0.3, 0.8, -0.5).normalize() : this.sunDir;
-    const dir = this.sunDir.y > 0.02 ? this.sunDir : moonDir;
-    this.sun.position.copy(focus).addScaledVector(dir, 500);
-    this.sun.target.position.copy(focus);
-    this.sky.position.copy(focus);
-    this.stars.position.set(focus.x, 0, focus.z);
-    // drift clouds with the wind (west → east)
-    for (const c of this.clouds.children) {
-      c.position.x += dt * 4;
-      if (c.position.x > focus.x + 8000) c.position.x -= 16000;
-      if (c.position.x < focus.x - 8000) c.position.x += 16000;
+    const extent = clamp(110 + altitude * 2.4, 110, 760);
+    const cam = this.sun.shadow.camera;
+    if (Math.abs(cam.right - extent) > extent * 0.04) {
+      cam.left = -extent; cam.right = extent; cam.top = extent; cam.bottom = -extent;
+      cam.updateProjectionMatrix();
     }
-    const cm = (this.clouds.children[0]?.children[0] as THREE.Mesh | undefined)?.material as THREE.MeshLambertMaterial | undefined;
-    if (cm) {
-      cm.color.setScalar(clamp(1 - this.night * 0.75, 0.2, 1));
-      cm.emissive.set('#8f98a6').multiplyScalar(1 - this.night * 0.85);
-    }
+    const texel = (cam.right * 2) / this.shadowSize;
+    // snap the shadow frustum to whole texels so shadows don't shimmer as we move
+    const fwd = this.sunDir;
+    const right = new THREE.Vector3(0, 1, 0).cross(fwd).normalize();
+    const up = fwd.clone().cross(right).normalize();
+    const sx = Math.round(focus.dot(right) / texel) * texel;
+    const sy = Math.round(focus.dot(up) / texel) * texel;
+    const sz = focus.dot(fwd);
+    const snapped = right.multiplyScalar(sx).addScaledVector(up, sy).addScaledVector(fwd, sz);
+    this.sun.target.position.copy(snapped);
+    this.sun.position.copy(snapped).addScaledVector(fwd, 1300);
+    this.sun.shadow.bias = -0.00012 - texel * 0.0006;
+    this.sun.shadow.normalBias = texel * 2.2;
   }
 }

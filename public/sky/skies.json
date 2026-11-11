@@ -1,0 +1,89 @@
+{
+ "licence": "Skies CC0 from polyhaven.com",
+ "presets": [
+  {
+   "id": "golden",
+   "source": "wasteland_clouds_puresky",
+   "sun": [
+    -0.8589,
+    0.1284,
+    0.4959
+   ],
+   "sunElevationDeg": 7.4,
+   "horizon": [
+    0.2362,
+    0.267,
+    0.2447
+   ],
+   "zenith": [
+    0.0719,
+    0.1403,
+    0.2096
+   ],
+   "meanSky": 0.3
+  },
+  {
+   "id": "day",
+   "source": "kloofendal_48d_partly_cloudy_puresky",
+   "sun": [
+    -0.2835,
+    0.7417,
+    0.6079
+   ],
+   "sunElevationDeg": 47.9,
+   "horizon": [
+    0.3486,
+    0.36,
+    0.4381
+   ],
+   "zenith": [
+    0.3086,
+    0.381,
+    0.5562
+   ],
+   "meanSky": 0.42
+  },
+  {
+   "id": "storm",
+   "source": "overcast_soil_puresky",
+   "sun": [
+    -0.4085,
+    0.5766,
+    0.7075
+   ],
+   "sunElevationDeg": 35.2,
+   "horizon": [
+    0.2298,
+    0.2186,
+    0.2086
+   ],
+   "zenith": [
+    0.5514,
+    0.5514,
+    0.5589
+   ],
+   "meanSky": 0.4
+  },
+  {
+   "id": "night",
+   "source": "qwantani_moon_noon_puresky",
+   "sun": [
+    0.1674,
+    0.8721,
+    0.4599
+   ],
+   "sunElevationDeg": 60.7,
+   "horizon": [
+    0.0166,
+    0.0177,
+    0.0196
+   ],
+   "zenith": [
+    0.0053,
+    0.0095,
+    0.0158
+   ],
+   "meanSky": 0.012
+  }
+ ]
+}

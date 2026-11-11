@@ -30,6 +30,8 @@ export interface Footprint {
   id: number;
 }
 
+const SHED_KINDS = new Set(['roof', 'carport', 'garage', 'garages', 'shed', 'service', 'kiosk', 'toilets', 'greenhouse', 'bunker']);
+
 export function toRing(p: number[]): [number, number][] {
   const r: [number, number][] = [];
   for (let i = 0; i < p.length; i += 2) r.push([p[i], p[i + 1]]);
@@ -87,12 +89,16 @@ export function analyse(b: BuildingData): Footprint {
     // The landmark builder raises the domed drum; keep the footprint low and flat.
     return { ring, minX, minZ, maxX, maxZ, h: 13, cx, cz, ux, uz, nx, nz, hu, hw, rise: 0, kind, name: b.n, id: b.id };
   }
-  if (b.r !== 'f') {
-    const church = kind === 'church' || kind === 'basilica' || kind === 'chapel' || kind === 'cathedral';
-    // Flemish roofs are steep (~50°); wide or hipped buildings get lower pitches.
-    const pitchDeg = church ? 52 : b.r === 'h' ? 34 : hw * 2 > 14 ? 38 : 50;
+  const church = kind === 'church' || kind === 'chapel' || kind === 'cathedral';
+  const tiny = SHED_KINDS.has(kind) || hu * hw * 4 < 28;
+  if (!tiny || b.r !== 'f') {
+    // Flemish roofs are steep (~50 degrees). Wide halls and barns get lower pitches.
+    // Buildings mapped with flat roofs (modern sheds, shops) are given low pitched
+    // roofs too, so they read as barns and halls rather than modern boxes.
+    const wide = hw * 2;
+    const pitchDeg = church ? 52 : b.r === 'f' ? (wide > 16 ? 26 : 38) : b.r === 'h' ? 36 : wide > 14 ? 40 : 50;
     rise = Math.tan((pitchDeg * Math.PI) / 180) * hw;
-    rise = Math.min(rise, church ? 22 : 9);
+    rise = Math.min(rise, church ? 22 : wide > 16 ? 7.5 : 9);
   }
   return {
     ring, minX, minZ, maxX, maxZ, h: b.h, cx, cz, ux, uz, nx, nz, hu, hw, rise, kind, name: b.n, id: b.id,

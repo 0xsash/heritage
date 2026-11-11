@@ -34,3 +34,15 @@ node tools/osm/build-world.mjs /tmp/osm-raw public/world/diest.json
 ```
 
 Map data © OpenStreetMap contributors, available under the ODbL.
+
+## Art sources
+
+- Surface materials: [ambientCG](https://ambientcg.com) (CC0), packed by `tools/assets/build_textures.py`.
+- Skies: [Poly Haven](https://polyhaven.com) pure-sky HDRIs (CC0), processed by `tools/assets/build_skies.py`.
+- Art direction reference: `docs/art/moodboard.webp` (Flemish Masters realism, with Bosch for the corrupted zones).
+
+```bash
+tools/assets/fetch.sh /tmp/belfort-assets
+python3 tools/assets/build_textures.py /tmp/belfort-assets/tex public/textures
+python3 tools/assets/build_skies.py /tmp/belfort-assets/sky public/sky
+```

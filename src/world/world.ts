@@ -1,17 +1,24 @@
-// Assembles the playable world from real OSM data.
+// Assembles the playable world from real OSM data, dressed with photographic
+// PBR materials.
 
 import * as THREE from 'three';
 import { hash01, rng } from '../core/math';
-import { addBuilding, patchBuildingMaterial, styleFor } from './buildings';
+import type { MaterialSet } from '../render/textures';
+import { addBuilding, makeBuildingMaterial, styleFor } from './buildings';
 import { WorldCollision } from './collision';
 import { analyse, pointInRing, toRing, type Footprint } from './footprint';
 import { GeomBuilder, triangulate } from './geom';
+import { makeGroundMaterial, makeWaterMaterial } from './ground';
 import { buildLandmarks } from './landmarks';
 import { LORE } from './lore';
-import { LAND_COLORS, ROAD_COLORS } from './palette';
+import { LAND, ROAD, pick } from './palette';
+import { TreeRenderer, type TreeAtlas, type TreeItem } from './trees';
 import type { PoiData, RoadData, WorldData } from './types';
 
 const CHUNK = 400;
+const OLD_TOWN_R = 680;
+// Overlays sit a few centimetres above the base ground so they never z-fight.
+const Y_LAND = 0.02, Y_WATER = 0.035, Y_ROAD = 0.05;
 
 export interface Discovery {
   key: string;
@@ -29,6 +36,12 @@ export interface NamedSegment {
   ax: number; az: number; bx: number; bz: number;
 }
 
+export interface WorldAssets {
+  build: MaterialSet;
+  ground: MaterialSet;
+  trees: TreeAtlas | null;
+}
+
 export class World {
   group = new THREE.Group();
   collision = new WorldCollision();
@@ -37,15 +50,15 @@ export class World {
   streets: NamedSegment[] = [];
   private streetGrid = new Map<number, NamedSegment[]>();
   uniforms = { uNight: { value: 0 }, uTime: { value: 0 } };
-  waterMat!: THREE.MeshStandardMaterial;
   demerMat!: THREE.MeshStandardMaterial;
   oak?: THREE.Object3D;
-
   private cullables: THREE.Mesh[] = [];
+  /** cells (4 m) covered by roads or water, where trees must not stand */
+  private blocked = new Set<number>();
 
-  constructor(public data: WorldData) {}
+  constructor(public data: WorldData, private assets: WorldAssets) {}
 
-  /** Distance culling for building and tree chunks (fog hides the cut). */
+  /** Distance culling for building and tree chunks (the haze hides the cut). */
   cull(cam: THREE.Vector3) {
     for (const m of this.cullables) {
       const s = m.geometry.boundingSphere ?? (m as THREE.InstancedMesh).boundingSphere;
@@ -58,7 +71,7 @@ export class World {
   build(onProgress: (msg: string) => void) {
     onProgress('Raising the polders…');
     this.buildGround();
-    onProgress('Planting the Hageland…');
+    onProgress('Ploughing the Hageland…');
     this.buildLand();
     onProgress('Letting in the Demer…');
     this.buildWater();
@@ -66,15 +79,9 @@ export class World {
     this.buildRoads();
     onProgress('Building Diest, brick by brick…');
     this.buildBuildings();
-    onProgress('Growing the woods…');
+    onProgress('Planting willows and poplars…');
     this.buildTrees();
     this.buildDiscoveries();
-  }
-
-  private groundMat(order: number, color = 0xffffff) {
-    const m = new THREE.MeshLambertMaterial({ vertexColors: true, color, depthWrite: false });
-    m.userData.order = order;
-    return m;
   }
 
   private addGroundMesh(geo: THREE.BufferGeometry, mat: THREE.Material, order: number) {
@@ -95,86 +102,121 @@ export class World {
     geo.rotateX(-Math.PI / 2);
     geo.translate((x0 + x1) / 2, 0, (z0 + z1) / 2);
     const pos = geo.attributes.position;
-    const cols: number[] = [];
-    const base = new THREE.Color('#7f9d4e');
-    const alt = [new THREE.Color('#9aa858'), new THREE.Color('#6f9046'), new THREE.Color('#b3a35c'), new THREE.Color('#8b8a4c')];
+    const cols = new Float32Array(pos.count * 3);
+    const mats = new Float32Array(pos.count);
+    const walls = new Float32Array(pos.count * 3);
+    const tints = [...LAND.meadow.tints, ...LAND.farm.tints];
+    const layer = this.assets.ground.index.meadow;
     const c = new THREE.Color();
     for (let i = 0; i < pos.count; i++) {
-      const px = pos.getX(i), pz = pos.getZ(i);
-      // field patchwork outside the mapped area
-      const fx = Math.floor(px / 180), fz = Math.floor(pz / 140);
-      const h = hash01(fx * 7919 + fz * 104729);
-      c.copy(base).lerp(alt[Math.floor(h * alt.length)], 0.55 + 0.4 * hash01(fx * 31 + fz * 17));
-      cols.push(c.r, c.g, c.b);
+      // a patchwork of fields beyond the mapped area
+      const fx = Math.floor(pos.getX(i) / 180), fz = Math.floor(pos.getZ(i) / 140);
+      c.copy(tints[Math.floor(hash01(fx * 7919 + fz * 104729) * tints.length)]);
+      cols[i * 3] = c.r; cols[i * 3 + 1] = c.g; cols[i * 3 + 2] = c.b;
+      mats[i] = layer;
     }
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-    this.addGroundMesh(geo, this.groundMat(-20), -20);
+    geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+    geo.setAttribute('aMat', new THREE.BufferAttribute(mats, 1));
+    geo.setAttribute('aWall', new THREE.BufferAttribute(walls, 3));
+    this.addGroundMesh(geo, makeGroundMaterial(this.assets.ground, 'base'), -20);
   }
 
   // ---------------- land cover ----------------
   private buildLand() {
     const gb = new GeomBuilder();
+    const idx = this.assets.ground.index;
     const c = new THREE.Color();
     for (let li = 0; li < this.data.land.length; li++) {
       const l = this.data.land[li];
-      const pal = LAND_COLORS[l.k];
-      if (!pal) continue;
-      c.set(pal[Math.floor(hash01(li * 13 + 7) * pal.length)]);
-      const jitter = 0.94 + hash01(li * 3) * 0.1;
-      c.multiplyScalar(jitter);
+      let surf = LAND[l.k];
+      if (!surf) continue;
+      let tag = [0, 0, 0];
+      if (l.k === 'farm') {
+        // some fields lie ploughed; all of them show rows
+        if (hash01(li * 31 + 9) < 0.26) surf = LAND.soil;
+        const a = hash01(li * 17 + 3) * Math.PI;
+        tag = [Math.cos(a), Math.sin(a), 1];
+      } else if (l.k === 'orchard' || l.k === 'vineyard') {
+        const a = hash01(li * 17 + 3) * Math.PI;
+        tag = [Math.cos(a), Math.sin(a), 1];
+      }
+      c.copy(pick(surf.tints, li * 13 + 7)).multiplyScalar(0.94 + hash01(li * 3) * 0.12);
+      gb.curMat = idx[surf.mat];
       const ring = toRing(l.p);
-      const tris = triangulate(ring);
-      for (const [a, b, cc] of tris) {
-        gb.tri([ring[a][0], 0, ring[a][1]], [ring[b][0], 0, ring[b][1]], [ring[cc][0], 0, ring[cc][1]], c, [0, 1, 0]);
+      for (const [a, b, cc] of triangulate(ring)) {
+        gb.tri([ring[a][0], Y_LAND, ring[a][1]], [ring[b][0], Y_LAND, ring[b][1]], [ring[cc][0], Y_LAND, ring[cc][1]], c, [0, 1, 0], tag, tag, tag);
       }
     }
-    this.addGroundMesh(gb.build(), this.groundMat(-19), -19);
+    this.addGroundMesh(gb.build(), makeGroundMaterial(this.assets.ground, 'land'), -19);
+  }
+
+  private block(x: number, z: number, r: number) {
+    const n = Math.ceil(r / 4);
+    const cx = Math.floor(x / 4), cz = Math.floor(z / 4);
+    for (let i = -n; i <= n; i++) for (let j = -n; j <= n; j++) this.blocked.add((cx + i + 4096) * 8192 + (cz + j + 4096));
+  }
+
+  private blockLine(p: number[], width: number) {
+    for (let i = 0; i + 3 < p.length; i += 2) {
+      const ax = p[i], az = p[i + 1], bx = p[i + 2], bz = p[i + 3];
+      const len = Math.hypot(bx - ax, bz - az);
+      const steps = Math.max(1, Math.ceil(len / 3));
+      for (let s = 0; s <= steps; s++) this.block(ax + ((bx - ax) * s) / steps, az + ((bz - az) * s) / steps, width / 2);
+    }
+  }
+
+  private isBlocked(x: number, z: number) {
+    return this.blocked.has((Math.floor(x / 4) + 4096) * 8192 + (Math.floor(z / 4) + 4096));
   }
 
   // ---------------- water ----------------
   private buildWater() {
-    this.waterMat = new THREE.MeshStandardMaterial({
-      color: '#3f6272', roughness: 0.12, metalness: 0.25, depthWrite: false,
-    });
-    // The Demer: "dark water". Darker, with a faint uncanny sheen.
-    this.demerMat = new THREE.MeshStandardMaterial({
-      color: '#1d2c2e', roughness: 0.08, metalness: 0.35, depthWrite: false, emissive: '#0b2a26', emissiveIntensity: 0.6,
-    });
-    const areas = new GeomBuilder();
+    const plain = makeWaterMaterial(this.uniforms, '#232f2b');
+    // The Demer: "dark water". Blacker than it should be, with a faint uncanny sheen.
+    this.demerMat = makeWaterMaterial(this.uniforms, '#0f1716', '#0a2b25');
     const white = new THREE.Color(1, 1, 1);
+    const areas = new GeomBuilder();
     for (const p of this.data.waterAreas) {
       const ring = toRing(p);
       for (const [a, b, c] of triangulate(ring)) {
-        areas.tri([ring[a][0], 0, ring[a][1]], [ring[b][0], 0, ring[b][1]], [ring[c][0], 0, ring[c][1]], white, [0, 1, 0]);
+        areas.tri([ring[a][0], Y_WATER, ring[a][1]], [ring[b][0], Y_WATER, ring[b][1]], [ring[c][0], Y_WATER, ring[c][1]], white, [0, 1, 0]);
       }
+      for (let i = 0; i < ring.length; i += 1) this.block(ring[i][0], ring[i][1], 3);
     }
-    this.addGroundMesh(areas.build(), this.waterMat, -15);
-
+    this.addGroundMesh(areas.build(), plain, -15);
     const demer = new GeomBuilder();
     const other = new GeomBuilder();
     for (const wl of this.data.waterLines) {
       const isDemer = (wl.n ?? '').toLowerCase().includes('demer');
-      ribbon(isDemer ? demer : other, wl.p, wl.w, white, 0);
+      ribbon(isDemer ? demer : other, wl.p, wl.w, white, Y_WATER, false);
+      this.blockLine(wl.p, wl.w + 2);
     }
-    this.addGroundMesh(other.build(), this.waterMat, -14);
+    this.addGroundMesh(other.build(), plain, -14);
     this.addGroundMesh(demer.build(), this.demerMat, -14);
   }
 
   // ---------------- roads ----------------
   private buildRoads() {
     const gb = new GeomBuilder();
+    const idx = this.assets.ground.index;
     const c = new THREE.Color();
     const order = ['track', 'path', 'footway', 'cycleway', 'bridleway', 'steps', 'service', 'rail', 'unclassified', 'living_street', 'residential', 'pedestrian', 'tertiary', 'secondary', 'primary', 'trunk', 'motorway'];
+    const minor = new Set(['track', 'path', 'footway', 'cycleway', 'bridleway', 'steps']);
     const roads = this.data.roads.slice().sort((a, b) => order.indexOf(a.k) - order.indexOf(b.k));
-    for (const r of roads) {
-      c.set(ROAD_COLORS[r.k] ?? '#9a8f7e');
-      // old-town cobbles are warmer
+    for (let i = 0; i < roads.length; i++) {
+      const r = roads[i];
       const mid = midpoint(r);
-      if (Math.hypot(mid[0], mid[1]) < 650 && r.k !== 'rail') c.lerp(new THREE.Color('#a08a6e'), 0.4);
-      ribbon(gb, r.p, r.w, c, 0);
+      const inTown = Math.hypot(mid[0], mid[1]) < OLD_TOWN_R;
+      const kind = r.k === 'rail' ? ROAD.rail : minor.has(r.k) ? ROAD.path : inTown || r.k === 'pedestrian' || r.k === 'living_street' ? ROAD.cobble : ROAD.dirt;
+      c.set(kind.tint).multiplyScalar(0.93 + hash01(i * 7) * 0.14);
+      gb.curMat = idx[kind.mat];
+      // medieval roads are narrower than modern ones; the soft edge needs a little extra width
+      const w = (r.k === 'motorway' || r.k === 'trunk' ? 9 : Math.min(r.w, 8)) * 1.25;
+      ribbon(gb, r.p, w, c, Y_ROAD, true);
+      this.blockLine(r.p, w + 1.5);
       if (r.n) this.addStreet(r);
     }
-    this.addGroundMesh(gb.build(), this.groundMat(-12), -12);
+    this.addGroundMesh(gb.build(), makeGroundMaterial(this.assets.ground, 'road'), -12);
   }
 
   private addStreet(r: RoadData) {
@@ -210,8 +252,8 @@ export class World {
 
   // ---------------- buildings ----------------
   private buildBuildings() {
-    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88, metalness: 0.0 });
-    patchBuildingMaterial(mat, this.uniforms);
+    const set = this.assets.build;
+    const mat = makeBuildingMaterial(set, this.uniforms);
     const chunks = new Map<string, GeomBuilder>();
     for (const b of this.data.buildings) {
       const f = analyse(b);
@@ -220,7 +262,7 @@ export class World {
       const key = Math.floor(f.cx / CHUNK) + ',' + Math.floor(f.cz / CHUNK);
       let gb = chunks.get(key);
       if (!gb) chunks.set(key, (gb = new GeomBuilder()));
-      addBuilding(gb, f, styleFor(f));
+      addBuilding(gb, f, styleFor(f), set);
     }
     for (const gb of chunks.values()) {
       const mesh = new THREE.Mesh(gb.build(), mat);
@@ -230,7 +272,7 @@ export class World {
       this.cullables.push(mesh);
       this.group.add(mesh);
     }
-    const lm = buildLandmarks(this.footprints, this.data.pois, this.collision, mat);
+    const lm = buildLandmarks(this.footprints, this.data.pois, this.collision, mat, set);
     this.group.add(lm.group);
     this.oak = lm.group.getObjectByName('rootOak');
     this.data.pois.push(...lm.extraPois);
@@ -238,62 +280,108 @@ export class World {
 
   // ---------------- trees ----------------
   private buildTrees() {
-    const crownGeo = new THREE.IcosahedronGeometry(1, 0);
-    const trunkGeo = new THREE.CylinderGeometry(0.12, 0.18, 1, 4, 1, true);
-    trunkGeo.translate(0, 0.5, 0);
-    const tree = mergeTree(crownGeo, trunkGeo);
-    const pine = mergePine();
-    const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
-
-    const perChunk = new Map<string, { m: THREE.Matrix4; c: THREE.Color; pine: boolean }[]>();
+    const atlas = this.assets.trees;
+    if (!atlas) return;
+    const renderer = new TreeRenderer(atlas);
     const rand = rng(1302);
-    const m4 = new THREE.Matrix4();
-    const q = new THREE.Quaternion();
-    const up = new THREE.Vector3(0, 1, 0);
-    let total = 0;
-    const MAX = 42000;
-    const DENS: Record<string, number> = { wood: 1 / 70, park: 1 / 260, orchard: 1 / 90, cemetery: 1 / 300, wet: 1 / 400, scrub: 1 / 300 };
-    for (const l of this.data.land) {
-      const dens = DENS[l.k];
-      if (!dens) continue;
+    const items: TreeItem[] = [];
+    const MAX = 60000;
+    const has = (s: string) => !!atlas.species[s];
+    const add = (x: number, z: number, species: string, scale = 1, force = false) => {
+      if (items.length >= MAX || !has(species)) return;
+      if (!force && (this.isBlocked(x, z) || this.collision.heightAround(x, z, 2.2) > 0)) return;
+      const v = 0.82 + rand() * 0.3;
+      const tint = new THREE.Color(v * (0.96 + rand() * 0.1), v, v * (0.9 + rand() * 0.12));
+      items.push({ x, y: 0, z, species, scale: scale * (0.78 + rand() * 0.45), rot: rand() * Math.PI, tint });
+    };
+
+    // woods, parks, orchards
+    const DENS: Record<string, number> = { wood: 1 / 60, park: 1 / 330, cemetery: 1 / 400, wet: 1 / 380, scrub: 1 / 300, farmyard: 1 / 900, meadow: 1 / 7000, farm: 1 / 14000, res: 1 / 520, grass: 1 / 2600 };
+    for (let li = 0; li < this.data.land.length; li++) {
+      const l = this.data.land[li];
       const ring = toRing(l.p);
       let minX = Infinity, minZ = Infinity, maxX = -Infinity, maxZ = -Infinity;
       for (const [x, z] of ring) {
         minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
       }
-      const n = Math.min(4000, Math.floor((maxX - minX) * (maxZ - minZ) * dens));
-      for (let i = 0; i < n && total < MAX; i++) {
+      if (l.k === 'orchard') {
+        // fruit trees stand in rows
+        const a = hash01(li * 17 + 3) * Math.PI, ca = Math.cos(a), sa = Math.sin(a);
+        const cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+        const R = Math.hypot(maxX - minX, maxZ - minZ) / 2;
+        for (let u = -R; u <= R; u += 7) for (let v = -R; v <= R; v += 6) {
+          const x = cx + ca * u - sa * v, z = cz + sa * u + ca * v;
+          if (pointInRing(ring, x, z)) add(x, z, 'apple', 1);
+        }
+        continue;
+      }
+      const dens = DENS[l.k];
+      if (!dens) continue;
+      const n = Math.min(5000, Math.floor((maxX - minX) * (maxZ - minZ) * dens));
+      // each wood leans towards one kind of tree
+      const lean = hash01(li * 41 + 1);
+      for (let i = 0; i < n; i++) {
         const x = minX + rand() * (maxX - minX), z = minZ + rand() * (maxZ - minZ);
         if (!pointInRing(ring, x, z)) continue;
-        if (this.collision.buildingAt(x, z)) continue;
-        const isPine = l.k === 'wood' && rand() < 0.22;
-        const s = l.k === 'orchard' ? 2.2 + rand() * 1.2 : 3.2 + rand() * 3.6;
-        q.setFromAxisAngle(up, rand() * Math.PI * 2);
-        m4.compose(new THREE.Vector3(x, 0, z), q, new THREE.Vector3(s, s * (0.9 + rand() * 0.4), s));
-        const key = Math.floor(x / CHUNK) + ',' + Math.floor(z / CHUNK);
-        let list = perChunk.get(key);
-        if (!list) perChunk.set(key, (list = []));
-        const tint = new THREE.Color().setHSL(0.22 + rand() * 0.08, 0.35 + rand() * 0.2, 0.75 + rand() * 0.25);
-        list.push({ m: m4.clone(), c: tint, pine: isPine });
-        total++;
+        let sp = 'oak';
+        const r = rand();
+        if (l.k === 'wood') sp = lean < 0.25 ? (r < 0.7 ? 'pine' : 'oak') : r < 0.74 ? 'oak' : r < 0.86 ? 'poplar' : r < 0.94 ? 'pine' : 'willow';
+        else if (l.k === 'wet' || l.k === 'scrub') sp = r < 0.6 ? 'willow' : 'poplar';
+        else if (l.k === 'res' || l.k === 'farmyard') sp = r < 0.45 ? 'apple' : r < 0.85 ? 'oak' : 'willow';
+        add(x, z, sp, l.k === 'res' ? 0.7 : 1);
       }
     }
+
+    // pollard willows along ditches and streams; poplar rows along the river and canals
+    for (let wi = 0; wi < this.data.waterLines.length; wi++) {
+      const wl = this.data.waterLines[wi];
+      const big = wl.k === 'river' || wl.k === 'canal';
+      const species = big ? 'poplar' : 'willow';
+      const spacing = big ? 15 : 24;
+      const side0 = hash01(wi * 7) < 0.5 ? 1 : -1;
+      alongLine(wl.p, spacing, (x, z, nx, nz, k) => {
+        if (hash01(wi * 131 + k) < 0.3) return; // gaps
+        const side = big ? side0 : k % 2 ? 1 : -1;
+        const off = wl.w / 2 + (big ? 6 : 2.6);
+        add(x + nx * off * side, z + nz * off * side, species, big ? 1 : 0.95);
+      });
+    }
+
+    // poplar avenues along the main country roads
+    for (let ri = 0; ri < this.data.roads.length; ri++) {
+      const r = this.data.roads[ri];
+      if (r.k !== 'primary' && r.k !== 'secondary' && r.k !== 'tertiary') continue;
+      if (hash01(ri * 53 + 5) < 0.45) continue;
+      alongLine(r.p, 18, (x, z, nx, nz, k) => {
+        if (Math.hypot(x, z) < 950) return;
+        const off = Math.min(r.w, 8) * 0.62 + 4.5;
+        for (const side of [1, -1]) {
+          const tx = x + nx * off * side, tz = z + nz * off * side;
+          if (this.collision.heightAround(tx, tz, 7) > 0) continue;
+          if (hash01(ri * 17 + k * 3 + side) < 0.12) continue;
+          add(tx, tz, 'poplar', 0.95, true);
+        }
+      });
+    }
+
+    // the Root-Oak of Scherpenheuvel: an oak three times the size it has any right to be
+    const oak = this.data.pois.find((p) => p.n === 'De Heilige Eik');
+    if (oak && has('oak')) {
+      items.push({ x: oak.x, y: 0, z: oak.z, species: 'oak', scale: 3.1, rot: 0.4, tint: new THREE.Color(0.72, 0.86, 0.74) });
+    }
+
+    const perChunk = new Map<string, TreeItem[]>();
+    for (const it of items) {
+      const key = Math.floor(it.x / CHUNK) + ',' + Math.floor(it.z / CHUNK);
+      let list = perChunk.get(key);
+      if (!list) perChunk.set(key, (list = []));
+      list.push(it);
+    }
     for (const list of perChunk.values()) {
-      for (const pineFlag of [false, true]) {
-        const items = list.filter((t) => t.pine === pineFlag);
-        if (!items.length) continue;
-        const im = new THREE.InstancedMesh(pineFlag ? pine : tree, mat, items.length);
-        items.forEach((t, i) => {
-          im.setMatrixAt(i, t.m);
-          im.setColorAt(i, t.c);
-        });
-        im.castShadow = true;
-        im.receiveShadow = true;
-        im.computeBoundingSphere();
-        im.userData.cullDist = 1900;
-        this.cullables.push(im);
-        this.group.add(im);
-      }
+      const mesh = renderer.build(list);
+      mesh.userData.cullDist = 3800;
+      this.cullables.push(mesh);
+      this.group.add(mesh);
     }
   }
 
@@ -311,8 +399,6 @@ export class World {
     };
     for (const p of this.data.pois as PoiData[]) add(p.n, p.x, p.z);
     for (const f of this.footprints) if (f.name) add(f.name, f.cx, f.cz);
-    const begijn = this.footprints.find((f) => f.name === 'Ingang Begijnhof');
-    if (begijn) add('Ingang Begijnhof', begijn.cx, begijn.cz);
   }
 }
 
@@ -321,8 +407,28 @@ function midpoint(r: RoadData): [number, number] {
   return [r.p[i], r.p[i + 1]];
 }
 
-/** Flat ribbon along a polyline (mitred joins, capped). */
-function ribbon(gb: GeomBuilder, p: number[], width: number, color: THREE.Color, y: number) {
+/** Walk a polyline, calling back every `spacing` metres with the position and left normal. */
+function alongLine(p: number[], spacing: number, cb: (x: number, z: number, nx: number, nz: number, k: number) => void) {
+  let carry = spacing * 0.5, k = 0;
+  for (let i = 0; i + 3 < p.length; i += 2) {
+    const ax = p[i], az = p[i + 1], bx = p[i + 2], bz = p[i + 3];
+    const len = Math.hypot(bx - ax, bz - az);
+    if (len < 0.01) continue;
+    const dx = (bx - ax) / len, dz = (bz - az) / len;
+    let t = carry;
+    while (t < len) {
+      cb(ax + dx * t, az + dz * t, -dz, dx, k++);
+      t += spacing;
+    }
+    carry = t - len;
+  }
+}
+
+/**
+ * Flat ribbon along a polyline (mitred joins, round caps). With `edges` the
+ * vertices carry an across-the-road coordinate (-1..1) for the soft-edge shader.
+ */
+function ribbon(gb: GeomBuilder, p: number[], width: number, color: THREE.Color, y: number, edges: boolean) {
   const n = p.length / 2;
   if (n < 2) return;
   const hw = width / 2;
@@ -345,53 +451,14 @@ function ribbon(gb: GeomBuilder, p: number[], width: number, color: THREE.Color,
     L.push([x + nx * m, y, z + nz * m]);
     R.push([x - nx * m, y, z - nz * m]);
   }
-  for (let i = 0; i < n - 1; i++) gb.quad(L[i], L[i + 1], R[i + 1], R[i], color, [0, 1, 0]);
-  // round-ish caps so joints between separate ways don't gap
+  const tl = edges ? [1, 0, 2] : undefined, tr = edges ? [-1, 0, 2] : undefined;
+  const tc = edges ? [0, 0, 2] : undefined;
+  for (let i = 0; i < n - 1; i++) gb.quad(L[i], L[i + 1], R[i + 1], R[i], color, [0, 1, 0], tl, tl, tr, tr);
   for (const i of [0, n - 1]) {
     const cx = p[i * 2], cz = p[i * 2 + 1];
-    for (let k = 0; k < 6; k++) {
-      const a0 = (k / 6) * Math.PI * 2, a1 = ((k + 1) / 6) * Math.PI * 2;
-      gb.tri([cx, y, cz], [cx + Math.cos(a0) * hw, y, cz + Math.sin(a0) * hw], [cx + Math.cos(a1) * hw, y, cz + Math.sin(a1) * hw], color, [0, 1, 0]);
+    for (let k = 0; k < 8; k++) {
+      const a0 = (k / 8) * Math.PI * 2, a1 = ((k + 1) / 8) * Math.PI * 2;
+      gb.tri([cx, y, cz], [cx + Math.cos(a0) * hw, y, cz + Math.sin(a0) * hw], [cx + Math.cos(a1) * hw, y, cz + Math.sin(a1) * hw], color, [0, 1, 0], tc, tl, tl);
     }
   }
-}
-
-function colorize(g: THREE.BufferGeometry, hex: string) {
-  const c = new THREE.Color(hex);
-  const n = g.attributes.position.count;
-  const arr = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) { arr[i * 3] = c.r; arr[i * 3 + 1] = c.g; arr[i * 3 + 2] = c.b; }
-  g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
-  return g;
-}
-
-function mergeGeos(geos: THREE.BufferGeometry[]) {
-  const parts = geos.map((g) => (g.index ? g.toNonIndexed() : g));
-  const total = parts.reduce((s, g) => s + g.attributes.position.count, 0);
-  const pos = new Float32Array(total * 3), nrm = new Float32Array(total * 3), col = new Float32Array(total * 3);
-  let o = 0;
-  for (const g of parts) {
-    g.computeVertexNormals();
-    pos.set(g.attributes.position.array as Float32Array, o * 3);
-    nrm.set(g.attributes.normal.array as Float32Array, o * 3);
-    col.set(g.attributes.color.array as Float32Array, o * 3);
-    o += g.attributes.position.count;
-  }
-  const out = new THREE.BufferGeometry();
-  out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  out.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
-  out.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  return out;
-}
-
-function mergeTree(crown: THREE.BufferGeometry, trunk: THREE.BufferGeometry) {
-  const c1 = colorize(crown.clone().scale(1.0, 0.85, 1.0).translate(0, 1.6, 0), '#557f36');
-  const t = colorize(trunk.clone(), '#5a4330');
-  return mergeGeos([t, c1]);
-}
-
-function mergePine() {
-  const cone = colorize(new THREE.ConeGeometry(0.75, 2.6, 6).translate(0, 2.0, 0), '#2f4f2a');
-  const trunk = colorize(new THREE.CylinderGeometry(0.1, 0.14, 0.9, 4, 1, true).translate(0, 0.45, 0), '#4f3a2a');
-  return mergeGeos([trunk, cone]);
 }
