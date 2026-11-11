@@ -36,7 +36,7 @@ export class Hud {
     this.help = el(
       'help',
       `<h3>CONTROLS</h3><table>
-      <tr><td>Mouse</td><td>Steer &amp; look (click to capture)</td></tr>
+      <tr><td>Mouse</td><td>Steer &amp; look (click to capture, or drag)</td></tr>
       <tr><td>W / S</td><td>Flap harder / brake &amp; hover</td></tr>
       <tr><td>Space / C</td><td>Climb / dive</td></tr>
       <tr><td>Shift</td><td>Boost (flying) · run (on foot)</td></tr>

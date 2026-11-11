@@ -31,6 +31,9 @@ export class Input {
   mouseDX = 0;
   mouseDY = 0;
   pointerLocked = false;
+  /** false once a pointer-lock request has failed (sandboxed iframes): use drag-to-look */
+  lockSupported = true;
+  private dragging = false;
   /** last device used: affects steering model & prompts */
   device: 'kbm' | 'pad' = 'kbm';
 
@@ -54,18 +57,27 @@ export class Input {
     window.addEventListener('keyup', (e) => this.keys.delete(e.code));
     window.addEventListener('blur', () => this.keys.clear());
     window.addEventListener('mousemove', (e) => {
-      if (!this.pointerLocked) return;
+      if (!this.pointerLocked && !this.dragging) return;
       this.device = 'kbm';
       this.mouseDX += e.movementX;
       this.mouseDY += e.movementY;
     });
+    canvas.addEventListener('mousedown', () => (this.dragging = !this.pointerLocked));
+    window.addEventListener('mouseup', () => (this.dragging = false));
+    document.addEventListener('pointerlockerror', () => (this.lockSupported = false));
     document.addEventListener('pointerlockchange', () => {
       this.pointerLocked = document.pointerLockElement === this.canvas;
     });
   }
 
   requestLock() {
-    if (!this.pointerLocked) this.canvas.requestPointerLock?.();
+    if (this.pointerLocked || !this.lockSupported) return;
+    try {
+      const r = this.canvas.requestPointerLock?.() as unknown as Promise<void> | undefined;
+      r?.catch?.(() => (this.lockSupported = false));
+    } catch {
+      this.lockSupported = false;
+    }
   }
 
   down(code: string) {

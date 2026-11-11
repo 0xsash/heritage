@@ -31,7 +31,7 @@ async function boot() {
   const sound = new Sound();
 
   // --- load the world
-  const res = await fetch('/world/diest.json');
+  const res = await fetch(new URL('world/diest.json', document.baseURI).toString());
   const data = (await res.json()) as WorldData;
   const world = new World(data);
   const hud = new Hud(uiRoot, world);
@@ -82,8 +82,9 @@ async function boot() {
   document.addEventListener('pointerlockchange', () => {
     if (!running) return;
     const locked = document.pointerLockElement === canvas;
-    // Gamepad players don't need pointer lock; only pause for mouse users.
-    paused = !locked && input.device === 'kbm';
+    // Gamepad players don't need pointer lock; only pause for mouse users,
+    // and only where pointer lock actually works (embedded pages fall back to drag-look).
+    paused = !locked && input.device === 'kbm' && input.lockSupported;
     hud.pauseOverlay(paused);
     if (paused) {
       const resume = () => {
