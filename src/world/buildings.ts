@@ -247,7 +247,7 @@ const float BAY = ${BAY.toFixed(1)};
 const float FLOOR_H = 3.0;
 const float ROOM_DEPTH = 3.6;`,
       )
-      .replace('#include <color_fragment>', `#include <color_fragment>\n${FRAG_SURFACE}`)
+      .replace('#include <color_fragment>', `#include <color_fragment>\n${fragSurface(set.index.roofSlate)}`)
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = gRough;')
       .replace(
         '#include <normal_fragment_maps>',
@@ -264,7 +264,7 @@ const float ROOM_DEPTH = 3.6;`,
   return mat;
 }
 
-const FRAG_SURFACE = /* glsl */ `
+const fragSurface = (SLATE: number) => /* glsl */ `
 {
   gWN = normalize(vWN);
   gEmit = vec3(0.0);
@@ -284,7 +284,19 @@ const FRAG_SURFACE = /* glsl */ `
   gNrm = nao.xyz * 2.0 - 1.0;
 
   if (vWall.z > -1.5 && vWall.z < 0.0) {
-    // roofs: weathering streaks and patchy moss
+    // roofs: rows of overlapping tiles or slates, drawn so each course catches the light
+    bool slate = layer == ${SLATE};
+    vec2 tsize = slate ? vec2(0.36, 0.5) : vec2(0.3, 0.4);
+    vec2 tuv = vWall.xy / tsize;
+    tuv.x += 0.5 * mod(floor(tuv.y), 2.0);
+    vec2 tf = fract(tuv);
+    float tfade = 1.0 - smoothstep(0.12, 0.55, fwidth(tuv.y) + fwidth(tuv.x));
+    float lip = smoothstep(0.0, 0.26, tf.y);                        // shadow where the course above overlaps
+    float gap = smoothstep(0.0, 0.07, min(tf.x, 1.0 - tf.x));       // joint between neighbours
+    float each = 0.86 + 0.28 * hash12(floor(tuv) + bseed * 31.0);   // every tile fired a little differently
+    diffuseColor.rgb *= mix(1.0, (0.58 + 0.42 * lip) * (0.82 + 0.18 * gap) * each, tfade);
+    gNrm = normalize(gNrm + vec3(0.0, (0.5 - tf.y) * 0.55 * tfade, 0.0));
+    // weathering streaks and patchy moss
     float w = vnoise(vWPos.xz * 0.45) * 0.6 + vnoise(vWPos.xz * 1.9) * 0.4;
     diffuseColor.rgb *= 0.8 + 0.34 * w;
     float moss = smoothstep(0.62, 0.8, vnoise(vWPos.xz * 0.23 + bseed * 40.0)) * 0.35;

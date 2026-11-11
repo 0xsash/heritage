@@ -4,6 +4,7 @@
 
 import * as THREE from 'three';
 import { clamp, damp, lerp } from '../core/math';
+import { BoneRig } from '../render/models';
 
 export interface DragonAnimInput {
   speed: number;
@@ -65,6 +66,10 @@ export class Dragon {
   private tailYaw: number[] = [];
   private tailPitch: number[] = [];
   private time = 0;
+  private jawOpen = 0;
+  /** rigged model (tools/blender/make_dragon.py); when present it replaces the primitive stand-in */
+  private rig?: BoneRig;
+  private footY = 0;
   /** called on each downstroke with a strength 0..1 */
   onFlap?: (strength: number) => void;
 
@@ -210,7 +215,58 @@ export class Dragon {
 
   /** Cosmetic jaw snap for future fire breath / roars. */
   roar(t: number) {
+    this.jawOpen = t;
     this.jaw.rotation.x = 0.5 * t;
+  }
+
+  /** Swap the primitive stand-in for the rigged model. Same axes: +Z forward, +Y up, left wing on +X. */
+  useModel(model: THREE.Object3D) {
+    for (const c of this.body.children) if (c !== this.riderSeat) c.visible = false;
+    this.body.add(model);
+    this.rig = new BoneRig(model);
+    this.footY = new THREE.Box3().setFromObject(model).min.y;
+    this.riderSeat.position.set(0, 1.22, 0.7); // the model's back is higher than the stand-in's
+  }
+
+  /** Jump straight to the folded (1) or flying (0) pose, without the blend. */
+  snapFold(v: number) {
+    this.fold = v;
+  }
+
+  /** Drive the model's skeleton. Angles are about the model's own axes, relative to its rest pose (wings spread, standing). */
+  private poseRig(s: DragonAnimInput, dihedral: number) {
+    const r = this.rig!;
+    const f = this.fold, fly = 1 - f;
+    const D = Math.PI / 180;
+    const wave = Math.sin(this.phase);
+    const flap = wave * this.flapAmp + dihedral; // + = wings up
+    const lag = Math.sin(this.phase - 0.7) * this.flapAmp;
+    const down = Math.max(0, -wave) * this.flapAmp; // 0..1 during the downstroke
+    const sweep = Math.sin(this.phase + 1.2) * this.flapAmp * 0.2;
+    const fingers: [string, number, number][] = [['f1', 128, 10], ['f2', 96, 6], ['f3', 70, 2]];
+    for (const [n, k] of [['L', 1], ['R', -1]] as const) {
+      // flying: flap about the body axis, forearm and fingers trail the upper arm.
+      // standing: the arm swings back and the wing folds shut like a fan.
+      r.rotate(`wing${n}_shoulder`, 0, lerp(sweep, 72 * D, f) * k, lerp(flap, 18 * D, f) * k);
+      r.rotate(`wing${n}_elbow`, 0, lerp(0.1 + down * 0.45, -150 * D, f) * k, lerp(lag * 0.55, 0, f) * k);
+      for (const [fn, folded, bend] of fingers) {
+        r.rotate(`wing${n}_${fn}`, 0, lerp(bend * D * down * 1.6, folded * D, f) * k, lerp(lag * 0.3, 0, f) * k);
+      }
+      r.rotate(`legF${n}_upper`, 65 * D * fly, 0, 0);
+      r.rotate(`legF${n}_lower`, -55 * D * fly, 0, 0);
+      r.rotate(`legB${n}_upper`, 70 * D * fly, 0, 0);
+      r.rotate(`legB${n}_lower`, -40 * D * fly, 0, 0);
+    }
+    const climbLook = clamp(-s.climb * 0.006, -0.08, 0.08) * fly;
+    for (let i = 0; i < 5; i++) {
+      const standX = (i < 2 ? -6 : 8) * D * f; // head held up and tucked when standing
+      r.rotate(`neck${i + 1}`, climbLook + standX, this.neckYaw[i] ?? 0, 0);
+    }
+    r.rotate('head', clamp(s.climb * 0.008, -0.15, 0.2) * fly, (this.neckYaw[4] ?? 0) * 0.5, 0);
+    r.rotate('jaw', 0.5 * this.jawOpen, 0, 0);
+    for (let i = 0; i < 10; i++) r.rotate(`tail${i + 1}`, this.tailPitch[i] ?? 0, this.tailYaw[i] ?? 0, 0);
+    // stand on the feet when grounded; bob against the wingbeat in flight
+    this.body.position.y = -wave * this.flapAmp * 0.22 * fly + f * (-this.footY - 0.05);
   }
 
   update(dt: number, s: DragonAnimInput) {
@@ -267,5 +323,6 @@ export class Dragon {
     for (let i = 0; i < this.legs.length; i++) {
       this.legs[i].rotation.x = lerp(-1.2, 0, this.fold) + (i < 2 ? 0.1 : -0.1) * fly;
     }
+    if (this.rig) this.poseRig(s, dihedral);
   }
 }

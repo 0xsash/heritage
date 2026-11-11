@@ -65,6 +65,20 @@
         "yaw": -1.95,
         "pitch": -0.25
       }
+    },
+    {
+      "id": "dragon-landed",
+      "concept": "docs/art/concepts/flight-demer-valley.jpg",
+      "title": "Rider and landed dragon in the Demer meadows",
+      "pose": {
+        "sky": "golden",
+        "walk": true,
+        "x": 1150,
+        "z": 380,
+        "yaw": 0,
+        "camYaw": 3.3,
+        "pitch": -0.02
+      }
     }
   ]
 }

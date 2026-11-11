@@ -54,7 +54,7 @@ export const LAND: Record<string, Surface> = {
   res: S('grass', '#586b3d', '#5e7040'),
   ind: S('rough', '#77705c'),
   /** yards and squares inside the town walls */
-  townYard: S('dirt', '#8b7a5e', '#84745a', '#927f61'),
+  townYard: S('dirt', '#786a55', '#716450', '#7f705a'),
   townSquare: S('cobble', '#858076', '#8d877b'),
   cemetery: S('grass', '#52663b'),
   park: S('grass', '#506537'),

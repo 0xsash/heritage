@@ -1,7 +1,7 @@
-// Trees as lit impostors: two crossed, alpha-tested quads per tree, textured
+// Trees as lit impostors: one camera-facing, alpha-tested quad per tree, textured
 // from an atlas rendered from real 3D trees in Blender (tools/blender/make_trees.py).
 // The atlas holds, per species row, a 0-degree and a 90-degree view with matching
-// normal maps, so each quad shows the tree from its own side and is lit properly.
+// normal maps; trees alternate between the two views and are lit by the scene.
 
 import * as THREE from 'three';
 
@@ -58,53 +58,55 @@ export async function loadTreeAtlas(renderer: THREE.WebGLRenderer): Promise<Tree
   }
 }
 
-function crossedQuads() {
-  const pos: number[] = [], uv: number[] = [], nrm: number[] = [], view: number[] = [], right: number[] = [];
-  const quad = (rx: number, rz: number, v: number) => {
-    // right axis (rx, 0, rz); face normal = up x right... pick (rz, 0, -rx)
-    const nx = -rz, nz = rx;
-    const corners: [number, number][] = [[-0.5, 0], [0.5, 0], [0.5, 1], [-0.5, 0], [0.5, 1], [-0.5, 1]];
-    for (const [s, t] of corners) {
-      pos.push(rx * s, t, rz * s);
-      uv.push(s + 0.5, t);
-      nrm.push(nx, 0, nz);
-      view.push(v);
-      right.push(rx, 0, rz);
-    }
-  };
-  quad(1, 0, 0);
-  quad(0, 1, 1);
+/** One upright quad per tree; the vertex shader turns it to face the camera (or the sun, in the shadow pass). */
+function treeQuad() {
+  const pos: number[] = [], uv: number[] = [], nrm: number[] = [];
+  const corners: [number, number][] = [[-0.5, 0], [0.5, 0], [0.5, 1], [-0.5, 0], [0.5, 1], [-0.5, 1]];
+  for (const [s, t] of corners) {
+    pos.push(s, t, 0);
+    uv.push(s + 0.5, t);
+    nrm.push(0, 0, 1);
+  }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
-  g.setAttribute('aView', new THREE.Float32BufferAttribute(view, 1));
-  g.setAttribute('aRight', new THREE.Float32BufferAttribute(right, 3));
   return g;
 }
 
 const VERT_PARS = /* glsl */ `
-attribute float aView;
-attribute vec3 aRight;
-attribute float aRow;
+attribute vec2 aRow; // x = species row in the atlas, y = which of the two views
 varying vec2 vTUv;
 varying vec3 vTRight;
 varying vec3 vTFace;
 varying vec3 vTPos;`;
 
-const vertBody = (cols: number, rows: number) => /* glsl */ `
+const vertBody = (cols: number, rows: number, shadowPass = false) => /* glsl */ `
 {
   // inset slightly so neighbouring atlas cells never bleed in
   vec2 cuv = clamp(uv, 0.004, 0.996);
-  vTUv = vec2((aView + cuv.x) / ${cols.toFixed(1)}, 1.0 - (aRow + 1.0 - cuv.y) / ${rows.toFixed(1)});
-  mat3 m3 = mat3(modelMatrix) * mat3(instanceMatrix);
-  vTRight = normalize(m3 * aRight);
-  vTFace = normalize(m3 * normal);
-  vTPos = (modelMatrix * instanceMatrix * vec4(position, 1.0)).xyz;
+  vTUv = vec2((aRow.y + cuv.x) / ${cols.toFixed(1)}, 1.0 - (aRow.x + 1.0 - cuv.y) / ${rows.toFixed(1)});
+  // billboard about the vertical axis
+  vec3 centre = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  vec2 size = vec2(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz));
+  vec3 toCam = cameraPosition - centre;
+  toCam.y = 0.0;
+  toCam = normalize(toCam + vec3(0.0, 0.0, 1e-5));
+  vTFace = toCam;
+  vTRight = vec3(toCam.z, 0.0, -toCam.x);
+  ${
+    shadowPass
+      ? `// In the shadow pass the quad faces the sun. Set it back behind the tree so the
+  // camera-facing quad never ends up half inside its own shadow.
+  centre -= toCam * size.x * 0.55;`
+      : ''
+  }
+  vTPos = centre + vTRight * position.x * size.x + vec3(0.0, position.y * size.y, 0.0);
+  transformed = (inverse(modelMatrix * instanceMatrix) * vec4(vTPos, 1.0)).xyz;
 }`;
 
 export class TreeRenderer {
-  private geo = crossedQuads();
+  private geo = treeQuad();
   material: THREE.MeshStandardMaterial;
   private depthMaterial: THREE.MeshDepthMaterial;
 
@@ -143,10 +145,9 @@ varying vec3 vTPos;`,
           `#include <normal_fragment_maps>
 {
   vec3 n = texture2D(uTreeNrm, vTUv).xyz * 2.0 - 1.0;
-  vec3 fn = gl_FrontFacing ? vTFace : -vTFace;
-  vec3 wN = normalize(vTRight * n.x + vec3(0.0, 1.0, 0.0) * n.y + fn * n.z);
-  // lean towards "up" a little so the two crossed quads shade as one crown
-  wN = normalize(mix(wN, vec3(0.0, 1.0, 0.0), 0.22));
+  vec3 wN = normalize(vTRight * n.x + vec3(0.0, 1.0, 0.0) * n.y + vTFace * n.z);
+  // lean towards "up" a little: crowns catch the sky
+  wN = normalize(mix(wN, vec3(0.0, 1.0, 0.0), 0.18));
   normal = normalize((viewMatrix * vec4(wN, 0.0)).xyz);
 }`,
         );
@@ -158,7 +159,7 @@ varying vec3 vTPos;`,
       Object.assign(shader.uniforms, uniforms);
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>\n${VERT_PARS}`)
-        .replace('#include <begin_vertex>', `#include <begin_vertex>\n${vertBody(atlas.cols, atlas.rows)}`);
+        .replace('#include <begin_vertex>', `#include <begin_vertex>\n${vertBody(atlas.cols, atlas.rows, true)}`);
       shader.fragmentShader = shader.fragmentShader
         .replace('#include <common>', '#include <common>\nuniform sampler2D uTreeAlb;\nvarying vec2 vTUv;')
         .replace('#include <alphatest_fragment>', 'diffuseColor.a = texture2D(uTreeAlb, vTUv).a;\n#include <alphatest_fragment>');
@@ -168,7 +169,7 @@ varying vec3 vTPos;`,
 
   build(items: TreeItem[]): THREE.InstancedMesh {
     const mesh = new THREE.InstancedMesh(this.geo.clone(), this.material, items.length);
-    const rows = new Float32Array(items.length);
+    const rows = new Float32Array(items.length * 2);
     const m = new THREE.Matrix4();
     const q = new THREE.Quaternion();
     const up = new THREE.Vector3(0, 1, 0);
@@ -178,9 +179,10 @@ varying vec3 vTPos;`,
       m.compose(new THREE.Vector3(it.x, it.y, it.z), q, new THREE.Vector3(sp.quadWidth * it.scale, sp.quadHeight * it.scale, sp.quadWidth * it.scale));
       mesh.setMatrixAt(i, m);
       mesh.setColorAt(i, it.tint);
-      rows[i] = sp.row;
+      rows[i * 2] = sp.row;
+      rows[i * 2 + 1] = i % 2; // alternate the two rendered views for variety
     });
-    mesh.geometry.setAttribute('aRow', new THREE.InstancedBufferAttribute(rows, 1));
+    mesh.geometry.setAttribute('aRow', new THREE.InstancedBufferAttribute(rows, 2));
     mesh.customDepthMaterial = this.depthMaterial;
     mesh.castShadow = true;
     mesh.receiveShadow = true;

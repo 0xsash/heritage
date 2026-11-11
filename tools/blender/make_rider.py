@@ -979,7 +979,7 @@ def stage_garments():
         spts, sln = convex_ring(chest_bvh, c, n, count=40)
         st = strap_mesh(f'baldric_{"l" if sgn > 0 else "r"}', spts, sln, n, c, 0.030, 0.006, 0.0015 + (0.0065 if sgn < 0 else 0.0), 'strap')
         straps.append((st, spts, n, c))
-        implicit_cut(st, lambda co, w: -0.16 - mantle_e(co))
+        implicit_cut(st, lambda co, w: -0.42 - mantle_e(co))
         made.append(st)
 
     def buckle(name, p, out, tan, n, w, h, rr=0.0035):
@@ -1394,6 +1394,19 @@ def stage_mesh():
     bmesh.ops.delete(bm, geom=deep, context='VERTS')
     put_bm(bm, body)
     decimate(body, 7600)
+    bvh = bvh_of([boots])
+    bm = get_bm(boots)
+    hidden = []
+    for f in bm.faces:
+        c = f.calc_center_median()
+        loc, _, _, dist = bvh.ray_cast(c + f.normal * 0.0015, f.normal, 0.13)
+        if loc is not None:
+            hidden.append(f)
+    bmesh.ops.delete(bm, geom=hidden, context='FACES')
+    loose = [v for v in bm.verts if not v.link_faces]
+    bmesh.ops.delete(bm, geom=loose, context='VERTS')
+    put_bm(bm, boots)
+    log('boots: removed', len(hidden), 'hidden faces')
     decimate(boots, 2700)
     decimate(objs['hose'], 1250)
 
@@ -1870,7 +1883,9 @@ def paint_textures(m, lm):
     col[M] = mixc(col, rgb('#a87a4e'), toe * 0.35)[M]
     sole = sstep(0.020, 0.012, z)
     col[M] = mixc(col, rgb('#1e1611'), sole)[M]
-    shade(M, np.array([0.45, 0.38, 0.4], np.float32), strength=0.85, edge=0.25, edge_col=rgb('#b98a5a'), cavity=0.15)
+    boot_ao = np.clip(soft_blur(np.maximum(ao, 0.35), 14), 0, 1)
+    col[M] = (col * (0.62 + 0.38 * boot_ao)[..., None])[M]
+    boots_mask = M
     rough[M] = 0.58
 
     # ---------------- leather straps and the belt ----------------
@@ -2038,6 +2053,7 @@ def paint_textures(m, lm):
     metal[Y0:Y1, X0:X1] = 0.0
     height[Y0:Y1, X0:X1] = 0.0
     ao_out = 1 - (1 - np.clip(ao_soft * 0.5 + ao * 0.5, 0, 1)) * 0.8
+    ao_out[boots_mask] = (0.6 + 0.4 * boot_ao)[boots_mask]
     ao_out[Y0:Y1, X0:X1] = 1.0
 
     # ---------------- normal map from the relief (kept mild: studs, stitches, trim, big folds) ----------------
@@ -2203,13 +2219,18 @@ def bone_dir(rig, bone):
 
 def curl_fingers(rig, amount=0.5):
     for sd in ('l', 'r'):
+        across = (rig.pose.bones[f'pinky_01_{sd}'].matrix.translation - rig.pose.bones[f'index_01_{sd}'].matrix.translation).normalized()
+        thumb = rig.pose.bones[f'thumb_02_{sd}'].matrix.translation.copy()
+        palm = (rig.pose.bones[f'hand_{sd}'].matrix.translation + rig.pose.bones[f'middle_01_{sd}'].matrix.translation) / 2
+        ref = palm + (thumb - palm) * 0.5 + (palm - rig.pose.bones[f'middle_01_{sd}'].matrix.translation) * 0.5
+        pbm = rig.pose.bones[f'middle_01_{sd}']
+        tip = pbm.matrix @ Vector((0, pbm.length, 0))
+        head = pbm.matrix.translation
+        cand = {sg: (head + Matrix.Rotation(math.radians(40 * sg), 3, across) @ (tip - head) - ref).length for sg in (1, -1)}
+        sg = 1 if cand[1] < cand[-1] else -1
         for f in ('index', 'middle', 'ring', 'pinky'):
             for k in (1, 2, 3):
-                pb = rig.pose.bones[f'{f}_0{k}_{sd}']
-                hand = rig.pose.bones[f'hand_{sd}']
-                # curl about the axis across the palm
-                across = (rig.pose.bones[f'pinky_01_{sd}'].matrix.translation - rig.pose.bones[f'index_01_{sd}'].matrix.translation).normalized()
-                rot_world(rig, pb.name, across, (-1 if sd == 'l' else 1) * amount * (38 if k == 1 else 46) * (-1))
+                rot_world(rig, f'{f}_0{k}_{sd}', across, sg * amount * (38 if k == 1 else 46))
 
 
 def pose_ride(rig, lean=15.0, sway=0.0, breathe=0.0):
@@ -2243,11 +2264,6 @@ def pose_ride(rig, lean=15.0, sway=0.0, breathe=0.0):
         aim_world(rig, f'lowerarm_{sd}', Vector((-0.22 * sg, -0.93, -0.18 + breathe * 0.01)))
         aim_world(rig, f'hand_{sd}', Vector((-0.25 * sg, -0.95, -0.15)))
     curl_fingers(rig, 0.75)
-    # the cloak falls back over the saddle
-    rot_world(rig, 'cloak1', X, 14.0 + sway * 2.0)
-    rot_world(rig, 'cloak2', X, 16.0 + sway * 3.0)
-    rot_world(rig, 'cloak3', X, 12.0 + sway * 4.0)
-    rot_world(rig, 'cloak4', X, 8.0 + sway * 5.0)
 
 
 def pose_stand(rig, arm_down=62.0):
@@ -2262,11 +2278,365 @@ def pose_stand(rig, arm_down=62.0):
     curl_fingers(rig, 0.35)
 
 
+# --------------------------------------------------------------------------
+# stage 5: motion clips. Source: Quaternius "Universal Animation Library" (CC0),
+# retargeted bone-by-bone in world space onto the shared skeleton, resampled to
+# 30 fps, kept in place; ride_idle is posed here; the cloak chain and the bell
+# get a lagged-sine secondary sway.
+# --------------------------------------------------------------------------
+FPS = 30
+TORSO = ('Root', 'pelvis', 'spine_01', 'spine_02', 'spine_03', 'neck_01', 'head')
+# clip name -> (UAL action, loop?, ground speed m/s or None, duration s or None, (start, end) fraction of source)
+CLIPS = [
+    ('idle', 'Idle_Loop', True, None, 4.0, (0.0, 1.0)),
+    ('walk', 'Walk_Loop', True, 1.5, None, (0.0, 1.0)),
+    ('run', 'Jog_Fwd_Loop|Sprint_Loop', True, 5.0, None, (0.0, 1.0)),
+    ('jump', 'Jump_Start', False, None, 0.5, (0.30, 1.0)),
+    ('fall', 'Jump_Loop', True, None, 1.0, (0.0, 1.0)),
+    ('land', 'Jump_Land', False, None, 0.5, (0.0, 0.70)),
+]
+# cloak chain: per clip (backward tilt per bone in degrees, swing amplitude, swings per clip, side sway amplitude)
+CLOAK = {
+    'idle': ((0, 0, 0, 0), 1.2, 1, 0.8),
+    'walk': ((1, 1, 1, 1), 2.5, 2, 1.5),
+    'run': ((7, 6, 5, 4), 3.5, 2, 2.0),
+    'jump': ((6, 8, 8, 8), 0.0, 0, 0.0),
+    'fall': ((24, 18, 12, 8), 4.0, 2, 2.0),
+    'land': ((10, 8, 5, 3), 0.0, 0, 0.0),
+    'ride_idle': ((7, 6, 5, 4), 2.0, 1, 1.5),
+}
+
+
+def import_ual():
+    path = glob.glob(os.path.join(CACHE, 'ual', '*', 'Unreal-Godot', 'UAL1_Standard.glb'))
+    if not path:
+        raise SystemExit('animation library missing: run tools/blender/fetch_rider_assets.sh')
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=path[0])
+    new = [o for o in bpy.data.objects if o not in before]
+    src = [o for o in new if o.type == 'ARMATURE'][0]
+    for o in new:
+        if o is not src:
+            bpy.data.objects.remove(o)
+    return src
+
+
+def stage_anim():
+    sc = bpy.context.scene
+    sc.render.fps = FPS
+    rig = bpy.data.objects['rider_rig']
+    meshes = [bpy.data.objects['rider_body'], bpy.data.objects['rider_cloak']]
+    for o in meshes:                                   # posing is much faster without skinning
+        for m in o.modifiers:
+            m.show_viewport = False
+    reset_pose(rig)
+    src = import_ual()
+    src_actions = {a.name.replace('_Armature', ''): a for a in bpy.data.actions}
+    tb = rig.data.bones
+    sb = src.data.bones
+    s_name = lambda n: 'Head' if n == 'head' else ('root' if n == 'Root' else n)
+    mapped = [b.name for b in tb if s_name(b.name) in sb]
+    extra = [b.name for b in tb if b.name not in mapped]
+    log('retarget: mapped bones', len(mapped), 'extra (not in source)', extra)
+    SW = src.matrix_world
+
+    def s_head(n):
+        return SW @ sb[s_name(n)].head_local
+
+    def t_child_dir(n, source):
+        """Rest direction of a bone, defined by its first mapped child (or its own axis for end bones)."""
+        b = tb[n]
+        kids = [c.name for c in b.children if c.name in mapped]
+        pref = {'hand_l': 'middle_01_l', 'hand_r': 'middle_01_r', 'spine_03': 'neck_01', 'pelvis': 'spine_01'}
+        k = pref.get(n, kids[0] if kids else None)
+        if source:
+            if k:
+                return (s_head(k) - s_head(n)).normalized()
+            sbn = sb[s_name(n)]
+            if sbn.children:
+                return (SW @ sbn.children[0].head_local - SW @ sbn.head_local).normalized()
+            return (SW.to_3x3() @ (sbn.tail_local - sbn.head_local)).normalized()
+        if k:
+            return (tb[k].head_local - b.head_local).normalized()
+        return (b.tail_local - b.head_local).normalized()
+
+    q_s_rest = {n: (SW @ sb[s_name(n)].matrix_local).to_quaternion() for n in mapped}
+    q_t_rest = {b.name: b.matrix_local.to_quaternion() for b in tb}
+    align = {}
+    for n in mapped:
+        if n in TORSO:
+            align[n] = Quaternion()
+        else:
+            align[n] = t_child_dir(n, False).rotation_difference(t_child_dir(n, True))
+    order = [b.name for b in tb]                       # parents come before children
+    k_len = tb['pelvis'].head_local.z / s_head('pelvis').z
+    s_pel_rest = s_head('pelvis')
+    leg = ['thigh', 'calf', 'foot', 'ball']
+
+    def sample(action):
+        src.animation_data.action = action
+        f0, f1 = action.frame_range
+        n = int(math.ceil(f1 - f0)) + 1
+        rots, pel = [], []
+        for i in range(n):
+            f = f0 + (f1 - f0) * i / (n - 1)
+            sc.frame_set(int(math.floor(f)), subframe=f - math.floor(f))
+            rots.append({m: (SW @ src.pose.bones[s_name(m)].matrix).to_quaternion() for m in mapped})
+            pel.append((SW @ src.pose.bones['pelvis'].matrix).translation.copy())
+        return rots, pel, (f1 - f0) / sc.render.fps      # the importer lays keys out at the scene fps
+
+    def target_world(src_rot):
+        return {m: src_rot[m] @ q_s_rest[m].inverted() @ align[m] @ q_t_rest[m] for m in mapped}
+
+    def fk_foot(world, pel_pos):
+        """World positions of ankle and ball joints for both sides."""
+        out = {}
+        for sd in ('l', 'r'):
+            p = pel_pos.copy()
+            parent = 'pelvis'
+            for j in leg:
+                nme = f'{j}_{sd}'
+                p = p + (world[parent] @ q_t_rest[parent].inverted()) @ (tb[nme].head_local - tb[parent].head_local)
+                parent = nme
+                out[nme] = p.copy()
+        return out
+
+    def slerp_sample(seq, u):
+        i = min(int(math.floor(u)), len(seq) - 2)
+        f = u - i
+        a, b = seq[i], seq[i + 1]
+        if isinstance(a, Vector):
+            return a.lerp(b, f)
+        return a.slerp(b, f)
+
+    made = {}
+
+    def write_action(name, frames):
+        """frames: list of dicts {bone: Quaternion local} plus key '_loc' for the pelvis location."""
+        act = bpy.data.actions.new(name)
+        act.use_fake_user = True
+        n = len(frames)
+        t = np.arange(n, dtype=np.float32)
+        for bone in order:
+            seq = [fr[bone] for fr in frames]
+            for i in range(1, n):                      # keep quaternion signs continuous
+                if seq[i].dot(seq[i - 1]) < 0:
+                    seq[i] = -seq[i]
+            for ch in range(4):
+                fc = act.fcurves.new(f'pose.bones["{bone}"].rotation_quaternion', index=ch, action_group=bone)
+                fc.keyframe_points.add(n)
+                co = np.empty(n * 2, dtype=np.float32)
+                co[0::2] = t
+                co[1::2] = [q[ch] for q in seq]
+                fc.keyframe_points.foreach_set('co', co)
+                fc.keyframe_points.foreach_set('interpolation', np.full(n, 1, dtype=np.int32))   # LINEAR
+                fc.update()
+        for ch in range(3):
+            fc = act.fcurves.new('pose.bones["pelvis"].location', index=ch, action_group='pelvis')
+            fc.keyframe_points.add(n)
+            co = np.empty(n * 2, dtype=np.float32)
+            co[0::2] = t
+            co[1::2] = [fr['_loc'][ch] for fr in frames]
+            fc.keyframe_points.foreach_set('co', co)
+            fc.keyframe_points.foreach_set('interpolation', np.full(n, 1, dtype=np.int32))
+            fc.update()
+        made[name] = act
+        return act
+
+    # which way does a positive local-X turn swing the cloak? (expected: backwards = Blender +Y)
+    pb = rig.pose.bones['cloak1']
+    pb.rotation_quaternion = Quaternion((1, 0, 0), math.radians(20))
+    bpy.context.view_layer.update()
+    tip = (pb.matrix @ Vector((0, pb.length, 0)))
+    back_sign = 1.0 if tip.y > tb['cloak1'].tail_local.y else -1.0
+    pb.rotation_quaternion = Quaternion((0, 0, 1), math.radians(20))
+    bpy.context.view_layer.update()
+    tip = (pb.matrix @ Vector((0, pb.length, 0)))
+    side_sign = 1.0 if tip.x > tb['cloak1'].tail_local.x else -1.0
+    reset_pose(rig)
+    log('cloak bones: +X rotation swings', 'backwards' if back_sign > 0 else 'forwards', '; +Z rotation swings to the character\'s', 'left (+X)' if side_sign > 0 else 'right (-X)')
+
+    def secondary(name, j, n, loop, lean=0.0):
+        """Lagged-sine sway for the cloak chain and the bell at frame j of n."""
+        tilt, amp, cycles, side = CLOAK[name]
+        ph = 2 * math.pi * j / n
+        out = {}
+        env = 1.0
+        if not loop:
+            env = j / n
+        for k in range(4):
+            a = tilt[k] * (env if name == 'jump' else (1 - 0.6 * env if name == 'land' else 1.0))
+            a += amp * (0.6 + 0.25 * k) * math.sin(cycles * ph - 0.7 * k)
+            if k == 0:
+                a -= 0.6 * max(0.0, lean - 20.0)      # when the torso pitches far forward the cloak still hangs
+            z = side * (0.5 + 0.3 * k) * math.sin((cycles / 2 if cycles > 1 else 1) * ph - 0.6 * k + 0.4)
+            out[f'cloak{k + 1}'] = Quaternion((1, 0, 0), math.radians(a) * back_sign) @ Quaternion((0, 0, 1), math.radians(z))
+        b_amp = {'idle': 1.5, 'walk': 7.0, 'run': 12.0, 'fall': 8.0, 'ride_idle': 3.0}.get(name, 5.0)
+        c = max(cycles, 1)
+        out['bell'] = Quaternion((1, 0, 0), math.radians(b_amp * math.sin(c * ph - 1.0))) @ Quaternion((0, 0, 1), math.radians(0.6 * b_amp * math.sin(c * ph / (2 if c > 1 else 1) + 0.5)))
+        return out
+
+    def ground_speed(feet, src_dur):
+        """Speed implied by the planted foot (it travels backwards = +Y while in contact)."""
+        ns = len(feet)
+        dt = src_dur / (ns - 1)
+        v = []
+        for sd in ('l', 'r'):
+            zs = [f[f'ball_{sd}'].z for f in feet]
+            zmin = min(zs)
+            for i in range(ns - 1):
+                if zs[i] < zmin + 0.025 and zs[i + 1] < zmin + 0.025:
+                    v.append((feet[i + 1][f'foot_{sd}'].y - feet[i][f'foot_{sd}'].y) / dt)
+        return float(np.median(v))
+
+    def prepare(sname, loop, name):
+        rots, pel, src_dur = sample(src_actions[sname])
+        ns = len(rots)
+        world = [target_world(r) for r in rots]
+        offs = [(p - s_pel_rest) * k_len for p in pel]
+        # in place: no net horizontal travel; keep the sway about the mean
+        mx = sum(o.x for o in offs) / ns
+        my = sum(o.y for o in offs) / ns
+        if not loop:
+            ref = offs[0] if name == 'land' else offs[-1]
+            mx, my = ref.x, ref.y
+        offs = [Vector((o.x - mx, o.y - my, o.z)) for o in offs]
+        feet = [fk_foot(w, tb['pelvis'].head_local + o) for w, o in zip(world, offs)]
+        return world, offs, feet, src_dur
+
+    info = {}
+    for name, sname, loop, speed, dur, (u0, u1) in CLIPS:
+        note = ''
+        if speed:
+            # of the candidate cycles, take the one that needs the least retiming to plant its feet at this speed
+            best = None
+            for cand in sname.split('|'):
+                world, offs, feet, src_dur = prepare(cand, loop, name)
+                v_src = ground_speed(feet, src_dur)
+                factor = speed / v_src
+                log('  %s candidate %-13s cycle %.3f s, planted-foot speed %.2f m/s, retime x%.2f' % (name, cand, src_dur, v_src, factor))
+                if best is None or abs(math.log(factor)) < abs(math.log(best[0])):
+                    best = (factor, cand, world, offs, feet, src_dur, v_src)
+            factor, sname, world, offs, feet, src_dur, v_src = best
+            dur = src_dur / factor
+            note = 'source %.3f s at %.2f m/s, played x%.2f -> %.2f m/s' % (src_dur, v_src, factor, speed)
+        else:
+            world, offs, feet, src_dur = prepare(sname, loop, name)
+        ns = len(world)
+        n = max(2, int(round(dur * FPS)))
+        if name in ('idle', 'walk', 'run', 'land'):
+            # keep the lowest sole joint at its rest height so the feet meet the ground
+            low = min(min(f['ball_l'].z, f['ball_r'].z) for f in feet)
+            dz = tb['ball_l'].head_local.z - low
+            offs = [o + Vector((0, 0, dz)) for o in offs]
+            note += ' pelvis dz %+.3f' % dz
+        qp = q_t_rest['pelvis'].inverted()
+        frames = []
+        for j in range(n + 1):
+            u = (u0 + (u1 - u0) * j / n) * (ns - 1)
+            if loop and j == n:
+                u = u0 * (ns - 1)
+            fr = {}
+            w = {m: slerp_sample([wd[m] for wd in world], u) for m in mapped}
+            for b in order:
+                if b not in w:
+                    continue
+                p = tb[b].parent
+                if p is None:
+                    fr[b] = Quaternion()
+                else:
+                    fr[b] = q_t_rest[b].inverted() @ q_t_rest[p.name] @ w[p.name].inverted() @ w[b]
+            fr['Root'] = Quaternion()
+            up_v = (w['spine_03'] @ q_t_rest['spine_03'].inverted()) @ Vector((0, 0, 1))
+            lean = math.degrees(math.atan2(-up_v.y, up_v.z))
+            fr.update(secondary(name, j if not (loop and j == n) else 0, n, loop, lean))
+            fr['_loc'] = qp @ slerp_sample(offs, u)
+            frames.append(fr)
+        write_action(name, frames)
+        info[name] = dict(duration=n / FPS, frames=n, loop=loop, source=sname, note=note.strip())
+        log('clip %-9s %.3f s (%d frames) loop=%s  <- %s  %s' % (name, n / FPS, n, loop, sname, note))
+
+    # ---- ride_idle: posed here (no mocap for sitting astride a dragon) ----
+    n = 4 * FPS
+    step = 5
+    keys = []
+    for j in range(0, n, step):
+        ph = 2 * math.pi * j / n
+        pose_ride(rig, sway=math.sin(ph), breathe=math.sin(2 * ph + 0.6))
+        fr = {pb.name: pb.matrix_basis.to_quaternion() for pb in rig.pose.bones}
+        fr['_loc'] = Vector((0, 0, 0.004 * math.sin(2 * ph)))
+        keys.append(fr)
+    keys.append(keys[0])
+    frames = []
+    for j in range(n + 1):
+        u = j / step
+        i = min(int(u), len(keys) - 2)
+        f = u - i
+        f = f * f * (3 - 2 * f) * 0.5 + f * 0.5
+        fr = {b: keys[i][b].slerp(keys[i + 1][b], f) for b in order}
+        fr.update(secondary('ride_idle', j % n, n, True))
+        fr['_loc'] = keys[i]['_loc'].lerp(keys[i + 1]['_loc'], f)
+        frames.append(fr)
+    write_action('ride_idle', frames)
+    info['ride_idle'] = dict(duration=n / FPS, frames=n, loop=True, source='posed in make_rider.py', note='')
+    log('clip ride_idle %.3f s (%d frames) loop=True  <- posed' % (n / FPS, n))
+    reset_pose(rig)
+
+    # ---- tidy up: only our clips remain, each on its own NLA track ----
+    bpy.data.objects.remove(src)
+    for a in list(bpy.data.actions):
+        if a.name not in made:
+            bpy.data.actions.remove(a)
+    rig.animation_data_create()
+    rig.animation_data.action = None
+    for name, act in made.items():
+        tr = rig.animation_data.nla_tracks.new()
+        tr.name = name
+        st = tr.strips.new(name, 0, act)
+        st.name = name
+        tr.mute = True
+    sc.frame_start, sc.frame_end = 0, 4 * FPS
+    for o in meshes:
+        for m in o.modifiers:
+            m.show_viewport = True
+    if WORK:
+        json.dump(info, open(os.path.join(WORK, 'clips.json'), 'w'), indent=1)
+
+
+# --------------------------------------------------------------------------
+# export
+# --------------------------------------------------------------------------
+def export_glb(with_animation):
+    rig = bpy.data.objects['rider_rig']
+    meshes = [bpy.data.objects['rider_body'], bpy.data.objects['rider_cloak']]
+    reset_pose(rig)
+    bpy.context.scene.frame_set(0)
+    os.makedirs(os.path.dirname(OUT_GLB), exist_ok=True)
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in meshes + [rig]:
+        o.hide_set(False)
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = rig
+    kw = dict(filepath=OUT_GLB, export_format='GLB', use_selection=True, export_yup=True, export_apply=False,
+              export_skins=True, export_all_influences=False, export_def_bones=False,
+              export_materials='EXPORT', export_image_format='JPEG', export_jpeg_quality=90,
+              export_tangents=False, export_normals=True, export_texcoords=True,
+              export_draco_mesh_compression_enable=False, export_cameras=False, export_lights=False,
+              export_extras=False, export_animations=with_animation)
+    if with_animation:
+        kw.update(export_animation_mode='ACTIONS', export_force_sampling=True, export_frame_step=1,
+                  export_optimize_animation_size=True, export_optimize_animation_keep_anim_armature=True,
+                  export_anim_single_armature=True, export_reset_pose_bones=True, export_bake_animation=False,
+                  export_morph=False)
+    bpy.ops.export_scene.gltf(**kw)
+    log('wrote', OUT_GLB, '%.2f MB' % (os.path.getsize(OUT_GLB) / 1e6))
+
+
 def main():
     start = STAGES.index(FROM) + 1 if FROM else 0
     if FROM:
         load_stage(FROM)
-    fns = {'human': stage_human, 'garments': stage_garments, 'mesh': stage_mesh, 'paint': stage_paint}
+    fns = {'human': stage_human, 'garments': stage_garments, 'mesh': stage_mesh, 'paint': stage_paint, 'anim': stage_anim}
     for name in STAGES[start:]:
         if name not in fns:
             break
@@ -2274,7 +2644,9 @@ def main():
         fns[name]()
         save_stage(name)
         if UNTIL == name:
-            return
+            break
+    if name in ('paint', 'anim'):
+        export_glb(with_animation=(name == 'anim'))
 
 
 if __name__ == '__main__':

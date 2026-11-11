@@ -424,6 +424,7 @@ export class Player {
     this.speed = 0;
     this.turnRate = 0;
     this.grounded = 1;
+    this.dragon.snapFold(1);
   }
 
   /** Debug: put the mounted dragon in the air, gliding. */
@@ -443,6 +444,7 @@ export class Player {
     this.vy = 0;
     this.turnRate = 0;
     this.grounded = 0;
+    this.dragon.snapFold(0);
   }
 
   /** Focus point for the camera. */

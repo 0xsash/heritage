@@ -5,6 +5,7 @@
 
 import * as THREE from 'three';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { asset, fetchBinary } from '../core/assets';
 import { clamp } from '../core/math';
 
 interface SkyData {
@@ -53,7 +54,6 @@ const LOOKS: Record<string, Look> = {
 };
 const ORDER = ['golden', 'night', 'storm', 'day'];
 
-const asset = (p: string) => new URL(p, document.baseURI).toString();
 
 export class Atmosphere {
   sun = new THREE.DirectionalLight('#ffffff', 3);
@@ -132,10 +132,17 @@ export class Atmosphere {
   private async load(id: string) {
     let c = this.cache.get(id);
     if (c) return c;
-    const [bg, hdr] = await Promise.all([
+    const [bg, raw] = await Promise.all([
       new THREE.TextureLoader().loadAsync(asset(`sky/${id}_bg.jpg`)),
-      new RGBELoader().loadAsync(asset(`sky/${id}_env.hdr`)),
+      fetchBinary(`sky/${id}_env.hdr`),
     ]);
+    const d = new RGBELoader().parse(raw);
+    const hdr = new THREE.DataTexture(d.data, d.width, d.height, THREE.RGBAFormat, d.type);
+    hdr.colorSpace = THREE.LinearSRGBColorSpace;
+    hdr.minFilter = hdr.magFilter = THREE.LinearFilter;
+    hdr.generateMipmaps = false;
+    hdr.flipY = true;
+    hdr.needsUpdate = true;
     bg.colorSpace = THREE.NoColorSpace;
     bg.generateMipmaps = false;
     bg.minFilter = THREE.LinearFilter;

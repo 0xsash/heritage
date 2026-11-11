@@ -157,7 +157,7 @@ export class World {
       const ring = toRing(l.p);
       // inside the walls, gardens and greens are mostly trodden earth
       if ((l.k === 'res' || l.k === 'ind' || l.k === 'grass') && Math.hypot(ring[0][0], ring[0][1]) < OLD_TOWN_R) {
-        surf = LAND.townYard;
+        surf = Math.hypot(ring[0][0], ring[0][1]) < 330 ? LAND.townSquare : LAND.townYard;
         tag = [0, 0, 0];
       }
       c.copy(pick(surf.tints, li * 13 + 7)).multiplyScalar(0.94 + hash01(li * 3) * 0.12);

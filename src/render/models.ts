@@ -3,15 +3,12 @@
 
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-
-const asset = (p: string) => new URL(p, document.baseURI).toString();
+import { fetchBinary } from '../core/assets';
 
 /** Load a GLB from /public. Returns null if it is missing or broken, so callers can fall back. */
 export async function loadModel(path: string): Promise<GLTF | null> {
   try {
-    const head = await fetch(asset(path), { method: 'HEAD' });
-    if (!head.ok) return null;
-    const gltf = await new GLTFLoader().loadAsync(asset(path));
+    const gltf = await new GLTFLoader().parseAsync(await fetchBinary(path), '');
     gltf.scene.traverse((o) => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
@@ -21,7 +18,7 @@ export async function loadModel(path: string): Promise<GLTF | null> {
     });
     return gltf;
   } catch (e) {
-    console.warn('model failed to load', path, e);
+    console.warn('model not loaded', path, e);
     return null;
   }
 }

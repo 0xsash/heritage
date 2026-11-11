@@ -8,6 +8,7 @@ import { Input } from './core/input';
 import { clamp } from './core/math';
 import { Player } from './player/player';
 import { Post } from './render/post';
+import { loadModel } from './render/models';
 import { loadMaterialSet, type MaterialInfo } from './render/textures';
 import { Hud } from './ui/hud';
 import { Atmosphere } from './world/sky';
@@ -81,6 +82,9 @@ async function boot() {
     step: () => sound.step(),
   });
   scene.add(player.group);
+  hud.setLoading('Waking the dragon…');
+  const dragonModel = await loadModel('models/dragon.glb');
+  if (dragonModel) player.dragon.useModel(dragonModel.scene);
   // Spawn east of town over the Demer meadows, gliding toward the Grote Markt.
   const sx = 1150, sz = 380;
   player.spawn(sx, 95, sz, Math.atan2(-sx, -sz));
