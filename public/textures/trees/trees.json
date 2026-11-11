@@ -1,0 +1,69 @@
+{
+  "cell": 512,
+  "cols": 2,
+  "rows": 5,
+  "species": [
+    {
+      "name": "oak",
+      "row": 0,
+      "height": 18.0,
+      "width": 13.96,
+      "quadHeight": 21.25,
+      "quadWidth": 21.25
+    },
+    {
+      "name": "poplar",
+      "row": 1,
+      "height": 26.0,
+      "width": 7.04,
+      "quadHeight": 26.65,
+      "quadWidth": 26.65
+    },
+    {
+      "name": "willow",
+      "row": 2,
+      "height": 7.0,
+      "width": 6.31,
+      "quadHeight": 7.2,
+      "quadWidth": 7.2
+    },
+    {
+      "name": "pine",
+      "row": 3,
+      "height": 20.0,
+      "width": 8.01,
+      "quadHeight": 20.5,
+      "quadWidth": 20.5
+    },
+    {
+      "name": "apple",
+      "row": 4,
+      "height": 5.0,
+      "width": 4.89,
+      "quadHeight": 5.3,
+      "quadWidth": 5.3
+    }
+  ],
+  "sources": [
+    {
+      "what": "Tree geometry, branching, foliage cards and leaf colours: procedural generator tools/blender/make_trees.py (own work for BELFORT)",
+      "licence": "own work",
+      "url": "tools/blender/make_trees.py"
+    },
+    {
+      "what": "Bark 001 colour map - oak, poplar and pollard-willow bark",
+      "licence": "CC0",
+      "url": "https://ambientcg.com/view?id=Bark001"
+    },
+    {
+      "what": "Bark 014 colour map - Scots pine bark",
+      "licence": "CC0",
+      "url": "https://ambientcg.com/view?id=Bark014"
+    },
+    {
+      "what": "Bark 006 colour map - apple bark",
+      "licence": "CC0",
+      "url": "https://ambientcg.com/view?id=Bark006"
+    }
+  ]
+}
