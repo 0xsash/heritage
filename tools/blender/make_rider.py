@@ -8,6 +8,7 @@
 #   RIDER_WORK   directory for stage .blend files and intermediate bakes (dev only)
 #   RIDER_FROM   resume from a stage saved in RIDER_WORK: human|garments|mesh|paint|anim
 #   RIDER_UNTIL  stop after that stage
+#   RIDER_REUSE_BAKE=1  with RIDER_WORK: reuse the cached bake maps when only the painting code changed
 #
 # Route: MPFB2 (MakeHuman) for the body, face, hands, rig ("game_engine" rig,
 # Unreal-style bone names) and skin weights; every garment is modelled here in
@@ -888,7 +889,7 @@ def stage_garments():
             nrm = Vector((2.0 * bend * s / max(half, 1e-3), 1.0, 0.0)).normalized()
             fold, amp, phase = (float(v) for v in cloak_fold(s, t))
             p = Vector((x, y, z)) + nrm * (amp * fold)
-            p.x += 0.35 * amp * math.sin(phase) * (1 if True else 0) * smoothstep(0.3, 1.0, t)
+            p.x += 0.35 * amp * math.sin(phase) * smoothstep(0.3, 1.0, t)
             p.z += 0.022 * t * math.cos(phase + 0.9) - 0.03 * t * abs(s) ** 3
             verts.append(p)
             aux.append((s, t, half * (1.0 - abs(s))))
@@ -1136,7 +1137,7 @@ def stage_garments():
         if co.y < 0:
             cut_z = min(cut_z, neckb.z - 0.115 + abs(co.x) * 1.2)
         head = cut_z - co.z                                              # < 0 above the neckline
-        hand = max(-0.055 - along_fore(co), 0.40 - abs(co.x))            # < 0 from just above the wrist
+        hand = max(along_fore(co) - 0.055, 0.40 - abs(co.x))             # < 0 from just above the wrist to the fingertips
         return min(head, hand)
     implicit_cut(body, body_f)
 
@@ -1393,7 +1394,7 @@ def stage_mesh():
     deep = [v for v in inner if all(e.other_vert(v) in inner2 for e in v.link_edges)]
     bmesh.ops.delete(bm, geom=deep, context='VERTS')
     put_bm(bm, body)
-    decimate(body, 7600)
+    decimate(body, 11000)
     bvh = bvh_of([boots])
     bm = get_bm(boots)
     hidden = []
@@ -2111,7 +2112,6 @@ def stage_paint():
 
     def bz(n, tail=False):
         return bone_pos(rig, n, tail)
-    eye_v = [v.co for v in rb.data.vertices if 0.005 < v.co.x < 0.06 and v.co.z > bz('head').z and v.co.y < -0.08]
     # eye landmarks come from the eyeball geometry: faces painted as 'eye'
     eye_slot = [i for i, mt in enumerate(rb.data.materials) if mt.name == 'P_eye'][0]
     ev = set()

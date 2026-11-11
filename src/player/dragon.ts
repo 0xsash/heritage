@@ -225,7 +225,7 @@ export class Dragon {
     this.body.add(model);
     this.rig = new BoneRig(model);
     this.footY = new THREE.Box3().setFromObject(model).min.y;
-    this.riderSeat.position.set(0, 1.22, 0.7); // the model's back is higher than the stand-in's
+    this.riderSeat.position.set(0, 1.02, 0.75); // the saddle point on the model's back
   }
 
   /** Jump straight to the folded (1) or flying (0) pose, without the blend. */

@@ -85,6 +85,8 @@ async function boot() {
   hud.setLoading('Waking the dragon…');
   const dragonModel = await loadModel('models/dragon.glb');
   if (dragonModel) player.dragon.useModel(dragonModel.scene);
+  const riderModel = await loadModel('models/rider.glb');
+  if (riderModel) player.hero.useModel(riderModel);
   // Spawn east of town over the Demer meadows, gliding toward the Grote Markt.
   const sx = 1150, sz = 380;
   player.spawn(sx, 95, sz, Math.atan2(-sx, -sz));

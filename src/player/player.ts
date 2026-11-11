@@ -398,6 +398,7 @@ export class Player {
       grounded: this.mode === 'walk' || this.mode === 'mounting' ? 1 : this.mode === 'landing' || this.mode === 'calling' ? this.grounded : 0,
       boosting: this.boostTime > 0,
     });
+    if (this.mode === 'fly' || this.mode === 'landing') this.hero.updateRiding(dt, this.speed);
     if (this.mode === 'walk' || this.mode === 'calling') {
       this.hero.root.position.copy(this.heroPos);
       this.hero.root.rotation.set(0, this.heroYaw, 0);
