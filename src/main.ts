@@ -124,7 +124,33 @@ async function boot() {
     running = true;
     uiRoot.querySelector('.overlay')?.classList.add('hidden');
   }
-  (window as unknown as { belfort: object }).belfort = { player, rig, world, atmo, scene, renderer, post };
+  /**
+   * Debug hook used by the critic loop (tools/critic): put the player and the
+   * camera in an exact, repeatable pose so every round shoots the same frame.
+   */
+  const pose = async (s: {
+    sky?: string; walk?: boolean; x: number; y?: number; z: number; yaw: number; camYaw?: number; pitch?: number; ui?: boolean;
+  }) => {
+    if (s.sky) await atmo.setPreset(s.sky);
+    let { x, z } = s;
+    if (s.walk) {
+      // nearest open ground to the requested spot
+      const c = world.collision;
+      search: for (let r = 0; r < 60; r += 1.5)
+        for (let a = 0; a < 6.28; a += 0.3) {
+          const tx = s.x + Math.cos(a) * r, tz = s.z + Math.sin(a) * r;
+          if (c.heightAround(tx, tz, 1.5) < 0.1) { x = tx; z = tz; break search; }
+        }
+      player.debugPlaceOnFoot(x, z, s.yaw);
+    } else {
+      player.debugPlaceFlying(x, s.y ?? 80, z, s.yaw);
+    }
+    rig.yaw = s.camYaw ?? s.yaw;
+    rig.pitch = s.pitch ?? -0.2;
+    rig.snap();
+    uiRoot.style.display = s.ui ? '' : 'none';
+  };
+  (window as unknown as { belfort: object }).belfort = { player, rig, world, atmo, scene, renderer, post, pose };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();

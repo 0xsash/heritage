@@ -303,26 +303,27 @@ const FRAG_SURFACE = /* glsl */ `
 
     if (church) {
       // tall pointed lancets with stained glass
-      float cu = fract(u / 5.5);
-      float ci = floor(u / 5.5);
+      float cu = fract(u / 4.4);
+      float ci = floor(u / 4.4);
       float x = abs(cu - 0.5) * 2.0;
-      float top = eave - 1.6;
-      float arch = top - 1.7 * sqrt(max(0.0, x / 0.3));
-      float win = step(x, 0.3) * step(2.4, v) * step(v, arch);
-      float surround = step(x, 0.36) * step(2.1, v) * step(v, arch + 0.45) * (1.0 - win);
-      diffuseColor.rgb *= 1.0 - 0.28 * surround;
-      // buttress shadow line between bays
-      diffuseColor.rgb *= mix(0.74, 1.0, smoothstep(0.0, 0.07, abs(cu - 0.02)));
+      float top = eave - 1.3;
+      float sill = min(3.0, eave * 0.28);
+      float arch = top - 2.2 * (x / 0.42) * (x / 0.42);
+      float win = step(x, 0.42) * step(sill, v) * step(v, arch);
+      float surround = step(x, 0.5) * step(sill - 0.3, v) * step(v, arch + 0.5) * (1.0 - win);
+      diffuseColor.rgb *= 1.0 - 0.3 * surround;
+      // buttress between bays
+      diffuseColor.rgb *= mix(0.7, 1.0, smoothstep(0.0, 0.09, abs(cu - 0.02)));
       if (win > 0.5) {
         vec2 cell = floor(vec2(u, v) / 0.21);
         float h = hash12(cell + ci * 17.0);
         vec3 glass = h < 0.3 ? vec3(0.08, 0.14, 0.5) : h < 0.55 ? vec3(0.5, 0.06, 0.07) : h < 0.78 ? vec3(0.62, 0.42, 0.08) : vec3(0.1, 0.36, 0.2);
         vec2 f2 = abs(fract(vec2(u, v) / 0.21) - 0.5);
         float leadFade = 1.0 - smoothstep(0.0, 0.5, fwidth(u) * 6.0);
-        float lead = (step(0.43, max(f2.x, f2.y)) * leadFade + (1.0 - step(0.045, x)));
+        float lead = (step(0.43, max(f2.x, f2.y)) * leadFade + (1.0 - step(0.035, x)) + (1.0 - step(0.02, abs(x - 0.21))));
         vec3 col = mix(glass, vec3(0.02), min(lead, 1.0));
         // from outside by day stained glass is dark, with only a hint of colour; lit from within at night it glows
-        diffuseColor.rgb = mix(vec3(0.035, 0.04, 0.05), col, 0.16);
+        diffuseColor.rgb = mix(vec3(0.03, 0.033, 0.04), col, 0.1);
         gEmit = col * uNight * 0.7;
         gRough = 0.16;
         gNrm = vec3(0.0, 0.0, 1.0);
@@ -342,7 +343,7 @@ const FRAG_SURFACE = /* glsl */ `
       float trim = step(wx0 - 0.035, cu) * step(cu, wx1 + 0.035) * step(wy0 - 0.05, fv) * step(fv, wy1 + 0.055) * inFloors;
       if (trim > 0.5 && open < 0.5) {
         // stone lintel, sill and jambs
-        diffuseColor.rgb = vec3(0.56, 0.52, 0.44) * (0.85 + 0.3 * vnoise(vec2(u, v) * 9.0)) * grime;
+        diffuseColor.rgb = vec3(0.4, 0.37, 0.31) * (0.85 + 0.3 * vnoise(vec2(u, v) * 9.0)) * grime;
         gRough = 0.86;
         gNrm = vec3(0.0, 0.0, 1.0);
       }

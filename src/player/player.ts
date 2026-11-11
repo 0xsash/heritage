@@ -406,6 +406,45 @@ export class Player {
     }
   }
 
+  /** Debug: stand the rider at a spot, with the dragon waiting beside them. */
+  debugPlaceOnFoot(x: number, z: number, yaw: number) {
+    if (this.hero.root.parent !== this.group) this.group.add(this.hero.root);
+    this.mode = 'walk';
+    this.heroPos.set(x, this.col.heightAt(x, z), z);
+    this.heroVel.set(0, 0, 0);
+    this.heroYaw = yaw;
+    this.heroVy = 0;
+    this.heroGrounded = true;
+    // dragon behind and to the right of the rider
+    const bx = x - Math.sin(yaw) * 9 - Math.cos(yaw) * 5, bz = z - Math.cos(yaw) * 9 + Math.sin(yaw) * 5;
+    this.pos.set(bx, this.col.heightAround(bx, bz, 2) + 0.05, bz);
+    this.yaw = yaw + 0.5;
+    this.pitch = 0;
+    this.roll = 0;
+    this.speed = 0;
+    this.turnRate = 0;
+    this.grounded = 1;
+  }
+
+  /** Debug: put the mounted dragon in the air, gliding. */
+  debugPlaceFlying(x: number, y: number, z: number, yaw: number, speed = 24) {
+    if (this.hero.root.parent !== this.dragon.riderSeat) {
+      this.dragon.riderSeat.add(this.hero.root);
+      this.hero.root.position.set(0, -0.15, 0);
+      this.hero.root.rotation.set(0, 0, 0);
+      this.hero.sit();
+    }
+    this.mode = 'fly';
+    this.pos.set(x, y, z);
+    this.yaw = yaw;
+    this.pitch = 0;
+    this.roll = 0;
+    this.speed = speed;
+    this.vy = 0;
+    this.turnRate = 0;
+    this.grounded = 0;
+  }
+
   /** Focus point for the camera. */
   focus(out: THREE.Vector3) {
     if (this.mode === 'walk' || this.mode === 'calling' || this.mode === 'mounting') {

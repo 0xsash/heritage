@@ -4,8 +4,9 @@
 // at two scales to hide tiling, tinted per polygon (the vertex colour), with
 // crop rows on fields and soft, ragged edges on roads and paths.
 //   aMat  = material layer
-//   aWall = (rowDirX, rowDirZ, 1) for fields with crop rows
-//           (edge, 0, 2) for road ribbons, edge = -1..1 across the road
+//   aWall = (angle, 0, 1) arable land: strip fields with crops, rows and hedges
+//           (angle, 0, 3) pasture: larger parcels, no rows
+//           (edge, 0, 2) road ribbons, edge = -1..1 across the road
 //           (0, 0, 0) otherwise
 //
 // Water: dark, reflective, with animated ripples.
@@ -80,7 +81,7 @@ vec3 gNrm; float gRough; float gAO;`,
   // broad natural variation so large fields are never one flat colour
   float macro = vnoise(vWPos.xz * 0.011) * 0.4 + vnoise(vWPos.xz * 0.0029 + 11.0) * 0.35 + vnoise(vWPos.xz * 0.047 + 5.0) * 0.25;
   // drier, yellower patches and darker damp ones
-  vec3 dry = vec3(1.18, 1.05, 0.72), damp = vec3(0.72, 0.84, 0.78);
+  vec3 dry = vec3(1.1, 1.02, 0.8), damp = vec3(0.74, 0.84, 0.8);
   diffuseColor.rgb *= clamp(detail, 0.0, 2.4) * mix(damp, dry, smoothstep(0.25, 0.75, macro));
   // vegetation and earth are matt; only worn cobbles keep a little sheen
   float minRough = layer == ${COBBLE} ? 0.55 : 0.86;
@@ -89,13 +90,45 @@ vec3 gNrm; float gRough; float gAO;`,
   vec3 nTex = n1.xyz * 2.0 - 1.0;
   nTex.xy *= layer == ${COBBLE} ? 1.0 : 0.55;
   gNrm = normalize(mix(nTex, vec3(0.0, 0.0, 1.0), farK));
-  if (vWall.z > 0.5 && vWall.z < 1.5) {
-    // crop rows / furrows, fading out before they alias
-    float ph = dot(vWPos.xz, vWall.xy) / 0.85;
-    float fade = 1.0 - smoothstep(0.08, 0.45, fwidth(ph));
-    float rows = 0.5 + 0.5 * sin(ph * 6.28318);
-    diffuseColor.rgb *= 1.0 - 0.3 * rows * fade;
-    gNrm = normalize(gNrm + vec3(vWall.x, vWall.y, 0.0) * cos(ph * 6.28318) * 0.35 * fade);
+  if ((vWall.z > 0.5 && vWall.z < 1.5) || vWall.z > 2.5) {
+    // Strip fields: the land is divided into long narrow parcels, each with its
+    // own crop, separated by hedges and ditches (the Flemish patchwork).
+    bool arable = vWall.z < 1.5;
+    float ang = (vnoise(vWPos.xz * 0.0006) - 0.5) * 1.6 + vWall.x;
+    float ca = cos(ang), sa = sin(ang);
+    vec2 pq = vec2(ca * vWPos.x + sa * vWPos.z, -sa * vWPos.x + ca * vWPos.z);
+    vec2 size = arable ? vec2(58.0, 170.0) : vec2(95.0, 140.0);
+    pq.y += (hash12(vec2(floor(pq.x / size.x), 7.0)) - 0.5) * size.y;
+    vec2 cell = floor(pq / size);
+    vec2 f = fract(pq / size);
+    float h = hash12(cell + 3.1);
+    vec3 crop;
+    if (arable) {
+      crop = h < 0.24 ? vec3(1.42, 1.22, 0.7)      // ripe wheat
+           : h < 0.46 ? vec3(0.82, 0.98, 0.72)     // green crop
+           : h < 0.62 ? vec3(1.12, 1.08, 0.86)     // pale barley
+           : h < 0.78 ? vec3(0.7, 0.86, 0.7)       // dark roots / beet
+           : h < 0.9 ? vec3(1.2, 0.98, 0.72)       // stubble
+           : vec3(0.82, 0.66, 0.52);               // ploughed earth
+    } else {
+      crop = vec3(0.86 + 0.3 * h, 0.9 + 0.2 * h, 0.84 + 0.18 * fract(h * 7.0)); // pasture: mown, grazed, lush
+    }
+    diffuseColor.rgb *= crop;
+    float px = fwidth(pq.x) + fwidth(pq.y);
+    if (arable) {
+      // crop rows / furrows, fading out before they alias
+      float ph = pq.x / (0.7 + 0.5 * fract(h * 13.0));
+      float fade = 1.0 - smoothstep(0.08, 0.45, fwidth(ph));
+      float rows = 0.5 + 0.5 * sin(ph * 6.28318);
+      diffuseColor.rgb *= 1.0 - 0.28 * rows * fade;
+      gNrm = normalize(gNrm + vec3(ca, -sa, 0.0) * cos(ph * 6.28318) * 0.3 * fade);
+    }
+    // hedges, ditches and headlands between parcels
+    float e = min(min(f.x, 1.0 - f.x) * size.x, min(f.y, 1.0 - f.y) * size.y);
+    float w = 1.6 + 1.2 * fract(h * 29.0);
+    float hedge = (1.0 - smoothstep(w * 0.5, w, e)) * (1.0 - smoothstep(1.5, 6.0, px));
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.045, 0.07, 0.03), hedge * 0.75);
+    gRough = mix(gRough, 0.95, hedge);
   }
   ${
     road

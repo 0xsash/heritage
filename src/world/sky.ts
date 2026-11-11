@@ -35,19 +35,19 @@ export interface Look {
 // Flemish Masters grading: cool, slightly green-blue glazed shadows; warm, creamy lights.
 const LOOKS: Record<string, Look> = {
   golden: {
-    label: 'Golden hour', sunColor: '#ffb574', sunIntensity: 5.2, envIntensity: 1.75, fogDensity: 0.00015, night: 0.2, exposure: 1.08, stars: 0,
+    label: 'Golden hour', sunColor: '#ffb574', sunIntensity: 5.2, envIntensity: 1.75, fogDensity: 0.00015, night: 0.2, exposure: 0.86, stars: 0,
     shadowTint: [0.96, 0.99, 1.05], highlightTint: [1.06, 1.0, 0.88], saturation: 1.1, lightElevation: 17,
   },
   day: {
-    label: 'High summer', sunColor: '#fff0d8', sunIntensity: 4.8, envIntensity: 1.25, fogDensity: 0.00008, night: 0, exposure: 0.95, stars: 0,
+    label: 'High summer', sunColor: '#fff0d8', sunIntensity: 4.8, envIntensity: 1.25, fogDensity: 0.00009, night: 0, exposure: 0.66, stars: 0,
     shadowTint: [0.97, 0.99, 1.04], highlightTint: [1.04, 1.0, 0.93], saturation: 1.08,
   },
   storm: {
-    label: 'Storm light', sunColor: '#b8c2d0', sunIntensity: 0.9, envIntensity: 1.5, fogDensity: 0.00026, night: 0.45, exposure: 1.0, stars: 0,
+    label: 'Storm light', sunColor: '#b8c2d0', sunIntensity: 0.9, envIntensity: 1.5, fogDensity: 0.00026, night: 0.45, exposure: 0.8, stars: 0,
     shadowTint: [0.95, 0.98, 1.03], highlightTint: [1.02, 1.0, 0.96], saturation: 0.86,
   },
   night: {
-    label: 'Moonlit night', sunColor: '#8fa8dc', sunIntensity: 0.42, envIntensity: 2.6, fogDensity: 0.00018, night: 1, exposure: 2.4, stars: 1,
+    label: 'Moonlit night', sunColor: '#8fa8dc', sunIntensity: 0.42, envIntensity: 2.6, fogDensity: 0.00018, night: 1, exposure: 2.0, stars: 1,
     shadowTint: [0.88, 0.96, 1.12], highlightTint: [1.05, 0.98, 0.88], saturation: 0.9,
   },
 };

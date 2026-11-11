@@ -1,0 +1,70 @@
+{
+  "note": "Fixed camera shots for the critic loop. Every round re-shoots exactly these frames, and blind critics score each against its concept painting. Coordinates are local metres (x east, z south, origin Grote Markt, Diest).",
+  "shots": [
+    {
+      "id": "flight-demer-valley",
+      "concept": "docs/art/concepts/flight-demer-valley.jpg",
+      "title": "Flight / The Demer valley",
+      "pose": {
+        "sky": "day",
+        "x": 1100,
+        "y": 110,
+        "z": 250,
+        "yaw": -1.79,
+        "pitch": -0.25
+      }
+    },
+    {
+      "id": "diest-living-town",
+      "concept": "docs/art/concepts/diest-living-town.jpg",
+      "title": "Diest / The living town (Grote Markt, on foot)",
+      "pose": {
+        "sky": "day",
+        "walk": true,
+        "x": -40,
+        "z": 105,
+        "yaw": 2.66,
+        "pitch": 0.14
+      }
+    },
+    {
+      "id": "begijnhof-sanctuary",
+      "concept": "docs/art/concepts/begijnhof-sanctuary.jpg",
+      "title": "The Begijnhof / Sanctuary (on foot)",
+      "pose": {
+        "sky": "golden",
+        "walk": true,
+        "x": 648,
+        "z": -316,
+        "yaw": 1.5,
+        "pitch": 0.08
+      }
+    },
+    {
+      "id": "root-oak-forbidden-pilgrimage",
+      "concept": "docs/art/concepts/root-oak-forbidden-pilgrimage.jpg",
+      "title": "The Root-Oak / Forbidden pilgrimage (Scherpenheuvel, night)",
+      "pose": {
+        "sky": "night",
+        "walk": true,
+        "x": -5100,
+        "z": 378,
+        "yaw": 0.3,
+        "pitch": 0.16
+      }
+    },
+    {
+      "id": "town-golden-hour",
+      "concept": "docs/art/concepts/flight-demer-valley.jpg",
+      "title": "Diest from the air at golden hour",
+      "pose": {
+        "sky": "golden",
+        "x": 300,
+        "y": 55,
+        "z": 150,
+        "yaw": -1.95,
+        "pitch": -0.25
+      }
+    }
+  ]
+}

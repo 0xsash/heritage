@@ -22,7 +22,7 @@ export const WALL = {
   brickDark: S('brickDark', '#5f3b2e', '#6b4335', '#553429'),
   whitewash: S('brickWhite', '#d6d0c0', '#cdc6b4', '#dfd9ca', '#c8bfa9'),
   plaster: S('plaster', '#d6ccb6', '#cbbd9c', '#c7b497', '#d3beab', '#bfb39a'),
-  ironstone: S('stone', '#7b5331', '#6f4a2b', '#85603a'),
+  ironstone: S('stone', '#6a4628', '#5f3e23', '#73502f'),
   limestone: S('stone', '#cdc2ab', '#c2b69d'),
   barn: S('brickDark', '#5a4234', '#66503f', '#4f3a2e'),
 };
@@ -43,18 +43,21 @@ export function pick<T>(arr: T[], seed: number): T {
 
 /** Land cover → ground material layer + tint choices. */
 export const LAND: Record<string, Surface> = {
-  farm: S('meadow', '#a8924f', '#7f9447', '#9c9a56', '#b09d5c', '#6f8a43', '#8c8a4a'),
+  farm: S('meadow', '#9a8750', '#6c7c44', '#8f8a50', '#a39257', '#61723f', '#807a48'),
   soil: S('dirt', '#6d5940', '#77614a', '#5f4d38'),
   farmyard: S('rough', '#7d7052'),
-  meadow: S('meadow', '#62803d', '#6b8842', '#587738'),
-  grass: S('grass', '#5d7c3a', '#66843f'),
+  meadow: S('meadow', '#5a6b3c', '#63733f', '#536238'),
+  grass: S('grass', '#55683a', '#5b6e3d'),
   wood: S('forest', '#3d4a2b', '#445030'),
-  orchard: S('grass', '#5f7d3c'),
+  orchard: S('grass', '#566a3a'),
   vineyard: S('rough', '#6d7a44'),
-  res: S('grass', '#647f41', '#6a8444'),
+  res: S('grass', '#586b3d', '#5e7040'),
   ind: S('rough', '#77705c'),
-  cemetery: S('grass', '#5a7540'),
-  park: S('grass', '#58783a'),
+  /** yards and squares inside the town walls */
+  townYard: S('dirt', '#8b7a5e', '#84745a', '#927f61'),
+  townSquare: S('cobble', '#858076', '#8d877b'),
+  cemetery: S('grass', '#52663b'),
+  park: S('grass', '#506537'),
   wet: S('rough', '#4f6a48'),
   scrub: S('rough', '#5f7040'),
 };

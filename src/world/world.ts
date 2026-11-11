@@ -11,7 +11,7 @@ import { GeomBuilder, triangulate } from './geom';
 import { makeGroundMaterial, makeWaterMaterial } from './ground';
 import { buildLandmarks } from './landmarks';
 import { LORE } from './lore';
-import { LAND, ROAD, pick } from './palette';
+import { LAND, ROAD, pick, type Surface as P_Surface } from './palette';
 import { TreeRenderer, type TreeAtlas, type TreeItem } from './trees';
 import type { PoiData, RoadData, WorldData } from './types';
 
@@ -114,6 +114,7 @@ export class World {
       c.copy(tints[Math.floor(hash01(fx * 7919 + fz * 104729) * tints.length)]);
       cols[i * 3] = c.r; cols[i * 3 + 1] = c.g; cols[i * 3 + 2] = c.b;
       mats[i] = layer;
+      walls[i * 3 + 2] = 1; // open farmland beyond the mapped area
     }
     geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
     geo.setAttribute('aMat', new THREE.BufferAttribute(mats, 1));
@@ -126,23 +127,41 @@ export class World {
     const gb = new GeomBuilder();
     const idx = this.assets.ground.index;
     const c = new THREE.Color();
+    // The old town stands on cobbles and packed earth, not pasture: lay a town
+    // floor under everything inside the walls (markets, yards, unmapped squares).
+    {
+      const n = 48, rings: [number, string, P_Surface][] = [[OLD_TOWN_R + 40, 'outer', LAND.townYard], [330, 'core', LAND.townSquare]];
+      for (const [r, , surf] of rings) {
+        gb.curMat = idx[surf.mat];
+        c.copy(surf.tints[0]);
+        for (let i = 0; i < n; i++) {
+          const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
+          const r0 = r * (0.9 + 0.2 * hash01(i * 7 + r)), r1 = r * (0.9 + 0.2 * hash01(((i + 1) % n) * 7 + r));
+          gb.tri([0, Y_LAND * 0.5, 0], [Math.cos(a0) * r0, Y_LAND * 0.5, Math.sin(a0) * r0], [Math.cos(a1) * r1, Y_LAND * 0.5, Math.sin(a1) * r1], c, [0, 1, 0]);
+        }
+      }
+    }
     for (let li = 0; li < this.data.land.length; li++) {
       const l = this.data.land[li];
       let surf = LAND[l.k];
       if (!surf) continue;
       let tag = [0, 0, 0];
+      const a = hash01(li * 17 + 3) * Math.PI;
       if (l.k === 'farm') {
-        // some fields lie ploughed; all of them show rows
-        if (hash01(li * 31 + 9) < 0.26) surf = LAND.soil;
-        const a = hash01(li * 17 + 3) * Math.PI;
-        tag = [Math.cos(a), Math.sin(a), 1];
-      } else if (l.k === 'orchard' || l.k === 'vineyard') {
-        const a = hash01(li * 17 + 3) * Math.PI;
-        tag = [Math.cos(a), Math.sin(a), 1];
+        // some fields lie ploughed
+        if (hash01(li * 31 + 9) < 0.2) surf = LAND.soil;
+        tag = [a, 0, 1];
+      } else if (l.k === 'meadow' || l.k === 'grass') {
+        tag = [a, 0, 3];
+      }
+      const ring = toRing(l.p);
+      // inside the walls, gardens and greens are mostly trodden earth
+      if ((l.k === 'res' || l.k === 'ind' || l.k === 'grass') && Math.hypot(ring[0][0], ring[0][1]) < OLD_TOWN_R) {
+        surf = LAND.townYard;
+        tag = [0, 0, 0];
       }
       c.copy(pick(surf.tints, li * 13 + 7)).multiplyScalar(0.94 + hash01(li * 3) * 0.12);
       gb.curMat = idx[surf.mat];
-      const ring = toRing(l.p);
       for (const [a, b, cc] of triangulate(ring)) {
         gb.tri([ring[a][0], Y_LAND, ring[a][1]], [ring[b][0], Y_LAND, ring[b][1]], [ring[cc][0], Y_LAND, ring[cc][1]], c, [0, 1, 0], tag, tag, tag);
       }
