@@ -1,0 +1,154 @@
+// Unified keyboard / mouse / gamepad input. Game code reads abstract axes and
+// actions, never raw keys, so remapping and gamepad support stay in one place.
+
+export type Action =
+  | 'interact' // E / Y   — land, dismount, call the dragon
+  | 'jump' // Space / A — climb (flight) or jump (on foot)
+  | 'descend' // Ctrl/C / B — dive down (flight)
+  | 'boost' // Shift / X(LB) — boost (flight) or run (on foot)
+  | 'brake' // S held in flight, LT
+  | 'time' // T — advance time of day
+  | 'map' // M / Back — toggle map
+  | 'help'; // H / Start
+
+const KEYMAP: Record<string, Action> = {
+  KeyE: 'interact',
+  KeyF: 'interact',
+  Space: 'jump',
+  ControlLeft: 'descend',
+  KeyC: 'descend',
+  ShiftLeft: 'boost',
+  ShiftRight: 'boost',
+  KeyT: 'time',
+  KeyM: 'map',
+  KeyH: 'help',
+};
+
+export class Input {
+  private keys = new Set<string>();
+  private pressed = new Set<Action>();
+  private padPrev: boolean[] = [];
+  mouseDX = 0;
+  mouseDY = 0;
+  pointerLocked = false;
+  /** last device used: affects steering model & prompts */
+  device: 'kbm' | 'pad' = 'kbm';
+
+  // Analog state, refreshed each frame by poll().
+  moveX = 0; // strafe / yaw  (-1..1)
+  moveY = 0; // forward / pitch (-1..1, +1 = forward / nose down on pad)
+  lookX = 0; // right stick
+  lookY = 0;
+  throttle = 0; // 0..1
+  brakeAxis = 0; // 0..1
+
+  constructor(private canvas: HTMLCanvasElement) {
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      this.device = 'kbm';
+      this.keys.add(e.code);
+      const a = KEYMAP[e.code];
+      if (a) this.pressed.add(a);
+      if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
+    });
+    window.addEventListener('keyup', (e) => this.keys.delete(e.code));
+    window.addEventListener('blur', () => this.keys.clear());
+    window.addEventListener('mousemove', (e) => {
+      if (!this.pointerLocked) return;
+      this.device = 'kbm';
+      this.mouseDX += e.movementX;
+      this.mouseDY += e.movementY;
+    });
+    document.addEventListener('pointerlockchange', () => {
+      this.pointerLocked = document.pointerLockElement === this.canvas;
+    });
+  }
+
+  requestLock() {
+    if (!this.pointerLocked) this.canvas.requestPointerLock?.();
+  }
+
+  down(code: string) {
+    return this.keys.has(code);
+  }
+
+  held(a: Action): boolean {
+    for (const [code, act] of Object.entries(KEYMAP)) if (act === a && this.keys.has(code)) return true;
+    const pad = this.pad();
+    if (pad) {
+      const b = (i: number) => !!pad.buttons[i]?.pressed;
+      if (a === 'jump' && b(0)) return true;
+      if (a === 'descend' && b(1)) return true;
+      if (a === 'boost' && (b(2) || b(4) || b(10))) return true;
+      if (a === 'interact' && b(3)) return true;
+    }
+    return false;
+  }
+
+  /** True once per press. */
+  consume(a: Action): boolean {
+    if (this.pressed.has(a)) {
+      this.pressed.delete(a);
+      return true;
+    }
+    return false;
+  }
+
+  private pad(): Gamepad | null {
+    const pads = navigator.getGamepads?.() ?? [];
+    for (const p of pads) if (p && p.connected) return p;
+    return null;
+  }
+
+  /** Call once per frame before game update. */
+  poll() {
+    const k = (c: string) => (this.keys.has(c) ? 1 : 0);
+    let mx = k('KeyD') + k('ArrowRight') - k('KeyA') - k('ArrowLeft');
+    let my = k('KeyW') + k('ArrowUp') - k('KeyS') - k('ArrowDown');
+    let lx = 0, ly = 0, thr = k('KeyW') || k('ArrowUp') ? 1 : 0, brk = k('KeyS') || k('ArrowDown') ? 1 : 0;
+
+    const pad = this.pad();
+    if (pad) {
+      const dz = (v: number) => (Math.abs(v) < 0.15 ? 0 : (v - Math.sign(v) * 0.15) / 0.85);
+      const ax = pad.axes.map((v) => dz(v ?? 0));
+      const rt = pad.buttons[7]?.value ?? 0;
+      const lt = pad.buttons[6]?.value ?? 0;
+      const active = ax.some((v) => v !== 0) || rt > 0.1 || lt > 0.1 || pad.buttons.some((b) => b.pressed);
+      if (active) this.device = 'pad';
+      if (this.device === 'pad') {
+        mx = ax[0] ?? 0;
+        my = -(ax[1] ?? 0);
+        lx = ax[2] ?? 0;
+        ly = ax[3] ?? 0;
+        thr = Math.max(thr, rt);
+        brk = Math.max(brk, lt);
+      }
+      // Edge-triggered pad buttons → actions.
+      const map: [number, Action][] = [
+        [3, 'interact'],
+        [0, 'jump'],
+        [8, 'map'],
+        [9, 'help'],
+        [12, 'time'],
+      ];
+      for (const [i, a] of map) {
+        const now = !!pad.buttons[i]?.pressed;
+        if (now && !this.padPrev[i]) this.pressed.add(a);
+        this.padPrev[i] = now;
+      }
+    }
+    this.moveX = mx;
+    this.moveY = my;
+    this.lookX = lx;
+    this.lookY = ly;
+    this.throttle = thr;
+    this.brakeAxis = brk;
+  }
+
+  /** Call at end of frame. */
+  endFrame() {
+    this.mouseDX = 0;
+    this.mouseDY = 0;
+    this.pressed.clear();
+  }
+}
