@@ -7,23 +7,23 @@
       "name": "oak",
       "row": 0,
       "height": 18.0,
-      "width": 14.08,
-      "quadHeight": 18.45,
-      "quadWidth": 18.45
+      "width": 14.0,
+      "quadHeight": 18.55,
+      "quadWidth": 18.55
     },
     {
       "name": "poplar",
       "row": 1,
       "height": 26.0,
-      "width": 7.01,
-      "quadHeight": 26.65,
-      "quadWidth": 26.65
+      "width": 7.0,
+      "quadHeight": 26.8,
+      "quadWidth": 26.8
     },
     {
       "name": "willow",
       "row": 2,
       "height": 7.0,
-      "width": 6.4,
+      "width": 5.25,
       "quadHeight": 7.25,
       "quadWidth": 7.25
     },
@@ -31,39 +31,24 @@
       "name": "pine",
       "row": 3,
       "height": 20.0,
-      "width": 7.98,
-      "quadHeight": 20.5,
-      "quadWidth": 20.5
+      "width": 8.0,
+      "quadHeight": 20.6,
+      "quadWidth": 20.6
     },
     {
       "name": "apple",
       "row": 4,
       "height": 5.0,
-      "width": 4.89,
-      "quadHeight": 5.3,
-      "quadWidth": 5.3
+      "width": 5.0,
+      "quadHeight": 5.35,
+      "quadWidth": 5.35
     }
   ],
   "sources": [
     {
-      "what": "Tree geometry, branching, foliage cards and leaf colours: procedural generator tools/blender/make_trees.py (own work for BELFORT)",
-      "licence": "own work",
+      "what": "All five trees (geometry, painted colours, normals): procedural generator written for BELFORT, rendered with Blender 4.2 Cycles. No third-party models or textures.",
+      "licence": "own work (project licence)",
       "url": "tools/blender/make_trees.py"
-    },
-    {
-      "what": "Bark 001 colour map - oak, poplar and pollard-willow bark",
-      "licence": "CC0",
-      "url": "https://ambientcg.com/view?id=Bark001"
-    },
-    {
-      "what": "Bark 014 colour map - Scots pine bark",
-      "licence": "CC0",
-      "url": "https://ambientcg.com/view?id=Bark014"
-    },
-    {
-      "what": "Bark 006 colour map - apple bark",
-      "licence": "CC0",
-      "url": "https://ambientcg.com/view?id=Bark006"
     }
   ]
 }

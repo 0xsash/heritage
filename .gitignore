@@ -5,3 +5,4 @@ dist
 
 # critic loop screenshots (regenerated each round)
 critic/rounds/
+__pycache__/

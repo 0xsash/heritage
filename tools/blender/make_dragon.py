@@ -48,7 +48,7 @@ os.makedirs(os.path.dirname(OUT_GLB), exist_ok=True)
 QUICK = os.environ.get('DRAGON_QUICK', '0') == '1'
 TEX = int(os.environ.get('DRAGON_TEX', '2048'))
 TEX_WING = int(os.environ.get('DRAGON_TEX_WING', '2048'))
-JPEG_Q = int(os.environ.get('DRAGON_JPEG_Q', '86'))
+JPEG_Q = int(os.environ.get('DRAGON_JPEG_Q', '90'))
 
 np.random.seed(7)
 RNG = np.random.RandomState(11)
@@ -318,26 +318,26 @@ def vertex_normals(V, T):
 # --------------------------------------------------------------------------------------
 # spine: head joint -> tail tip.  y, z, half-width, top half-height, bottom half-height
 SPINE = [
-    (-5.55, 1.82, 0.200, 0.225, 0.215),
-    (-5.15, 1.78, 0.215, 0.250, 0.245),
-    (-4.50, 1.52, 0.240, 0.285, 0.290),
-    (-3.70, 0.98, 0.295, 0.345, 0.355),
-    (-2.95, 0.50, 0.400, 0.450, 0.480),
-    (-2.35, 0.26, 0.560, 0.610, 0.680),
-    (-1.75, 0.07, 0.730, 0.800, 0.930),
-    (-1.00, 0.00, 0.830, 0.930, 1.060),
-    (-0.20, 0.00, 0.830, 0.905, 1.030),
-    (0.60, 0.04, 0.730, 0.790, 0.820),
-    (1.30, 0.10, 0.590, 0.650, 0.580),
+    (-5.45, 2.06, 0.215, 0.250, 0.240),
+    (-4.82, 1.96, 0.240, 0.285, 0.280),
+    (-4.20, 1.52, 0.280, 0.330, 0.345),
+    (-3.60, 0.88, 0.350, 0.400, 0.430),
+    (-2.95, 0.44, 0.450, 0.500, 0.550),
+    (-2.35, 0.26, 0.580, 0.630, 0.710),
+    (-1.75, 0.07, 0.740, 0.810, 0.940),
+    (-1.00, 0.00, 0.850, 0.930, 1.060),
+    (-0.20, 0.00, 0.840, 0.905, 1.030),
+    (0.60, 0.04, 0.720, 0.790, 0.810),
+    (1.30, 0.10, 0.570, 0.640, 0.550),
     (1.90, 0.14, 0.570, 0.610, 0.530),
-    (2.40, 0.16, 0.470, 0.510, 0.460),
-    (3.00, 0.16, 0.380, 0.410, 0.380),
-    (4.00, 0.15, 0.285, 0.305, 0.285),
-    (5.00, 0.14, 0.215, 0.230, 0.215),
-    (6.00, 0.13, 0.155, 0.165, 0.155),
-    (7.00, 0.12, 0.105, 0.110, 0.105),
-    (8.00, 0.11, 0.065, 0.068, 0.065),
-    (8.70, 0.10, 0.036, 0.036, 0.036),
+    (2.40, 0.15, 0.500, 0.540, 0.490),
+    (3.00, 0.08, 0.420, 0.450, 0.420),
+    (4.00, -0.12, 0.330, 0.350, 0.330),
+    (5.00, -0.26, 0.250, 0.265, 0.250),
+    (6.00, -0.16, 0.180, 0.190, 0.180),
+    (7.00, 0.12, 0.120, 0.126, 0.120),
+    (8.00, 0.46, 0.072, 0.075, 0.072),
+    (8.65, 0.66, 0.038, 0.038, 0.038),
 ]
 spine = Tube([(0.0,) + r for r in SPINE], 150, hint=Z, exps=(1.85, 2.3))
 S_NECKBASE = float(np.interp(-2.2, spine.p[:, 1], spine.s))
@@ -349,14 +349,17 @@ TAIL_LENS = _tl / _tl.sum() * (S_END - S_TAILBASE)
 TAIL_S = S_TAILBASE + np.concatenate([[0.0], np.cumsum(TAIL_LENS)])[:10]
 
 # head frame
-HJ = np.array([0.0, -5.55, 1.82])
-_tilt = math.radians(8.0)
+HJ = np.array([0.0, -5.45, 2.06])
+HS = 1.13                               # heroic head scale
+HORN_S = 1.25
+CLAW_S = 1.3
+_tilt = math.radians(15.0)
 A_H = np.array([0.0, -math.cos(_tilt), -math.sin(_tilt)])      # towards the nose
 U_H = np.array([0.0, -math.sin(_tilt), math.cos(_tilt)])       # skull up
 
 
 def hl(h, x, up):
-    return HJ + h * A_H + x * X + up * U_H
+    return HJ + HS * (h * A_H + x * X + up * U_H)
 
 
 # upper skull: h, centre-up, half-width, top, bottom
@@ -391,29 +394,29 @@ def jaw_open(p):
     return rot_x(p, JAW_OPEN, HINGE)
 
 
-skull = Tube([tuple(hl(h, 0, cu)) + (w, ht, hb) for h, cu, w, ht, hb in SKULL], 30, hint=U_H, exps=(2.5, 2.9))
-jaw = Tube([tuple(hl(h, 0, cu)) + (w, ht, hb) for h, cu, w, ht, hb in JAW], 24, hint=U_H, exps=(2.7, 2.2),
+skull = Tube([tuple(hl(h, 0, cu)) + (w * HS, ht * HS, hb * HS) for h, cu, w, ht, hb in SKULL], 30, hint=U_H, exps=(2.5, 2.9))
+jaw = Tube([tuple(hl(h, 0, cu)) + (w * HS, ht * HS, hb * HS) for h, cu, w, ht, hb in JAW], 24, hint=U_H, exps=(2.7, 2.2),
            xform=jaw_open)
 
 # legs: x,y,z, lateral half-width, front half-depth, rear half-depth
 LEG_F = [
-    (0.60, -1.47, -0.22, 0.300, 0.340, 0.360),
-    (0.70, -1.28, -0.82, 0.240, 0.265, 0.315),
-    (0.80, -1.04, -1.38, 0.160, 0.165, 0.200),
-    (0.80, -1.20, -1.82, 0.150, 0.165, 0.160),
-    (0.80, -1.38, -2.22, 0.110, 0.112, 0.112),
-    (0.80, -1.46, -2.50, 0.118, 0.125, 0.118),
-    (0.80, -1.50, -2.64, 0.105, 0.110, 0.100),
+    (0.60, -1.47, -0.22, 0.340, 0.400, 0.420),
+    (0.72, -1.28, -0.82, 0.300, 0.340, 0.400),
+    (0.82, -1.04, -1.38, 0.235, 0.235, 0.290),
+    (0.82, -1.20, -1.82, 0.240, 0.265, 0.250),
+    (0.82, -1.38, -2.22, 0.175, 0.175, 0.175),
+    (0.82, -1.46, -2.46, 0.180, 0.190, 0.180),
+    (0.82, -1.50, -2.60, 0.160, 0.165, 0.155),
 ]
 LEG_B = [
-    (0.50, 1.70, 0.00, 0.300, 0.430, 0.400),
-    (0.68, 1.44, -0.62, 0.285, 0.400, 0.380),
-    (0.84, 1.14, -1.22, 0.185, 0.200, 0.225),
-    (0.84, 1.56, -1.60, 0.155, 0.160, 0.205),
-    (0.82, 2.03, -1.98, 0.108, 0.110, 0.125),
-    (0.82, 1.92, -2.30, 0.098, 0.100, 0.100),
-    (0.82, 1.80, -2.54, 0.125, 0.130, 0.120),
-    (0.82, 1.76, -2.65, 0.110, 0.115, 0.100),
+    (0.50, 1.70, 0.00, 0.330, 0.470, 0.440),
+    (0.70, 1.44, -0.62, 0.320, 0.450, 0.430),
+    (0.86, 1.14, -1.22, 0.220, 0.240, 0.270),
+    (0.86, 1.56, -1.60, 0.210, 0.210, 0.270),
+    (0.84, 2.03, -1.98, 0.160, 0.160, 0.180),
+    (0.84, 1.92, -2.28, 0.150, 0.150, 0.150),
+    (0.84, 1.80, -2.48, 0.185, 0.190, 0.180),
+    (0.84, 1.76, -2.60, 0.165, 0.170, 0.155),
 ]
 FWD = -Y
 legF = Tube(LEG_F, 34, hint=FWD)
@@ -424,15 +427,15 @@ J_LEGB_U, J_LEGB_L = np.array(LEG_B[0][:3]), np.array(LEG_B[2][:3])
 
 # wing arm: x,y,z, fore-aft half-width, up, down
 ARM = [
-    (0.35, -0.25, 0.40, 0.400, 0.300, 0.300),
-    (0.80, -0.30, 0.52, 0.340, 0.260, 0.260),
-    (1.60, -0.45, 0.62, 0.250, 0.195, 0.190),
-    (2.60, -0.62, 0.72, 0.185, 0.150, 0.140),
-    (3.50, -0.78, 0.78, 0.175, 0.150, 0.130),
-    (4.40, -1.20, 0.80, 0.160, 0.130, 0.120),
-    (5.40, -1.70, 0.80, 0.120, 0.100, 0.095),
-    (6.30, -2.15, 0.78, 0.135, 0.115, 0.105),
-    (6.50, -2.26, 0.78, 0.060, 0.055, 0.055),
+    (0.35, -0.25, 0.40, 0.420, 0.320, 0.320),
+    (0.80, -0.30, 0.52, 0.370, 0.290, 0.290),
+    (1.60, -0.45, 0.62, 0.290, 0.230, 0.220),
+    (2.60, -0.62, 0.72, 0.220, 0.180, 0.170),
+    (3.50, -0.78, 0.78, 0.210, 0.180, 0.160),
+    (4.40, -1.20, 0.80, 0.190, 0.155, 0.145),
+    (5.40, -1.70, 0.80, 0.150, 0.125, 0.120),
+    (6.30, -2.15, 0.78, 0.165, 0.140, 0.130),
+    (6.52, -2.27, 0.78, 0.070, 0.065, 0.065),
 ]
 arm = Tube(ARM, 44, hint=Z)
 S_ARM_R, S_ARM_E, S_ARM_W = float(arm.ctrl_s[1]), float(arm.ctrl_s[4]), float(arm.ctrl_s[7])
@@ -453,19 +456,19 @@ def finger_curve(k, s):
 
 
 # toes: (foot centre, [(angle deg from forward, +out), length], radius)
-FOOT_F = np.array([0.80, -1.48, -2.57]); FOOT_B = np.array([0.82, 1.78, -2.585])
+FOOT_F = np.array([0.82, -1.48, -2.535]); FOOT_B = np.array([0.84, 1.78, -2.540])
 TOES = []   # (leg, base, mid, tip, r0, r1, is_rear)
-for leg, P, angs, lens, r0 in (('F', FOOT_F, (-24, 2, 28), (0.36, 0.42, 0.36), 0.082),
-                               ('B', FOOT_B, (-22, 3, 28), (0.42, 0.50, 0.42), 0.090)):
+for leg, P, angs, lens, r0 in (('F', FOOT_F, (-26, 2, 30), (0.45, 0.53, 0.45), 0.122),
+                               ('B', FOOT_B, (-24, 3, 30), (0.52, 0.62, 0.52), 0.132)):
     for a, L in zip(angs, lens):
         d = np.array([math.sin(math.radians(a)), -math.cos(math.radians(a)), 0.0])
-        tip = P + d * L; tip[2] = GROUND_Z + 0.062
+        tip = P + d * L; tip[2] = GROUND_Z + 0.088
         mid = P + d * L * 0.55; mid[2] = P[2] + 0.015
-        TOES.append((leg, P + d * 0.02, mid, tip, r0, 0.058, False, d))
+        TOES.append((leg, P + d * 0.02, mid, tip, r0, 0.084, False, d))
     d = np.array([-0.25, 1.0, 0.0]); d = nrm(d)
     L = 0.21 if leg == 'F' else 0.25
-    tip = P + d * L; tip[2] = GROUND_Z + 0.075
-    TOES.append((leg, P + d * 0.02, P + d * L * 0.5 + Z * 0.0, tip, 0.07, 0.05, True, d))
+    tip = P + d * L; tip[2] = GROUND_Z + 0.085
+    TOES.append((leg, P + d * 0.02, P + d * L * 0.5 + Z * 0.0, tip, 0.085, 0.062, True, d))
 
 
 # --------------------------------------------------------------------------------------
@@ -553,7 +556,7 @@ CHAINS = [
 CI = {c['name']: i for i, c in enumerate(CHAINS)}
 
 
-def chain_eval(tb, P, ax0=1.0, ax1=1.0, chunk=6000):
+def chain_eval(tb, P, ax0=1.0, ax1=1.0, chunk=6000, refine=False):
     A = tb.p[:-1]; AB = tb.p[1:] - A
     L = np.linalg.norm(AB, axis=1); T = AB / L[:, None]
     m = len(A)
@@ -583,13 +586,22 @@ def chain_eval(tb, P, ax0=1.0, ax1=1.0, chunk=6000):
         o_ou[sl] = ou[ar, j]; o_os[sl] = os_[ar, j]
         o_cu[sl] = ou[ar, j] / np.sqrt(os_[ar, j] ** 2 + ou[ar, j] ** 2 + 1e-9)
         o_t[sl] = T[j]
+    if refine:
+        # the nearest-segment parameter is stair-stepped on curved chains; relax it onto the smooth curve
+        s = o_s
+        for _ in range(10):
+            C = tb.at(s)
+            Tn = np.stack([np.interp(s, tb.s, tb.t[:, k]) for k in range(3)], axis=1)
+            Tn /= np.linalg.norm(Tn, axis=1)[:, None]
+            s = np.clip(s + 0.8 * np.einsum('nk,nk->n', P - C, Tn), 0.0, tb.s[-1])
+        o_s = np.where(o_dn < 2.5, s, o_s)
     return dict(dn=o_dn, s=o_s, r=o_r, cu=o_cu, t=o_t, ou=o_ou, os=o_os)
 
 
 def fields(P):
     """Per-vertex chain data for points P (N,3) on the +X half (mirror-symmetric via |x|)."""
     Pa = P.copy(); Pa[:, 0] = np.abs(Pa[:, 0])
-    ev = [chain_eval(c['tb'], Pa, c['ax0'], c['ax1']) for c in CHAINS]
+    ev = [chain_eval(c['tb'], Pa, c['ax0'], c['ax1'], refine=(c['name'] == 'spine')) for c in CHAINS]
     aff = np.stack([np.maximum(e['dn'], 0.3) ** (-c['p']) for e, c in zip(ev, CHAINS)], axis=1)
     aff /= aff.sum(axis=1)[:, None]
     return ev, aff
@@ -611,7 +623,7 @@ for leg, b, m_, tip, r0, r1, rear, d in TOES:
 
 HEAD_FRAME = np.stack([X, A_H, U_H], axis=1)        # columns: x, along, up
 # torso muscle / bone landmarks
-src.blob((0.46, -0.62, -0.42), (0.47, 1.00, 0.58))                 # pectoral / flight muscle
+src.blob((0.48, -0.62, -0.42), (0.50, 1.05, 0.62))                 # pectoral / flight muscle
 src.blob((0.60, -0.28, 0.40), (0.40, 0.52, 0.36))                  # wing shoulder (deltoid)
 src.blob((0.30, -0.30, 0.74), (0.34, 0.50, 0.22))                  # wing-root trapezius
 src.blob((0.64, -1.42, -0.12), (0.27, 0.40, 0.56))                 # fore scapula
@@ -620,18 +632,18 @@ src.blob((0.74, 1.36, -0.55), (0.24, 0.36, 0.50))                  # thigh (quad
 src.blob((0.76, -1.22, -0.92), (0.20, 0.22, 0.36))                 # triceps
 src.blob((0.0, -0.75, -1.00), (0.20, 1.05, 0.16))                  # keel
 # head landmarks
-src.tube(Tube([tuple(hl(0.10, 0.185, 0.215)) + (0.050,), tuple(hl(0.33, 0.250, 0.215)) + (0.062,),
-               tuple(hl(0.56, 0.215, 0.160)) + (0.042,), tuple(hl(0.80, 0.150, 0.110)) + (0.028,)], 12, hint=U_H), 12)
-src.tube(Tube([tuple(hl(0.06, 0.240, -0.030)) + (0.050,), tuple(hl(0.38, 0.262, -0.045)) + (0.050,),
-               tuple(hl(0.72, 0.195, -0.055)) + (0.036,)], 10, hint=U_H), 12)       # cheek bone
-src.blob(hl(0.10, 0.205, -0.12), (0.085, 0.20, 0.13), HEAD_FRAME)                    # masseter
-src.blob(hl(1.385, 0.078, 0.036), (0.040, 0.075, 0.036), HEAD_FRAME)                 # nostril
-src.blob(hl(0.02, 0.150, 0.190), (0.095, 0.130, 0.075), HEAD_FRAME)                  # horn boss
-src.tube(Tube([tuple(hl(0.55, 0.0, 0.185)) + (0.050,), tuple(hl(0.95, 0.0, 0.115)) + (0.045,),
-               tuple(hl(1.32, 0.0, 0.058)) + (0.040,)], 10, hint=U_H), 12)           # nasal ridge
+src.tube(Tube([tuple(hl(0.08, 0.190, 0.210)) + (0.052 * HS,), tuple(hl(0.33, 0.262, 0.205)) + (0.072 * HS,),
+               tuple(hl(0.56, 0.215, 0.160)) + (0.042 * HS,), tuple(hl(0.80, 0.150, 0.110)) + (0.028 * HS,)], 12, hint=U_H), 12)
+src.tube(Tube([tuple(hl(0.06, 0.240, -0.030)) + (0.050 * HS,), tuple(hl(0.38, 0.262, -0.045)) + (0.050 * HS,),
+               tuple(hl(0.72, 0.195, -0.055)) + (0.036 * HS,)], 10, hint=U_H), 12)       # cheek bone
+src.blob(hl(0.10, 0.205, -0.12), tuple(HS * np.array((0.085, 0.20, 0.13))), HEAD_FRAME)                    # masseter
+src.blob(hl(1.385, 0.078, 0.036), tuple(HS * np.array((0.040, 0.075, 0.036))), HEAD_FRAME)                 # nostril
+src.blob(hl(0.02, 0.150, 0.190), tuple(HS * np.array((0.095, 0.130, 0.075))), HEAD_FRAME)                  # horn boss
+src.tube(Tube([tuple(hl(0.55, 0.0, 0.185)) + (0.050 * HS,), tuple(hl(0.95, 0.0, 0.115)) + (0.045 * HS,),
+               tuple(hl(1.32, 0.0, 0.058)) + (0.040 * HS,)], 10, hint=U_H), 12)           # nasal ridge
 # tongue (moves with the jaw)
-_tg = Tube([tuple(hl(0.25, 0, -0.105)) + (0.11, 0.030, 0.03), tuple(hl(0.7, 0, -0.105)) + (0.085, 0.032, 0.03),
-            tuple(hl(1.18, 0, -0.108)) + (0.05, 0.022, 0.02)], 10, hint=U_H, xform=jaw_open)
+_tg = Tube([tuple(hl(0.25, 0, -0.105)) + (0.11 * HS, 0.030 * HS, 0.03), tuple(hl(0.7, 0, -0.105)) + (0.085 * HS, 0.032 * HS, 0.03),
+            tuple(hl(1.18, 0, -0.108)) + (0.05 * HS, 0.022 * HS, 0.02)], 10, hint=U_H, xform=jaw_open)
 src.tube(_tg, 12)
 
 
@@ -796,7 +808,7 @@ b_chain = np.argmax(aff, axis=1)
 BN = vertex_normals(BV, BT)
 hloc = BV - HJ
 is_jaw = BW[:, BI['jaw']] > 0.5
-Pc = np.where(is_jaw[:, None], rot_x(BV, -JAW_OPEN, HINGE), BV) - HJ
+Pc = (np.where(is_jaw[:, None], rot_x(BV, -JAW_OPEN, HINGE), BV) - HJ) / HS
 Nc = np.where(is_jaw[:, None], rot_x_vec(BN, -JAW_OPEN), BN)
 h_h, h_x, h_u = Pc @ A_H, Pc[:, 0], Pc @ U_H
 n_u = Nc @ U_H
@@ -808,7 +820,7 @@ flo = is_jaw * smoothstep(0.25, 0.6, n_u) * smoothstep(-0.150, -0.125, h_u) * \
     (np.abs(h_x) < 0.93 * np.interp(h_h, JW_H, JW_W))
 b_mouth = np.clip((pal + flo) * in_h * headish, 0, 1)
 _nc = hl(1.40, 0.108, 0.050)
-b_nostril = np.exp(-((BV - _nc) ** 2).sum(1) / (2 * 0.020 ** 2)) * (~is_jaw)
+b_nostril = np.exp(-((BV - _nc) ** 2).sum(1) / (2 * (0.020 * HS) ** 2)) * (~is_jaw)
 
 # close the jaw: build pose -> rest pose (linear blend skinning with the jaw weight)
 wj = BW[:, BI['jaw']][:, None]
@@ -847,7 +859,7 @@ class Parts:
         self.n += len(V)
 
     def horn(self, tb, nseg, weights, kind=0.0, half=False, tip0=0.0):
-        V, F, UV, ring = loft(tb, nseg, half=half, cap0=False, cap1=True)
+        V, F, UV, ring = loft(tb, nseg, half=half, cap0=True, cap1=True)
         tipn = np.clip((tb.s[ring] / tb.s[-1] - tip0) / (1 - tip0), 0, 1)
         da = np.stack([tipn, np.full(len(V), kind), np.full(len(V), RNG.rand())], axis=1)
         self.add(V, F, UV, 1, da, weights)
@@ -856,7 +868,7 @@ class Parts:
 parts = Parts()
 
 
-def curved_cone(base, d, L, r, bend, n=6, flat=1.0, sink=0.18, hint=Z, side=None, rpow=0.85):
+def curved_cone(base, d, L, r, bend, n=6, flat=1.0, sink=0.30, hint=Z, side=None, rpow=0.85):
     d = nrm(d); bend = np.asarray(bend, float)
     ctrl = []
     for t in np.linspace(-sink, 1.0, 6):
@@ -871,23 +883,27 @@ def hdir(h, x, up):
 
 
 # horns (head-local specs)
-parts.horn(curved_cone(hl(0.03, 0.150, 0.215), hdir(-1.0, 0.28, 0.42), 0.92, 0.072, hdir(0.0, 0.06, 0.16), n=9),
+def horn_cc(base, d, L, r, bend, **kw):
+    return curved_cone(base, d, L * HORN_S * HS, r * HORN_S * HS, bend, **kw)
+
+
+parts.horn(horn_cc(hl(0.03, 0.150, 0.215), hdir(-1.0, 0.30, 0.24), 0.95, 0.074, hdir(0.05, 0.10, 0.34), n=10),
            8, {'head': 1}, tip0=0.14)
-parts.horn(curved_cone(hl(0.00, 0.245, 0.040), hdir(-1.0, 0.50, 0.05), 0.55, 0.052, hdir(0.0, -0.10, 0.10), n=7),
+parts.horn(horn_cc(hl(0.00, 0.245, 0.040), hdir(-1.0, 0.50, 0.05), 0.55, 0.052, hdir(0.0, -0.10, 0.10), n=7),
            7, {'head': 1}, tip0=0.14)
-parts.horn(curved_cone(hl(-0.02, 0.215, 0.140), hdir(-1.0, 0.42, 0.22), 0.36, 0.040, hdir(0.0, 0.0, 0.08), n=6),
+parts.horn(horn_cc(hl(-0.02, 0.215, 0.140), hdir(-1.0, 0.42, 0.22), 0.36, 0.040, hdir(0.0, 0.0, 0.08), n=6),
            6, {'head': 1}, tip0=0.14)
-parts.horn(curved_cone(hl(0.24, 0.245, 0.235), hdir(-0.9, 0.30, 0.45), 0.20, 0.034, hdir(-0.1, 0, 0.05), n=5),
+parts.horn(horn_cc(hl(0.24, 0.245, 0.235), hdir(-0.9, 0.30, 0.45), 0.20, 0.034, hdir(-0.1, 0, 0.05), n=5),
            6, {'head': 1}, tip0=0.14)
-parts.horn(curved_cone(hl(0.02, 0.200, -0.255), hdir(-0.9, 0.30, -0.42), 0.26, 0.036, hdir(-0.1, 0.0, 0.10), n=5),
+parts.horn(horn_cc(hl(0.02, 0.200, -0.255), hdir(-0.9, 0.30, -0.42), 0.26, 0.036, hdir(-0.1, 0.0, 0.10), n=5),
            6, {'jaw': 1}, tip0=0.14)
-parts.horn(curved_cone(hl(0.42, 0.185, -0.270), hdir(-0.7, 0.25, -0.60), 0.14, 0.026, hdir(-0.1, 0.0, 0.05), n=5),
+parts.horn(horn_cc(hl(0.42, 0.185, -0.270), hdir(-0.7, 0.25, -0.60), 0.14, 0.026, hdir(-0.1, 0.0, 0.05), n=5),
            5, {'jaw': 1}, tip0=0.14)
 # nose horn (centre line -> half loft)
 _hit = ray(hl(1.27, 0.012, 0.6), -U_H)
 if _hit is not None:
     _b = _hit.copy(); _b[0] = 0.0
-    parts.horn(curved_cone(_b - U_H * 0.01, hdir(-0.45, 0, 1.0), 0.15, 0.040, hdir(-0.25, 0, 0.0), n=5,
+    parts.horn(curved_cone(_b - U_H * 0.01, hdir(-0.45, 0, 1.0), 0.11 * HS, 0.032 * HS, hdir(-0.25, 0, 0.0), n=5,
                            side=X, flat=0.8), 5, {'head': 1}, half=True, tip0=0.14)
 
 # dorsal spines (centre line -> half lofts), each rigid with the local spine weights
@@ -920,20 +936,20 @@ parts.horn(Tube([tuple(_te - Y * 0.25) + (0.040, 0.040, 0.040), tuple(_te - Y * 
 
 # claws
 for leg, b, m_, tip, r0, r1, rear, d in TOES:
-    L = (0.20 if leg == 'F' else 0.24) * (0.7 if rear else 1.0)
+    L = (0.20 if leg == 'F' else 0.24) * (0.7 if rear else 1.0) * CLAW_S
     base = tip - d * 0.03 + Z * 0.012
-    tb = curved_cone(base, d + Z * 0.25, L, r1 * 0.86, -Z * 0.42, n=6, flat=0.72, sink=0.25,
+    tb = curved_cone(base, d + Z * 0.32, L, r1 * 0.95, -Z * 0.46, n=6, flat=0.72, sink=0.25,
                      hint=Z, rpow=0.8)
     parts.horn(tb, 6, {('legFL_lower' if leg == 'F' else 'legBL_lower'): 1}, tip0=0.2)
 # wing thumb claw
-parts.horn(curved_cone(WRIST + np.array([0.06, -0.05, 0.0]), np.array([0.25, -1.0, 0.12]), 0.50, 0.062,
+parts.horn(curved_cone(WRIST + np.array([0.06, -0.05, 0.0]), np.array([0.25, -1.0, 0.12]), 0.62, 0.072,
                        np.array([0.30, 0.25, -0.12]), n=7, flat=0.8, sink=0.25), 7, {'wingL_elbow': 1}, tip0=0.2)
 
 # finger bones (gilded)
 for k in range(3):
     ss = np.linspace(0.0, 1.0, 9)
     pts = finger_curve(k, ss)
-    rr = 0.088 * (1 - ss) ** 0.75 + 0.014
+    rr = 0.105 * (1 - ss) ** 0.75 + 0.016
     rr = rr * (1 + 0.30 * np.exp(-((ss - 0.375) / 0.035) ** 2) + 0.30 * np.exp(-((ss - 0.70) / 0.03) ** 2))
     tb = Tube([tuple(p) + (r,) for p, r in zip(pts, rr)], 22, hint=Z)
     V, F, UV, ring = loft(tb, 7, cap0=False, cap1=True)
@@ -944,9 +960,9 @@ for k in range(3):
 for h in np.arange(0.44, 1.46, 0.072):
     w = float(np.interp(h, SK_H, SK_W)); bot = float(np.interp(h, SK_H, SK_BOT))
     big = 1.0 + 0.9 * math.exp(-((h - 1.22) / 0.08) ** 2) + 0.4 * math.exp(-((h - 0.8) / 0.06) ** 2)
-    L = 0.058 * big * (0.8 + 0.4 * RNG.rand())
+    L = 0.058 * HS * big * (0.8 + 0.4 * RNG.rand())
     base = hl(h, 0.885 * w - 0.012, bot + 0.035)
-    tb = curved_cone(base, hdir(-0.12, 0.10, -1.0), L + 0.035, 0.017 * (0.8 + 0.2 * big), hdir(-0.1, -0.1, 0), n=4,
+    tb = curved_cone(base, hdir(-0.12, 0.10, -1.0), L + 0.035, 0.019 * (0.8 + 0.2 * big), hdir(-0.1, -0.1, 0), n=4,
                      sink=0.0, hint=A_H)
     parts.horn(tb, 5, {'head': 1}, kind=1.0, tip0=0.3)
 for h in np.arange(0.48, 1.40, 0.072):
@@ -957,10 +973,10 @@ for h in np.arange(0.48, 1.40, 0.072):
     parts.horn(tb, 5, {'jaw': 1}, kind=1.0, tip0=0.3)
 
 # eye
-EYE_R = 0.052
+EYE_R = 0.074 * HS
 _eo = hl(0.37, 0.8, 0.085)
 _hit = ray(_eo, -X)
-EYE_C = (_hit if _hit is not None else hl(0.37, 0.27, 0.085)) - X * (0.50 * EYE_R)
+EYE_C = (_hit if _hit is not None else hl(0.37, 0.27, 0.085)) - X * (0.66 * EYE_R)
 _eout = nrm(X * math.cos(math.radians(18)) + A_H * math.sin(math.radians(18)) + U_H * 0.05)
 _ex = nrm(np.cross(U_H, _eout)); _ey = np.cross(_eout, _ex)
 EV, EF = ellipsoid(EYE_C, (EYE_R, EYE_R, EYE_R), nu=14, nv=10)
@@ -1162,7 +1178,7 @@ for e in bm.edges:
     fl = [flabel[f.index] if f.index < len(BT) else -1 for f in e.link_faces]
     e.seam = len(fl) == 2 and fl[0] != fl[1]
 for f in bm.faces:
-    f.select = f.index < len(BT) and not is_foot[f.index]
+    f.select = bool(f.index < len(BT) and not is_foot[f.index])
 bmesh.update_edit_mesh(me_h)
 bpy.ops.uv.unwrap(method='ANGLE_BASED', margin=0.001)
 bm = bmesh.from_edit_mesh(me_h); bm.faces.ensure_lookup_table()
@@ -1215,8 +1231,349 @@ MN = np.empty(len(MV) * 3, np.float32); me_m.vertices.foreach_get('normal', MN);
 # 8. materials + baking
 # --------------------------------------------------------------------------------------
 IMAGES = {}
-exec(compile(open(os.path.join(HERE, 'dragon_materials.py')).read(), 'dragon_materials.py', 'exec')) \
-    if (not QUICK and os.path.exists(os.path.join(HERE, 'dragon_materials.py'))) else None
+class G:
+    """Tiny node-graph helper for the procedural (bake-only) materials."""
+
+    def __init__(self, name):
+        self.mat = bpy.data.materials.new(name)
+        self.mat.use_nodes = True
+        self.nt = self.mat.node_tree
+        self.nt.nodes.clear()
+
+    def new(self, t, **kw):
+        n = self.nt.nodes.new(t)
+        for k, v in kw.items():
+            setattr(n, k, v)
+        return n
+
+    def put(self, sock, v):
+        if v is None:
+            return
+        if isinstance(v, bpy.types.NodeSocket):
+            self.nt.links.new(v, sock)
+        elif isinstance(v, (int, float)):
+            sock.default_value = float(v)
+        else:
+            v = tuple(float(x) for x in v)
+            n = len(sock.default_value)
+            sock.default_value = (v + (1.0,) * n)[:n]
+
+    def math(self, op, a, b=None, c=None, clamp=False):
+        n = self.new('ShaderNodeMath', operation=op, use_clamp=clamp)
+        self.put(n.inputs[0], a); self.put(n.inputs[1], b); self.put(n.inputs[2], c)
+        return n.outputs[0]
+
+    def add(self, a, b): return self.math('ADD', a, b)
+    def sub(self, a, b): return self.math('SUBTRACT', a, b)
+    def mul(self, a, b): return self.math('MULTIPLY', a, b)
+    def inv(self, a): return self.math('SUBTRACT', 1.0, a)
+
+    def vmath(self, op, a, b=None, scale=None):
+        n = self.new('ShaderNodeVectorMath', operation=op)
+        self.put(n.inputs[0], a); self.put(n.inputs[1], b)
+        if scale is not None:
+            self.put(n.inputs['Scale'], scale)
+        return n.outputs['Value'] if op in ('DOT_PRODUCT', 'LENGTH') else n.outputs['Vector']
+
+    def mixc(self, f, a, b, blend='MIX'):
+        n = self.new('ShaderNodeMix', data_type='RGBA', blend_type=blend)
+        self.put(n.inputs[0], f); self.put(n.inputs[6], a); self.put(n.inputs[7], b)
+        return n.outputs[2]
+
+    def lerp(self, f, a, b):
+        n = self.new('ShaderNodeMix', data_type='FLOAT')
+        self.put(n.inputs[0], f); self.put(n.inputs[2], a); self.put(n.inputs[3], b)
+        return n.outputs[0]
+
+    def ss(self, x, a, b):
+        """smoothstep(a, b, x); a > b gives the falling version."""
+        n = self.new('ShaderNodeMapRange', interpolation_type='SMOOTHSTEP')
+        self.put(n.inputs[0], x)
+        if a < b:
+            n.inputs[1].default_value, n.inputs[2].default_value = a, b
+            n.inputs[3].default_value, n.inputs[4].default_value = 0.0, 1.0
+        else:
+            n.inputs[1].default_value, n.inputs[2].default_value = b, a
+            n.inputs[3].default_value, n.inputs[4].default_value = 1.0, 0.0
+        return n.outputs[0]
+
+    def attr(self, name):
+        return self.new('ShaderNodeAttribute', attribute_name=name).outputs['Vector']
+
+    def sep(self, v):
+        n = self.new('ShaderNodeSeparateXYZ'); self.put(n.inputs[0], v)
+        return n.outputs
+
+    def comb(self, x, y, z):
+        n = self.new('ShaderNodeCombineXYZ')
+        self.put(n.inputs[0], x); self.put(n.inputs[1], y); self.put(n.inputs[2], z)
+        return n.outputs[0]
+
+    def noise(self, vec, scale, detail=1.0, rough=0.5):
+        n = self.new('ShaderNodeTexNoise')
+        self.put(n.inputs['Vector'], vec)
+        n.inputs['Scale'].default_value = scale; n.inputs['Detail'].default_value = detail
+        n.inputs['Roughness'].default_value = rough
+        return n.outputs[0]
+
+    def voronoi(self, vec, feature, rnd=0.8):
+        n = self.new('ShaderNodeTexVoronoi', feature=feature)
+        self.put(n.inputs['Vector'], vec)
+        n.inputs['Scale'].default_value = 1.0; n.inputs['Randomness'].default_value = rnd
+        return n
+
+    def ramp(self, fac, stops):
+        n = self.new('ShaderNodeValToRGB')
+        cr = n.color_ramp
+        while len(cr.elements) < len(stops):
+            cr.elements.new(0.5)
+        for e, (pos, col) in zip(cr.elements, stops):
+            e.position = pos; e.color = tuple(col) + (1.0,)
+        self.put(n.inputs[0], fac)
+        return n.outputs['Color']
+
+    def finish(self, col, rough, metal, height):
+        """Wire the three bake variants; select with set_pass()."""
+        nt = self.nt
+        self.out = self.new('ShaderNodeOutputMaterial')
+        self.e_col = self.new('ShaderNodeEmission'); self.put(self.e_col.inputs['Color'], col)
+        self.e_dat = self.new('ShaderNodeEmission')
+        self.put(self.e_dat.inputs['Color'], self.comb(1.0, rough, metal))
+        self.bsdf = self.new('ShaderNodeBsdfPrincipled')
+        bump = self.new('ShaderNodeBump')
+        bump.inputs['Strength'].default_value = 1.0; bump.inputs['Distance'].default_value = 1.0
+        self.put(bump.inputs['Height'], height)
+        nt.links.new(bump.outputs['Normal'], self.bsdf.inputs['Normal'])
+        self.diff = self.new('ShaderNodeBsdfDiffuse')
+        self.img = self.new('ShaderNodeTexImage')
+        nt.nodes.active = self.img
+        return self
+
+    def set_pass(self, which, image):
+        src_ = {'col': self.e_col.outputs[0], 'dat': self.e_dat.outputs[0], 'nrm': self.bsdf.outputs[0],
+                'ao': self.diff.outputs[0]}[which]
+        for l in list(self.out.inputs['Surface'].links):
+            self.nt.links.remove(l)
+        self.nt.links.new(src_, self.out.inputs['Surface'])
+        self.img.image = image
+        for n in self.nt.nodes:
+            n.select = False
+        self.img.select = True
+        self.nt.nodes.active = self.img
+
+
+# palette (scene-linear)
+C_TEAL = (0.010, 0.072, 0.062)
+C_VERD = (0.040, 0.240, 0.135)
+C_VERD_L = (0.170, 0.460, 0.270)
+C_BRONZE = (0.360, 0.225, 0.060)
+C_GOLD = (0.860, 0.600, 0.180)
+C_CREASE = (0.008, 0.030, 0.036)
+C_OCHRE_D = (0.400, 0.230, 0.070)
+C_OCHRE = (0.680, 0.470, 0.170)
+C_OCHRE_L = (0.880, 0.730, 0.400)
+
+
+def mat_skin():
+    g = G('bake_skin')
+    P = g.new('ShaderNodeTexCoord').outputs['Object']
+    da = g.sep(g.attr('da')); cv, pc, rl = da[0], da[1], da[2]
+    db = g.sep(g.attr('db')); mouth, nostril = db[0], db[1]
+    flow = g.attr('flow')
+    nz = g.sep(g.new('ShaderNodeNewGeometry').outputs['Normal'])[2]
+    nbig = g.noise(P, 0.55, 1.0)                 # broad painted blotches
+    nmid = g.noise(P, 1.9, 1.0)
+
+    def layer(S, seed, depth):
+        Pv = g.vmath('SCALE', g.vmath('ADD', P, (seed, seed * 1.7, -seed)), scale=S)
+        v1 = g.voronoi(Pv, 'F1'); v2 = g.voronoi(Pv, 'DISTANCE_TO_EDGE')
+        q = g.vmath('SUBTRACT', Pv, v1.outputs['Position'])
+        tilt = g.math('ADD', g.mul(g.vmath('DOT_PRODUCT', q, flow), 0.85), 0.5, clamp=True)
+        edge = v2.outputs['Distance']
+        plate = g.ss(edge, 0.0, 0.21)
+        h = g.mul(g.mul(plate, g.add(g.mul(tilt, 0.6), 0.4)), depth)
+        rim = g.mul(g.mul(g.ss(edge, 0.010, 0.040), g.ss(edge, 0.150, 0.060)), g.ss(tilt, 0.36, 0.72))
+        cr = g.ss(edge, 0.045, 0.0)
+        rc = g.sep(v1.outputs['Color'])
+        return dict(h=h, rim=rim, cr=cr, tilt=tilt, r1=rc[0], r2=rc[1])
+
+    LL, LM, LF = layer(3.5, 0.0, 0.016), layer(6.0, 3.1, 0.011), layer(11.5, 7.7, 0.007)
+    wF = g.ss(rl, 0.158, 0.128)
+    wL = g.ss(rl, 0.40, 0.46)
+    S = {k: g.lerp(wF, g.lerp(wL, LM[k], LL[k]), LF[k]) for k in LL}
+
+    # scale plate colour: dark root -> light verdigris free edge, gold rim, dark crease
+    g1 = g.math('ADD', g.add(g.mul(S['tilt'], 0.72), g.mul(S['r1'], 0.22)), g.mul(g.sub(nbig, 0.5), 0.55), clamp=True)
+    col = g.ramp(g1, [(0.0, C_TEAL), (0.5, C_VERD), (1.0, C_VERD_L)])
+    col = g.mixc(g.mul(g.ss(S['r2'], 0.82, 0.97), 0.45), col, C_BRONZE)
+    col = g.mixc(g.mul(g.ss(cv, 0.45, 0.98), 0.40), col, C_TEAL)                    # deeper along the back
+    col = g.mixc(g.mul(g.ss(cv, -0.28, -0.60), 0.55), col, C_BRONZE)                # warm lower flank
+    col = g.mixc(g.mul(S['rim'], 0.92), col, C_GOLD)
+    col = g.mixc(g.mul(S['cr'], 0.78), col, C_CREASE)
+    # belly plates
+    f = g.math('FRACT', pc)
+    bm = g.ss(g.add(cv, g.mul(g.sub(nmid, 0.5), 0.07)), -0.60, -0.68)
+    bplate = g.ss(f, 0.0, 0.12)
+    hb = g.mul(g.mul(bplate, g.add(g.mul(f, 0.65), 0.35)), 0.017)
+    bcol = g.ramp(g.math('ADD', g.mul(f, 0.85), g.mul(g.sub(nbig, 0.5), 0.3), clamp=True),
+                  [(0.0, C_OCHRE_D), (0.45, C_OCHRE), (1.0, C_OCHRE_L)])
+    bcr = g.ss(f, 0.07, 0.0)
+    bcol = g.mixc(g.mul(bcr, 0.8), bcol, (0.12, 0.05, 0.02))
+    col = g.mixc(bm, col, bcol)
+    # painted top light + cool underside
+    col = g.mixc(1.0, col, g.comb(*[g.lerp(g.ss(nz, -0.75, 0.9), lo, hi) for lo, hi in
+                                    ((0.70, 1.12), (0.76, 1.10), (0.86, 1.04))]), blend='MULTIPLY')
+    col = g.mixc(mouth, col, (0.50, 0.085, 0.075))
+    col = g.mixc(nostril, col, (0.01, 0.008, 0.008))
+    rough = g.lerp(bm, g.lerp(S['rim'], g.lerp(S['cr'], 0.62, 0.78), 0.50), g.lerp(bcr, 0.58, 0.74))
+    rough = g.lerp(mouth, rough, 0.32)
+    metal = g.lerp(bm, g.lerp(S['rim'], g.lerp(S['cr'], 0.10, 0.0), 0.32), 0.12)
+    metal = g.lerp(mouth, metal, 0.0)
+    height = g.mul(g.lerp(bm, S['h'], hb), g.inv(mouth))
+    return g.finish(col, rough, metal, height)
+
+
+def mat_horn():
+    g = G('bake_horn')
+    da = g.sep(g.attr('da')); tip, kind, rnd = da[0], da[1], da[2]
+    band = g.ss(g.math('SINE', g.add(g.mul(tip, 30.0), g.mul(rnd, 6.0))), -0.6, 0.6)
+    fade = g.ss(tip, 0.78, 0.55)
+    col = g.ramp(tip, [(0.0, (0.16, 0.10, 0.035)), (0.22, (0.50, 0.32, 0.085)), (0.52, (0.80, 0.58, 0.20)),
+                       (0.80, (0.90, 0.80, 0.56)), (1.0, (0.95, 0.91, 0.76))])
+    col = g.mixc(g.mul(g.mul(g.inv(band), fade), 0.30), col, (0.22, 0.13, 0.04))
+    tooth = g.ramp(tip, [(0.0, (0.62, 0.42, 0.20)), (0.35, (0.90, 0.84, 0.66)), (1.0, (0.96, 0.94, 0.84))])
+    fing = g.ramp(tip, [(0.0, (0.58, 0.38, 0.11)), (0.5, (0.74, 0.52, 0.17)), (1.0, (0.50, 0.30, 0.08))])
+    is_tooth = g.mul(g.ss(kind, 0.5, 0.9), g.ss(kind, 1.5, 1.1))
+    is_fing = g.ss(kind, 1.5, 1.9)
+    col = g.mixc(is_fing, g.mixc(is_tooth, col, tooth), fing)
+    metal = g.lerp(is_tooth, g.lerp(is_fing, g.mul(g.ss(tip, 0.85, 0.35), 0.30), 0.25), 0.0)
+    rough = g.lerp(is_tooth, 0.52, 0.40)
+    height = g.mul(g.mul(g.mul(band, fade), 0.0045), g.inv(g.math('MAXIMUM', is_tooth, is_fing)))
+    return g.finish(col, rough, metal, height)
+
+
+def mat_eye():
+    g = G('bake_eye')
+    da = g.sep(g.attr('da')); ex, ey = da[0], da[1]
+    r = g.math('SQRT', g.add(g.mul(ex, ex), g.mul(ey, ey)))
+    col = g.ramp(r, [(0.0, (1.0, 0.78, 0.16)), (0.42, (1.0, 0.50, 0.04)), (0.74, (0.62, 0.15, 0.015)),
+                     (0.92, (0.06, 0.02, 0.01))])
+    px = g.math('DIVIDE', ex, 0.17); py = g.math('DIVIDE', ey, 0.66)
+    pupil = g.ss(g.add(g.mul(px, px), g.mul(py, py)), 1.15, 0.80)
+    col = g.mixc(pupil, col, (0.004, 0.003, 0.003))
+    return g.finish(col, 0.22, 0.0, 0.0)
+
+
+def mat_membrane():
+    g = G('bake_membrane')
+    P = g.new('ShaderNodeTexCoord').outputs['Object']
+    e = g.sep(g.attr('da'))[0]
+    dp = g.sep(g.vmath('SUBTRACT', P, tuple(WRIST)))
+    rr = g.math('SQRT', g.add(g.mul(dp[0], dp[0]), g.mul(dp[1], dp[1])))
+    ang = g.math('ARCTAN2', dp[1], dp[0])
+    nbig = g.noise(P, 0.45, 1.0)
+    nwob = g.noise(P, 0.9, 1.0)
+    a1 = g.add(g.mul(ang, 8.0), g.mul(g.sub(nwob, 0.5), 1.1))
+    v1 = g.voronoi(g.comb(a1, g.mul(rr, 0.30), 0.0), 'DISTANCE_TO_EDGE', 0.9).outputs['Distance']
+    v2 = g.voronoi(g.comb(g.add(g.mul(a1, 2.6), 4.3), g.mul(rr, 0.85), 2.0), 'DISTANCE_TO_EDGE', 0.9).outputs['Distance']
+    vein1 = g.ss(v1, 0.040, 0.0)
+    vein2 = g.mul(g.ss(v2, 0.050, 0.0), 0.40)
+    vein = g.math('MAXIMUM', vein1, vein2)
+    e2 = g.math('ADD', e, g.mul(g.sub(nbig, 0.5), 0.35), clamp=True)
+    col = g.ramp(e2, [(0.0, (0.17, 0.050, 0.020)), (0.25, (0.42, 0.14, 0.032)), (0.60, (0.76, 0.36, 0.060)),
+                      (1.0, (0.93, 0.60, 0.15))])
+    col = g.mixc(g.mul(vein, 0.62), col, (0.34, 0.10, 0.030))
+    fold = g.mul(g.mul(g.math('COSINE', g.mul(ang, 34.0)), e), 0.007)
+    height = g.add(g.mul(vein, 0.0045), fold)
+    rough = g.lerp(vein, 0.62, 0.52)
+    return g.finish(col, rough, 0.0, height)
+
+
+def new_image(name, size, srgb):
+    im = bpy.data.images.new(name, size, size, alpha=False, float_buffer=False, is_data=not srgb)
+    im.colorspace_settings.name = 'sRGB' if srgb else 'Non-Color'
+    return im
+
+
+def px(im):
+    a = np.empty(im.size[0] * im.size[1] * 4, np.float32)
+    im.pixels.foreach_get(a)
+    return a.reshape(im.size[1], im.size[0], 4)
+
+
+def store(name, arr, srgb):
+    h, w = arr.shape[:2]
+    im = new_image(name, w, srgb)
+    out = np.ones((h, w, 4), np.float32); out[..., :3] = np.clip(arr[..., :3], 0, 1)
+    im.pixels.foreach_set(out.ravel())
+    im.filepath_raw = os.path.join(SCRATCH, name + '.png'); im.file_format = 'PNG'
+    im.save()
+    IMAGES[name] = im
+    return im
+
+
+def bake(ob, graphs, which, image, btype, samples):
+    for gph in graphs:
+        gph.set_pass(which, image)
+    scene.cycles.samples = samples
+    bpy.ops.object.select_all(action='DESELECT')
+    ob.select_set(True); bpy.context.view_layer.objects.active = ob
+    bpy.ops.object.bake(type=btype, margin=12, use_clear=True)
+    log('baked %s/%s' % (image.name, btype))
+
+
+if not QUICK:
+    scene.render.engine = 'CYCLES'
+    scene.cycles.device = 'CPU'
+    scene.cycles.use_denoising = False
+    scene.render.bake.use_selected_to_active = False
+    scene.render.bake.margin_type = 'EXTEND'
+    scene.world = bpy.data.worlds.new('BakeWorld')
+    scene.world.light_settings.distance = 1.3
+    g_skin, g_horn, g_eye, g_mem = mat_skin(), mat_horn(), mat_eye(), mat_membrane()
+    for gph in (g_skin, g_horn, g_eye):
+        me_h.materials.append(gph.mat)
+    me_m.materials.append(g_mem.mat)
+    # mirrored occluder so the AO bake sees the whole creature
+    me_occ = tri_mesh('occ', HVt * _M, HF[:, ::-1])
+    ob_occ = temp_object(me_occ)
+    ob_m.hide_render = True
+
+    t_col, t_dat = new_image('t_col', TEX, True), new_image('t_dat', TEX, False)
+    t_nrm, t_ao = new_image('t_nrm', TEX, False), new_image('t_ao', TEX // 2, False)
+    body_g = (g_skin, g_horn, g_eye)
+    bake(ob_h, body_g, 'col', t_col, 'EMIT', 8)
+    bake(ob_h, body_g, 'dat', t_dat, 'EMIT', 4)
+    bake(ob_h, body_g, 'nrm', t_nrm, 'NORMAL', 6)
+    bake(ob_h, body_g, 'ao', t_ao, 'AO', 48)
+    colp, datp, nrmp, aop = px(t_col), px(t_dat), px(t_nrm), px(t_ao)
+    ao = np.clip(aop[..., 0], 0, 1)
+    ao = np.repeat(np.repeat(ao, 2, axis=0), 2, axis=1)              # half-res AO -> soft upsample
+    for ax in (0, 1):
+        ao = (np.roll(ao, 1, ax) + 2 * ao + np.roll(ao, -1, ax)) * 0.25
+    ao = ao[..., None]
+    shade = np.clip((ao - 0.12) / 0.80, 0, 1) ** 0.9                 # painted occlusion, cool tinted
+    tint = np.array([0.34, 0.42, 0.52], np.float32)
+    base = colp[..., :3] * (tint + (1 - tint) * shade)
+    store('body_base', base, True)
+    store('body_normal', nrmp[..., :3], False)
+    orm = np.concatenate([0.45 + 0.55 * ao, datp[..., 1:2], datp[..., 2:3]], axis=2)
+    store('body_orm', orm, False)
+
+    ob_m.hide_render = False
+    ob_h.hide_render = True; ob_occ.hide_render = True
+    w_col, w_dat, w_nrm = new_image('w_col', TEX_WING, True), new_image('w_dat', TEX_WING // 2, False), \
+        new_image('w_nrm', TEX_WING // 2, False)
+    bake(ob_m, (g_mem,), 'col', w_col, 'EMIT', 8)
+    bake(ob_m, (g_mem,), 'dat', w_dat, 'EMIT', 4)
+    bake(ob_m, (g_mem,), 'nrm', w_nrm, 'NORMAL', 6)
+    store('wing_base', px(w_col)[..., :3], True)
+    store('wing_normal', px(w_nrm)[..., :3], False)
+    wd = px(w_dat)
+    store('wing_orm', np.concatenate([np.ones_like(wd[..., :1]), wd[..., 1:2], wd[..., 2:3]], axis=2), False)
+    bpy.data.objects.remove(ob_occ)
+    ob_h.hide_render = False
+    log('textures ready')
 
 # --------------------------------------------------------------------------------------
 # 9. final mirrored mesh, armature, export
