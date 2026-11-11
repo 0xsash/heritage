@@ -33,7 +33,7 @@ from mathutils import Vector, noise as mnoise
 CELL = 512
 COLS = 2
 ALPHA_TEST = 0.42          # the game discards alpha below this
-AO_MIN = 0.55
+AO_MIN = 0.5
 
 # name, target height (m), target width (m)
 SPECIES = [
@@ -112,6 +112,7 @@ class Tree:
         self.bark_m = 1.0           # metres of bark covered by one texture repeat
         self.levels = []
         self.env = None
+        self.env_levels = 99        # envelope only constrains child levels <= this
 
     # ---- growth -------------------------------------------------------------------
     def grow(self, start, d, length, r0, level):
@@ -174,7 +175,8 @@ class Tree:
             clen = rng.uniform(lo, hi)
             if "shape" in cp:
                 clen *= cp["shape"](u)
-            clen = self.clip_len(p, cdir, clen, cp)
+            if level + 1 <= self.env_levels:
+                clen = self.clip_len(p, cdir, clen, cp)
             if clen < cp.get("minlen", 0.6 * lo):
                 continue
             cr = min(rp * 0.92, rp * lp.get("rr", 0.55) * rng.uniform(0.85, 1.12))
@@ -192,6 +194,15 @@ class Tree:
                 break
             dist += stp
         return min(clen, dist + stp * self.rng.uniform(0.0, 1.0))
+
+    def reach_len(self, p, d, maxlen, minlen):
+        """Longest length <= maxlen whose end point is still inside the envelope."""
+        ln = maxlen
+        while ln > minlen:
+            if self.env(p + d * ln):
+                return ln
+            ln -= 0.25
+        return minlen
 
     # ---- foliage ------------------------------------------------------------------
     def leaf_twig(self, pts, length, lf):
@@ -219,7 +230,7 @@ class Tree:
         # colour: per-twig tint + per-leaf variation (painterly clumps of tone)
         base, light, dark = lf["cols"]
         tw = rng.normal(0, lf.get("tw_var", 0.16))
-        k = np.clip(rng.random(n) ** 1.6 * 0.9 + tw, 0, 1)[:, None]
+        k = np.clip(rng.random(n) ** 2.2 * 0.85 + tw, 0, 1)[:, None]
         col = base * (1 - k) + light * k
         kd = np.clip(rng.random(n) ** 2.2 * 0.8 - tw, 0, 1)[:, None]
         col = col * (1 - kd) + dark * kd
@@ -278,55 +289,70 @@ def palette(base, light, dark):
 
 def gen_oak(tr):
     """Pedunculate oak: short massive twisted bole, heavy sinuous boughs, broad lobed dome."""
-    cols = palette((92, 108, 50), (128, 134, 62), (56, 74, 36))
-    tr.env = make_env((0, 0, 11.3), (7.4, 7.4, 7.0), bump=0.2, freq=1.7, seed=3.1)
+    rng = tr.rng
+    cols = palette((90, 100, 48), (128, 128, 60), (52, 66, 34))
+    tr.env = make_env((0, 0, 11.2), (7.3, 7.3, 5.7), bump=0.26, freq=1.9, seed=3.1)
+    tr.env_levels = 2
     tr.bark, tr.bark_m = "Bark001", 0.9
     tint = bark_tint((150, 140, 120))
 
     def rfun(t):
-        r = np.where(t < 0.36, 1.0 - 0.22 * t / 0.36, 0.0)
-        r = np.where((t >= 0.36) & (t < 0.5), 0.78 - 0.30 * (t - 0.36) / 0.14, r)
-        r = np.where(t >= 0.5, 0.48 - 0.38 * (t - 0.5) / 0.5, r)
+        r = np.where(t < 0.8, 1.0 - 0.2 * t / 0.8, 0.0)
+        r = np.where(t >= 0.8, 0.8 * np.sqrt(np.maximum(0.0, 1 - ((t - 0.8) / 0.2) ** 2)) + 0.02, r)
         return r
 
-    leaf = dict(len=(0.22, 0.32), wr=0.58, ang=55, angvar=25, droop=0.25, cols=cols)
+    leaf = dict(len=(0.15, 0.22), wr=0.6, ang=55, angvar=25, droop=0.25, cols=cols)
     tr.levels = [
-        dict(seg=0.45, wobble=0.16, rfun=rfun, prof=root_flare(5, 0.75, 0.55, 0.6), tint=tint,
-             n=9, t0=0.33, t1=0.97, ang=lambda u: 82 - 52 * u, angvar=9, rr=0.62),
-        dict(len=(8.0, 11.5), shape=lambda u: 1.0 - 0.3 * u, seg=0.5, wobble=0.26, trop=0.035,
-             tip=0.12, tint=tint, n=10, t0=0.22, t1=0.97, ang=52, angvar=16, rr=0.52, prune=0.08),
-        dict(len=(2.6, 5.2), shape=lambda u: 1.0 - 0.4 * u, seg=0.35, wobble=0.3, trop=0.03,
-             tip=0.2, tint=tint, n=9, t0=0.2, t1=0.97, ang=48, angvar=16, rr=0.55, prune=0.14),
+        dict(seg=0.3, wobble=0.1, rfun=rfun, prof=root_flare(5, 0.8, 0.6, 0.6, twist=1.1, knob=0.08), tint=tint),
+        dict(len=(8.0, 11.5), seg=0.45, wobble=0.24, trop=0.04, tip=0.1, tpow=0.8, tint=tint,
+             n=11, t0=0.3, t1=0.98, ang=52, angvar=16, rr=0.5, prune=0.08),
+        dict(len=(2.8, 5.6), shape=lambda u: 1.0 - 0.4 * u, seg=0.35, wobble=0.3, trop=0.03,
+             tip=0.2, tint=tint, n=9, t0=0.2, t1=0.97, ang=48, angvar=16, rr=0.55, prune=0.16, minlen=0.9),
         dict(len=(1.0, 2.2), seg=0.25, wobble=0.26, tip=0.3, tint=tint,
-             n=8, t0=0.15, t1=0.97, ang=46, angvar=16, rr=0.6, prune=0.1,
-             leaves=dict(leaf, dens=9, t0=0.45)),
+             n=9, t0=0.12, t1=0.97, ang=46, angvar=16, rr=0.6, prune=0.12,
+             leaves=dict(leaf, dens=14, t0=0.4)),
         dict(len=(0.45, 0.95), seg=0.2, wobble=0.2, tip=0.5, tint=tint,
-             leaves=dict(leaf, dens=30, t0=0.1)),
+             leaves=dict(leaf, dens=46, t0=0.08)),
     ]
-    lean = unit(np.array([0.05, 0.03, 1.0]))
-    tr.grow(np.array([0.0, 0.0, -0.15]), lean, 12.0, 0.70, 0)
+    lean = unit(np.array([0.04, 0.02, 1.0]))
+    pts, radii = tr.grow(np.array([0.0, 0.0, -0.15]), lean, 5.4, 0.72, 0)
+    top = pts[-1]
+    # heavy limbs: a ring of ascending leaders from the crown of the bole + low spreading boughs
+    limbs = [(10, 0.50), (26, 0.50), (30, 0.46), (40, 0.46), (46, 0.42), (52, 0.42), (58, 0.40),
+             (64, 0.38), (70, 0.36), (78, 0.34), (84, 0.32), (76, 0.30), (86, 0.28)]
+    az0 = rng.uniform(0, 6.28)
+    for k, (phi, rr) in enumerate(limbs):
+        az = az0 + k * 2.39996 + rng.normal(0, 0.25)
+        ph = math.radians(phi + rng.normal(0, 4))
+        radial = np.array([math.cos(az), math.sin(az), 0.0])
+        d = radial * math.sin(ph) + lean * math.cos(ph)
+        zdrop = 0.25 + 1.5 * max(0.0, (phi - 40) / 45.0)       # flatter boughs leave the bole lower
+        p = top - lean * zdrop + radial * 0.15
+        ln = tr.reach_len(p, d, rng.uniform(8.5, 11.0), 6.0) * 0.98
+        tr.grow(p, d, ln, 0.72 * rr * rng.uniform(0.92, 1.08), 1)
 
 
 def gen_poplar(tr):
     """Canada / Lombardy poplar: straight grey stem, steeply ascending branches, tall narrow crown."""
     cols = palette((108, 124, 58), (142, 150, 76), (70, 90, 44))
-    tr.env = make_env((0, 0, 15.9), (3.5, 3.5, 10.7), bump=0.16, freq=2.2, seed=1.3)
+    tr.env = make_env((0, 0, 15.9), (3.1, 3.1, 10.4), bump=0.24, freq=2.4, seed=1.3)
+    tr.env_levels = 2
     tr.bark, tr.bark_m = "Bark001", 0.8
     tint = bark_tint((176, 170, 150))
-    leaf = dict(len=(0.27, 0.38), wr=0.8, ang=60, angvar=25, droop=0.5, cols=cols)
+    leaf = dict(len=(0.19, 0.27), wr=0.8, ang=60, angvar=25, droop=0.5, cols=cols)
     tr.leaf_profile = [(0.0, 0.0), (0.3, 1.0), (0.62, 0.72), (1.0, 0.0)]
     tr.levels = [
         dict(seg=0.8, wobble=0.012, tip=0.05, prof=root_flare(4, 0.35, 0.5, 1.0, knob=0.03), tint=tint,
              n=52, t0=0.17, t1=0.985, ang=lambda u: 46 - 16 * u, angvar=8, rr=0.4, prune=0.04),
         dict(len=(4.2, 8.0), shape=lambda u: 1.0 - 0.78 * u ** 1.4, seg=0.4, wobble=0.1, trop=0.2,
-             tip=0.15, tint=tint, n=11, t0=0.18, t1=0.97, ang=36, angvar=12, rr=0.55, prune=0.1),
+             tip=0.15, tint=tint, n=11, t0=0.18, t1=0.97, ang=36, angvar=12, rr=0.55, prune=0.16),
         dict(len=(0.9, 2.1), seg=0.25, wobble=0.14, trop=0.12, tip=0.3, tint=tint,
              n=6, t0=0.15, t1=0.97, ang=42, angvar=14, rr=0.6, prune=0.08,
-             leaves=dict(leaf, dens=7, t0=0.4)),
+             leaves=dict(leaf, dens=12, t0=0.4)),
         dict(len=(0.4, 0.85), seg=0.2, wobble=0.15, tip=0.5, tint=tint,
-             leaves=dict(leaf, dens=24, t0=0.1)),
+             leaves=dict(leaf, dens=44, t0=0.1)),
     ]
-    tr.grow(np.array([0.0, 0.0, -0.15]), np.array([0.01, 0.0, 1.0]), 25.6, 0.42, 0)
+    tr.grow(np.array([0.0, 0.0, -0.15]), np.array([0.01, 0.0, 1.0]), 25.6, 0.48, 0)
 
 
 def gen_willow(tr):
@@ -340,8 +366,8 @@ def gen_willow(tr):
 
     def rfun(t):
         r = np.where(t < 0.55, 1.0 - 0.2 * t / 0.55, 0.0)
-        r = np.where((t >= 0.55) & (t < 0.86), 0.8 + 0.5 * np.sin((t - 0.55) / 0.31 * math.pi / 2), r)
-        r = np.where(t >= 0.86, 1.3 * np.sqrt(np.maximum(0.0, 1 - ((t - 0.86) / 0.14) ** 2)) + 0.02, r)
+        r = np.where((t >= 0.55) & (t < 0.86), 0.8 + 0.62 * np.sin((t - 0.55) / 0.31 * math.pi / 2) ** 1.5, r)
+        r = np.where(t >= 0.86, 1.42 * np.sqrt(np.maximum(0.0, 1 - ((t - 0.86) / 0.14) ** 2)) + 0.02, r)
         return r
 
     fl = root_flare(5, 0.45, 0.25, 2.0, twist=1.5, knob=0.09)
@@ -367,7 +393,7 @@ def gen_willow(tr):
     for k in range(nshoot):
         az = az0 + k * 2.39996 + rng.normal(0, 0.3)
         u = (k + 0.5) / nshoot
-        phi = math.radians(4 + 74 * u ** 0.75 + rng.normal(0, 5))      # angle from vertical
+        phi = math.radians(3 + 60 * u ** 0.8 + rng.normal(0, 5))      # angle from vertical
         t = 0.98 - 0.22 * u                                            # steeper shoots sit higher on the head
         f = t * m
         i = min(int(f), m - 1)
@@ -376,55 +402,56 @@ def gen_willow(tr):
         radial = np.array([math.cos(az), math.sin(az), 0.0])
         d = radial * math.sin(phi) + lean * math.cos(phi)
         p = p0 + radial * rr * 0.75
-        ln = rng.uniform(3.0, 4.9) * (1.0 - 0.3 * u)
+        ln = rng.uniform(2.9, 4.9) * (1.0 - 0.26 * u) * (1.0 + 0.12 * math.sin(2.0 * az + 1.0))
         tr.grow(p, d, ln, rng.uniform(0.022, 0.042), 1)
 
 
 def gen_pine(tr):
-    """Scots pine: tall bare stem turning orange above, irregular open crown carried high."""
+    """Scots pine: tall bare stem turning salmon-orange above, irregular open crown carried high."""
     rng = tr.rng
-    cols = palette((62, 80, 48), (88, 100, 56), (38, 52, 36))
-    tr.env = make_env((0.3, 0, 15.6), (4.4, 4.4, 4.9), bump=0.3, freq=1.5, seed=7.7)
+    cols = palette((66, 82, 52), (92, 102, 60), (40, 54, 38))
+    tr.env = make_env((0.2, 0, 15.4), (3.9, 3.9, 4.6), bump=0.32, freq=1.5, seed=7.7)
+    tr.env_levels = 2
     tr.bark, tr.bark_m = "Bark014", 0.8
-    grey = srgb2lin((150, 128, 110))
-    orange = srgb2lin((255, 160, 96))
+    grey = srgb2lin((140, 136, 130))
+    orange = srgb2lin((214, 172, 136))
 
     def tint(pts, s):
-        k = np.clip((pts[:, 2] - 6.0) / 6.0, 0, 1)[:, None]
-        return grey * (1 - k) + orange * k * 1.25
+        k = np.clip((pts[:, 2] - 6.5) / 6.0, 0, 1)[:, None]
+        return grey * (1 - k) + orange * k
 
     def twig_tint(pts, s):
-        return np.tile(srgb2lin((150, 110, 78)), (len(pts), 1))
+        return np.tile(srgb2lin((150, 118, 90)), (len(pts), 1))
 
     tr.leaf_profile = [(0.0, 0.0), (0.2, 1.0), (0.7, 0.9), (1.0, 0.0)]
-    needle = dict(len=(0.2, 0.32), wr=0.11, ang=52, angvar=20, droop=0.0, cols=cols, tw_var=0.12)
+    needle = dict(len=(0.15, 0.24), wr=0.1, ang=50, angvar=22, droop=0.0, cols=cols, tw_var=0.12)
     tr.levels = [
-        dict(seg=0.6, wobble=0.035, rfun=lambda t: 1.0 - 0.78 * t ** 1.2,
+        dict(seg=0.6, wobble=0.04, rfun=lambda t: 1.0 - 0.75 * t ** 1.3,
              prof=root_flare(4, 0.3, 0.4, 0.3, knob=0.03), tint=tint,
-             n=19, t0=0.54, t1=0.985, ang=lambda u: 88 - 40 * u, angvar=14, rr=0.42, prune=0.12),
-        dict(len=(2.4, 5.0), shape=lambda u: 1.0 - 0.45 * u, seg=0.3, wobble=0.22,
-             trop=lambda t: 0.02 + 0.2 * t, tip=0.2, tint=tint,
-             n=9, t0=0.3, t1=0.97, ang=52, angvar=18, rr=0.6, prune=0.12),
+             n=28, t0=0.5, t1=0.985, ang=lambda u: 94 - 44 * u, angvar=14, rr=0.42, prune=0.14),
+        dict(len=(3.0, 5.4), shape=lambda u: 1.0 - 0.35 * u, seg=0.3, wobble=0.22,
+             trop=lambda t: 0.01 + 0.22 * t, tip=0.2, tint=tint, minlen=1.2,
+             n=9, t0=0.3, t1=0.97, ang=55, angvar=18, rr=0.6, prune=0.12),
         dict(len=(0.8, 1.8), seg=0.22, wobble=0.2, trop=0.12, tip=0.35, tint=twig_tint,
-             n=7, t0=0.25, t1=0.97, ang=45, angvar=16, rr=0.65, prune=0.08,
-             leaves=dict(needle, dens=45, t0=0.55)),
+             n=8, t0=0.2, t1=0.97, ang=45, angvar=16, rr=0.65, prune=0.08,
+             leaves=dict(needle, dens=90, t0=0.5)),
         dict(len=(0.3, 0.62), seg=0.15, wobble=0.15, trop=0.15, tip=0.5, tint=twig_tint,
-             leaves=dict(needle, dens=110, t0=0.15, bias=0.7)),
+             leaves=dict(needle, dens=210, t0=0.1, bias=0.75)),
     ]
-    pts, radii = tr.grow(np.array([0.0, 0.0, -0.15]), np.array([0.03, 0.01, 1.0]), 19.6, 0.27, 0)
+    pts, radii = tr.grow(np.array([0.0, 0.0, -0.15]), np.array([0.03, 0.01, 1.0]), 19.6, 0.33, 0)
     # a few dead stubs on the bare stem
-    stub = dict(len=(0.5, 1.6), seg=0.25, wobble=0.25, trop=-0.08, tip=0.3, tint=bark_tint((120, 104, 92)))
+    stub = dict(len=(0.5, 1.6), seg=0.25, wobble=0.25, trop=-0.08, tip=0.3, tint=bark_tint((120, 108, 98)))
     saved = tr.levels
     tr.levels = [stub]
     m = len(pts) - 1
     for k in range(6):
-        t = rng.uniform(0.3, 0.55)
+        t = rng.uniform(0.28, 0.5)
         f = t * m
         i = int(f)
         p = pts[i] + (pts[i + 1] - pts[i]) * (f - i)
         az = rng.uniform(0, 6.28)
         d = np.array([math.cos(az), math.sin(az), rng.uniform(-0.1, 0.35)])
-        tr.grow(p, d, rng.uniform(*stub["len"]), rng.uniform(0.02, 0.04), 0)
+        tr.grow(p, d, rng.uniform(*stub["len"]), rng.uniform(0.025, 0.045), 0)
     tr.levels = saved
 
 
@@ -692,9 +719,10 @@ def make_material(name, mode, kind, axes, ell_c, ell_r, ao_dist, bark_img=None, 
         if kind == "leaf":
             # occlusion measured towards the outside of the crown: inner foliage goes dark,
             # the outer shell stays light -> the crown keeps its depth without any sun baked in
-            nmix = nb.vmath("NORMALIZE", nb.vmath("ADD", geo.outputs["Normal"], nb.vscale(ell, 1.4)))
+            nmix = nb.vmath("ADD", nb.vscale(geo.outputs["Normal"], 0.5), nb.vscale(ell, 1.0))
+            nmix = nb.vmath("NORMALIZE", nb.vmath("ADD", nmix, (0.0, 0.0, 0.9)))
             nb.link(nmix, ao.inputs["Normal"])
-        a = nb.math("POWER", ao.outputs["AO"], 0.75, clamp=True)
+        a = nb.math("POWER", ao.outputs["AO"], 0.9, clamp=True)
         if kind == "leaf":
             # analytic crown-volume term: foliage deep inside the fitted ellipsoid is darker
             q = nb.vmath("MULTIPLY", nb.vmath("SUBTRACT", geo.outputs["Position"], ell_c),
@@ -703,7 +731,7 @@ def make_material(name, mode, kind, axes, ell_c, ell_r, ao_dist, bark_img=None, 
             nb.link(nb.vmath("LENGTH", q), mr.inputs["Value"])
             mr.inputs["From Min"].default_value = 0.25
             mr.inputs["From Max"].default_value = 0.95
-            mr.inputs["To Min"].default_value = 0.4
+            mr.inputs["To Min"].default_value = 0.35
             mr.inputs["To Max"].default_value = 1.0
             a = nb.math("MULTIPLY", a, mr.outputs["Result"])
         a = nb.math("ADD", nb.math("MULTIPLY", a, 1.0 - AO_MIN), AO_MIN)
@@ -802,7 +830,7 @@ def render_species(name, H, W, a):
         for mode in ("albedo", "normal"):
             axes = (right, up, back)
             mb = make_material("bark_" + mode, mode, "bark", axes, ell_c, ell_r, 0.12 * top, bark_img)
-            ml = make_material("leaf_" + mode, mode, "leaf", axes, ell_c, ell_r, 0.16 * top)
+            ml = make_material("leaf_" + mode, mode, "leaf", axes, ell_c, ell_r, 0.22 * top)
             for ob in objs:
                 ob.data.materials.clear()
                 ob.data.materials.append(mb if ob.data is wood else ml)

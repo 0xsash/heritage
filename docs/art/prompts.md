@@ -1,6 +1,6 @@
 # BELFORT art prompts
 
-Prompts for generating the game's artwork with an image model. The look is set by `docs/art/moodboard.webp`: **Flemish Masters realism, with Bosch for the corrupted zones.**
+Prompts for generating the game's artwork with an image model. The look is set by `docs/art/moodboard.webp`, in a **stylised, hand-painted** treatment: Flemish Masters colour and light, Bosch for the corrupted zones, and smooth sculpted shapes instead of photographic realism.
 
 There are two kinds of image, and they need different prompts:
 
@@ -31,7 +31,7 @@ Save results here so the pipeline can find them:
 Paste this after the subject description:
 
 ```text
-Full-body game asset reference, single subject centred and fully in frame, plain light grey seamless studio background, flat even soft lighting, no cast shadow, no scenery, no text, no border. Realistic, physically believable materials with fine surface detail: worn leather, rough wool, aged metal, weathered wood. Late-medieval Flanders, 15th century, grounded and practical, not fantasy cosplay. Muted natural-dye palette: madder red, moss green, woad blue, ochre gold, brick red, bone white, charcoal black. Photorealistic rendering in the manner of a Flemish oil painting, sharp focus, high detail, 1:1.
+Full-body stylised game asset reference, single subject centred and fully in frame, plain light grey seamless studio background, flat even soft lighting, no cast shadow, no scenery, no text, no border. Stylised hand-painted 3D game art: smooth sculpted forms, clean readable silhouette, slightly heroic proportions, soft rounded edges, broad painted colour shapes with gentle gradients, no fine photographic noise, no hard facets. Late-medieval Flanders, 15th century, practical and lived-in. Rich Flemish palette: madder red, moss green, woad blue, ochre gold, brick red, bone white, charcoal black. High-quality stylised fantasy RPG character art, sharp focus, 1:1.
 ```
 
 ### Hero characters and creatures
@@ -45,7 +45,7 @@ A lean, weathered man in his thirties with dark tousled hair and a short beard, 
 **Dragon** (`dragon`)
 
 ```text
-A lean, rideable western dragon standing on four clawed legs in a neutral pose, seen from a three-quarter front view, both wings fully spread and held flat so the whole membrane is visible, neck extended, tail straight out behind, mouth closed. Aged verdigris green-bronze scales, deep green-teal in the recesses and warm bronze-gold on the raised edges; pale gold-ochre belly plates; translucent amber-gold wing membranes with fine veins and gilded finger bones; a row of backswept tarnished-gold spines along the neck and tail, with a smooth gap behind the shoulders where a rider would sit; long wedge-shaped head with brow ridges and backswept horns; amber eyes; ivory claws. Believable anatomy with a deep chest and strong wing roots.
+A lean, rideable western dragon standing on four clawed legs in a neutral pose, seen from a three-quarter front view, both wings fully spread and held flat so the whole membrane is visible, neck extended, tail straight out behind, mouth closed. Aged verdigris green-bronze scales, deep green-teal in the recesses and warm bronze-gold on the raised edges; pale gold-ochre belly plates; translucent amber-gold wing membranes with fine veins and gilded finger bones; a row of backswept tarnished-gold spines along the neck and tail, with a smooth gap behind the shoulders where a rider would sit; long wedge-shaped head with brow ridges and backswept horns; amber eyes; ivory claws. Strong, readable anatomy with a deep chest and powerful wing roots.
 ```
 
 **Kludde** (`kludde`)
@@ -63,7 +63,7 @@ A small water demon the size of a large dog, standing in a neutral pose, three-q
 **Bosch pot-walker** (`bosch-pot-walker`)
 
 ```text
-A creature in the manner of Hieronymus Bosch, standing in a neutral pose, three-quarter front view: a large cracked blue-and-white glazed earthenware pot walking on two long thin bird legs, with a fish tail and fins growing from its sides; a small hunched figure in a red hood and a tall pointed grey funnel hat sits inside the pot holding up a lit candle on a stick. Every part is physically believable, with real ceramic, scales, cloth and wax.
+A creature in the manner of Hieronymus Bosch, standing in a neutral pose, three-quarter front view: a large cracked blue-and-white glazed earthenware pot walking on two long thin bird legs, with a fish tail and fins growing from its sides; a small hunched figure in a red hood and a tall pointed grey funnel hat sits inside the pot holding up a lit candle on a stick. Every part reads clearly: glazed ceramic, scales, cloth and wax.
 ```
 
 ### Townsfolk
@@ -123,7 +123,7 @@ Each one sets the target for a fixed camera shot in the game. Wide image, 16:9.
 ### Shared ending for every landmark painting
 
 ```text
-Realistic late-medieval Flanders, 15th century, painted with the light and colour of the Flemish Masters: jewel-toned madder reds, moss greens and woad blues against warm brick and pale stone, golden light, deep glazed shadows, tall dramatic Low Countries cloud skies, soft atmospheric haze in the distance. Grounded and believable, richly detailed, no modern objects, no text. Cinematic wide composition, 16:9.
+Stylised painterly game concept art of late-medieval Flanders, 15th century, with the light and colour of the Flemish Masters: jewel-toned madder reds, moss greens and woad blues against warm brick and pale stone, golden light, soft glazed shadows, tall dramatic Low Countries cloud skies, soft atmospheric haze in the distance. Smooth, rounded, slightly exaggerated shapes, clean silhouettes, broad painted brushwork, no photographic noise. Rich and inviting, no modern objects, no text. Cinematic wide composition, 16:9.
 ```
 
 | Id | Subject (the game camera it must match) |

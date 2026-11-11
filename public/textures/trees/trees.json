@@ -7,15 +7,15 @@
       "name": "oak",
       "row": 0,
       "height": 18.0,
-      "width": 13.96,
-      "quadHeight": 21.25,
-      "quadWidth": 21.25
+      "width": 14.08,
+      "quadHeight": 18.45,
+      "quadWidth": 18.45
     },
     {
       "name": "poplar",
       "row": 1,
       "height": 26.0,
-      "width": 7.04,
+      "width": 7.01,
       "quadHeight": 26.65,
       "quadWidth": 26.65
     },
@@ -23,15 +23,15 @@
       "name": "willow",
       "row": 2,
       "height": 7.0,
-      "width": 6.31,
-      "quadHeight": 7.2,
-      "quadWidth": 7.2
+      "width": 6.4,
+      "quadHeight": 7.25,
+      "quadWidth": 7.25
     },
     {
       "name": "pine",
       "row": 3,
       "height": 20.0,
-      "width": 8.01,
+      "width": 7.98,
       "quadHeight": 20.5,
       "quadWidth": 20.5
     },
