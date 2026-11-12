@@ -14,6 +14,10 @@ export class Hud {
   root: HTMLElement;
   private compass = el('compass');
   private compassMarks: { el: HTMLElement; yaw?: number; d?: Discovery }[] = [];
+  private questMark = el('mark quest', '');
+  private tracker = el('tracker', '');
+  /** the tracked quest objective: shown on the compass, the map and the tracker */
+  questTarget: { x: number; z: number; title: string; objective: string } | null = null;
   private card = el('discovery');
   private loc = el('loc');
   private prompt = el('prompt');
@@ -30,6 +34,7 @@ export class Hud {
   constructor(root: HTMLElement, private world: World) {
     this.root = root;
     this.compass.appendChild(el('needle'));
+    this.compass.appendChild(this.questMark);
     for (const [label, yaw] of [['N', Math.PI], ['E', Math.PI / 2], ['S', 0], ['W', -Math.PI / 2]] as const) {
       const m = el('mark card', label);
       this.compass.appendChild(m);
@@ -44,7 +49,8 @@ export class Hud {
       <tr><td>Shift</td><td>Boost (flying) · run (on foot)</td></tr>
       <tr><td>E</td><td>Land · mount · call your dragon</td></tr>
       <tr><td>WASD</td><td>Walk (on foot) · Space jump</td></tr>
-      <tr><td>M · T · H</td><td>Map · change the light · hide help</td></tr>
+      <tr><td>J · M</td><td>Journal (quests) · map</td></tr>
+      <tr><td>T · H</td><td>Change the light · hide help</td></tr>
       <tr><td>Gamepad</td><td>LS steer · RS camera · RT/LT speed · A climb · B dive · X boost · Y land/mount</td></tr>
       </table>`,
     );
@@ -52,7 +58,7 @@ export class Hud {
     this.map.appendChild(el('legend', 'DIEST &amp; THE DEMER VALLEY · ANNO 1560'));
     this.map.appendChild(el('map-credit', 'Town plan after OpenStreetMap contributors (ODbL) and the Ferraris map of 1777 (Digitaal Vlaanderen)'));
     root.append(
-      this.compass, this.card, this.loc, this.prompt, this.toast, this.help, this.map,
+      this.compass, this.tracker, this.card, this.loc, this.prompt, this.toast, this.help, this.map,
       this.overlay,
     );
   }
@@ -166,6 +172,23 @@ export class Hud {
       m.el.style.display = '';
       m.el.style.left = `${w / 2 + (rel / (fovSpan / 2)) * (w / 2)}px`;
     }
+    // tracked quest objective
+    const qt = this.questTarget;
+    if (qt) {
+      let rel = camYaw - Math.atan2(qt.x - px, qt.z - pz);
+      rel = Math.atan2(Math.sin(rel), Math.cos(rel));
+      const edge = Math.abs(rel) > fovSpan / 2;
+      const r = Math.max(-fovSpan / 2, Math.min(fovSpan / 2, rel));
+      this.questMark.style.display = '';
+      this.questMark.style.left = `${w / 2 + (r / (fovSpan / 2)) * (w / 2)}px`;
+      this.questMark.textContent = edge ? (rel < 0 ? '◂ ⬥' : '⬥ ▸') : '⬥';
+      const html = `<div class="t-title">${qt.title}</div><div class="t-obj">${qt.objective}</div>`;
+      if (this.tracker.innerHTML !== html) this.tracker.innerHTML = html;
+      this.tracker.style.display = '';
+    } else {
+      this.questMark.style.display = 'none';
+      this.tracker.style.display = 'none';
+    }
     if (this.map.classList.contains('show')) this.drawMap(px, pz, camYaw);
   }
 
@@ -248,6 +271,17 @@ export class Hud {
       g.fillStyle = d.found ? '#3a2410' : '#7a6448';
       g.beginPath(); g.arc(X, Y, 4 * devicePixelRatio, 0, Math.PI * 2); g.fill();
       g.fillText(d.found ? d.title : '?', X, Y - 8 * devicePixelRatio);
+    }
+    if (this.questTarget) {
+      const [QX, QY] = toScreen(this.questTarget.x, this.questTarget.z);
+      g.fillStyle = '#c8901e';
+      g.strokeStyle = '#2a1a08';
+      g.lineWidth = 2 * devicePixelRatio;
+      const q = 8 * devicePixelRatio;
+      g.beginPath(); g.moveTo(QX, QY - q); g.lineTo(QX + q * 0.7, QY); g.lineTo(QX, QY + q); g.lineTo(QX - q * 0.7, QY); g.closePath();
+      g.fill(); g.stroke();
+      g.fillStyle = '#2a1a08';
+      g.fillText(this.questTarget.title, QX, QY - q - 4 * devicePixelRatio);
     }
     const [X, Y] = toScreen(px, pz);
     g.save();

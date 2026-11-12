@@ -9,6 +9,7 @@ export type Action =
   | 'brake' // S held in flight, LT
   | 'time' // T — advance time of day
   | 'map' // M / Back — toggle map
+  | 'journal' // J / RB — quest journal
   | 'help'; // H / Start
 
 const KEYMAP: Record<string, Action> = {
@@ -21,6 +22,7 @@ const KEYMAP: Record<string, Action> = {
   ShiftRight: 'boost',
   KeyT: 'time',
   KeyM: 'map',
+  KeyJ: 'journal',
   KeyH: 'help',
 };
 
@@ -114,6 +116,11 @@ export class Input {
     return false;
   }
 
+  /** Was this pressed this frame (without using it up)? */
+  peek(a: Action): boolean {
+    return this.pressed.has(a);
+  }
+
   /** True once per press. */
   consume(a: Action): boolean {
     if (this.pressed.has(a)) {
@@ -157,6 +164,7 @@ export class Input {
         [3, 'interact'],
         [0, 'jump'],
         [8, 'map'],
+        [5, 'journal'],
         [9, 'help'],
         [12, 'time'],
       ];

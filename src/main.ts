@@ -1,5 +1,5 @@
-// BELFORT — prologue build: fly a gilded hatchling over the real streets of
-// Diest, land anywhere, walk the town, discover its (twisted) history.
+// BELFORT — Brabant, 1650. Fly a dragon over the real streets of Diest, land
+// anywhere, walk the town, take on quests from its people and keep a journal.
 
 import * as THREE from 'three';
 import { Sound } from './audio/sound';
@@ -10,7 +10,11 @@ import { Player } from './player/player';
 import { Post } from './render/post';
 import { loadModel } from './render/models';
 import { loadMaterialSet, type MaterialInfo } from './render/textures';
+import { diest } from './content/diest';
+import { Actors } from './rpg/actors';
+import { QuestEngine } from './rpg/quests';
 import { Hud } from './ui/hud';
+import { DialogueUI, JournalUI } from './ui/rpgui';
 import { Atmosphere } from './world/sky';
 import { loadTreeAtlas } from './world/trees';
 import type { WorldData } from './world/types';
@@ -43,7 +47,7 @@ async function boot() {
 
   // --- load everything
   const [data, meta] = await Promise.all([
-    fetch(asset(`world/${params.get('world') ?? 'diest_1560'}.json`)).then((r) => r.json() as Promise<WorldData>),
+    fetch(asset(`world/${params.get('world') ?? 'diest_1650'}.json`)).then((r) => r.json() as Promise<WorldData>),
     fetch(asset('textures/materials.json')).then((r) => r.json() as Promise<Record<string, MaterialInfo[]>>),
   ]);
   const stub = { discoveries: [], data } as unknown as World;
@@ -87,6 +91,26 @@ async function boot() {
   if (dragonModel) player.dragon.useModel(dragonModel.scene);
   const riderModel = await loadModel('models/rider.glb');
   if (riderModel) player.hero.useModel(riderModel);
+  // --- quests, people, journal
+  const toasts: string[] = [];
+  let toastAt = 0;
+  const late: { journal?: JournalUI; actors?: Actors } = {};
+  const quests = new QuestEngine(diest, {
+    toast: (kicker, text) => toasts.push(kicker ? `${kicker} · ${text}` : text),
+    changed: () => {
+      late.journal?.render();
+      late.actors?.syncPickups();
+    },
+  });
+  const actors = (late.actors = new Actors(riderModel, quests, world.collision));
+  actors.spawnNpcs(diest.npcs);
+  actors.syncPickups();
+  scene.add(actors.group);
+  const dialogue = new DialogueUI(uiRoot, quests);
+  const journal = (late.journal = new JournalUI(uiRoot, quests));
+  let uiClosedAt = 0;
+  const uiOpen = () => dialogue.open || journal.open;
+
   // Spawn east of town over the Demer meadows, gliding toward the Grote Markt.
   const sx = 1150, sz = 380;
   player.spawn(sx, 95, sz, Math.atan2(-sx, -sz));
@@ -109,7 +133,9 @@ async function boot() {
     sound.start();
     input.requestLock();
     setTimeout(() => {
-      hud.announce('PROLOGUE', 'The Quiet Bells', 'Somewhere below, the bells of Sint-Sulpitius have stopped ringing. Find out why, or at least look as if you are trying.');
+      const fresh = !Object.keys(quests.s.quests).length;
+      if (fresh) hud.announce('BRABANT · 1650', 'The Quiet Bells', 'The war with France drags on, Antwerp\'s river is closed, and the bells of Diest have stopped ringing. Land in town and talk to people: look for the gold ! above their heads.');
+      else hud.announce('BRABANT · 1650', 'Welcome back', 'Your journal is as you left it. Press J to read it.');
     }, 900);
   });
   canvas.addEventListener('click', () => {
@@ -120,7 +146,7 @@ async function boot() {
     const locked = document.pointerLockElement === canvas;
     // Gamepad players don't need pointer lock; only pause for mouse users,
     // and only where pointer lock actually works (embedded pages fall back to drag-look).
-    paused = !locked && input.device === 'kbm' && input.lockSupported;
+    paused = !locked && input.device === 'kbm' && input.lockSupported && !uiOpen();
     hud.pauseOverlay(paused);
     if (paused) hud.overlay.addEventListener('click', () => input.requestLock(), { once: true });
   });
@@ -156,7 +182,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { player, rig, world, atmo, scene, renderer, post, pose };
+  (window as unknown as { belfort: object }).belfort = { player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -175,8 +201,19 @@ async function boot() {
         atmo.advance();
         setTimeout(() => hud.flash(atmo.look.label.toUpperCase()), 400);
       }
-      if (input.consume('map')) mapOpen = hud.toggleMap();
-      if (!mapOpen) player.update(dt, input, rig.yaw, rig.pitch);
+      if (input.consume('map') && !uiOpen()) mapOpen = hud.toggleMap();
+      if (input.consume('journal') && !dialogue.open) {
+        if (!journal.toggle()) closeUi();
+      }
+      if (uiOpen()) {
+        // the world waits while you read; keys belong to the open panel
+        input.consume('interact');
+        input.consume('jump');
+      } else if (!mapOpen) {
+        if (player.mode === 'walk' && performance.now() - uiClosedAt > 250 && talkOrPickUp()) {
+          // the press went to a person or a thing on the ground
+        } else player.update(dt, input, rig.yaw, rig.pitch);
+      }
       rig.update(dt, input, player);
     } else {
       rig.update(0.0001, input, player);
@@ -195,7 +232,16 @@ async function boot() {
     const px = player.onFoot ? player.heroPos.x : player.pos.x;
     const pz = player.onFoot ? player.heroPos.z : player.pos.z;
     const py = player.onFoot ? player.heroPos.y : player.pos.y;
+    uiRoot.classList.toggle('ui-open', uiOpen());
     if (running && !paused) {
+      quests.update(px, py, pz);
+      actors.update(dt, px, pz, dialogue.npcId);
+      const t = quests.target();
+      hud.questTarget = t ? { x: t.x, z: t.z, title: t.quest.title, objective: t.objective.text } : null;
+      if (toasts.length && performance.now() - toastAt > 1900) {
+        hud.flash(toasts.shift()!);
+        toastAt = performance.now();
+      }
       for (const d of world.discoveries) {
         if (d.found) continue;
         const r = d.r + (player.onFoot ? 0 : Math.min(py * 0.5, 120));
@@ -212,7 +258,11 @@ async function boot() {
     if (player.onFoot) hud.setLocation(place.name, place.where);
     else hud.setLocation(place.name, pace(player.speed, player.boostTime > 0, player.altitude()));
     const key = input.device === 'pad' ? 'Y' : 'E';
-    if (player.mode === 'fly' && player.canLand()) hud.setPrompt(`<kbd>${key}</kbd>Land`);
+    const near = player.mode === 'walk' && !uiOpen() ? nearby() : null;
+    if (uiOpen()) hud.setPrompt(null);
+    else if (near?.npc) hud.setPrompt(`<kbd>${key}</kbd>Talk to ${near.npc.name}`);
+    else if (near?.pickup) hud.setPrompt(`<kbd>${key}</kbd>Pick up ${quests.item(near.pickup.item)?.name ?? near.pickup.item}`);
+    else if (player.mode === 'fly' && player.canLand()) hud.setPrompt(`<kbd>${key}</kbd>Land`);
     else if (player.mode === 'walk') hud.setPrompt(player.distanceToDragon() < 7 ? `<kbd>${key}</kbd>Mount your dragon` : `<kbd>${key}</kbd>Call your dragon`);
     else hud.setPrompt(null);
 
@@ -234,6 +284,38 @@ async function boot() {
         if (ratio !== prev) resize();
       }
     }
+  }
+
+  function nearby() {
+    const x = player.heroPos.x, z = player.heroPos.z;
+    const npc = actors.nearestNpc(x, z);
+    if (npc) return { npc, pickup: null };
+    const pickup = actors.nearestPickup(x, z);
+    return pickup ? { npc: null, pickup } : null;
+  }
+
+  /** E near a person starts a conversation; near a quest item picks it up. */
+  function talkOrPickUp(): boolean {
+    if (!input.peek('interact')) return false;
+    const near = nearby();
+    if (!near) return false; // nothing here: the press calls or mounts the dragon
+    input.consume('interact');
+    if (near.npc) {
+      const start = quests.conversationFor(near.npc.id);
+      if (start) {
+        mapOpen = mapOpen && hud.toggleMap();
+        dialogue.start(near.npc.id, start, closeUi);
+      }
+    } else if (near.pickup) {
+      quests.take(near.pickup.key, near.pickup.item);
+      sound.chime(false);
+    }
+    return true;
+  }
+
+  function closeUi() {
+    uiClosedAt = performance.now();
+    if (input.device === 'kbm') input.requestLock();
   }
 
   /** The nearest named place, and where it lies (inside the walls, before a gate, out in the fields). */

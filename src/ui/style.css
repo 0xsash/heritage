@@ -87,3 +87,51 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 
 .map .map-credit { position: absolute; left: 14px; bottom: 8px; font-size: 11px; color: rgba(243, 234, 214, 0.55); }
 .overlay .credit { font-size: 11px; opacity: 0.7; }
+
+/* ---------- quests ---------- */
+.compass .mark.quest { color: #f2c35a; font-size: 16px; top: 3px; text-shadow: 0 0 6px rgba(0, 0, 0, 0.8); }
+.tracker { position: absolute; right: 22px; top: 64px; max-width: 300px; text-align: right; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); }
+.tracker .t-title { font-family: var(--display); font-size: 14px; letter-spacing: 0.08em; color: var(--gold); }
+.tracker .t-obj { font-size: 15px; margin-top: 2px; }
+
+.dialogue { position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%); width: min(760px, calc(100% - 32px)); background: linear-gradient(180deg, rgba(22, 16, 10, 0.88), rgba(14, 10, 6, 0.94)); border: 1px solid rgba(214, 173, 87, 0.45); padding: 18px 22px 16px; pointer-events: auto; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); }
+.dialogue[hidden] { display: none; }
+.dialogue .who { font-family: var(--display); color: var(--gold); letter-spacing: 0.12em; font-size: 15px; }
+.dialogue .role { font-size: 13px; color: var(--ink-dim); margin-left: 8px; font-style: italic; letter-spacing: 0; }
+.dialogue .text { font-size: 19px; line-height: 1.5; margin: 8px 0 12px; }
+.dialogue .text.you { font-style: italic; color: var(--ink-dim); }
+.dialogue .choices { display: flex; flex-direction: column; gap: 4px; }
+.dialogue button { all: unset; cursor: pointer; padding: 6px 10px; font-size: 17px; color: var(--ink); border-left: 2px solid transparent; }
+.dialogue button:hover, .dialogue button:focus-visible { background: rgba(214, 173, 87, 0.12); border-left-color: var(--gold); }
+.dialogue button .n { color: var(--gold); font-family: var(--display); margin-right: 10px; }
+.dialogue .cont { font-size: 13px; color: var(--ink-dim); text-align: right; letter-spacing: 0.1em; }
+
+.journal { position: absolute; inset: 7% 8%; background: linear-gradient(180deg, #241a10, #17110a); border: 1px solid rgba(214, 173, 87, 0.5); box-shadow: 0 0 60px rgba(0, 0, 0, 0.8); display: grid; grid-template-columns: minmax(220px, 32%) 1fr; grid-template-rows: auto 1fr; pointer-events: auto; }
+.journal[hidden] { display: none; }
+.journal header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; padding: 14px 20px 10px; border-bottom: 1px solid rgba(214, 173, 87, 0.3); gap: 12px; flex-wrap: wrap; }
+.journal header h2 { margin: 0; font-family: var(--display); letter-spacing: 0.3em; font-size: 18px; color: var(--gold); font-weight: 500; }
+.journal header .purse { font-size: 15px; color: var(--ink-dim); }
+.journal .list { overflow-y: auto; border-right: 1px solid rgba(214, 173, 87, 0.2); padding: 8px 0; min-width: 0; }
+.journal .list h3 { margin: 12px 18px 4px; font-family: var(--display); font-size: 12px; letter-spacing: 0.25em; color: var(--ink-dim); font-weight: 500; }
+.journal .list button { all: unset; display: block; cursor: pointer; padding: 7px 18px; font-size: 16px; border-left: 3px solid transparent; }
+.journal .list button.sel { background: rgba(214, 173, 87, 0.12); border-left-color: var(--gold); }
+.journal .list button.done { color: var(--ink-dim); text-decoration: line-through; }
+.journal .list button .trk { color: var(--gold); margin-left: 6px; }
+.journal .detail { overflow-y: auto; padding: 18px 26px; min-width: 0; }
+.journal .detail h1 { margin: 0 0 4px; font-family: var(--display); font-size: 24px; letter-spacing: 0.06em; font-weight: 700; }
+.journal .detail .meta { color: var(--ink-dim); font-size: 14px; margin-bottom: 14px; }
+.journal .detail .obj { margin: 4px 0; font-size: 17px; }
+.journal .detail .obj.ok { color: var(--ink-dim); text-decoration: line-through; }
+.journal .detail .entries { margin-top: 16px; border-top: 1px solid rgba(214, 173, 87, 0.2); padding-top: 10px; }
+.journal .detail .entries p { font-style: italic; line-height: 1.5; margin: 0 0 10px; color: #e6dcc4; }
+.journal .detail .reward { margin-top: 12px; color: var(--gold); font-size: 15px; }
+.journal .detail .actions { margin-top: 14px; }
+.journal .detail .actions button { all: unset; cursor: pointer; border: 1px solid rgba(214, 173, 87, 0.6); color: var(--gold); padding: 6px 14px; font-family: var(--display); letter-spacing: 0.15em; font-size: 12px; }
+.journal .empty { color: var(--ink-dim); font-style: italic; padding: 18px 26px; }
+.journal .inv { grid-column: 1 / -1; border-top: 1px solid rgba(214, 173, 87, 0.3); padding: 8px 20px; font-size: 14px; color: var(--ink-dim); }
+@media (max-width: 640px) { .journal { inset: 4%; grid-template-columns: 1fr; } .journal .list { border-right: 0; max-height: 30vh; } }
+
+/* while talking or reading, the world's notices step aside */
+#ui.ui-open .discovery, #ui.ui-open .help, #ui.ui-open .tracker, #ui.ui-open .toast { opacity: 0 !important; transition: opacity 0.2s; }
+.tracker { background: linear-gradient(270deg, rgba(14, 10, 6, 0.55), rgba(14, 10, 6, 0)); padding: 6px 4px 6px 28px; }
+.tracker .t-title { color: #f0c870; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, 1), 0 0 10px rgba(0, 0, 0, 0.8); }

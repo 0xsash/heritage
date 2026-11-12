@@ -149,7 +149,7 @@ function sulpitius(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: TH
   prism(gb, tx, tz, half * 0.62, 8, H, H + 4, P.IRONSTONE_DARK, Math.PI / 8);
   col.addColumn(tx, tz, half * 1.1, H);
 
-  if (year < 1650) {
+  if (year < 1670) {
     // Before the Baroque carillon lantern ("the Mustard Pot") the tower stood
     // unfinished: a squat stump of ironstone under a low provisional roof.
     const prev = gb.curMat;

@@ -17,7 +17,8 @@ What it does:
   * replaces modern land use with the historical land cover
   * adds the town wall and gates traced from Ferraris (walls_1560.json)
 
-Usage: historicize.py <world.json> <maps-dir> <walls_1560.json> <out.json>
+Usage: historicize.py <world.json> <maps-dir> <walls.json> <out.json> [year]
+  year defaults to 1560. From 1627 on, Scherpenheuvel's basilica and town stand.
 """
 import json, math, sys
 import cv2
@@ -25,6 +26,8 @@ import numpy as np
 from PIL import Image
 
 world_path, maps_dir, walls_path, out_path = sys.argv[1:5]
+YEAR = int(sys.argv[5]) if len(sys.argv) > 5 else 1560
+BASILICA_STANDS = YEAR >= 1627
 w = json.load(open(world_path))
 walls = json.load(open(walls_path))
 meta = json.load(open(f"{maps_dir}/ferraris.json"))
@@ -123,13 +126,13 @@ def built_fraction(p, pad=1):
 
 # ------------------------------------------------------------------ buildings
 # Scherpenheuvel: Ferraris shows the star-shaped town laid out around the basilica
-# after 1609. In 1560 the hill held only the oak with its statue.
+# after 1609. Before then the hill held only the oak with its statue.
 basilica = next((b for b in w["buildings"] if b.get("t") == "basilica"), None)
 SCHERP = centroid(basilica["p"]) if basilica else (-5062, 518)
 MODERN_TYPES = {"industrial", "warehouse", "retail", "commercial", "office", "apartments", "garage", "garages",
                 "carport", "roof", "service", "greenhouse", "bunker", "supermarket", "sports_hall", "kiosk",
                 "toilets", "train_station", "hospital", "school", "civic", "public", "transportation", "mosque",
-                "basilica", "construction", "parking"}
+                "construction", "parking"} | (set() if BASILICA_STANDS else {"basilica"})
 ALWAYS = {"Sint-Sulpitius en Dionysiuskerk", "Lakenhalle", "Onze-Lieve-Vrouwekerk", "Sint-Catharinakerk",
           "Hof van Nassau", "De Gulden Maan", "Allerheiligenkapel", "Sint-Trudokerk", "Stadhuis Diest", "Ingang Begijnhof"}
 NEVER_NAMES = ("Citadel", "Fort Leopold", "Kazemat", "Saillant", "Station", "Moskee", "Mariahal")
@@ -145,7 +148,10 @@ for b in w["buildings"]:
         continue
     if b.get("t") in MODERN_TYPES:
         continue
-    if math.hypot(cx - SCHERP[0], cz - SCHERP[1]) < 520:
+    if b.get("t") == "basilica" and BASILICA_STANDS:
+        kept.append(b)
+        continue
+    if not BASILICA_STANDS and math.hypot(cx - SCHERP[0], cz - SCHERP[1]) < 520:
         continue
     a = area(b["p"])
     frac = built_fraction(b["p"])
@@ -182,8 +188,10 @@ for i in range(1, n):
     a = stats[i, cv2.CC_STAT_AREA]
     cx = X0 + (cents[i][0] + 0.5) * CELL
     cz = Z0 + (cents[i][1] + 0.5) * CELL
-    if math.hypot(cx - SCHERP[0], cz - SCHERP[1]) < 520:
+    if not BASILICA_STANDS and math.hypot(cx - SCHERP[0], cz - SCHERP[1]) < 520:
         continue
+    if BASILICA_STANDS and math.hypot(cx - SCHERP[0], cz - SCHERP[1]) < 45:
+        continue  # the basilica itself
     mask = (lab == i).astype(np.uint8)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
@@ -333,15 +341,21 @@ DROP_POI = ("Oorlog", "Monument", "Moskee", "Takwa", "Nour", "Hilaire", "Gemeneb
             "Heilig Kind", "Scherpenheuvel-Zichem", "Wachthuisje", "Sint-Barbarakerk", "Sint-Jansruïne",
             "Holle Griet", "H. Theresia", "Pastorie", "Oosterlinden", "Bijstand")
 pois = [p for p in w["pois"] if not any(k in p["n"] for k in DROP_POI)]
+pois = [p for p in pois if p["n"] != "Scherpenheuvel"]
 for name, (x, z) in walls["gates"].items():
     pois.append({"n": name, "x": x, "z": z, "k": "city_gate"})
 pois.append({"n": "Scherpenheuvel", "x": SCHERP[0], "z": SCHERP[1], "k": "village"})
-pois.append({"n": "De Heilige Eik", "x": SCHERP[0], "z": SCHERP[1] - 10, "k": "oak"})
+if BASILICA_STANDS:
+    # the oak was felled in 1602; the basilica's high altar stands on its spot
+    pois.append({"n": "Basiliek van Onze-Lieve-Vrouw van Scherpenheuvel", "x": SCHERP[0], "z": SCHERP[1], "k": "basilica"})
+    pois.append({"n": "De Heilige Eik", "x": SCHERP[0], "z": SCHERP[1], "k": "oak-roots"})
+else:
+    pois.append({"n": "De Heilige Eik", "x": SCHERP[0], "z": SCHERP[1] - 10, "k": "oak"})
 
 out = dict(w)
 out.update({
-    "name": "Diest and the Demer valley, c. 1560",
-    "year": 1560,
+    "name": f"Diest and the Demer valley, c. {YEAR}",
+    "year": YEAR,
     "attribution": "Map data © OpenStreetMap contributors (ODbL); historical land cover from the Ferraris map (1777), "
                    "Digitaal Vlaanderen (geo.api.vlaanderen.be/HISTCART)",
     "buildings": kept,

@@ -379,7 +379,7 @@ export class World {
     }
 
     // the Root-Oak of Scherpenheuvel: an oak three times the size it has any right to be
-    const oak = this.data.pois.find((p) => p.n === 'De Heilige Eik');
+    const oak = this.data.pois.find((p) => p.n === 'De Heilige Eik' && p.k === 'oak');
     if (oak && has('oak')) {
       items.push({ x: oak.x, y: 0, z: oak.z, species: 'oak', scale: 3.1, rot: 0.4, tint: new THREE.Color(0.72, 0.86, 0.74) });
     }
