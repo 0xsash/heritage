@@ -421,14 +421,14 @@ async function boot() {
     const flying = !player.onFoot;
     const slots: SlotView[] = flying
       ? [
-          { key: 'LMB', name: 'Drakenvuur', cd: combat.fire < 18 ? 1 - combat.fire / 18 : 0, ready: combat.fire >= 18 },
+          { key: 'LMB', name: 'Vuur', cd: combat.fire < 18 ? 1 - combat.fire / 18 : 0, ready: combat.fire >= 18 },
           { key: 'Q', name: 'Zalf', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
         ]
       : [
           { key: 'LMB', name: 'Zwaard', cd: 0, ready: true },
-          { key: 'RMB', name: o.skill.name, cd: combat.cds.skill / o.skill.cooldown, ready: combat.cds.skill <= 0 && combat.resonance >= o.skill.cost },
-          { key: 'R', name: o.skill2.name, cd: combat.cds.skill2 / o.skill2.cooldown, ready: combat.cds.skill2 <= 0 && combat.resonance >= o.skill2.cost, locked: quests.s.hero.level < o.skill2.level ? `niveau ${o.skill2.level}` : undefined },
-          { key: 'SPATIE', name: 'Rollen', cd: 0, ready: combat.inCombat },
+          { key: 'RMB', name: o.skill.short, cd: combat.cds.skill / o.skill.cooldown, ready: combat.cds.skill <= 0 && combat.resonance >= o.skill.cost },
+          { key: 'R', name: o.skill2.short, cd: combat.cds.skill2 / o.skill2.cooldown, ready: combat.cds.skill2 <= 0 && combat.resonance >= o.skill2.cost, locked: quests.s.hero.level < o.skill2.level ? `niveau ${o.skill2.level}` : undefined },
+          { key: 'SPATIE', name: 'Rol', cd: 0, ready: combat.inCombat },
           { key: 'Q', name: 'Zalf', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
         ];
     frame.update(quests, combat.resonance, flying ? 'Vuur' : 'Resonantie', slots, flying ? combat.fire : null);

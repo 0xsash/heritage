@@ -246,7 +246,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .gcard .gx { font-size: 13.5px; font-style: italic; color: #c8b48a; margin-top: 4px; }
 .gcard .gb { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
 .gcard .up { color: #7dff9a; font-size: 13px; }
-.charpanel button { all: unset; cursor: pointer; font-family: var(--display); font-size: 11.5px; letter-spacing: 0.16em; color: var(--gold); border: 1px solid rgba(214, 173, 87, 0.5); padding: 4px 10px; }
+.charpanel button { all: unset; white-space: nowrap; flex-shrink: 0; cursor: pointer; font-family: var(--display); font-size: 11.5px; letter-spacing: 0.16em; color: var(--gold); border: 1px solid rgba(214, 173, 87, 0.5); padding: 4px 10px; }
 .charpanel button:hover { background: rgba(214, 173, 87, 0.15); }
 .charpanel .ware { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 14.5px; }
 .charpanel .empty { color: var(--ink-dim); font-style: italic; }
@@ -313,3 +313,21 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .banner { top: 36%; }
 .slot.locked .n { opacity: 0.35; }
 .slot .lk { top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.55); font-size: 11px; }
+
+/* every column of the character panel scrolls on its own, so nothing runs off the panel */
+.charpanel .shop { max-height: 58vh; overflow: auto; padding-right: 4px; }
+.fe-dots { white-space: nowrap; }
+/* the three classes always sit side by side, and the whole form fits short screens without scrolling */
+.fe-origins { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 760px) { .fe-origins { grid-template-columns: 1fr; } }
+@media (max-height: 780px) {
+  .fe-form { padding: 16px 28px; }
+  .fe-form h2 { margin-bottom: 8px; font-size: 20px; }
+  .fe-form label, .fe-label { margin: 10px 0 5px; }
+  .fe-form input { font-size: 18px; padding: 5px 10px; }
+  .fe-origin { padding: 9px 11px; }
+  .fe-origin p { font-size: 13.5px; margin-bottom: 5px; }
+  .fe-st { grid-template-columns: 62px 1fr; margin: 1px 0; }
+  .fe-skills { margin-top: 5px; }
+  .fe-go { margin-top: 16px; padding: 11px 30px; }
+}

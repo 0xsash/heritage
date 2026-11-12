@@ -20,6 +20,8 @@ export const STAT_HELP: Record<Stat, string> = {
 export interface SkillDef {
   id: string;
   name: string;
+  /** one word for the action bar */
+  short: string;
   text: string;
   /** seconds */
   cooldown: number;
@@ -44,35 +46,35 @@ export interface OriginDef {
 export const ORIGINS: Record<OriginId, OriginDef> = {
   schutter: {
     id: 'schutter',
-    name: 'Schuttersgezel',
-    tagline: 'Zwaard en schild van de schutterij',
-    text: 'Ge zijt opgegroeid op het oefenveld van de Sint-Jorisgilde. Ge slaat hard, ge staat stevig, en ge weet dat een gesloten poort ook maar hout is.',
+    name: 'Schutter',
+    tagline: 'Zwaard en staal',
+    text: 'Gildebroeder van Sint-Joris. Slaat hard, staat stevig.',
     base: { kracht: 8, klank: 3, list: 4, taaiheid: 7 },
     growth: { kracht: 3, klank: 1, list: 1, taaiheid: 2 },
-    skill: { id: 'zware_slag', name: 'Zware slag', text: 'Een brede houw die alles voor u wegslaat.', cooldown: 4, cost: 0, level: 1 },
-    skill2: { id: 'strijdkreet', name: 'Strijdkreet', text: 'Acht tellen lang een derde meer schade, en wie dichtbij staat, deinst terug.', cooldown: 18, cost: 40, level: 3 },
+    skill: { id: 'zware_slag', short: 'Houw', name: 'Zware slag', text: 'Een brede houw die alles voor u wegslaat.', cooldown: 4, cost: 0, level: 1 },
+    skill2: { id: 'strijdkreet', short: 'Kreet', name: 'Strijdkreet', text: 'Acht tellen lang een derde meer schade, en wie dichtbij staat, deinst terug.', cooldown: 18, cost: 40, level: 3 },
     start: 'gildezwaard',
   },
   klokkenluider: {
     id: 'klokkenluider',
-    name: 'Klokkenluiderskind',
-    tagline: 'Wie de klokken kent, kent hun macht',
-    text: 'Uw vader luidde de klokken van Sint-Sulpitius, en zijn vader voor hem. Ge hoort dingen in brons die anderen niet horen. Soms hoort het brons u terug.',
+    name: 'Beiaardier',
+    tagline: 'Klank als wapen',
+    text: 'Kind van de toren. Hoort wat in het brons zit.',
     base: { kracht: 4, klank: 9, list: 4, taaiheid: 5 },
     growth: { kracht: 1, klank: 3, list: 1, taaiheid: 2 },
-    skill: { id: 'klokslag', name: 'Klokslag', text: 'Een galm die alles rondom u verdooft en raakt.', cooldown: 5, cost: 25, level: 1 },
-    skill2: { id: 'zuivere_toon', name: 'Zuivere toon', text: 'Een toon zo zuiver dat hij door een vijand heen snijdt.', cooldown: 6, cost: 30, level: 3 },
+    skill: { id: 'klokslag', short: 'Klokslag', name: 'Klokslag', text: 'Een galm die alles rondom u verdooft en raakt.', cooldown: 5, cost: 25, level: 1 },
+    skill2: { id: 'zuivere_toon', short: 'Toon', name: 'Zuivere toon', text: 'Een toon zo zuiver dat hij door een vijand heen snijdt.', cooldown: 6, cost: 30, level: 3 },
     start: 'klepelstaf',
   },
   smokkelaar: {
     id: 'smokkelaar',
-    name: 'Smokkelaarsjong',
-    tagline: 'Langs de tol, door de nacht',
-    text: 'Ge kent elk pad rond elke stadsmuur van hier tot Maastricht. Ge vecht niet eerlijk, en daarom leeft ge nog.',
+    name: 'Smokkelaar',
+    tagline: 'Snel en vals',
+    text: 'Kent elk pad langs de tol. Vecht niet eerlijk.',
     base: { kracht: 5, klank: 3, list: 9, taaiheid: 5 },
     growth: { kracht: 2, klank: 1, list: 3, taaiheid: 1 },
-    skill: { id: 'pistoolschot', name: 'Pistoolschot', text: 'Een schot met uw radslotpistool. Hard, ver, en luid.', cooldown: 3, cost: 0, level: 1 },
-    skill2: { id: 'rookbom', name: 'Rookbom', text: 'Verdwijn in de rook: vijanden zijn verblind en uw volgende slagen zijn voltreffers.', cooldown: 16, cost: 35, level: 3 },
+    skill: { id: 'pistoolschot', short: 'Schot', name: 'Pistoolschot', text: 'Een schot met uw radslotpistool. Hard, ver, en luid.', cooldown: 3, cost: 0, level: 1 },
+    skill2: { id: 'rookbom', short: 'Rookbom', name: 'Rookbom', text: 'Verdwijn in de rook: vijanden zijn verblind en uw volgende slagen zijn voltreffers.', cooldown: 16, cost: 35, level: 3 },
     start: 'ponjaard',
   },
 };

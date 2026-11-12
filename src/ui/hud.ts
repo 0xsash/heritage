@@ -187,7 +187,9 @@ export class Hud {
       const edge = Math.abs(rel) > fovSpan / 2;
       const r = Math.max(-fovSpan / 2, Math.min(fovSpan / 2, rel));
       this.questMark.style.display = '';
-      this.questMark.style.left = `${w / 2 + (r / (fovSpan / 2)) * (w / 2)}px`;
+      // at the edge, keep the whole marker (with its arrow) inside the strip
+      const pad = edge ? 22 : 8;
+      this.questMark.style.left = `${Math.max(pad, Math.min(w - pad, w / 2 + (r / (fovSpan / 2)) * (w / 2)))}px`;
       this.questMark.textContent = edge ? (rel < 0 ? '◂ ⬥' : '⬥ ▸') : '⬥';
     } else {
       this.questMark.style.display = 'none';

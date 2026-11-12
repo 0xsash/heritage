@@ -16,7 +16,7 @@ import type { QuestEngine } from './quests';
 const POOL = 36;
 const NEAR = 9, FAR = 70, DROP = 95;
 
-interface Line { p: number[]; len: number; seg: number[] }
+interface Line { p: number[]; len: number; seg: number[]; /** how far off the middle people may walk, per point */ side: number[] }
 interface Walker {
   root: THREE.Object3D;
   mixer: THREE.AnimationMixer;
@@ -69,23 +69,36 @@ export class Crowd {
     // streets people walk: everything inside the walls, and the bigger roads near the towns
     const keep = new Set(['residential', 'pedestrian', 'living_street', 'service', 'tertiary', 'secondary', 'primary', 'unclassified', 'path']);
     const near = (x: number, z: number) => world.inTown(x, z) || Math.hypot(x + 5062, z - 518) < 420;
+    // Streets come from the modern map, houses from 1650: where a street runs
+    // into a house, the street stops. Sample every metre, keep the open runs,
+    // and remember how far from the middle people can keep to the side there.
+    const clear = (x: number, z: number) => world.collision.heightAround(x, z, 0.45) < 0.05;
     for (const r of world.data.roads) {
       if (!keep.has(r.k)) continue;
       const mid = r.p.length >> 1 & ~1;
       if (!near(r.p[mid], r.p[mid + 1]) && !near(r.p[0], r.p[1])) continue;
-      const seg: number[] = [0];
-      let len = 0;
+      let run: number[] = [];
+      let sides: number[] = [];
+      const flush = () => {
+        if (run.length >= 8) this.addLine(run, sides);
+        run = [];
+        sides = [];
+      };
       for (let i = 2; i < r.p.length; i += 2) {
-        len += Math.hypot(r.p[i] - r.p[i - 2], r.p[i + 1] - r.p[i - 1]);
-        seg.push(len);
+        const x0 = r.p[i - 2], z0 = r.p[i - 1], x1 = r.p[i], z1 = r.p[i + 1];
+        const len = Math.hypot(x1 - x0, z1 - z0);
+        const n = Math.max(1, Math.ceil(len));
+        const nx = (z1 - z0) / (len || 1), nz = -(x1 - x0) / (len || 1);
+        for (let k = i === 2 ? 0 : 1; k <= n; k++) {
+          const x = x0 + ((x1 - x0) * k) / n, z = z0 + ((z1 - z0) * k) / n;
+          if (!clear(x, z)) { flush(); continue; }
+          let side = 0;
+          for (const o of [1.3, 0.9, 0.5]) if (clear(x + nx * o, z + nz * o) && clear(x - nx * o, z - nz * o)) { side = o; break; }
+          run.push(x, z);
+          sides.push(side);
+        }
       }
-      if (len < 15) continue;
-      const line = { p: r.p, len, seg };
-      this.lines.push(line);
-      for (const k of [this.key(r.p[0], r.p[1]), this.key(r.p[r.p.length - 2], r.p[r.p.length - 1])]) {
-        if (!this.ends.has(k)) this.ends.set(k, []);
-        this.ends.get(k)!.push(line);
-      }
+      flush();
     }
     const walkClips = model.animations.filter((a) => a.name === 'walk' || a.name === 'walk_formal');
     const idleClip = model.animations.find((a) => a.name === 'talk') ?? model.animations.find((a) => a.name === 'idle')!;
@@ -161,20 +174,43 @@ export class Crowd {
     this.kitted = !!kit?.ok;
   }
 
+  private addLine(p: number[], side: number[]) {
+    const seg: number[] = [0];
+    let len = 0;
+    for (let i = 2; i < p.length; i += 2) {
+      len += Math.hypot(p[i] - p[i - 2], p[i + 1] - p[i - 1]);
+      seg.push(len);
+    }
+    if (len < 6) return;
+    const line = { p, len, seg, side };
+    this.lines.push(line);
+    for (const k of [this.key(p[0], p[1]), this.key(p[p.length - 2], p[p.length - 1])]) {
+      if (!this.ends.has(k)) this.ends.set(k, []);
+      this.ends.get(k)!.push(line);
+    }
+  }
+
   private key(x: number, z: number) {
     return `${Math.round(x / 3)},${Math.round(z / 3)}`;
   }
 
-  private at(line: Line, s: number, out: { x: number; z: number; yaw: number }) {
+  private at(line: Line, s: number, out: { x: number; z: number; yaw: number; side?: number }) {
     const seg = line.seg;
-    let i = 1;
-    while (i < seg.length - 1 && seg[i] < s) i++;
+    // binary search: lines are sampled every metre
+    let lo = 1, hi = seg.length - 1;
+    while (lo < hi) {
+      const m = (lo + hi) >> 1;
+      if (seg[m] < s) lo = m + 1;
+      else hi = m;
+    }
+    const i = lo;
     const a = seg[i - 1], b = seg[i];
     const t = b > a ? (s - a) / (b - a) : 0;
     const x0 = line.p[(i - 1) * 2], z0 = line.p[(i - 1) * 2 + 1], x1 = line.p[i * 2], z1 = line.p[i * 2 + 1];
     out.x = x0 + (x1 - x0) * t;
     out.z = z0 + (z1 - z0) * t;
     out.yaw = Math.atan2(x1 - x0, z1 - z0);
+    out.side = Math.min(line.side[i - 1], line.side[i]);
     return out;
   }
 
@@ -205,8 +241,14 @@ export class Crowd {
       // just inside the gate, one either side of the road, facing out of town
       const out = Math.atan2(g.x - cx, g.z - cz);
       const side = taken === 0 ? 1 : -1;
-      const x = g.x - Math.sin(out) * 6 + Math.cos(out) * side * 2.8;
-      const z = g.z - Math.cos(out) * 6 - Math.sin(out) * side * 2.8;
+      // inside the passage, against its side, on open ground (never in a gate tower)
+      let x = 0, z = 0, ok = false;
+      for (const [back, off] of [[6, 2.8], [8, 2.2], [10, 1.6], [7, 1.0]]) {
+        x = g.x - Math.sin(out) * back + Math.cos(out) * side * off;
+        z = g.z - Math.cos(out) * back - Math.sin(out) * side * off;
+        if (this.world.collision.heightAround(x, z, 0.5) < 0.05) { ok = true; break; }
+      }
+      if (!ok) continue;
       w.post = { x, z, yaw: out, gate: g.name };
       w.line = null;
       w.x = x;
@@ -273,7 +315,7 @@ export class Crowd {
         }
       }
     }
-    const pos = { x: 0, z: 0, yaw: 0 };
+    const pos = { x: 0, z: 0, yaw: 0, side: 0 };
     for (const w of this.walkers) {
       w.root.visible = show && (!!w.line || !!w.post);
       if (!w.root.visible) continue;
@@ -324,14 +366,15 @@ export class Crowd {
           }
           this.at(w.line, w.s, pos);
           // keep to one side of the street, like people do
-          const side = w.dir * 1.3;
+          const side = w.dir * pos.side;
           w.x = pos.x + Math.cos(pos.yaw) * side;
           w.z = pos.z - Math.sin(pos.yaw) * side;
           w.yaw = pos.yaw + (w.dir < 0 ? Math.PI : 0);
           // step round the player
           if (dPlayer < 1.2 && player.onFoot) {
-            w.x += (w.x - player.x) / Math.max(0.2, dPlayer) * 0.6;
-            w.z += (w.z - player.z) / Math.max(0.2, dPlayer) * 0.6;
+            const sx = w.x + (w.x - player.x) / Math.max(0.2, dPlayer) * 0.6;
+            const sz = w.z + (w.z - player.z) / Math.max(0.2, dPlayer) * 0.6;
+            if (this.world.collision.heightAt(sx, sz) < 0.05) { w.x = sx; w.z = sz; } // never into a wall
           }
         } else if (dPlayer < 6 && player.onFoot) {
           // standing about: look at the stranger
@@ -339,8 +382,7 @@ export class Crowd {
           w.yaw += Math.atan2(Math.sin(to - w.yaw), Math.cos(to - w.yaw)) * Math.min(1, dt * 3);
         }
       }
-      const y = this.world.collision.heightAt(w.x, w.z);
-      w.root.position.set(w.x, y, w.z);
+      w.root.position.set(w.x, 0, w.z); // the streets are at ground level
       w.root.rotation.y += Math.atan2(Math.sin(w.yaw - w.root.rotation.y), Math.cos(w.yaw - w.root.rotation.y)) * Math.min(1, dt * 6);
       // blend walk / run / talk / idle; animate far ones less often
       const fleeing = moving && w.flee > 0;
@@ -375,7 +417,7 @@ export class Crowd {
   private say(w: Walker, text: string) {
     w.barkCd = 25;
     this.barkGlobal = 3.5;
-    this.v.set(w.x, this.world.collision.heightAt(w.x, w.z) + 2.15 * Math.min(1, w.height + 0.1), w.z);
+    this.v.set(w.x, 2.15 * Math.min(1, w.height + 0.1), w.z);
     this.bark(this.quests.fill(text), this.v.clone());
   }
 

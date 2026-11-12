@@ -110,8 +110,8 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
         <div class="fe-portrait" style="background-image:url(${asset('ui/intro/rider-guild-equipment.jpg')})"><div class="fe-tint"></div><div class="fe-pname"></div></div>
         <div class="fe-form">
           <h2>WIE ZIJT GIJ?</h2>
-          <label>Uw naam<div class="fe-row"><input class="fe-name" maxlength="18" value="${esc(h.name)}"><button class="fe-dice" data-dice="name" title="Een andere naam">⚄</button></div></label>
-          <div class="fe-label">Uw afkomst <span>bepaalt hoe ge vecht</span></div>
+          <label>Naam<div class="fe-row"><input class="fe-name" maxlength="18" value="${esc(h.name)}"><button class="fe-dice" data-dice="name" title="Een andere naam">⚄</button></div></label>
+          <div class="fe-label">Klasse</div>
           <div class="fe-origins">
             ${(Object.keys(ORIGINS) as OriginId[])
               .map((id) => {
@@ -119,15 +119,15 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
                 return `<button class="fe-origin${id === h.origin ? ' on' : ''}" data-origin="${id}">
                   <b>${esc(o.name)}</b><em>${esc(o.tagline)}</em><p>${esc(o.text)}</p>
                   ${(['kracht', 'klank', 'list', 'taaiheid'] as Stat[]).map((k) => statBar(id, k)).join('')}
-                  <div class="fe-skills">Rechtermuis: <b>${esc(o.skill.name)}</b> · R: <b>${esc(o.skill2.name)}</b></div>
+                  <div class="fe-skills"><b>${esc(o.skill.short)}</b> · <b>${esc(o.skill2.short)}</b></div>
                 </button>`;
               })
               .join('')}
           </div>
-          <div class="fe-label">Uw mantel</div>
+          <div class="fe-label">Mantel</div>
           <div class="fe-cloaks">${CLOAKS.map((c, k) => `<button class="fe-cloak${k === 0 ? ' on' : ''}" data-cloak="${c}" style="background:${c}"></button>`).join('')}</div>
-          <label>De naam van uw draak<div class="fe-row"><input class="fe-dragon" maxlength="18" value="${esc(h.dragon)}"><button class="fe-dice" data-dice="dragon" title="Een andere naam">⚄</button></div></label>
-          <button class="fe-go">BEGIN · VLIEG NAAR DIEST</button>
+          <label>Draak<div class="fe-row"><input class="fe-dragon" maxlength="18" value="${esc(h.dragon)}"><button class="fe-dice" data-dice="dragon" title="Een andere naam">⚄</button></div></label>
+          <button class="fe-go">BEGIN</button>
         </div>
       </div>`;
       const nameIn = el.querySelector<HTMLInputElement>('.fe-name')!;
