@@ -1,0 +1,22 @@
+{
+  "note": "Town list for the 1650 overworld. centre = Grote Markt (or the basilica for Scherpenheuvel), WGS84. bbox = local metres [x0,z0,x1,z1] around the centre (x east, z south) covering the c.1650 enceinte plus ~600 m. Each town's local frame is an equirectangular projection around its own centre, exactly as tools/osm/build-world.mjs does.",
+  "year": 1650,
+  "K": 6,
+  "ref": { "name": "Mechelen", "lat": 51.0280, "lon": 4.4780 },
+  "suburbMargin": 250,
+  "gap": 600,
+  "towns": [
+    { "id": "diest",          "name": "Diest",          "lat": 50.98505, "lon": 5.05095, "bbox": [-950, -1400, 1500, 1250] },
+    { "id": "scherpenheuvel", "name": "Scherpenheuvel", "lat": 50.98060, "lon": 4.97780, "bbox": [-1000, -1000, 1000, 1000] },
+    { "id": "aarschot",       "name": "Aarschot",       "lat": 50.98650, "lon": 4.83680, "bbox": [-1500, -1500, 1500, 1500] },
+    { "id": "leuven",         "name": "Leuven",         "lat": 50.87893, "lon": 4.70095, "bbox": [-2400, -2400, 2400, 2400] },
+    { "id": "mechelen",       "name": "Mechelen",       "lat": 51.02788, "lon": 4.48003, "bbox": [-1900, -1900, 1900, 1900] },
+    { "id": "lier",           "name": "Lier",           "lat": 51.13108, "lon": 4.57025, "bbox": [-1500, -1500, 1500, 1500] },
+    { "id": "antwerpen",      "name": "Antwerpen",      "lat": 51.22128, "lon": 4.39970, "bbox": [-1800, -2600, 2200, 2900] }
+  ],
+  "links": [
+    ["diest", "scherpenheuvel"], ["scherpenheuvel", "aarschot"], ["aarschot", "leuven"], ["diest", "leuven"],
+    ["aarschot", "lier"], ["aarschot", "mechelen"], ["leuven", "mechelen"], ["mechelen", "lier"],
+    ["mechelen", "antwerpen"], ["lier", "antwerpen"]
+  ]
+}
