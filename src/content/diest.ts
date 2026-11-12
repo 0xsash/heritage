@@ -46,6 +46,7 @@ export const diest: Content = {
   npcs: [
     {
       id: 'pieter', name: 'Pieter Vandenbempt', role: 'koster van Sint-Sulpitius', at: [30, 55], facing: Math.PI, tint: '#3a3330',
+      look: { body: 'man_old', wear: { hair_thin: 'h_grey', beard_full: 'h_grey', doublet: 'umber', collar_band: null, breeches: 'black', stockings: 'grey', shoes: null } },
       offers: [BELLS],
       talk: [
         { if: { any: [{ quest: ARRIVE, state: 'active' }, { quest: BELLS, state: 'none' }] }, start: 'pieter_intro' },
@@ -57,11 +58,13 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'marieke', name: 'Marieke Smets', role: 'marskramer', at: [55, 95], facing: 0.3, tint: '#6a3a5a', shop: true,
+      id: 'marieke', name: 'Marieke Smets', role: 'marskramer', at: [55, 95], facing: 0.3, tint: '#6a3a5a',
+      look: { body: 'woman', wear: { hair_bun: 'h_chestnut', coif: null, bodice: 'madder', kerchief: null, skirt: 'woad_dk', apron: 'linen', shoes: null }, prop: 'basket' }, shop: true,
       talk: [{ start: 'marieke_hi' }],
     },
     {
       id: 'joos', name: 'Meester Joos Peeters', role: 'deken van de wevers', at: [75, 45], facing: 0.4, tint: '#5a3a22',
+      look: { body: 'man_stout', wear: { hair_crop: 'h_brown', beard_pointed: 'h_brown', cap_flat: 'madder_dk', doublet: 'woad', collar_band: null, breeches: 'brown', stockings: 'grey', shoes: null } },
       offers: ['side_seals'],
       talk: [
         { if: { quest: 'side_seals', state: 'none' }, start: 'joos_intro' },
@@ -72,6 +75,7 @@ export const diest: Content = {
     },
     {
       id: 'aleydis', name: 'Zuster Aleydis', role: 'begijn en ziekenverzorgster', at: [680, -316], facing: -1.4, tint: '#2a2a2e',
+      look: { body: 'woman', wear: { hair_bun: 'h_brown', habit: 'beguine', beguine_veil: null, shoes: null }, prop: 'rosary' },
       offers: ['side_herbs'],
       talk: [
         { if: { quest: BELLS, state: 'active', stage: 'badge' }, start: 'aleydis_badge' },
@@ -83,6 +87,7 @@ export const diest: Content = {
     },
     {
       id: 'drossaard', name: 'Jonker Hendrik van Gorp', role: 'drossaard van Diest', at: [400, 140], facing: 2.2, tint: '#1e2a3a',
+      look: { body: 'man', wear: { hair_long: 'h_dark', beard_pointed: 'h_dark', hat_wide: 'black', doublet: 'black', collar_band: null, breeches: 'black', stockings: 'black', boots: null } },
       offers: ['contract_letter'],
       talk: [
         { if: { quest: LEUVEN, state: 'active', stage: 'pass' }, start: 'dross_pass' },
@@ -93,6 +98,7 @@ export const diest: Content = {
     },
     {
       id: 'wouter', name: 'Wouter Claes', role: 'tollenaar aan de Leuvense Poort', at: [-95, 340], facing: 2.6, tint: '#4a4a2a',
+      look: { body: 'man_stout', wear: { hair_crop: 'h_black', moustache: 'h_black', hat_wide: 'umber', doublet: 'moss', collar_band: null, breeches: 'umber', stockings: 'grey', shoes: null } },
       offers: ['side_toll'],
       talk: [
         { if: { quest: 'side_toll', state: 'none' }, start: 'wouter_intro' },
@@ -103,6 +109,7 @@ export const diest: Content = {
     },
     {
       id: 'lijsbet', name: 'Lijsbet Vranckx', role: 'weduwe van een wever', at: [805, 100], facing: -1.6, tint: '#3d3428',
+      look: { body: 'woman_old', wear: { hair_bun: 'h_grey', coif: null, bodice: 'black', kerchief: null, skirt: 'slate', shoes: null } },
       talk: [
         { if: { quest: 'side_seals', state: 'active', stage: 'widow' }, start: 'lijsbet_meet' },
         { start: 'lijsbet_idle' },
@@ -110,6 +117,7 @@ export const diest: Content = {
     },
     {
       id: 'gielis', name: 'Gielis "de Ton"', role: 'voerman, naar eigen zeggen', at: [-430, 100], facing: 1.2, tint: '#5a2a1a',
+      look: { body: 'man_stout', wear: { hair_crop: 'h_red', beard_full: 'h_red', cap_flat: 'russet', smock: 'linen', belt: null, breeches: 'russet', stockings: 'grey', clogs: null } },
       talk: [
         { if: { quest: 'side_toll', state: 'active', stage: 'cart' }, start: 'gielis_meet' },
         { start: 'gielis_idle' },
@@ -117,6 +125,7 @@ export const diest: Content = {
     },
     {
       id: 'driesen', name: 'Boer Jan Driesen', role: 'boer te Kaggevinne', at: [-2235, 690], facing: 0.6, tint: '#5a4a2a',
+      look: { body: 'man', wear: { hair_crop: 'h_blond', moustache: 'h_blond', cap_flat: 'brown', smock: 'grey', belt: null, breeches: 'brown', stockings: 'linen', clogs: null }, prop: 'stick' },
       offers: ['side_roelof'],
       talk: [
         { if: { quest: 'side_roelof', state: 'none' }, start: 'driesen_intro' },
@@ -127,6 +136,7 @@ export const diest: Content = {
     },
     {
       id: 'truyken', name: 'Truyken', role: 'verkoopster van pelgrimstekens', at: [-5005, 545], facing: -2.0, tint: '#5a3f2a',
+      look: { body: 'woman_stout', wear: { hair_bun: 'h_blond', coif: null, bodice: 'ochre', kerchief: null, skirt: 'russet', apron: 'linen', clogs: null }, prop: 'basket' },
       talk: [
         { if: { quest: BELLS, state: 'active', stage: 'scherpenheuvel' }, start: 'truyken_main' },
         { start: 'truyken_idle' },
@@ -134,6 +144,7 @@ export const diest: Content = {
     },
     {
       id: 'provost', name: 'Proost Jan Cools', role: 'proost van Scherpenheuvel', at: [-5085, 470], facing: 0.8, tint: '#e8e0d0',
+      look: { body: 'man_old', wear: { hair_thin: 'h_white', habit: 'black', rope_belt: null, shoes: null } },
       offers: ['side_wisps'],
       talk: [
         { if: { quest: 'contract_letter', state: 'active', stage: 'deliver' }, start: 'provost_letter' },

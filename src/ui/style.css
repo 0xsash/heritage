@@ -340,3 +340,6 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 @media (max-width: 1360px) {
   .help { right: auto; bottom: auto; left: 18px; top: 64px; max-height: calc(100% - 250px); overflow: auto; font-size: 13px; line-height: 1.45; padding: 10px 14px; }
 }
+
+.slot .k .mouse { width: 11px; height: 15px; vertical-align: -3px; }
+.slot .k { height: 16px; line-height: 16px; }

@@ -57,6 +57,8 @@ export interface NpcDef {
   facing?: number;
   /** cloak colour (multiplies the model's red) */
   tint?: string;
+  /** who they are, from the townsfolk kit: body, clothes (piece -> dye), prop */
+  look?: { body: string; wear: Record<string, string | null>; prop?: string | null };
   /** which conversation to start: the first entry whose condition holds */
   talk: { if?: Cond; start: string }[];
   /** quests this NPC gives (drives the "!" marker) */

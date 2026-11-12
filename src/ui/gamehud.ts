@@ -124,6 +124,15 @@ export interface SlotView {
   locked?: string;
 }
 
+/** A key cap, or a little mouse with the button lit for LMB / RMB. */
+export function keyGlyph(key: string) {
+  if (key === 'LMB' || key === 'RMB') {
+    const left = key === 'LMB';
+    return `<svg class="mouse" viewBox="0 0 14 20" aria-label="${left ? 'linkermuisknop' : 'rechtermuisknop'}"><path d="M1 8V7a6 6 0 0 1 12 0v6a6 6 0 0 1-12 0z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="${left ? 'M7 1.2A5.8 5.8 0 0 0 1.2 7v1.4H7z' : 'M7 1.2A5.8 5.8 0 0 1 12.8 7v1.4H7z'}" fill="currentColor"/><path d="M1 8.4h12M7 1v7.4" stroke="currentColor" stroke-width="1"/></svg>`;
+  }
+  return key === 'SPATIE' ? '␣' : key;
+}
+
 export class PlayerFrame {
   el = div('pframe');
   private hp: HTMLElement;
@@ -179,7 +188,7 @@ export class PlayerFrame {
     if (sig !== this.lastSig) {
       this.lastSig = sig;
       this.slots.innerHTML = slots
-        .map((s) => `<div class="slot${s.locked ? ' locked' : ''}"><div class="k">${s.key}</div><div class="n">${esc(s.name)}</div>${s.count !== undefined ? `<div class="c">${s.count}</div>` : ''}${s.locked ? `<div class="lk">${esc(s.locked)}</div>` : ''}<div class="cd"></div></div>`)
+        .map((s) => `<div class="slot${s.locked ? ' locked' : ''}"><div class="k">${keyGlyph(s.key)}</div><div class="n">${esc(s.name)}</div>${s.count !== undefined ? `<div class="c">${s.count}</div>` : ''}${s.locked ? `<div class="lk">${esc(s.locked)}</div>` : ''}<div class="cd"></div></div>`)
         .join('');
     }
     slots.forEach((s, i) => {

@@ -89,6 +89,58 @@ BODIES = {
 }
 BODY_ORDER = list(BODIES)
 
+# Face morph targets shipped with every body (same names and order everywhere). Each is the half-difference of a
+# MakeHuman 'incr' / 'decr' target pair (so +1 is about the incr target and -1 about the decr one), times a gain.
+# name: (targets at +1, targets at -1, gain)
+FACE_MORPHS = {
+    'nose_length': (['nose-scale-vert-incr', 'nose-point-down'], ['nose-scale-vert-decr', 'nose-point-up'], 1.0),
+    'nose_width': (['nose-scale-horiz-incr', 'nose-flaring-incr'], ['nose-scale-horiz-decr', 'nose-flaring-decr'], 1.0),
+    'nose_bridge': (['nose-hump-incr', 'nose-scale-depth-incr'], ['nose-hump-decr', 'nose-scale-depth-decr'], 1.0),
+    'jaw_width': (['chin-bones-incr', 'chin-width-incr'], ['chin-bones-decr', 'chin-width-decr'], 1.0),
+    'chin_length': (['chin-height-incr', 'chin-prominent-incr'], ['chin-height-decr', 'chin-prominent-decr'], 1.0),
+    'cheeks': (['l-cheek-volume-incr', 'r-cheek-volume-incr'], ['l-cheek-volume-decr', 'r-cheek-volume-decr'], 1.0),
+    'brow': (['eyebrows-trans-forward', 'eyebrows-trans-down'], ['eyebrows-trans-backward', 'eyebrows-trans-up'], 1.0),
+    'eyes': (['l-eye-scale-incr', 'r-eye-scale-incr'], ['l-eye-scale-decr', 'r-eye-scale-decr'], 1.0),
+    'mouth_width': (['mouth-scale-horiz-incr'], ['mouth-scale-horiz-decr'], 1.0),
+    'lips': (['mouth-upperlip-volume-incr', 'mouth-lowerlip-volume-incr'], ['mouth-upperlip-volume-decr', 'mouth-lowerlip-volume-decr'], 1.0),
+    'face_fat': (['head-fat-incr'], ['head-fat-decr'], 1.0),
+}
+MORPH_ATTR = 'fm_'
+
+
+def target_deltas(TargetService, name, n):
+    """A MakeHuman target as an (n, 3) array of Blender-space offsets in decimetres (x, -z, y)."""
+    import gzip
+    path = TargetService.target_full_path(name)
+    out = np.zeros((n, 3), dtype=np.float64)
+    if not path:
+        log('  (no target', name, ')')
+        return out
+    op = gzip.open if str(path).endswith('.gz') else open
+    with op(path, 'rt') as f:
+        for line in f:
+            parts = line.split()
+            if len(parts) < 4 or parts[0].startswith('#'):
+                continue
+            i = int(parts[0])
+            if i < n:
+                out[i] = (float(parts[1]), -float(parts[3]), float(parts[2]))
+    return out
+
+
+def add_face_morphs(TargetService, body, scale):
+    """Store every face morph as a per-vertex vector attribute fm_<name> (metres) on the full base mesh."""
+    n = len(body.data.vertices)
+    for name, (plus, minus, gain) in FACE_MORPHS.items():
+        d = np.zeros((n, 3))
+        for t in plus:
+            d += target_deltas(TargetService, t, n)
+        for t in minus:
+            d -= target_deltas(TargetService, t, n)
+        d *= 0.5 * gain * 0.1 * scale
+        a = body.data.attributes.new(MORPH_ATTR + name, 'FLOAT_VECTOR', 'POINT')
+        a.data.foreach_set('vector', d.astype(np.float32).ravel())
+
 
 def ensure_mpfb():
     R.ensure_mpfb()
@@ -139,6 +191,7 @@ def make_body(bid):
     rig.data.transform(S)
     rig.name = rig.data.name = f'rig.{bid}'
     body.name = body.data.name = f'body.{bid}'
+    add_face_morphs(TargetService, body, s)
 
     tights = extract_group(body, 'helper-tights', f'h_tights.{bid}')
     skirt = extract_group(body, 'helper-skirt', f'h_skirt.{bid}')

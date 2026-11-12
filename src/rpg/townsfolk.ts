@@ -15,6 +15,7 @@ import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { asset } from '../core/assets';
+import { rng } from '../core/math';
 import { loadModel } from '../render/models';
 import { LINES, ROLES, type Role } from './folk';
 
@@ -33,6 +34,10 @@ export interface KitManifest {
   palette: Record<string, string>;
   clips: Record<string, { stride?: number; loop?: boolean }>;
   archetypes: KitArchetype[];
+  /** face shape keys on the bodies (and on headwear that frames the face), with their safe range */
+  faceMorphs?: Record<string, { min: number; max: number }>;
+  /** multipliers for the skin, where the body's COLOR_0.r marks skin */
+  skinTones?: [number, number, number][];
 }
 
 export interface KitArchetype {
@@ -44,6 +49,20 @@ export interface KitArchetype {
   optional?: Record<string, number>;
   props?: [string | null, number][];
   gait?: string;
+  /** false: never picked for the street crowd (enemies) */
+  crowd?: boolean;
+}
+
+/** A particular person: named characters and enemies. */
+export interface FolkSpec {
+  body: string;
+  /** piece -> palette name or hex (null: as painted) */
+  wear: Record<string, string | null>;
+  prop?: string | null;
+  role?: Role;
+  gait?: string;
+  /** fixes the face */
+  seed?: number;
 }
 
 export interface Folk {
@@ -60,6 +79,8 @@ export interface Folk {
   speed: number;
   lines: string[];
   pieces: string[];
+  /** any other clip of the kit, fitted to this body (null when the kit lacks it) */
+  clip(name: string): THREE.AnimationClip | null;
 }
 
 const REF_HEIGHT = 1.7;
@@ -163,8 +184,8 @@ export class TownsfolkKit {
   }
 
   private pickArchetype(r: () => number, role?: Role) {
-    const pool = this.m.archetypes.filter((a) => (!role || a.role === role) && a.bodies.some((b) => this.templates.has(b)));
-    const all = pool.length ? pool : this.m.archetypes;
+    const pool = this.m.archetypes.filter((a) => a.crowd !== false && (!role || a.role === role) && a.bodies.some((b) => this.templates.has(b)));
+    const all = pool.length ? pool : this.m.archetypes.filter((a) => a.crowd !== false);
     let x = r() * all.reduce((s, a) => s + a.weight, 0);
     for (const a of all) if ((x -= a.weight) <= 0) return a;
     return all[0];
@@ -175,13 +196,12 @@ export class TownsfolkKit {
     return this.m.palette[name] ?? (/^#[0-9a-f]{6}$/i.test(name) ? name : null);
   }
 
-  /** Assemble one person. */
-  build(r: () => number, role?: Role): Folk | null {
+  /** Assemble one person from an archetype (random within its variants). */
+  build(r: () => number, role?: Role, archetype?: string): Folk | null {
     if (!this.ok) return null;
-    const a = this.pickArchetype(r, role);
+    const a = (archetype && this.m.archetypes.find((x) => x.id === archetype)) || this.pickArchetype(r, role);
     const bodies = a.bodies.filter((b) => this.templates.has(b));
     const body = bodies[Math.floor(r() * bodies.length)];
-    const B = this.m.bodies[body];
 
     // one piece per slot
     const chosen = new Map<string, string | null>(); // piece -> dye hex
@@ -193,6 +213,23 @@ export class TownsfolkKit {
       const o = fits[Math.floor(r() * fits.length)];
       chosen.set(o.piece, this.dye(o.dye?.length ? o.dye[Math.floor(r() * o.dye.length)] : undefined));
     }
+    const props = a.props ?? [];
+    let x = r() * props.reduce((s, [, w]) => s + w, 0);
+    let prop: string | null = null;
+    for (const [p, w] of props) if ((x -= w) <= 0) { prop = p; break; }
+    return this.assemble(body, chosen, prop, r, a.role, a.id, a.gait);
+  }
+
+  /** Assemble a particular person: this body, these pieces (piece -> palette name or hex), this prop. */
+  buildSpec(spec: FolkSpec): Folk | null {
+    if (!this.ok || !this.templates.has(spec.body)) return null;
+    const chosen = new Map<string, string | null>();
+    for (const [piece, dye] of Object.entries(spec.wear)) if (this.m.pieces[piece]?.bodies.includes(spec.body)) chosen.set(piece, this.dye(dye ?? undefined));
+    return this.assemble(spec.body, chosen, spec.prop ?? null, rng(spec.seed ?? hashStr(spec.body + Object.keys(spec.wear).join())), spec.role ?? 'burgher', 'named', spec.gait, 1);
+  }
+
+  private assemble(body: string, chosen: Map<string, string | null>, prop: string | null, r: () => number, role: Role, id: string, gait = 'walk', scale?: number): Folk {
+    const B = this.m.bodies[body];
     // layering rules: a collar needs its doublet, a hat excludes a hood...
     for (let pass = 0; pass < 3; pass++)
       for (const piece of [...chosen.keys()]) {
@@ -202,6 +239,16 @@ export class TownsfolkKit {
       }
     const hidden = new Set<number>();
     for (const piece of chosen.keys()) for (const h of this.m.pieces[piece].hides ?? []) if (this.m.regions[h] !== undefined) hidden.add(this.m.regions[h]);
+
+    // the face: every person gets their own (morph weights and skin tone), when the kit has them
+    const face = new Map<string, number>();
+    for (const [name, lim] of Object.entries(this.m.faceMorphs ?? {})) {
+      // two draws: most people sit near the middle, a few are striking
+      const t = (r() + r()) / 2;
+      face.set(name, lim.min + (lim.max - lim.min) * t);
+    }
+    const tones = this.m.skinTones ?? [];
+    const tone = tones.length ? tones[Math.floor(r() * tones.length)] : null;
 
     const root = SkeletonUtils.clone(this.templates.get(body)!);
     const drop: THREE.Object3D[] = [];
@@ -216,14 +263,14 @@ export class TownsfolkKit {
       mesh.frustumCulled = false;
       if (hidden.size) mesh.geometry = this.hide(mesh.geometry, hidden);
       if (t?.kind === 'piece' && t.piece) mesh.material = this.dyed(mesh.material as THREE.MeshStandardMaterial, chosen.get(t.piece) ?? null);
+      else if (t?.kind === 'body' && tone && mesh.geometry.getAttribute('color')) mesh.material = this.toned(mesh.material as THREE.MeshStandardMaterial, tone);
+      // the same face on the body and on whatever frames it (coif, wimple, beard)
+      const dict = mesh.morphTargetDictionary, inf = mesh.morphTargetInfluences;
+      if (dict && inf) for (const [name, w] of face) if (dict[name] !== undefined) inf[dict[name]] = w;
     });
     for (const o of drop) o.removeFromParent();
 
     // a prop in hand
-    const props = a.props ?? [];
-    let x = r() * props.reduce((s, [, w]) => s + w, 0);
-    let prop: string | null = null;
-    for (const [p, w] of props) if ((x -= w) <= 0) { prop = p; break; }
     if (prop && this.props.has(prop)) {
       const P = this.m.props[prop];
       const grip = B.grips?.[P.grip];
@@ -234,6 +281,7 @@ export class TownsfolkKit {
           mesh.position.fromArray(grip.pos);
           mesh.quaternion.fromArray(grip.quat);
         }
+        mesh.name = `prop.${prop}`;
         mesh.traverse((o) => {
           const m = o as THREE.Mesh;
           if (m.isMesh) m.material = this.dyed(m.material as THREE.MeshStandardMaterial, null);
@@ -243,29 +291,29 @@ export class TownsfolkKit {
     }
 
     // variety on top of the nine bodies: a few percent either way
-    const s = 0.97 + r() * 0.06;
+    const s = scale ?? 0.97 + r() * 0.06;
     root.scale.setScalar(s);
     const height = (B.height / REF_HEIGHT) * s;
-    const gait = a.gait ?? 'walk';
     const walk = this.clip(gait, body) ?? this.clip('walk', body)!;
     const stride = this.m.clips[walk.name.split('@')[0]]?.stride ?? 0;
-    const range = ROLES[a.role]?.speed ?? [1, 1.3];
+    const range = ROLES[role]?.speed ?? [1, 1.3];
     return {
       root,
-      role: a.role,
-      archetype: a.id,
+      role,
+      archetype: id,
       body,
       clips: { walk, idle: this.clip('idle', body) ?? walk, talk: this.clip('talk', body) ?? undefined, run: this.clip('run', body) ?? undefined },
       stride: stride * height,
       height,
       speed: range[0] + (range[1] - range[0]) * r(),
-      lines: LINES[a.role] ?? [],
+      lines: LINES[role] ?? [],
       pieces: [...chosen.keys()],
+      clip: (name: string) => this.clip(name, body),
     };
   }
 
   /** A clip for a body: the shared clip, with the hips' travel scaled to the body's build. */
-  private clip(name: string, body: string) {
+  clip(name: string, body: string) {
     const src = this.gltf.animations.find((c) => c.name === name);
     if (!src) return null;
     const k = this.m.bodies[body]?.pelvisScale ?? 1;
@@ -303,6 +351,7 @@ export class TownsfolkKit {
     out = new THREE.BufferGeometry();
     for (const [name, attr] of Object.entries(g.attributes)) out.setAttribute(name, attr);
     out.morphAttributes = g.morphAttributes;
+    out.morphTargetsRelative = g.morphTargetsRelative;
     out.setIndex(keep);
     out.boundingSphere = g.boundingSphere;
     out.boundingBox = g.boundingBox;
@@ -310,15 +359,23 @@ export class TownsfolkKit {
     return out;
   }
 
+  /** The skin material with a skin tone where COLOR_0.r marks skin (not eyes or lips). */
+  private toned(base: THREE.MeshStandardMaterial, tone: [number, number, number]) {
+    return this.masked(base, `tone${tone.join(',')}`, new THREE.Color(tone[0], tone[1], tone[2]));
+  }
+
   /** The kit material with a dye where COLOR_0.r says so (null: as painted). */
   private dyed(base: THREE.MeshStandardMaterial, hex: string | null) {
-    const key = `${base.uuid}|${hex ?? '-'}`;
+    return this.masked(base, hex ?? '-', hex ? new THREE.Color(hex).multiplyScalar(1 / 0.55) : new THREE.Color(1, 1, 1));
+  }
+
+  private masked(base: THREE.MeshStandardMaterial, id: string, dye: THREE.Color) {
+    const key = `${base.uuid}|${id}`;
     let m = this.mats.get(key);
     if (m) return m;
     const mat = base.clone();
-    // the dye mask lives in COLOR_0; it must not tint the whole garment
+    // the mask lives in COLOR_0; it must not tint the whole mesh
     mat.vertexColors = false;
-    const dye = hex ? new THREE.Color(hex).multiplyScalar(1 / 0.55) : new THREE.Color(1, 1, 1);
     mat.onBeforeCompile = (sh) => {
       sh.uniforms.uDye = { value: dye };
       sh.vertexShader = sh.vertexShader
@@ -332,6 +389,12 @@ export class TownsfolkKit {
     this.mats.set(key, mat);
     return mat;
   }
+}
+
+function hashStr(s: string) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return h >>> 0;
 }
 
 function isInside(o: THREE.Object3D, root: THREE.Object3D) {

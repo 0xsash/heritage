@@ -9,16 +9,21 @@ import { recolor } from '../render/recolor';
 import type { WorldCollision } from '../world/collision';
 import type { QuestEngine } from './quests';
 import type { NpcDef } from './types';
+import type { TownsfolkKit } from './townsfolk';
 
 interface Npc {
   def: NpcDef;
   root: THREE.Object3D;
   mixer?: THREE.AnimationMixer;
+  idle?: THREE.AnimationAction;
+  talk?: THREE.AnimationAction;
   marker: THREE.Sprite;
   shown: '!' | '?' | null;
   x: number;
   z: number;
   yaw: number;
+  /** height of the marker above the feet */
+  top: number;
 }
 
 function markerTexture(glyph: string) {
@@ -36,6 +41,12 @@ function markerTexture(glyph: string) {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
+}
+
+function seedOf(id: string) {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619);
+  return h >>> 0;
 }
 
 function openGround(col: WorldCollision, x: number, z: number): [number, number] {
@@ -59,14 +70,36 @@ export class Actors {
   private beamGeo = new THREE.CylinderGeometry(0.15, 0.5, 14, 8, 1, true).translate(0, 7, 0);
   private time = 0;
 
-  constructor(private model: GLTF | null, private engine: QuestEngine, private col: WorldCollision) {}
+  constructor(private model: GLTF | null, private engine: QuestEngine, private col: WorldCollision, private kit: TownsfolkKit | null = null) {}
 
   spawnNpcs(defs: NpcDef[]) {
     for (const def of defs) {
       const [x, z] = openGround(this.col, def.at[0], def.at[1]);
       const root = new THREE.Group();
       let mixer: THREE.AnimationMixer | undefined;
-      if (this.model) {
+      let idleA: THREE.AnimationAction | undefined, talkA: THREE.AnimationAction | undefined;
+      let top = 2.35;
+      // their own body, face and clothes from the townsfolk kit; the hero's body only as a fallback
+      const folk = def.look && this.kit ? this.kit.buildSpec({ ...def.look, seed: seedOf(def.id) }) : null;
+      if (folk) {
+        folk.root.traverse((o) => {
+          const mesh = o as THREE.Mesh;
+          if (!mesh.isMesh) return;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+        });
+        root.add(folk.root);
+        top = 1.72 * folk.height + 0.62;
+        mixer = new THREE.AnimationMixer(folk.root);
+        idleA = mixer.clipAction(folk.clips.idle);
+        idleA.play();
+        idleA.time = Math.random() * folk.clips.idle.duration;
+        if (folk.clips.talk) {
+          talkA = mixer.clipAction(folk.clips.talk);
+          talkA.play();
+          talkA.weight = 0;
+        }
+      } else if (this.model) {
         const m = SkeletonUtils.clone(this.model.scene);
         m.traverse((o) => {
           const mesh = o as THREE.SkinnedMesh;
@@ -92,14 +125,14 @@ export class Actors {
       const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex['!'], depthTest: true, depthWrite: false, transparent: true }));
       marker.renderOrder = 20;
       marker.scale.setScalar(0.75);
-      marker.position.y = 2.35;
+      marker.position.y = top;
       marker.visible = false;
       root.add(marker);
       const yaw = def.facing ?? 0;
       root.position.set(x, this.col.heightAt(x, z), z);
       root.rotation.y = yaw;
       this.group.add(root);
-      this.npcs.push({ def, root, mixer, marker, shown: null, x, z, yaw });
+      this.npcs.push({ def, root, mixer, idle: idleA, talk: talkA, marker, shown: null, x, z, yaw, top });
       this.engine.npcPos.set(def.id, [x, z]);
     }
   }
@@ -150,6 +183,12 @@ export class Actors {
     this.time += dt;
     for (const n of this.npcs) {
       const d2 = (n.x - px) ** 2 + (n.z - pz) ** 2;
+      if (n.talk && n.idle) {
+        // gesture while speaking
+        const t = talkingTo === n.def.id ? 1 : 0;
+        n.talk.weight += (t - n.talk.weight) * Math.min(1, dt * 4);
+        n.idle.weight = 1 - n.talk.weight;
+      }
       if (d2 < 120 * 120) n.mixer?.update(dt);
       // turn to face the player when they come close
       const want = d2 < 36 || talkingTo === n.def.id ? Math.atan2(px - n.x, pz - n.z) : n.yaw;
@@ -167,7 +206,7 @@ export class Actors {
         const dist = Math.sqrt(d2);
         const sc = Math.min(14, Math.max(0.75, dist * 0.024));
         n.marker.scale.setScalar(sc);
-        n.marker.position.y = 2.2 + sc * 0.45 + Math.sin(this.time * 2.4) * 0.06;
+        n.marker.position.y = n.top - 0.15 + sc * 0.45 + Math.sin(this.time * 2.4) * 0.06;
         (n.marker.material as THREE.SpriteMaterial).depthTest = dist < 40;
       }
     }

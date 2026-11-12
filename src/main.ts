@@ -180,7 +180,7 @@ async function boot() {
   }
   player.hero.setCloak(quests.s.hero.cloak);
 
-  const actors = (late.actors = new Actors(riderModel, quests, world.collision));
+  const actors = (late.actors = new Actors(riderModel, quests, world.collision, townsfolk));
   actors.spawnNpcs(diest.npcs);
   actors.syncPickups();
   scene.add(actors.group);
