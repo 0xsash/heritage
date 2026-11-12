@@ -11,7 +11,7 @@ def look_at(o, target):
     o.rotation_euler = d.to_track_quat('-Z', 'Y').to_euler()
 
 
-def setup_scene(samples=48, res=(1600, 900), ground=True, ground_col='#7a6a58'):
+def setup_scene(samples=48, res=(1600, 900), ground=True, ground_col='#8a7456'):
     sc = bpy.context.scene
     sc.render.engine = 'CYCLES'
     sc.cycles.device = 'CPU'
@@ -31,7 +31,10 @@ def setup_scene(samples=48, res=(1600, 900), ground=True, ground_col='#7a6a58'):
     sc.render.resolution_percentage = 100
     sc.render.film_transparent = False
     sc.view_settings.view_transform = 'AgX'
-    sc.view_settings.look = 'AgX - Punchy' if 'AgX - Punchy' in [i.identifier for i in bpy.types.ColorManagedViewSettings.bl_rna.properties['look'].enum_items_static] else 'None'
+    try:
+        sc.view_settings.look = 'AgX - Punchy'
+    except TypeError:
+        sc.view_settings.look = 'None'
     sc.view_settings.exposure = 0.0
     w = bpy.data.worlds.get('pv_world') or bpy.data.worlds.new('pv_world')
     sc.world = w
@@ -51,7 +54,7 @@ def setup_scene(samples=48, res=(1600, 900), ground=True, ground_col='#7a6a58'):
     nt.links.new(tc.outputs['Generated'], sep.inputs[0])
     nt.links.new(sep.outputs['Z'], ramp.inputs[0])
     nt.links.new(ramp.outputs[0], bg.inputs[0])
-    bg.inputs[1].default_value = 0.85
+    bg.inputs[1].default_value = 0.6
     nt.links.new(bg.outputs[0], out.inputs[0])
     for o in [o for o in bpy.data.objects if o.name.startswith('pv_')]:
         bpy.data.objects.remove(o)
@@ -67,15 +70,15 @@ def setup_scene(samples=48, res=(1600, 900), ground=True, ground_col='#7a6a58'):
         fl.data.materials.append(m)
     # golden-hour sun from the front-left, low
     sd = bpy.data.lights.new('pv_sun', 'SUN')
-    sd.energy = 4.2
-    sd.color = (1.0, 0.80, 0.58)
+    sd.energy = 5.5
+    sd.color = (1.0, 0.76, 0.50)
     sd.angle = math.radians(2.5)
     sun = bpy.data.objects.new('pv_sun', sd)
     sc.collection.objects.link(sun)
     sun.rotation_euler = (math.radians(62), 0, math.radians(-38))
     # warm bounce from the ground / cool skylight from behind the camera
     fd = bpy.data.lights.new('pv_fill', 'AREA')
-    fd.energy = 900
+    fd.energy = 650
     fd.size = 12
     fd.color = (0.75, 0.84, 1.0)
     fill = bpy.data.objects.new('pv_fill', fd)

@@ -14,6 +14,7 @@
 # See TOWNSFOLK_NOTES.md for what is in the kit, the dye-mask convention and the asset licences.
 
 import os, sys
+sys.dont_write_bytecode = True          # keep the repo free of __pycache__
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from townsfolk.common import log, save_blend, load_blend   # noqa: E402
 
