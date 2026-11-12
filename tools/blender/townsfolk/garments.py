@@ -200,6 +200,12 @@ def snap_out(points, bvh, gap):
     return out
 
 
+def set_keep(obj, value=1.0):
+    """Mark a small detail (cuffs, buttons, charges) so the game-mesh decimation leaves it alone."""
+    a = obj.data.attributes.get('keep') or obj.data.attributes.new('keep', 'FLOAT', 'POINT')
+    a.data.foreach_set('value', np.full(len(obj.data.vertices), value, dtype=np.float32))
+
+
 def finish(obj, ctx, weights='T', extra=()):
     """Weights, cleanup, armature."""
     bones = ctx.bones
@@ -460,8 +466,9 @@ def torso_cut(ref, neck_drop=0.0, bottom=None, sleeve_to=0.0, open_front=0.0, sq
     return f
 
 
-def cuff_ring(ctx, name, along, width, gap, part, bvh_objs, count=16, flare=0.0):
-    """A band around both forearms at 'along' metres above the wrist."""
+def cuff_ring(ctx, name, along, width, gap, part, bvh_objs, count=10, flare=0.0):
+    """A turned-back band around both forearms at 'along' metres above the wrist: built at game resolution
+    (one layer, the kit material is double-sided) and protected from decimation."""
     out = []
     bvh = bvh_of(bvh_objs)
     for sd, sx in (('l', 1), ('r', -1)):
@@ -473,12 +480,14 @@ def cuff_ring(ctx, name, along, width, gap, part, bvh_objs, count=16, flare=0.0)
             t = j / (rows - 1)
             c = w0 - f * (along + width * (0.5 - t))
             pts = ring_out(bvh, c, f, count, front=Vector((0, -0.7, 0.7)))
+            rad = sum((p - c).length for p in pts) / len(pts)
             for p in pts:
                 d = p - c
-                verts.append(c + d * (1.0 + (gap + flare * (1 - t)) / max(d.length, 1e-4)))
+                r = 0.5 * d.length + 0.5 * rad                    # rounder than the sleeve under it
+                verts.append(c + d.normalized() * (r + gap + flare * (1 - t)))
         o = new_mesh_obj(f'{name}_{sd}', verts, grid_faces(rows, count, True), part)
         fix_normals_out(o, lambda p, c=w0, f=f: c + f * f.dot(p - c))
-        solidify(o, 0.003 * ctx.k, offset=-1)
+        set_keep(o)
         out.append(o)
     return out
 
@@ -492,7 +501,7 @@ def buttons(ctx, name, surf_objs, z0, z1, n, r, part='brass', x=0.0):
         if loc is None:
             continue
         bm = bmesh.new()
-        bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=5, radius=r)
+        bmesh.ops.create_uvsphere(bm, u_segments=5, v_segments=3, radius=r)
         for v in bm.verts:
             v.co.y *= 0.55
         me = bpy.data.meshes.new(f'{name}{i}')
@@ -502,6 +511,7 @@ def buttons(ctx, name, surf_objs, z0, z1, n, r, part='brass', x=0.0):
         bpy.context.scene.collection.objects.link(o)
         set_part(o, part)
         o.data.transform(Matrix.Translation(loc + Vector((0, -r * 0.35, 0))))
+        set_keep(o)
         out.append(o)
     return out
 
@@ -531,7 +541,7 @@ def g_doublet(ctx, ref):
     cuffs = cuff_ring(ctx, 'cuff', 0.030 * ctx.k, 0.035 * ctx.k, 0.012 * ctx.k, 'linen', [o], flare=0.008 * ctx.k)
     for c in cuffs:
         finish(c, ctx)
-    bts = buttons(ctx, 'btn', [o], ctx.neck.z - 0.07 * ctx.k, ctx.waist_z - 0.03 * ctx.k, 7, 0.0065 * ctx.k)
+    bts = buttons(ctx, 'btn', [o], ctx.neck.z - 0.07 * ctx.k, ctx.waist_z - 0.03 * ctx.k, 6, 0.0075 * ctx.k)
     for b in bts:
         finish(b, ctx)
     return join([o] + cuffs + bts, 'doublet')
@@ -599,9 +609,8 @@ def g_collar_band(ctx, ref):
     def depth(a):
         front = math.exp(-((math.atan2(math.sin(a), math.cos(a))) / 0.75) ** 2)
         return 0.085 + 0.045 * front
-    o = drape_band(ctx, 'collar_band', [d, ctx.body], c, Vector((0, -0.28, 1)), depth, count=40, rows=5,
-                   gap=0.004 * ctx.k, slope=1.25, open_front=0.10, lift=0.004)
-    solidify(o, 0.0025 * ctx.k)
+    o = drape_band(ctx, 'collar_band', [d, ctx.body], c, Vector((0, -0.28, 1)), depth, count=30, rows=5,
+                   gap=0.005 * ctx.k, slope=1.25, open_front=0.10, lift=0.004)
     set_part(o, 'linen')
     return finish(o, ctx)
 
@@ -680,9 +689,8 @@ def g_kerchief(ctx, ref):
         front = math.exp(-(aa / 0.6) ** 2)
         back = math.exp(-((abs(aa) - math.pi) / 0.7) ** 2)
         return 0.14 + 0.08 * front + 0.08 * back
-    o = drape_band(ctx, 'kerchief', [b, ctx.body], c, Vector((0, -0.3, 1)), depth, count=44, rows=7,
-                   gap=0.009 * ctx.k, slope=1.3, lift=0.006)
-    solidify(o, 0.0025 * ctx.k)
+    o = drape_band(ctx, 'kerchief', [b, ctx.body], c, Vector((0, -0.3, 1)), depth, count=34, rows=6,
+                   gap=0.010 * ctx.k, slope=1.3, lift=0.006)
     set_part(o, 'linen')
     return finish(o, ctx)
 
@@ -1154,7 +1162,6 @@ def g_beguine_veil(ctx, ref):
     relax(o, 4, 0.45)
     smooth_boundary(o, 3, 0.5)
     fix_normals_out(o, lambda p: Vector((0, ctx.neck.y, min(p.z, head_centre(ctx).z))))
-    solidify(o, 0.003 * ctx.k)
     head_weights(ctx, o, ctx.headb.z - 0.02 * ctx.k, ctx.neck.z - 0.03 * ctx.k)
     return finish(o, ctx, weights=None)
 
@@ -1775,6 +1782,94 @@ def g_beard_full(ctx, ref):
     o = join(parts + moustache(ctx, 'moust', mouth, nose, up=-0.2, size=1.15), 'beard_full')
     set_aux(o, [(0.5, 0.5, 0)] * len(o.data.vertices))
     rigid_weight(o, 'head')
+    return finish(o, ctx, weights=None)
+
+
+# --------------------------------------------------------------------------
+# PHASE C ADDITIONS: clergy and soldiers' small pieces
+# --------------------------------------------------------------------------
+@garment('skullcap', 'head', MEN, 'man', 'small black skullcap (zucchetto) on the crown; wear it with hair_thin or hair_crop')
+def g_skullcap(ctx, ref):
+    el = [deg(a) for a in (80, 68, 57, 48)]
+    verts, faces, rows = head_shell(ctx, 'skullcap', 0.016, el, nu=24, smooth=3, ears=False)
+    o = new_mesh_obj('skullcap', verts, faces, 'felt')
+    fix_normals_out(o, lambda p: head_centre(ctx))
+    hc = head_centre(ctx)
+    o.data.transform(Matrix.Translation(hc) @ Matrix.Rotation(deg(14), 4, 'X') @ Matrix.Translation(-hc))   # worn back on the crown
+    rim(o, 0.004 * ctx.k, inward=0.004 * ctx.k)
+    rigid_weight(o, 'head')
+    return finish(o, ctx, weights=None)
+
+
+@garment('bands', 'collar', MEN, 'man', 'clerical white collar with two short tabs at the throat (over the habit / cassock)', layer=1)
+def g_bands(ctx, ref):
+    hb = bpy.data.objects[f'habit.{ctx.bid}']
+    c = Vector((0, ctx.neck.y + 0.004, ctx.neck.z - 0.002 * ctx.k))
+
+    def depth(a):
+        aa = math.atan2(math.sin(a), math.cos(a))
+        return 0.030 + 0.075 * math.exp(-(aa / 0.34) ** 2)
+    o = drape_band(ctx, 'bands', [hb, ctx.body], c, Vector((0, -0.28, 1)), depth, count=26, rows=5,
+                   gap=0.006 * ctx.k, slope=1.3, open_front=0.07, lift=0.004)
+    set_part(o, 'linen')
+    return finish(o, ctx)
+
+
+@garment('plume', 'plume', MEN, 'man', 'ostrich feather curling back from the band of the wide hat', layer=3)
+def g_plume(ctx, ref):
+    # a ribbon with a raised spine, built in the hat's own frame and placed exactly like hat_wide
+    n = 9
+    verts, aux = [], []
+    for i in range(n):
+        t = i / (n - 1)
+        a = deg(70 + 130 * t)                                    # from the left side of the band round to the back
+        r = 0.100 + 0.115 * t ** 1.3
+        zc = 0.050 + 0.075 * math.sin(math.pi * min(1.0, t * 1.15)) - 0.060 * t ** 3
+        cpt = Vector((math.sin(a) * r, -math.cos(a) * r, zc))
+        tan = Vector((math.cos(a), math.sin(a), 0.0))
+        up = Vector((0, 0, 1))
+        out = Vector((math.sin(a), -math.cos(a), 0.0))
+        w = 0.050 * math.sin(math.pi * (0.12 + 0.88 * t) ** 0.8) + 0.008
+        curl = 0.014 * t
+        verts += [cpt - up * w * 0.55 + out * (0.010 + curl), cpt + out * 0.0 + up * 0.004, cpt + up * w * 0.55 + out * (0.014 + curl)]
+        aux += [(t, 0.0, 0)] * 3
+    faces = []
+    for i in range(n - 1):
+        for j in range(2):
+            a0 = i * 3 + j
+            faces.append((a0, a0 + 1, a0 + 4, a0 + 3))
+    o = new_mesh_obj('plume', verts, faces, 'sash')
+    set_aux(o, aux)
+    set_keep(o)
+    hat_place(ctx, o, sink=0.022, tilt=-7)
+    rigid_weight(o, 'head')
+    return finish(o, ctx, weights=None)
+
+
+@garment('bandolier', 'bandolier', MEN, 'man', 'musketeer\'s leather bandolier, left shoulder to right hip, with wooden powder charges', layer=2)
+def g_bandolier(ctx, ref):
+    db = bpy.data.objects[f'doublet.{ctx.bid}']
+    k = ctx.k
+    top = Vector((0.105 * k, 0, ctx.neck.z - 0.03 * k))
+    low = Vector((-0.15 * k, 0, ctx.waist_z - 0.05 * k))
+    d = (low - top).normalized()
+    n = Vector((-d.z, 0.0, d.x))
+    if n.z < 0:
+        n = -n
+    c = (top + low) / 2 + Vector((0, ctx.hip.y * 0.5, 0))
+    bv = bvh_sub([db], lambda p: abs(p.x) < 0.205 * k and p.z > ctx.waist_z - 0.12 * k)
+    pts, ln = convex_ring(bv, c, n, count=32)
+    band = strap_mesh('bandolier_band', pts, ln, n, c, 0.040 * k, 0.005, 0.004, 'leather')
+    charges = []
+    front = [i for i in range(len(pts)) if pts[i].y < ctx.hip.y - 0.02 and ctx.waist_z + 0.02 * k < pts[i].z < ctx.neck.z - 0.10 * k]
+    for i in front[::2][:6]:
+        p, out, tan = ring_frame(pts, i, n.normalized(), c)
+        ch = lathe_mesh('charge', [(0.0, 0.0), (0.009, -0.002), (0.011, -0.012), (0.011, -0.050), (0.0, -0.054)], 5, 'wood')
+        ch.data.transform(Matrix.Translation(p + out * 0.016 * k - UP * 0.026 * k))
+        set_keep(ch)
+        charges.append(ch)
+    o = join([band] + charges, 'bandolier')
+    transfer_weights(o, ctx.T, ctx.bones)
     return finish(o, ctx, weights=None)
 
 

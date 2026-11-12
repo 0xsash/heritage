@@ -10,6 +10,7 @@ export type Action =
   | 'time' // T — advance time of day
   | 'map' // M / Back — toggle map
   | 'journal' // J / RB — quest journal
+  | 'kroniek' // K — the chronicle
   | 'attack' // left mouse / RT on foot — sword (on foot), fire (flying)
   | 'skill' // right mouse / LT — origin skill
   | 'skill2' // R / B on foot — second skill
@@ -28,6 +29,7 @@ const KEYMAP: Record<string, Action> = {
   KeyT: 'time',
   KeyM: 'map',
   KeyJ: 'journal',
+  KeyK: 'kroniek',
   KeyR: 'skill2',
   KeyQ: 'potion',
   KeyI: 'character',

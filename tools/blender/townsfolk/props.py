@@ -145,6 +145,57 @@ def p_bundle(_):
     return join([b, knot], 'bundle')
 
 
+@prop('sword', 'hand_r', 'plain soldier\'s backsword: straight blade, cross-guard with a knuckle bow, wire grip', 'sword')
+def p_sword(_):
+    # blade up +Z, edges along X, flat normal Y; origin at the middle of the grip
+    def blade_ring(z, w, t):
+        return [Vector((w, 0, z)), Vector((w * 0.35, t, z)), Vector((-w * 0.35, t, z)), Vector((-w, 0, z)),
+                Vector((-w * 0.35, -t, z)), Vector((w * 0.35, -t, z))]
+    rings = [blade_ring(0.060, 0.019, 0.0035), blade_ring(0.45, 0.016, 0.003), blade_ring(0.80, 0.011, 0.002)]
+    verts = [p for r in rings for p in r] + [Vector((0, 0, 0.86))]
+    faces = []
+    for j in range(2):
+        for i in range(6):
+            faces.append((j * 6 + i, j * 6 + (i + 1) % 6, (j + 1) * 6 + (i + 1) % 6, (j + 1) * 6 + i))
+    for i in range(6):
+        faces.append((12 + i, 12 + (i + 1) % 6, 18))
+    blade = new_mesh_obj('sword_blade', verts, faces, 'steel', smooth=False)
+    bm = get_bm(blade)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    put_bm(bm, blade)
+    guard = rounded_box('sword_guard', (0.15, 0.022, 0.016), 'iron', roundness=0.3, cuts=1)
+    guard.data.transform(Matrix.Translation((0, 0, 0.056)))
+    grip = tube('sword_grip', [Vector((0, 0, -0.050)), Vector((0, 0, 0.050))], 0.013, 6, 'leather')
+    pommel = sphere('sword_pommel', 0.019, 'iron', seg=6, rings=4, scale=(1, 1, 1.1))
+    pommel.data.transform(Matrix.Translation((0, 0, -0.066)))
+    bow = tube('sword_bow', [Vector((0.070, 0, 0.056)), Vector((0.062, 0, 0.0)), Vector((0.040, 0, -0.048)), Vector((0.010, 0, -0.064))], 0.0045, 4, 'iron')
+    return join([blade, guard, grip, pommel, bow], 'sword')
+
+
+@prop('musket', 'hand_r', 'matchlock caliver: iron barrel, walnut stock; held at the wrist of the stock, lying along the forearm', 'along')
+def p_musket(_):
+    # barrel along +Z (forward from the hand), the butt behind along -Z; origin at the wrist of the stock
+    stock_pts = [Vector((0, 0.030, -0.42)), Vector((0, 0.026, -0.36)), Vector((0, 0.012, -0.20)), Vector((0, 0.0, -0.05)),
+                 Vector((0, 0.0, 0.10)), Vector((0, 0.0, 0.40)), Vector((0, 0.0, 0.62))]
+    radii = [0.036, 0.040, 0.030, 0.022, 0.024, 0.020, 0.017]
+    stock = tube('musket_stock', stock_pts, 0.02, 6, 'wood', radii)
+    bm = get_bm(stock)
+    for v in bm.verts:                       # a deep, flat butt
+        if v.co.z < -0.15:
+            t = min(1.0, (-0.15 - v.co.z) / 0.2)
+            v.co.x *= 1.0 - 0.45 * t
+            v.co.y = v.co.y * (1.0 + 0.9 * t) + 0.012 * t
+    put_bm(bm, stock)
+    barrel = tube('musket_barrel', [Vector((0, -0.017, -0.02)), Vector((0, -0.017, 0.40)), Vector((0, -0.016, 0.78))], 0.012, 6,
+                  'iron', [0.0135, 0.012, 0.0105])
+    lock = rounded_box('musket_lock', (0.012, 0.03, 0.09), 'iron', roundness=0.3, cuts=1)
+    lock.data.transform(Matrix.Translation((0.022, -0.006, 0.03)))
+    serp = tube('musket_serpentine', [Vector((0.026, -0.004, 0.02)), Vector((0.026, -0.035, 0.04)), Vector((0.026, -0.045, 0.07))], 0.004, 4, 'iron')
+    trig = tube('musket_trigger', [Vector((0, 0.022, 0.0)), Vector((0, 0.040, -0.02)), Vector((0, 0.040, -0.06)), Vector((0, 0.024, -0.08))], 0.0035, 4, 'iron')
+    band = tube('musket_band', [Vector((0, -0.008, 0.38)), Vector((0, -0.008, 0.40))], 0.024, 6, 'brass')
+    return join([stock, barrel, lock, serp, trig, band], 'musket')
+
+
 def build_props():
     out = {}
     for name, spec in PROPS.items():
@@ -177,14 +228,23 @@ def grip_frame(rig, hand, grip='hang', pose=False):
     normal = along.cross(across).normalized()
     if (normal.x > 0) == (sd == 'l'):             # make it point out of the palm (towards the midline at rest)
         normal = -normal
-    if grip == 'fist':
+    if grip in ('fist', 'sword'):
         origin = m1 + along * 0.02 + normal * 0.03
         z = across
+    elif grip == 'along':
+        origin = (h + m1) / 2 + along * 0.02 + normal * 0.038
+        z = along
     else:
         origin = m1 + along * 0.06 + normal * 0.012
         z = -along
     y = normal.cross(z).normalized()
     x = y.cross(z).normalized()
+    if grip == 'sword':
+        # as the rider's sword: in the curled fist, edges in line with the knuckles (prop X along the hand)
+        hl = (m1 - h).length
+        origin = h + along * (0.86 * hl) + normal * (0.027 * hl / 0.122)
+        x = (along - z * along.dot(z)).normalized()
+        y = z.cross(x).normalized()
     M = Matrix((x, y, z)).transposed().to_4x4()
     M.translation = origin
     return M

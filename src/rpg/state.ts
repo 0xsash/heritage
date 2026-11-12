@@ -47,6 +47,8 @@ export interface SaveData {
   discovered: string[];
   counter: number;
   kills: number;
+  /** ids of the Kroniek entries the player has unlocked */
+  kroniek: string[];
 }
 
 const KEY = 'belfort-save-v2';
@@ -66,6 +68,7 @@ export function freshSave(): SaveData {
     discovered: [],
     counter: 0,
     kills: 0,
+    kroniek: [],
   };
 }
 

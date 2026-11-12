@@ -94,16 +94,16 @@ BODY_ORDER = list(BODIES)
 # name: (targets at +1, targets at -1, gain)
 FACE_MORPHS = {
     'nose_length': (['nose-scale-vert-incr', 'nose-point-down'], ['nose-scale-vert-decr', 'nose-point-up'], 1.0),
-    'nose_width': (['nose-scale-horiz-incr', 'nose-flaring-incr'], ['nose-scale-horiz-decr', 'nose-flaring-decr'], 1.0),
+    'nose_width': (['nose-scale-horiz-incr', 'nose-flaring-incr'], ['nose-scale-horiz-decr', 'nose-flaring-decr'], 1.4),
     'nose_bridge': (['nose-hump-incr', 'nose-scale-depth-incr'], ['nose-hump-decr', 'nose-scale-depth-decr'], 1.0),
     'jaw_width': (['chin-bones-incr', 'chin-width-incr'], ['chin-bones-decr', 'chin-width-decr'], 1.0),
     'chin_length': (['chin-height-incr', 'chin-prominent-incr'], ['chin-height-decr', 'chin-prominent-decr'], 1.0),
-    'cheeks': (['l-cheek-volume-incr', 'r-cheek-volume-incr'], ['l-cheek-volume-decr', 'r-cheek-volume-decr'], 1.0),
+    'cheeks': (['l-cheek-volume-incr', 'r-cheek-volume-incr'], ['l-cheek-volume-decr', 'r-cheek-volume-decr'], 1.3),
     'brow': (['eyebrows-trans-forward', 'eyebrows-trans-down'], ['eyebrows-trans-backward', 'eyebrows-trans-up'], 1.0),
-    'eyes': (['l-eye-scale-incr', 'r-eye-scale-incr'], ['l-eye-scale-decr', 'r-eye-scale-decr'], 1.0),
-    'mouth_width': (['mouth-scale-horiz-incr'], ['mouth-scale-horiz-decr'], 1.0),
-    'lips': (['mouth-upperlip-volume-incr', 'mouth-lowerlip-volume-incr'], ['mouth-upperlip-volume-decr', 'mouth-lowerlip-volume-decr'], 1.0),
-    'face_fat': (['head-fat-incr'], ['head-fat-decr'], 1.0),
+    'eyes': (['l-eye-scale-incr', 'r-eye-scale-incr'], ['l-eye-scale-decr', 'r-eye-scale-decr'], 1.6),
+    'mouth_width': (['mouth-scale-horiz-incr'], ['mouth-scale-horiz-decr'], 1.5),
+    'lips': (['mouth-upperlip-volume-incr', 'mouth-lowerlip-volume-incr'], ['mouth-upperlip-volume-decr', 'mouth-lowerlip-volume-decr'], 1.6),
+    'face_fat': (['head-fat-incr'], ['head-fat-decr'], 1.5),
 }
 MORPH_ATTR = 'fm_'
 

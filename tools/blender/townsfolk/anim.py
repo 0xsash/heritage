@@ -12,9 +12,11 @@ from mathutils import Vector, Quaternion, Matrix
 from .common import log, RIDER_GLB, to_coll
 
 FPS = 30
-SRC = ['idle', 'walk', 'walk_formal', 'talk', 'sit', 'run']
+SRC = ['idle', 'walk', 'walk_formal', 'talk', 'sit', 'run', 'sword_idle', 'attack1', 'attack2', 'hit', 'death']
 LOOP = {'idle': True, 'walk': True, 'walk_formal': True, 'walk_old': True, 'talk': True, 'sit': True, 'run': True,
-        'look_around': True, 'point': False}
+        'look_around': True, 'point': False, 'sword_idle': True, 'attack1': False, 'attack2': False, 'hit': False,
+        'death': False, 'aim': True, 'pray': True}
+GROUND = {'sit': None, 'attack1': None, 'attack2': None, 'hit': None, 'death': None}      # default: 'min' (the rider's one-shots are already grounded)
 RIDER_SPEED = {'walk': 1.5, 'walk_formal': 1.3, 'run': 5.0}       # RIDER_NOTES.md: planted-foot speeds
 LEGS = [f'{b}_{s}' for b in ('thigh', 'calf', 'foot', 'ball') for s in ('l', 'r')]
 ARMS = [f'{b}_{s}' for b in ('clavicle', 'upperarm', 'lowerarm', 'hand') for s in ('l', 'r')]
@@ -227,6 +229,111 @@ def derive_point(rig, idle, dur=2.5):
     return out
 
 
+def fk(rig, W, off):
+    """Joint positions (armature space) for world rotations W and pelvis offset off."""
+    tb = rig.data.bones
+    pos = {}
+    for b in tb:
+        if b.name not in W:
+            continue
+        p = b.parent
+        if p is None or p.name not in pos:
+            pos[b.name] = b.head_local + (off if b.name == 'pelvis' else Vector())
+        else:
+            pos[b.name] = pos[p.name] + (W[p.name] @ p.matrix_local.to_quaternion().inverted()) @ (b.head_local - p.head_local)
+    return pos
+
+
+def reach(rig, W, off, side, target, elbow_dir, hand_dir=None):
+    """Pose an arm so the wrist lands on `target`: aim the upper arm so the elbow sits towards elbow_dir from the
+    straight shoulder-target line (two-bone solve), then the forearm at the target, then the hand."""
+    tb = rig.data.bones
+    ua, la, ha = f'upperarm_{side}', f'lowerarm_{side}', f'hand_{side}'
+    pos = fk(rig, W, off)
+    sh = pos[ua]
+    l1 = (tb[la].head_local - tb[ua].head_local).length
+    l2 = (tb[ha].head_local - tb[la].head_local).length
+    to = Vector(target) - sh
+    d = min(to.length, (l1 + l2) * 0.995)
+    a = (l1 * l1 - l2 * l2 + d * d) / (2 * d)
+    h = math.sqrt(max(l1 * l1 - a * a, 0.0))
+    axis = to.normalized()
+    e = Vector(elbow_dir)
+    e = (e - axis * e.dot(axis))
+    e = e.normalized() if e.length > 1e-6 else Vector((0, 0, -1))
+    elbow = sh + axis * a + e * h
+    aim_subtree(rig, W, ua, elbow - sh, 1.0)
+    aim_subtree(rig, W, la, sh + axis * d - elbow, 1.0)
+    aim_subtree(rig, W, ha, hand_dir if hand_dir is not None else (sh + axis * d - elbow), 1.0)
+
+
+def curl(rig, W, side, amount):
+    """Curl the fingers of one hand (about the knuckle line)."""
+    tb = rig.data.bones
+    across = (W[f'hand_{side}'] @ tb[f'hand_{side}'].matrix_local.to_quaternion().inverted()) @ \
+        (tb[f'index_01_{side}'].head_local - tb[f'pinky_01_{side}'].head_local)
+    across.normalize()
+    sg = -1.0 if side == 'l' else 1.0
+    for fgr in ('index', 'middle', 'ring', 'pinky'):
+        for kk in (1, 2, 3):
+            rotate_subtree(rig, W, f'{fgr}_0{kk}_{side}', Quaternion(across, math.radians(sg * amount * (38 if kk == 1 else 46))))
+
+
+def derive_aim(rig, idle, dur=3.0):
+    """Musket levelled: body turned a quarter right, right forearm level at chest height pointing at the target
+    (the musket lies along it), left hand forward under the barrel, head down to the stock. A held, breathing pose."""
+    n = int(round(dur * FPS))
+    fr = resample(idle[:int(len(idle) * dur / 4.0) + 2], n, True)
+    tb = rig.data.bones
+    k = tb['pelvis'].head_local.z / 0.917
+    out = []
+    for j, f in enumerate(fr):
+        W = dict(f['W'])
+        off = f['off'].copy()
+        sway = math.sin(2 * math.pi * j / n)
+        rotate_subtree(rig, W, 'spine_01', Quaternion((0, 0, 1), math.radians(-14)))
+        rotate_subtree(rig, W, 'spine_03', Quaternion((0, 0, 1), math.radians(-12)))
+        rotate_subtree(rig, W, 'neck_01', Quaternion((0, 0, 1), math.radians(18)))
+        rotate_subtree(rig, W, 'head', Quaternion((0, 0, 1), math.radians(8)) @ Quaternion((0, 1, 0), math.radians(-8)))
+        pos = fk(rig, W, off)
+        sh_r = pos['upperarm_r']
+        aim_pt = Vector((0.0, -1.0, 0.0))
+        hand_r = sh_r + Vector((0.10 * k, -0.20 * k, -0.075 * k + 0.004 * sway))
+        reach(rig, W, off, 'r', hand_r, Vector((-0.8, 0.5, -0.2)), aim_pt)
+        aim_subtree(rig, W, 'lowerarm_r', aim_pt + Vector((0.10, 0, 0.0)), 0.55)
+        aim_subtree(rig, W, 'hand_r', aim_pt, 1.0)
+        pos = fk(rig, W, off)
+        support = pos['hand_r'] + Vector((0.03 * k, -0.36 * k, -0.02 * k))
+        reach(rig, W, off, 'l', support, Vector((0.3, 0.0, -1.0)), Vector((-0.6, -0.75, 0.2)))
+        curl(rig, W, 'r', 0.7)
+        curl(rig, W, 'l', 0.5)
+        out.append(dict(W=W, off=off))
+    return out
+
+
+def derive_pray(rig, idle, dur=4.0):
+    """Standing in prayer: hands together before the chest, head bowed, a slow breath."""
+    n = int(round(dur * FPS))
+    fr = resample(idle, n, True)
+    tb = rig.data.bones
+    k = tb['pelvis'].head_local.z / 0.917
+    out = []
+    for j, f in enumerate(fr):
+        W = dict(f['W'])
+        off = f['off'].copy()
+        br = math.sin(2 * math.pi * j / n)
+        rotate_subtree(rig, W, 'spine_03', Quaternion((1, 0, 0), math.radians(4 + 1.0 * br)))
+        rotate_subtree(rig, W, 'neck_01', Quaternion((1, 0, 0), math.radians(10)))
+        rotate_subtree(rig, W, 'head', Quaternion((1, 0, 0), math.radians(12 + 1.5 * br)))
+        pos = fk(rig, W, off)
+        chest = (pos['upperarm_l'] + pos['upperarm_r']) / 2
+        for side, sx in (('l', 1.0), ('r', -1.0)):
+            wrist = chest + Vector((0.030 * k * sx, -0.215 * k, -0.150 * k + 0.003 * br))
+            reach(rig, W, off, side, wrist, Vector((sx * 0.7, 0.1, -1.0)), Vector((-0.10 * sx, -0.45, 0.9)))
+        out.append(dict(W=W, off=off))
+    return out
+
+
 def ground(rig, frames, mode='min'):
     """Lower / raise the hips so the lowest foot joint over the clip sits at its rest height."""
     tb = rig.data.bones
@@ -245,7 +352,7 @@ def ground(rig, frames, mode='min'):
                 if j in ('foot', 'ball'):
                     low = min(low, p.z - tb[nm].head_local.z)
         lows.append(low)
-    dz = -min(lows)
+    dz = -(lows[0] if mode == 'first' else min(lows))
     for f in frames:
         f['off'] = f['off'] + Vector((0, 0, dz))
     return dz
@@ -294,11 +401,13 @@ def stage_anim():
     clips['walk_old'] = derive_walk_old(rig, W_src['walk'])
     clips['look_around'] = derive_look_around(rig, W_src['idle'])
     clips['point'] = derive_point(rig, W_src['idle'])
+    clips['aim'] = derive_aim(rig, W_src['idle'])
+    clips['pray'] = derive_pray(rig, W_src['idle'])
     made = {}
     for name, frames in clips.items():
         dz = 0.0
-        if name != 'sit':
-            dz = ground(rig, frames)
+        if GROUND.get(name, 'min'):
+            dz = ground(rig, frames, GROUND.get(name, 'min'))
         dur = (len(frames) - 1) / FPS
         loc = [to_local(rig, f['W'], f['off']) for f in frames]
         act = write_action(rig, name, loc)

@@ -14,14 +14,17 @@ import { Post } from './render/post';
 import { loadModel } from './render/models';
 import { loadMaterialSet, type MaterialInfo } from './render/textures';
 import { Actors } from './rpg/actors';
-import { RARITY, type Gear, uniqueGear } from './rpg/character';
+import { RARITY, type Gear, rollGear, uniqueGear } from './rpg/character';
 import { Crowd } from './rpg/crowd';
 import { loadTownsfolk } from './rpg/townsfolk';
+import { Kroniek, READABLES, ENTRIES } from './rpg/kroniek';
+import { Readables } from './rpg/readables';
 import { QuestEngine } from './rpg/quests';
 import { freshSave, loadSave, writeSave } from './rpg/state';
 import { runFrontEnd } from './ui/creation';
 import { Banner, CharacterPanel, Guide, PlayerFrame, type SlotView } from './ui/gamehud';
 import { Hud } from './ui/hud';
+import { KroniekUI } from './ui/kroniekui';
 import { DialogueUI, JournalUI } from './ui/rpgui';
 import { Atmosphere } from './world/sky';
 import { loadTreeAtlas } from './world/trees';
@@ -58,6 +61,17 @@ async function boot() {
   loading.className = 'overlay';
   loading.innerHTML = '<h1>BELFORT</h1><h2>HET HERTOGDOM BRABANT · ANNO 1650</h2><div class="loading">De pigmenten worden gemalen…</div>';
   uiRoot.appendChild(loading);
+  // something true to read while the world loads
+  const tips = ENTRIES.filter((e) => e.cat === 'tijd' && e.truth === 'geschiedenis');
+  const tipEl = document.createElement('div');
+  tipEl.className = 'loadtip';
+  loading.appendChild(tipEl);
+  const showTip = () => {
+    const e = tips[Math.floor(Math.random() * tips.length)];
+    tipEl.innerHTML = `<b>${e.title}</b>${e.text.split('. ').slice(0, 2).join('. ').replace(/\.?$/, '.')}`;
+  };
+  showTip();
+  const tipTimer = setInterval(showTip, 7000);
   const setLoading = (m: string) => {
     const l = loading.querySelector('.loading');
     if (l) l.textContent = m;
@@ -119,6 +133,7 @@ async function boot() {
   const fe = await front;
   loading.classList.add('hidden');
   setTimeout(() => loading.remove(), 700);
+  clearInterval(tipTimer);
   sound.start();
   const isNew = fe.mode === 'new' || !peek.created;
   if (fe.mode === 'new') {
@@ -180,6 +195,35 @@ async function boot() {
   }
   player.hero.setCloak(quests.s.hero.cloak);
 
+  // --- the Kroniek: what you have learned about Brabant
+  const kroniek = new Kroniek(quests.s, {
+    unlocked: (e) => {
+      if (e.cat === 'plaats') return; // the discovery card already said so
+      toasts.push(`KRONIEK · ${e.title}`);
+      quests.addXp(10 + quests.s.hero.level * 2);
+    },
+    milestone: (n, total) => {
+      const g = rollGear(quests.s.hero.level + 1, n >= 30 ? 2 : 1);
+      quests.s.florins += 20;
+      quests.giveGear(g);
+      late.banner?.show('done', 'KRONIEK', `${n} van ${total} bladzijden`, ['Marieke betaalt goed voor nieuws: 20 florijnen', `En een geschenk: ${g.name}`]);
+      sound.questDone();
+    },
+  }, () => quests.save());
+  for (const d of world.discoveries) d.found = kroniek.has(`plaats:${d.key}`);
+  const readables = new Readables(READABLES, world.collision, kroniek);
+  scene.add(readables.group);
+  const kroniekUI = new KroniekUI(uiRoot, kroniek);
+  kroniekUI.onClose = () => closeUi();
+  {
+    // creatures enter the Kroniek the first time one falls
+    const onKill = quests.onKill.bind(quests);
+    quests.onKill = (type, camp, x, z, elite) => {
+      onKill(type, camp, x, z, elite);
+      kroniek.unlock(elite && camp === 'galgeberg' ? 'wezen:roelof' : `wezen:${type}`);
+    };
+  }
+
   const actors = (late.actors = new Actors(riderModel, quests, world.collision, townsfolk));
   actors.spawnNpcs(diest.npcs);
   actors.syncPickups();
@@ -203,7 +247,7 @@ async function boot() {
   const journal = (late.journal = new JournalUI(uiRoot, quests));
   const chars = (late.chars = new CharacterPanel(uiRoot, quests, () => player.hero.setCloak(quests.s.hero.cloak), () => sound.coins()));
   let uiClosedAt = 0;
-  const uiOpen = () => dialogue.open || journal.open || chars.open;
+  const uiOpen = () => dialogue.open || journal.open || chars.open || kroniekUI.open || kroniekUI.reading;
   let bellsRang = !!quests.s.flags.bells_ring;
   let bellTimer = 30;
 
@@ -274,7 +318,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner };
+  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -297,12 +341,21 @@ async function boot() {
         setTimeout(() => hud.flash(LIGHT[atmo.look.label] ?? atmo.look.label.toUpperCase()), 400);
       }
       if (input.consume('map') && !uiOpen()) mapOpen = hud.toggleMap();
-      if (input.consume('journal') && !dialogue.open && !chars.open) {
-        if (!journal.toggle()) closeUi();
-      }
-      if (input.consume('character') && !dialogue.open && !journal.open) {
-        if (!chars.toggle()) closeUi();
-      }
+      // one book, three sections: opening one closes the others
+      const book = (which: 'journal' | 'kroniek' | 'character') => {
+        if (dialogue.open || kroniekUI.reading) return;
+        const was = which === 'journal' ? journal.open : which === 'kroniek' ? kroniekUI.open : chars.open;
+        if (journal.open) journal.toggle();
+        if (kroniekUI.open) kroniekUI.toggle();
+        if (chars.open) chars.toggle(false);
+        if (was) closeUi();
+        else if (which === 'journal') journal.toggle();
+        else if (which === 'kroniek') kroniekUI.toggle();
+        else chars.toggle(true);
+      };
+      if (input.consume('journal')) book('journal');
+      if (input.consume('kroniek')) book('kroniek');
+      if (input.consume('character')) book('character');
       const blocked = uiOpen() || mapOpen;
       combat.update(blocked ? 0 : dt, input, rig.yaw, rig.camera, !blocked && performance.now() - uiClosedAt > 250);
       sdt = blocked ? 0 : dt * combat.timeScale;
@@ -336,6 +389,7 @@ async function boot() {
     if (running && !paused) {
       quests.update(px, py, pz, player.mode === 'walk');
       actors.update(sdt, px, pz, dialogue.npcId);
+      readables.update(sdt, px, pz);
       crowd?.update(sdt, px, pz, player.onFoot ? 0 : player.altitude(), rig.camera, {
         x: px, z: pz, onFoot: player.onFoot, dragonX: player.pos.x, dragonZ: player.pos.z, dragonDown: player.mode === 'walk' || player.mode === 'calling',
       });
@@ -368,6 +422,7 @@ async function boot() {
       const ring = !!quests.s.flags.bells_ring;
       if (ring && !bellsRang) {
         bellsRang = true;
+        kroniek.unlock('tijd:klank');
         banner.show('done', 'DIEST', 'De klokken luiden weer', ['Voor het eerst sinds zondag weet de stad hoe laat het is.']);
         for (let i = 0; i < 3; i++) setTimeout(() => sound.chime(), i * 1400);
         rig.addTrauma(0.15);
@@ -382,6 +437,7 @@ async function boot() {
         const r = d.r + (player.onFoot ? 0 : Math.min(py * 0.5, 120));
         if ((d.x - px) ** 2 + (d.z - pz) ** 2 < r * r) {
           d.found = true;
+          kroniek.unlock(`plaats:${d.key}`);
           hud.discover(d);
           sound.chime(d.key === 'Sint-Sulpitius en Dionysiuskerk' && !ring);
           quests.addXp(15);
@@ -411,6 +467,7 @@ async function boot() {
     if (uiOpen() || player.dead) hud.setPrompt(null);
     else if (near?.npc) hud.setPrompt(`<kbd>${key}</kbd>Spreek met ${near.npc.name}${near.npc.shop ? ' · winkel' : ''}`);
     else if (near?.loot) hud.setPrompt(`<kbd>${key}</kbd>Raap op: <span style="color:${RARITY[near.loot.rarity].color}">${near.loot.name}</span>`);
+    else if (near?.read) hud.setPrompt(`<kbd>${key}</kbd>${near.read.read ? 'Herlees' : 'Lees'} ${near.read.def.label}`);
     else if (near?.pickup) hud.setPrompt(`<kbd>${key}</kbd>Raap op: ${quests.item(near.pickup.item)?.name ?? near.pickup.item}`);
     else if (player.mode === 'fly' && player.canLand()) hud.setPrompt(`<kbd>${key}</kbd>Landen`);
     else if (player.mode === 'walk') hud.setPrompt(player.distanceToDragon() < 7 ? `<kbd>${key}</kbd>Bestijg ${dragon}` : combat.inCombat ? null : `<kbd>${key}</kbd>Roep ${dragon}`);
@@ -458,11 +515,13 @@ async function boot() {
   function nearby() {
     const x = player.heroPos.x, z = player.heroPos.z;
     const npc = actors.nearestNpc(x, z);
-    if (npc) return { npc, pickup: null, loot: null };
+    if (npc) return { npc, pickup: null, loot: null, read: null };
     const loot = combat.nearestLoot(x, z);
-    if (loot) return { npc: null, pickup: null, loot };
+    if (loot) return { npc: null, pickup: null, loot, read: null };
     const pickup = actors.nearestPickup(x, z);
-    return pickup ? { npc: null, pickup, loot: null } : null;
+    if (pickup) return { npc: null, pickup, loot: null, read: null };
+    const read = readables.nearest(x, z);
+    return read ? { npc: null, pickup: null, loot: null, read } : null;
   }
 
   /** E near a person starts a conversation; near something on the ground picks it up. */
@@ -471,8 +530,20 @@ async function boot() {
     const near = nearby();
     if (!near) return false; // nothing here: the press calls or mounts the dragon
     input.consume('interact');
-    if (near.npc) {
+    if (near.read) {
+      const e = kroniek.entry(near.read.def.entry);
+      if (e) {
+        const xp = 20 + quests.s.hero.level * 5;
+        const isNew = !!kroniek.unlock(e.id, true);
+        if (isNew) {
+          quests.addXp(xp);
+          sound.chime(false);
+        }
+        kroniekUI.show(e, isNew, `+${xp} ervaring`);
+      }
+    } else if (near.npc) {
       const start = quests.conversationFor(near.npc.id);
+      kroniek.unlock(`mens:${near.npc.id}`);
       if (start) {
         if (mapOpen) mapOpen = hud.toggleMap();
         dialogue.start(near.npc.id, start, () => {

@@ -15,7 +15,7 @@ import numpy as np
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 from .common import log, get_bm, put_bm, activate, tri_count, rig_landmarks, clean_weights
-from .bodies import BODY_ORDER
+from .bodies import BODY_ORDER, FACE_MORPHS, MORPH_ATTR
 
 REGIONS = {'face': 1, 'ears': 2, 'scalp': 3, 'neck': 4, 'chest_upper': 5, 'chest': 6, 'belly': 7, 'hips': 8,
            'upperarm': 9, 'forearm_up': 10, 'forearm_low': 11, 'hand': 12, 'thigh': 13, 'knee': 14, 'shin': 15,
@@ -31,16 +31,16 @@ EXTRA_HIDES = {'stockings': ['shin'], 'hair_crop': ['scalp'], 'hair_long': ['sca
 # triangle budgets at game resolution
 TARGET = {'body': 3800, 'stockings': 260, 'breeches': 650, 'shoes': 420, 'clogs': 380, 'boots': 600, 'doublet': 1050,
           'smock': 1000, 'bodice': 900, 'skirt': 860, 'coif': 330, 'hat_wide': 420, 'hat_pilgrim': 420,
-          'cap_flat': 330, 'morion': 460, 'habit': 1100, 'collar_band': 260, 'kerchief': 360, 'apron': 420,
+          'cap_flat': 330, 'morion': 460, 'habit': 1100, 'collar_band': 9999, 'kerchief': 9999, 'bands': 9999, 'plume': 9999, 'skullcap': 9999, 'bandolier': 420, 'apron': 420,
           'belt': 160, 'rope_belt': 380, 'capuche': 520, 'pelerine': 480, 'buff_coat': 760, 'beguine_veil': 800,
           'huik': 980, 'sash': 260, 'hair_crop': 560, 'hair_long': 700, 'hair_thin': 360, 'hair_child': 560,
           'hair_bun': 380, 'beard_pointed': 160, 'moustache': 100, 'beard_full': 260}
-PROP_TARGET = {'basket': 500, 'staff': 260, 'stick': 160, 'bread': 220, 'lantern': 240, 'rosary': 420, 'bundle': 240}
+PROP_TARGET = {'sword': 9999, 'musket': 9999, 'basket': 500, 'staff': 260, 'stick': 160, 'bread': 220, 'lantern': 240, 'rosary': 420, 'bundle': 240}
 # phase-A ray distances per piece (metres) used to decide what a piece covers
 HIDE_DIST = {'skirt': 0.40, 'habit': 0.40, 'huik': 0.06, 'smock': 0.16, 'buff_coat': 0.12, 'breeches': 0.10,
              'coif': 0.05, 'beguine_veil': 0.06, 'kerchief': 0.05, 'collar_band': 0.02, 'capuche': 0.05,
              'pelerine': 0.05, 'boots': 0.05, 'shoes': 0.05, 'clogs': 0.06, 'stockings': 0.03, 'apron': 0.0}
-NO_HIDE_PIECES = {'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'beard_pointed', 'moustache', 'beard_full',
+NO_HIDE_PIECES = {'skullcap', 'bands', 'plume', 'bandolier', 'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'beard_pointed', 'moustache', 'beard_full',
                   'belt', 'rope_belt', 'sash', 'apron', 'hair_crop', 'hair_long', 'hair_thin', 'hair_child', 'hair_bun'}
 
 
@@ -188,11 +188,24 @@ def decimated_copy(obj, target):
         m.decimate_type = 'COLLAPSE'
         m.ratio = target / n
         m.use_collapse_triangulate = False
+        keep = c.data.attributes.get('keep')
+        if keep is not None and 'dec_weight' not in c.vertex_groups:
+            kv = np.zeros(len(c.data.vertices), dtype=np.float32)
+            keep.data.foreach_get('value', kv)
+            if kv.max() > 0.5:
+                g = c.vertex_groups.new(name='dec_weight')
+                for i, x in enumerate(kv):
+                    g.add([i], 0.0 if x > 0.5 else 1.0, 'REPLACE')
+                # the protected details keep their triangles: take them out of the budget
+                kept = sum(len(p.vertices) - 2 for p in c.data.polygons if all(kv[v] > 0.5 for v in p.vertices))
+                m.ratio = max(0.05, (target - kept) / max(n - kept, 1))
         if 'dec_weight' in c.vertex_groups:
             m.vertex_group = 'dec_weight'
             m.vertex_group_factor = 1.0
         activate(c)
         bpy.ops.object.modifier_apply(modifier=m.name)
+    if 'dec_weight' in c.vertex_groups:
+        c.vertex_groups.remove(c.vertex_groups['dec_weight'])
     return c
 
 
@@ -273,9 +286,57 @@ def apply_weights(obj, weights, bones):
             g.add([i], x / tot, 'REPLACE')
 
 
+MORPH_PIECES_OFF = {'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'plume', 'skullcap'}     # rigid: never morphed
+
+
+class FullBody:
+    """A full-resolution body's surface with its face-morph deltas, to carry the morphs onto anything near it."""
+
+    def __init__(self, bid):
+        o = bpy.data.objects[f'body.{bid}']
+        self.tris, self.co = tri_table(o)
+        self.tree = BVHTree.FromPolygons([Vector(p) for p in self.co], self.tris.tolist())
+        self.k = rig_landmarks(o.parent)['top'] / 1.70
+        self.d = {}
+        for name in FACE_MORPHS:
+            a = np.zeros(len(o.data.vertices) * 3, dtype=np.float32)
+            o.data.attributes[MORPH_ATTR + name].data.foreach_get('vector', a)
+            self.d[name] = a.reshape(-1, 3).astype(np.float64)
+
+    def sample(self, pts):
+        """Morph deltas at arbitrary points: those of the nearest skin, fading out 3.5 - 8 cm from it."""
+        out = {n: np.zeros((len(pts), 3)) for n in self.d}
+        for i, p in enumerate(pts):
+            loc, nrm, ti, dist = self.tree.find_nearest(Vector(p))
+            if loc is None:
+                continue
+            f = 1.0 - min(max((dist - 0.035 * self.k) / (0.045 * self.k), 0.0), 1.0)
+            if f <= 0:
+                continue
+            ia, ib, ic = self.tris[ti]
+            w = barycentric(loc, Vector(self.co[ia]), Vector(self.co[ib]), Vector(self.co[ic]))
+            for n, d in self.d.items():
+                out[n][i] = (d[ia] * w[0] + d[ib] * w[1] + d[ic] * w[2]) * f
+        return out
+
+
+def set_morphs(obj, deltas):
+    for name in FACE_MORPHS:
+        a = obj.data.attributes.get(MORPH_ATTR + name) or obj.data.attributes.new(MORPH_ATTR + name, 'FLOAT_VECTOR', 'POINT')
+        a.data.foreach_set('vector', np.asarray(deltas[name], dtype=np.float32).ravel())
+
+
+def clear_morphs(obj):
+    for name in FACE_MORPHS:
+        a = obj.data.attributes.get(MORPH_ATTR + name)
+        if a is not None:
+            obj.data.attributes.remove(a)
+
+
 def stage_game():
     meta = json.loads(bpy.context.scene['garments'])
     lms = {b: lm_of(b) for b in BODY_ORDER}
+    full = {b: FullBody(b) for b in BODY_ORDER}
     # ---- regions on the full bodies (same codes for every body: computed on the reference)
     ref_body = bpy.data.objects['body.man']
     codes = body_regions(ref_body, lms['man'])
@@ -321,9 +382,13 @@ def stage_game():
         bpy.data.meshes.remove(old)
         apply_weights(o, wts, bones)
         set_region(o, dreg)
+        pts = np.zeros(len(me.vertices) * 3)
+        me.vertices.foreach_get('co', pts)
+        set_morphs(o, full[bid].sample(pts.reshape(-1, 3)))
     log('bodies: %d -> %d triangles (after removing the always-covered torso and thighs)' % (full_tris, tri_count(dec)))
     bpy.data.objects.remove(dec)
     # ---- pieces
+    morph_max, per_piece, morphed = {}, {}, []
     for gname, m in meta.items():
         if not m['bodies']:
             continue
@@ -343,8 +408,25 @@ def stage_game():
             apply_weights(o, wts, bones)
             if m['slot'] == 'hair':
                 set_region(o, hair_regions(o, bid))
-        log('piece %-13s %5d -> %4d triangles on %d bodies' % (gname, n0, tri_count(dec), len(m['bodies'])))
+            clear_morphs(o)
+            if gname not in MORPH_PIECES_OFF:
+                pts = np.zeros(len(me.vertices) * 3)
+                me.vertices.foreach_get('co', pts)
+                dl = full[bid].sample(pts.reshape(-1, 3))
+                biggest = max(float(np.abs(v).max()) for v in dl.values())
+                morph_max[gname] = max(morph_max.get(gname, 0.0), biggest)
+                per_piece.setdefault(gname, []).append((o, dl))
+        # a piece carries the face morphs only if they move it by more than a millimetre on some body
+        carries = morph_max.get(gname, 0.0) > 0.001
+        for o, dl in per_piece.get(gname, []):
+            if carries:
+                set_morphs(o, dl)
+        if carries:
+            morphed.append(gname)
+        log('piece %-13s %5d -> %4d triangles on %d bodies%s' % (gname, n0, tri_count(dec), len(m['bodies']),
+                                                                 '  [face morphs, max %.1f mm]' % (morph_max[gname] * 1000) if carries else ''))
         bpy.data.objects.remove(dec)
+    bpy.context.scene['morph_pieces'] = json.dumps(morphed)
     # ---- props (one mesh each)
     for o in [o for o in bpy.data.objects if o.get('prop')]:
         n0 = tri_count(o)
