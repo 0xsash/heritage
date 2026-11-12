@@ -331,3 +331,12 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
   .fe-skills { margin-top: 5px; }
   .fe-go { margin-top: 16px; padding: 11px 30px; }
 }
+/* quest banners: one line, sized to the screen */
+.banner .title { white-space: nowrap; font-size: clamp(22px, 3vw, 40px); }
+.banner { max-width: calc(100vw - 40px); }
+/* narrow screens: the place name moves up out of the way of the health bar */
+@media (max-width: 1180px) { .loc { bottom: 104px; } }
+/* below ~1360px the controls card would sit on the action bar: move it to the free top-left */
+@media (max-width: 1360px) {
+  .help { right: auto; bottom: auto; left: 18px; top: 64px; max-height: calc(100% - 250px); overflow: auto; font-size: 13px; line-height: 1.45; padding: 10px 14px; }
+}
