@@ -165,7 +165,7 @@ export const diest: Content = {
         {
           id: 'land',
           journal: '{dragon} en ik zijn de Demer gevolgd tot aan Diest. Van boven zag ik de muren, de markt en de grote kerk met haar platte toren. En ik hoorde niets. Geen enkele klok. Ik moet landen op de Grote Markt en uitzoeken waarom.',
-          objectives: [{ id: 'land', kind: 'reach', text: 'Land op de Grote Markt van Diest (E om te landen)', at: [40, 45], r: 70, onFoot: true }],
+          objectives: [{ id: 'land', kind: 'reach', text: 'Land op de Grote Markt van Diest', at: [40, 45], r: 70, onFoot: true }],
           onDone: [{ stage: [ARRIVE, 'pieter'] }],
         },
         {

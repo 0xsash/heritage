@@ -17,12 +17,10 @@ export type FrontEndResult = { mode: 'continue' } | { mode: 'new'; hero: NewHero
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const asset = (p: string) => new URL(p, document.baseURI).toString();
 
+// Two slides, about twenty seconds: the hook and you. The rest of the story is told in play.
 const SLIDES: [string, string, string][] = [
-  ['flight-demer-valley', 'Brabant, anno 1650', 'Na tachtig jaar oorlog met het noorden is er vrede, maar ze is broos. De Schelde is gesloten, de Fransen plunderen het zuiden, en wie uit het leger is weggelopen, zwerft nu langs de wegen.'],
-  ['diest-living-town', 'Diest', 'In Diest weven ze laken, brouwen ze bier en betalen ze tol, zoals altijd. Elk uur luiden de klokken van Sint-Sulpitius over de daken. Zo weet de stad wanneer ze moet werken, bidden en slapen.'],
-  ['bell-magic-cracked-tower', 'De klokken', 'De oude mensen zeggen dat de klokken nog iets anders doen. Dat ze iets tegenhouden. Dit land werd ooit op het water veroverd, en het water is dat nooit vergeten.'],
-  ['kludde-river-remembers', 'Zondag', 'Op een zondag zwijgen de klokken. De klepels zijn weg uit een gesloten toren. Op de klokkenstoel: nat rivierwier, en de afdruk van klauwen.'],
-  ['root-oak-forbidden-pilgrimage', 'Gij', 'Gij hebt geen land, geen titel en geen meester. Gij hebt alleen een draak, die op een nacht uit het riet van de Demer kroop en u koos. Niemand weet waarom. Gij ook niet.'],
+  ['kludde-river-remembers', 'Diest, anno 1650', 'Op een zondag zwijgen de klokken van Sint-Sulpitius. De klepels zijn weg uit een gesloten toren. Op de klokkenstoel ligt nat rivierwier, en staat de afdruk van klauwen.'],
+  ['root-oak-forbidden-pilgrimage', 'Gij', 'Gij hebt geen land, geen titel en geen meester. Gij hebt een draak, die op een nacht uit het riet van de Demer kroop en u koos. Niemand weet waarom.'],
 ];
 
 const NAMES = ['Lieven', 'Joris', 'Rombout', 'Gommaar', 'Bartel', 'Machteld', 'Clara', 'Katelijne', 'Margriet', 'Barbara', 'Josijne', 'Geertruid', 'Arnout', 'Willem'];
@@ -60,14 +58,14 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
           <h2>EEN AVONTUUR IN BRABANT · ANNO 1650</h2>
           <div class="fe-cols">
             <div><h3>DIT IS</h3>
-              <p><b>Een actie-avontuur.</b> Vlieg op een draak, land waar ge wilt, vecht, verdien, word sterker.</p>
-              <p><b>Echt Brabant.</b> De straten, kerken en muren van Diest liggen waar ze in 1650 lagen.</p>
-              <p><b>Folklore die bijt.</b> De Kludde, dwaallichten, en klokken met macht.</p>
+              <p><b>Een avontuur.</b> Vlieg op een draak, land waar ge wilt, kies partij, vecht.</p>
+              <p><b>Echt Brabant.</b> Diest ligt waar het in 1650 lag, straat voor straat.</p>
+              <p><b>Folklore die bijt.</b> De Kludde, dwaallichten, klokken met macht.</p>
             </div>
             <div><h3>DIT IS NIET</h3>
-              <p><b>Een geschiedenisles.</b> Wat echt is en wat verzonnen, staat eerlijk in de Kroniek.</p>
+              <p><b>Een geschiedenisles.</b> De Kroniek zegt eerlijk wat verzonnen is.</p>
               <p><b>Een simulator.</b> De draak vliegt vanzelf. Gij stuurt.</p>
-              <p><b>Af.</b> Dit is het eerste hoofdstuk: Diest en Scherpenheuvel, een goed uur spel.</p>
+              <p><b>Af.</b> Dit is het eerste hoofdstuk: een goed uur spel.</p>
             </div>
           </div>
           <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN UW VERHAAL'}</button></div>

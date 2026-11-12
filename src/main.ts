@@ -26,6 +26,8 @@ import { Banner, CharacterPanel, Guide, PlayerFrame, type SlotView } from './ui/
 import { Hud } from './ui/hud';
 import { KroniekUI } from './ui/kroniekui';
 import { Tutorial } from './ui/tutorial';
+import { ShareCard, publicUrl } from './ui/share';
+import { RingCourse, FIRST_FLIGHT, dayCourse, dayKey, dayNumber } from './world/rings';
 import { DialogueUI, JournalUI } from './ui/rpgui';
 import { Atmosphere } from './world/sky';
 import { loadTreeAtlas } from './world/trees';
@@ -221,6 +223,84 @@ async function boot() {
     if (id === 'land') kroniek.unlock('tijd:draken');
   });
   const tut = { turned: 0, walked: 0, lastYaw: 0, lastX: 0, lastZ: 0, goal: Infinity };
+  let tutGate: () => 'steer' | 'climb' | null = () => null;
+
+  // --- rings in the sky: the first flight's course, then the Dagvlucht (the same for everyone, each day)
+  const rings = new RingCourse();
+  scene.add(rings.group);
+  const shareCard = new ShareCard(uiRoot);
+  shareCard.onClose = () => closeUi();
+  const dv = document.createElement('div');
+  dv.className = 'dv';
+  uiRoot.appendChild(dv);
+  const MONTHS = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+  const clockText = (t: number) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0').replace('.', ',')}`;
+  let course: 'first' | 'day' | null = null;
+  let dvRow: string[] = [];
+  const startDayCourse = () => {
+    const today = dayCourse();
+    course = 'day';
+    dvRow = [];
+    rings.start(today.rings, '#9fd8ff', true, {
+      pass: (i, n) => {
+        if (i === 1) {
+          sound.chime(false);
+          toasts.push('KLOKKENRONDE · zeven klokken, de tijd loopt');
+        } else {
+          // each bell answers: on time, late, or far too late
+          const late = rings.time / today.par[i - 1];
+          dvRow.push(late <= 1 ? '🔔' : late <= 1.3 ? '🟡' : '⚫');
+          sound.chime(i === n);
+        }
+        dv.dataset.n = `${Math.max(0, i - 1)}/${n - 1}`;
+      },
+      done: (secs) => {
+        const key = dayKey();
+        const f = quests.s.flags;
+        const medal = secs <= today.gold ? 'goud' : secs <= today.silver ? 'zilver' : secs <= today.bronze ? 'brons' : '';
+        const first = f.dv_day !== key;
+        if (first) {
+          // the first round of the day is the one that counts; after that it is practice
+          f.dv_day = key;
+          f.dv_row = dvRow.join('');
+          f.dv_time = secs;
+          f.dv_rounds = (Number(f.dv_rounds) || 0) + 1;
+          quests.s.florins += medal === 'goud' ? 30 : medal === 'zilver' ? 20 : 12;
+          quests.addXp(60 + quests.s.hero.level * 15);
+          sound.questDone();
+        }
+        const best = Math.min(Number(f.dv_best_day === key ? f.dv_best : secs) || secs, secs);
+        f.dv_best = best;
+        f.dv_best_day = key;
+        quests.save();
+        const d = new Date();
+        const date = `${d.getDate()} ${MONTHS[d.getMonth()]} 1650`;
+        const row = String(f.dv_row), time = Number(f.dv_time);
+        const onTime = [...row].filter((c) => c === '🔔').length;
+        const m1 = time <= today.gold ? ' · 🥇' : time <= today.silver ? ' · 🥈' : time <= today.bronze ? ' · 🥉' : '';
+        const url = publicUrl();
+        const text = `Belfort · Klokkenronde ${dayNumber()}\n${date} · Diest\n${row} ${onTime}/7\n⏱ ${clockText(time)}${m1}${url ? '\n' + url : ''}`;
+        setTimeout(() => {
+          shareCard.show({
+            kicker: `KLOKKENRONDE ${dayNumber()} · ${date.toUpperCase()}`,
+            title: first ? (medal ? `${medal[0].toUpperCase()}${medal.slice(1)}` : 'Rond') : 'Oefenronde',
+            big: clockText(secs),
+            lines: [
+              first ? `${onTime} van 7 klokken op tijd · beloond met florijnen en ervaring` : `Uw ronde van vandaag: ${clockText(time)} · beste oefentijd ${clockText(best)}`,
+              `Goud onder ${clockText(today.gold)} · zilver onder ${clockText(today.silver)} · morgen een nieuwe ronde`,
+            ],
+            text,
+          });
+          startDayCourse(); // fly it again for practice
+        }, 900);
+      },
+    });
+  };
+  if (!quests.s.flags.tut_land) {
+    course = 'first';
+    rings.start(FIRST_FLIGHT, '#ffcc66', false, { pass: () => sound.chime(false) });
+    tutGate = () => (course !== 'first' || !rings.active ? null : rings.index === 1 ? 'steer' : rings.index === 2 && player.pos.y < rings.defs[2].y - 14 ? 'climb' : null);
+  } else startDayCourse();
   {
     // creatures enter the Kroniek the first time one falls
     const onKill = quests.onKill.bind(quests);
@@ -253,7 +333,7 @@ async function boot() {
   const journal = (late.journal = new JournalUI(uiRoot, quests));
   const chars = (late.chars = new CharacterPanel(uiRoot, quests, () => player.hero.setCloak(quests.s.hero.cloak), () => sound.coins()));
   let uiClosedAt = 0;
-  const uiOpen = () => dialogue.open || journal.open || chars.open || kroniekUI.open || kroniekUI.reading;
+  const uiOpen = () => dialogue.open || journal.open || chars.open || kroniekUI.open || kroniekUI.reading || shareCard.open;
   let bellsRang = !!quests.s.flags.bells_ring;
   let bellTimer = 30;
 
@@ -322,7 +402,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial };
+  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, shareCard };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -394,6 +474,13 @@ async function boot() {
       quests.update(px, py, pz, player.mode === 'walk');
       actors.update(sdt, px, pz, dialogue.npcId);
       readables.update(sdt, px, pz);
+      rings.update(sdt, player.pos, player.mode === 'fly');
+      if (course === 'first' && (player.mode !== 'fly' || !rings.active)) {
+        // landed (or flew the whole course): the first flight is over; from now on the Dagvlucht waits over the market
+        if (player.mode !== 'fly') startDayCourse();
+      } else if (course === 'day' && rings.running && player.mode !== 'fly') startDayCourse(); // landed mid-course: start over
+      dv.classList.toggle('show', course === 'day' && rings.running);
+      if (course === 'day' && rings.running) dv.innerHTML = `KLOKKENRONDE · ${dvRow.join('')} ${dv.dataset.n ?? ''}<b>${clockText(rings.time)}</b>`;
       // learning by doing: what has the player done so far?
       if (player.mode === 'fly') tut.turned += Math.abs(Math.atan2(Math.sin(player.yaw - tut.lastYaw), Math.cos(player.yaw - tut.lastYaw)));
       else if (player.mode === 'walk') tut.walked += Math.min(1, Math.hypot(px - tut.lastX, pz - tut.lastZ));
@@ -403,7 +490,7 @@ async function boot() {
       tutorial.update(dt, {
         mode: player.mode, pad: input.device === 'pad', turned: tut.turned, walked: tut.walked,
         throttle: input.throttle - (input.held('brake') ? 1 : 0), climbing: input.held('jump') || input.held('descend'), boosting: input.held('boost'),
-        canLand: player.canLand(), toGoal: tut.goal, goalIsHere: tut.goal < 30,
+        canLand: player.canLand(), gate: tutGate(), toGoal: tut.goal, goalIsHere: tut.goal < 30,
         talking: dialogue.open, bookOpen: journal.open || kroniekUI.open, nearGiver: false,
         quests: Object.keys(quests.s.quests).length, inCombat: combat.inCombat,
         hpFrac: quests.s.hero.hp / quests.sheet.derived().maxHp, salves: quests.s.inv.salve ?? 0,
@@ -434,6 +521,8 @@ async function boot() {
         tracked: a.tracked,
         objectives: a.objectives.map((o) => quests.fill(o.text) + quests.progress(a.quest.id, o)),
       }));
+      // a standing invitation, once a day
+      if (course === 'day' && quests.s.flags.dv_day !== dayKey() && list.length < 3) list.push({ title: 'Klokkenronde', kind: 'contract', level: undefined, tracked: false, objectives: [rings.running ? 'Luid de zeven klokken, ring na ring' : 'Vlieg door de blauwe ring boven de Grote Markt'] });
       hud.trackerList = list.length ? list : [{ title: 'Op zoek naar werk', kind: 'side', objectives: ['Zoek iemand met een gouden ! boven het hoofd'], tracked: true }];
       if (toasts.length && performance.now() - toastAt > 1900) {
         hud.flash(toasts.shift()!);
