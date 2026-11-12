@@ -3,12 +3,14 @@
 
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { fetchBinary } from '../core/assets';
 
 /** Load a GLB from /public. Returns null if it is missing or broken, so callers can fall back. */
 export async function loadModel(path: string): Promise<GLTF | null> {
   try {
-    const gltf = await new GLTFLoader().parseAsync(await fetchBinary(path), '');
+    // meshopt-compressed and quantised files (gltfpack) load as well as plain ones
+    const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(await fetchBinary(path), '');
     gltf.scene.traverse((o) => {
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;

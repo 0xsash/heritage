@@ -318,7 +318,7 @@ export function dress(root: THREE.Object3D, role: Role, r: () => number): Dresse
   };
 }
 
-const LINES: Record<Role, string[]> = {
+export const LINES: Record<Role, string[]> = {
   peasant: ['De haver staat goed dit jaar.', 'Weer tol betalen. Altijd tol.', 'Hebt ge mijn koe gezien? Een bruine.'],
   peasantWoman: ['Verse eieren! Wie wil er eieren?', 'Mijn man zit weer in de herberg.', 'Pas op, de kasseien zijn glad.'],
   burgher: ['Goedendag. Ik heb het druk.', 'De lakenhandel gaat slecht, slecht.', 'Een draak in de stad. Wat zal de schepenbank daarvan zeggen?'],

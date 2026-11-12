@@ -16,6 +16,7 @@ import { loadMaterialSet, type MaterialInfo } from './render/textures';
 import { Actors } from './rpg/actors';
 import { RARITY, type Gear, uniqueGear } from './rpg/character';
 import { Crowd } from './rpg/crowd';
+import { loadTownsfolk } from './rpg/townsfolk';
 import { QuestEngine } from './rpg/quests';
 import { freshSave, loadSave, writeSave } from './rpg/state';
 import { runFrontEnd } from './ui/creation';
@@ -110,6 +111,8 @@ async function boot() {
   if (dragonModel) player.dragon.useModel(dragonModel.scene);
   const riderModel = await loadModel('models/rider.glb');
   if (riderModel) player.hero.useModel(riderModel);
+  setLoading('De stad komt tot leven…');
+  const townsfolk = await loadTownsfolk();
   setLoading('Klaar. Uw verhaal wacht.');
 
   // --- who are you?
@@ -190,7 +193,7 @@ async function boot() {
   });
   combat.setCamps(diest.camps);
   scene.add(combat.group);
-  const crowd = riderModel ? new Crowd(riderModel, world, quests, (text, at) => combat.floaters.add(text, at, 'bark', 3.2, 0.35)) : null;
+  const crowd = riderModel ? new Crowd(riderModel, world, quests, (text, at) => combat.floaters.add(text, at, 'bark', 3.2, 0.35), townsfolk) : null;
   if (crowd) scene.add(crowd.group);
   const guide = new Guide(uiRoot);
   scene.add(guide.group);
