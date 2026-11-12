@@ -27,6 +27,7 @@ import { Hud } from './ui/hud';
 import { KroniekUI } from './ui/kroniekui';
 import { Tutorial } from './ui/tutorial';
 import { ShareCard, publicUrl } from './ui/share';
+import { paintPicture } from './ui/painting';
 import { RingCourse, FIRST_FLIGHT, dayCourse, dayKey, dayNumber } from './world/rings';
 import { DialogueUI, JournalUI } from './ui/rpgui';
 import { Atmosphere } from './world/sky';
@@ -333,6 +334,22 @@ async function boot() {
   const journal = (late.journal = new JournalUI(uiRoot, quests));
   const chars = (late.chars = new CharacterPanel(uiRoot, quests, () => player.hero.setCloak(quests.s.hero.cloak), () => sound.coins()));
   let uiClosedAt = 0;
+  // one book, three sections: opening one closes the others
+  const book = (which: 'journal' | 'kroniek' | 'character') => {
+    if (dialogue.open || kroniekUI.reading || shareCard.open) return;
+    const was = which === 'journal' ? journal.open : which === 'kroniek' ? kroniekUI.open : chars.open;
+    if (journal.open) journal.toggle();
+    if (kroniekUI.open) kroniekUI.toggle();
+    if (chars.open) chars.toggle(false);
+    if (was) closeUi();
+    else if (which === 'journal') journal.toggle();
+    else if (which === 'kroniek') kroniekUI.toggle();
+    else chars.toggle(true);
+  };
+  uiRoot.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-book]');
+    if (b && !b.classList.contains('on')) book(b.dataset.book as 'journal' | 'kroniek' | 'character');
+  });
   const uiOpen = () => dialogue.open || journal.open || chars.open || kroniekUI.open || kroniekUI.reading || shareCard.open;
   let bellsRang = !!quests.s.flags.bells_ring;
   let bellTimer = 30;
@@ -359,7 +376,10 @@ async function boot() {
     quests.start('main_arrive');
     setTimeout(() => hud.announce('BRABANT · ANNO 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, 'Onder u ligt Diest. De klokken zwijgen.'), 2600);
   } else {
-    banner.show('start', 'WELKOM TERUG', quests.s.hero.name, [`Niveau ${quests.s.hero.level} · ${quests.s.florins} florijnen`]);
+    // "last time": the last line of the journal, so the thread is picked up at once
+    const tq = quests.s.tracked ? quests.s.quests[quests.s.tracked] : null;
+    const last = tq?.log.length ? quests.fill(tq.log[tq.log.length - 1]) : '';
+    banner.show('start', 'VORIGE KEER', quests.s.hero.name, [last.length > 150 ? last.slice(0, last.lastIndexOf(' ', 150)) + '…' : last || `Niveau ${quests.s.hero.level} · ${quests.s.florins} florijnen`]);
   }
 
   canvas.addEventListener('click', () => {
@@ -425,18 +445,19 @@ async function boot() {
         setTimeout(() => hud.flash(LIGHT[atmo.look.label] ?? atmo.look.label.toUpperCase()), 400);
       }
       if (input.consume('map') && !uiOpen()) mapOpen = hud.toggleMap();
-      // one book, three sections: opening one closes the others
-      const book = (which: 'journal' | 'kroniek' | 'character') => {
-        if (dialogue.open || kroniekUI.reading) return;
-        const was = which === 'journal' ? journal.open : which === 'kroniek' ? kroniekUI.open : chars.open;
-        if (journal.open) journal.toggle();
-        if (kroniekUI.open) kroniekUI.toggle();
-        if (chars.open) chars.toggle(false);
-        if (was) closeUi();
-        else if (which === 'journal') journal.toggle();
-        else if (which === 'kroniek') kroniekUI.toggle();
-        else chars.toggle(true);
-      };
+      if (input.consume('paint') && !uiOpen()) {
+        // Het Schilderij: render this very frame and frame it
+        post.render(0);
+        const where = placeName(player.onFoot ? player.heroPos.x : player.pos.x, player.onFoot ? player.heroPos.z : player.pos.z).name;
+        const h = quests.s.hero;
+        const title = player.onFoot ? `«${h.name} in ${where}»` : `«${h.name} en ${h.dragon} boven ${where}»`;
+        const url = publicUrl();
+        sound.chime(false);
+        void paintPicture(canvas, title, `Brabant, anno 1650${url ? ' · ' + url.replace(/^https?:\/\//, '') : ''}`).then((image) => {
+          if (!image) return;
+          shareCard.show({ kicker: 'HET SCHILDERIJ', title: title.replace(/[«»]/g, ''), big: '', lines: [], image, text: `${title}, anno 1650.\nGeschilderd in Belfort: Brabant in 1650, met een draak.${url ? '\n' + url : ''}` });
+        });
+      }
       if (input.consume('journal')) book('journal');
       if (input.consume('kroniek')) book('kroniek');
       if (input.consume('character')) book('character');
@@ -470,6 +491,10 @@ async function boot() {
     const pz = player.onFoot ? player.heroPos.z : player.pos.z;
     const py = player.onFoot ? player.heroPos.y : player.pos.y;
     uiRoot.classList.toggle('ui-open', uiOpen());
+    // the HUD shows what the moment needs: little in the air, everything in a fight
+    uiRoot.classList.toggle('st-fly', !player.onFoot);
+    uiRoot.classList.toggle('st-combat', combat.inCombat);
+    uiRoot.classList.toggle('st-hurt', quests.s.hero.hp < quests.sheet.derived().maxHp * 0.999);
     if (running && !paused) {
       quests.update(px, py, pz, player.mode === 'walk');
       actors.update(sdt, px, pz, dialogue.npcId);
@@ -588,19 +613,20 @@ async function boot() {
     const flying = !player.onFoot;
     const slots: SlotView[] = flying
       ? [
-          { key: 'LMB', name: 'Vuur', cd: combat.fire < 18 ? 1 - combat.fire / 18 : 0, ready: combat.fire >= 18 },
-          { key: 'Q', name: 'Zalf', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
+          { key: 'LMB', name: 'Vuur', icon: 'fire', cd: combat.fire < 18 ? 1 - combat.fire / 18 : 0, ready: combat.fire >= 18 },
+          { key: 'Q', name: 'Zalf', icon: 'salve', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
         ]
       : [
-          { key: 'LMB', name: 'Zwaard', cd: 0, ready: true },
-          { key: 'RMB', name: o.skill.short, cd: combat.cds.skill / o.skill.cooldown, ready: combat.cds.skill <= 0 && combat.resonance >= o.skill.cost },
-          { key: 'R', name: o.skill2.short, cd: combat.cds.skill2 / o.skill2.cooldown, ready: combat.cds.skill2 <= 0 && combat.resonance >= o.skill2.cost, locked: quests.s.hero.level < o.skill2.level ? `niveau ${o.skill2.level}` : undefined },
-          { key: 'SPATIE', name: 'Rol', cd: 0, ready: combat.inCombat },
-          { key: 'Q', name: 'Zalf', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
+          { key: 'LMB', name: 'Zwaard', icon: 'sword', cd: 0, ready: true },
+          { key: 'RMB', name: o.skill.short, icon: o.skill.id, cd: combat.cds.skill / o.skill.cooldown, ready: combat.cds.skill <= 0 && combat.resonance >= o.skill.cost },
+          { key: 'R', name: o.skill2.short, icon: o.skill2.id, cd: combat.cds.skill2 / o.skill2.cooldown, ready: combat.cds.skill2 <= 0 && combat.resonance >= o.skill2.cost, locked: quests.s.hero.level < o.skill2.level ? `niveau ${o.skill2.level}` : undefined },
+          { key: 'SPATIE', name: 'Rol', icon: 'roll', cd: 0, ready: combat.inCombat },
+          { key: 'Q', name: 'Zalf', icon: 'salve', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
         ];
     frame.update(quests, combat.resonance, flying ? 'Vuur' : 'Resonantie', slots, flying ? combat.fire : null);
     banner.update(dt);
     hud.hold = banner.active;
+    guide.hush = banner.active;
     guide.update(dt, rig.camera, px, pz, (x, z) => world.collision.heightAt(x, z));
     sound.wind(player.onFoot ? 0 : player.speed, player.boostTime > 0);
     hud.update(dt, rig.yaw, px, pz);

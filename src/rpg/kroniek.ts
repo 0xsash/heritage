@@ -192,3 +192,47 @@ export class Kroniek {
     return pool[Math.floor(r * pool.length)];
   }
 }
+
+/** Words of the time, explained where they are used (hover in a conversation or the Kroniek). */
+export const GLOSSARY: Record<string, string> = {
+  drossaard: 'De ambtenaar van de heer: hij bewaart de orde en int de boetes.',
+  schepen: 'Een van de bestuurders en rechters van de stad.',
+  schepenen: 'De bestuurders en rechters van de stad.',
+  schepenbank: 'De rechtbank en het bestuur van de stad.',
+  begijn: 'Een vrome vrouw die in het begijnhof leeft, zonder eeuwige geloften.',
+  begijnen: 'Vrome vrouwen die in het begijnhof leven, zonder eeuwige geloften.',
+  koster: 'Hij onderhoudt de kerk en luidt de klokken.',
+  deken: 'Het gekozen hoofd van een ambacht.',
+  ambacht: 'De vereniging van alle meesters van één beroep. Wie er niet bij hoort, mag het beroep niet uitoefenen.',
+  poorter: 'Een burger met stadsrecht: hij betaalt geen tol aan de eigen poort.',
+  florijn: 'Een gulden: twintig stuivers. Een dagloon is tien à twaalf stuivers.',
+  florijnen: 'Guldens: twintig stuivers elk. Een dagloon is tien à twaalf stuivers.',
+  stuiver: 'Een twintigste van een gulden.',
+  stuivers: 'Twintig stuivers maken een gulden.',
+  proost: 'De geestelijke die een kerk of bedevaartsoord bestuurt.',
+  baljuw: 'De ambtenaar van de heer, zoals de drossaard.',
+  waardijn: 'De keurder die laken meet en zegelt.',
+  huik: 'Een lange zwarte mantel met kap, gedragen door deftige vrouwen.',
+  landvoogd: 'Hij bestuurt de Nederlanden in naam van de koning van Spanje.',
+  klepel: 'Het ijzeren hart van een klok, dat tegen het brons slaat.',
+  klepels: 'Het ijzeren hart van de klokken, dat tegen het brons slaat.',
+  broek: 'Laag, nat land langs de rivier: moeras.',
+  soldij: 'Het loon van een soldaat.',
+  inkwartiering: 'Soldaten die bij burgers thuis worden ondergebracht, op kosten van de burger.',
+  lakenzegel: 'Het loden zegel dat de kwaliteit van Diests laken waarborgt.',
+  schutterij: 'De gewapende gilden die de stad bewaken.',
+  tollenaar: 'Hij int de tol aan de poort.',
+};
+
+const GLOSS_RE = new RegExp(`(^|[^\\p{L}])(${Object.keys(GLOSSARY).sort((a, b) => b.length - a.length).join('|')})(?![\\p{L}])`, 'giu');
+
+/** Mark the period words in a piece of (already escaped) text, once each. */
+export function gloss(html: string) {
+  const seen = new Set<string>();
+  return html.replace(GLOSS_RE, (m, pre: string, word: string) => {
+    const k = word.toLowerCase();
+    if (seen.has(k)) return m;
+    seen.add(k);
+    return `${pre}<span class="gl" tabindex="0" data-g="${GLOSSARY[k]}">${word}</span>`;
+  });
+}

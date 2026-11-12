@@ -6,6 +6,7 @@
 //  - Banner: quest taken / quest done / level up, centre screen
 //  - CharacterPanel (I) and ShopPanel (from a merchant's conversation)
 
+import { bookTabs } from './kroniekui';
 import * as THREE from 'three';
 import { type Gear, RARITY, STAT_HELP, STAT_NAMES, type Stat, gearLines, gearValue, rollGear, xpToNext } from '../rpg/character';
 import type { QuestEngine } from '../rpg/quests';
@@ -39,7 +40,11 @@ export class Guide {
   private text: HTMLElement;
   private v = new THREE.Vector3();
   target: GuideTarget | null = null;
+  /** a banner or a card is up: keep quiet */
+  hush = false;
   private time = 0;
+  private lastText = '';
+  private said = 0;
 
   constructor(root: HTMLElement) {
     root.appendChild(this.el);
@@ -107,16 +112,41 @@ export class Guide {
     }
     this.el.classList.toggle('edge', off);
     // only words when it is in view and not right on top of you
-    this.text.textContent = off ? '' : dist < 8 ? '' : t.text;
+    // words only for a few seconds when the objective changes, or when you look straight at it;
+    // the tracker carries them the rest of the time
+    if (t.text !== this.lastText) {
+      this.lastText = t.text;
+      this.said = this.time;
+    }
+    const looking = Math.abs(x - w / 2) < w * 0.09 && Math.abs(y - h / 2) < h * 0.14;
+    const speak = !off && dist >= 8 && !this.hush && (this.time - this.said < 6 || looking);
+    this.text.textContent = speak ? t.text : '';
     this.el.style.display = '';
     this.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
   }
 }
 
 // ================================================================ player frame
+/** Engraved-line icons for the action bar (24 x 24, stroked in the current colour). */
+const ICONS: Record<string, string> = {
+  sword: '<path d="M20 3l-1 5-9 9-3-3 9-9zM7.500 13.500l-3 3M10.500 16.500l-3 3M4 20l2.500-2.500"/>',
+  fire: '<path d="M12 21a6 6 0 0 1-6-6c0-3 2-4.500 3-7 1 1.500 1.500 2.500 1.500 4 1.500-2 2-5 1.500-9 4 3 6 7 6 12a6 6 0 0 1-6 6z"/><path d="M12 21a2.500 2.500 0 0 1-2.500-2.500c0-1.500 1.200-2.200 2.500-4 1.300 1.800 2.500 2.500 2.500 4A2.500 2.500 0 0 1 12 21z"/>',
+  zware_slag: '<path d="M3 19C5 10 12 5 21 4c-5 3-9 7-10 15"/><path d="M6 20c1-6 5-10 10-13"/>',
+  strijdkreet: '<path d="M4 10v4l3 .500L13 19V5L7 9.500zM16.500 9.500c1 1.200 1 3.800 0 5M19 7c2.200 2.500 2.200 7.500 0 10"/>',
+  klokslag: '<path d="M12 3.500a5.500 5.500 0 0 0-5.500 5.500v4.500L4.500 17h15l-2-3.500V9A5.500 5.500 0 0 0 12 3.500zM10 19.500a2 2 0 0 0 4 0M12 1.500v2"/>',
+  zuivere_toon: '<path d="M2 12h3l2.500-7 3.500 14 3-10 2 5 1.500-2H22"/>',
+  pistoolschot: '<circle cx="12" cy="12" r="6.500"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
+  rookbom: '<path d="M7 18a4 4 0 0 1-.500-8 5.500 5.500 0 0 1 10.600-1.200A4.600 4.600 0 0 1 17 18z"/><path d="M9 21h6"/>',
+  roll: '<path d="M19.500 12a7.500 7.500 0 1 1-2.600-5.700"/><path d="M17.500 2.500v4.300h-4.300"/>',
+  salve: '<path d="M8 9h8l1.500 3v7.500a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V12zM9.500 5h5v4h-5zM10 15h4M12 13v4"/>',
+};
+const icon = (id: string | undefined) => (id && ICONS[id] ? `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICONS[id]}</svg>` : '');
+
 export interface SlotView {
   key: string;
   name: string;
+  /** which engraving to show */
+  icon?: string;
   /** 0..1 of the cooldown left */
   cd: number;
   ready: boolean;
@@ -188,7 +218,7 @@ export class PlayerFrame {
     if (sig !== this.lastSig) {
       this.lastSig = sig;
       this.slots.innerHTML = slots
-        .map((s) => `<div class="slot${s.locked ? ' locked' : ''}"><div class="k">${keyGlyph(s.key)}</div><div class="n">${esc(s.name)}</div>${s.count !== undefined ? `<div class="c">${s.count}</div>` : ''}${s.locked ? `<div class="lk">${esc(s.locked)}</div>` : ''}<div class="cd"></div></div>`)
+        .map((s) => `<div class="slot${s.locked ? ' locked' : ''}" title="${esc(s.name)}">${icon(s.icon)}<div class="k">${keyGlyph(s.key)}</div><div class="n">${esc(s.name)}</div>${s.count !== undefined ? `<div class="c">${s.count}</div>` : ''}${s.locked ? `<div class="lk">${esc(s.locked)}</div>` : ''}<div class="cd"></div></div>`)
         .join('');
     }
     slots.forEach((s, i) => {
@@ -292,7 +322,7 @@ export class CharacterPanel {
           ${this.wares.map((g, i) => gearCard(g, `<div class="gb"><button data-buyg="${i}">KOOP · ${gearValue(g) * 4}</button></div>`)).join('')}
         </div>`
       : '';
-    this.el.innerHTML = `<header><h2>${esc(h.name)}</h2><span>${esc(o.name)} · niveau ${h.level} · ${this.q.s.florins} florijnen · ${this.q.s.inv.salve ?? 0} zalf · I of Esc om te sluiten</span></header>
+    this.el.innerHTML = `<header>${this.shop ? '' : bookTabs('character')}<h2>${esc(h.name)}</h2><span>${esc(o.name)} · niveau ${h.level} · ${this.q.s.florins} florijnen · ${this.q.s.inv.salve ?? 0} zalf</span></header>
       <div class="cols">
         <div class="col stats"><h3>EIGENSCHAPPEN</h3>${(['kracht', 'klank', 'list', 'taaiheid'] as Stat[]).map(stat).join('')}
           <div class="st"><span>Levenskracht</span><b>${d.maxHp}</b></div>

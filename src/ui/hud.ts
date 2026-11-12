@@ -58,6 +58,7 @@ export class Hud {
       <tr><td>Rechtermuis · R</td><td>Vaardigheden van uw afkomst</td></tr>
       <tr><td>Q</td><td>Begijnenzalf drinken</td></tr>
       <tr><td>J · K · I · M</td><td>Dagboek · Kroniek · personage en zak · kaart</td></tr>
+      <tr><td>P</td><td>Het Schilderij: uw uitzicht als schilderij, om te bewaren of te delen</td></tr>
       <tr><td>T · H</td><td>Licht veranderen · hulp verbergen</td></tr>
       <tr><td>Gamepad</td><td>LS sturen · RS camera · RT/LT snelheid en aanvallen · A stijgen · B dalen · Y landen/praten</td></tr>
       </table>`,

@@ -1,6 +1,8 @@
 // Dialogue box and journal (quest log). Both free the mouse while open; keys:
 // dialogue 1-4 / click to choose, Space or E to continue; journal J or Esc.
 
+import { bookTabs } from './kroniekui';
+import { gloss } from '../rpg/kroniek';
 import type { QuestEngine } from '../rpg/quests';
 import type { Line } from '../rpg/types';
 
@@ -61,7 +63,7 @@ export class DialogueUI {
     const role = line.who === 'you' ? '' : npc?.role ?? '';
     const choices = this.visibleChoices();
     this.el.innerHTML = `<div class="who">${esc(who)}<span class="role">${esc(role)}</span></div>
-      <div class="text${line.who === 'you' ? ' you' : ''}">${esc(this.q.fill(line.text))}</div>
+      <div class="text${line.who === 'you' ? ' you' : ''}">${gloss(esc(this.q.fill(line.text)))}</div>
       ${choices.length ? '<div class="choices"></div>' : '<div class="cont">SPATIE / E · VERDER</div>'}`;
     const box = this.el.querySelector('.choices');
     choices.forEach((c, i) => {
@@ -162,11 +164,11 @@ export class JournalUI {
         ${objs}
         ${reward ? `<div class="reward">Beloning: ${esc(reward)}</div>` : ''}
         ${st.status === 'active' ? `<div class="actions"><button data-track="${cur.id}">${s.tracked === cur.id ? 'NIET MEER VOLGEN' : 'VOLG DEZE OPDRACHT'}</button></div>` : ''}
-        <div class="entries">${[...st.log].reverse().map((p) => `<p>${esc(this.q.fill(p))}</p>`).join('')}</div>`;
+        <div class="entries">${[...st.log].reverse().map((p) => `<p>${gloss(esc(this.q.fill(p)))}</p>`).join('')}</div>`;
     }
     const inv = Object.entries(s.inv).filter(([, n]) => n > 0).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`).join(' · ');
     const fame = Object.entries(s.renown).map(([t, n]) => `${t} ${n}`).join(' · ');
-    this.el.innerHTML = `<header><h2>DAGBOEK</h2><span class="purse">${s.florins} florijnen${fame ? ' · Aanzien: ' + esc(fame) : ''} · J om te sluiten</span></header>
+    this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${s.florins} florijnen${fame ? ' · Aanzien: ' + esc(fame) : ''}</span></header>
       <div class="list">${list || '<div class="empty">Nog niets.</div>'}</div>
       <div class="detail">${detail}</div>
       <div class="inv">Op zak: ${inv ? esc(inv) : 'niets bijzonders'}</div>`;

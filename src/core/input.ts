@@ -11,6 +11,7 @@ export type Action =
   | 'map' // M / Back — toggle map
   | 'journal' // J / RB — quest journal
   | 'kroniek' // K — the chronicle
+  | 'paint' // P — the view as a painting
   | 'attack' // left mouse / RT on foot — sword (on foot), fire (flying)
   | 'skill' // right mouse / LT — origin skill
   | 'skill2' // R / B on foot — second skill
@@ -30,6 +31,7 @@ const KEYMAP: Record<string, Action> = {
   KeyM: 'map',
   KeyJ: 'journal',
   KeyK: 'kroniek',
+  KeyP: 'paint',
   KeyR: 'skill2',
   KeyQ: 'potion',
   KeyI: 'character',

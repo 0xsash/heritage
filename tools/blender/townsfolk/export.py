@@ -598,11 +598,41 @@ def postprocess(src, dst):
         for prim in mesh['primitives']:
             for t in prim.get('targets', []):
                 target_acc.update(t.values())
+    # only what is still referenced is written (the dropped translation / scale channels are not)
+    referenced = set(attr_acc) | set(index_acc) | set(target_acc)
+    rot_out = set()
+    for sk in js.get('skins', []):
+        if 'inverseBindMatrices' in sk:
+            referenced.add(sk['inverseBindMatrices'])
+    for an in js.get('animations', []):
+        for ch in an['channels']:
+            sm = an['samplers'][ch['sampler']]
+            referenced.update((sm['input'], sm['output']))
+            if ch['target']['path'] == 'rotation':
+                rot_out.add(sm['output'])
     new_acc = []
     acache = {}
     remap = {}
     for i, a in enumerate(js['accessors']):
         a = dict(a)
+        if i not in referenced:
+            continue
+        if i in rot_out and a['componentType'] == 5126:
+            # joint rotations as normalised int16 quaternions (core glTF allows it; half the size)
+            d = acc_array(js, binb, i)
+            q = np.clip(np.rint(d * 32767.0), -32767, 32767).astype(np.int16)
+            a['componentType'] = 5122
+            a['normalized'] = True
+            a.pop('min', None)
+            a.pop('max', None)
+            a.pop('byteOffset', None)
+            a['bufferView'] = add_view(np.ascontiguousarray(q))
+            key = json.dumps(a, sort_keys=True)
+            if key not in acache:
+                new_acc.append(a)
+                acache[key] = len(new_acc) - 1
+            remap[i] = acache[key]
+            continue
         if i in target_acc:
             # morph target deltas: sparse, int16 normalised (1 unit = 1/32767 m), only the vertices that move
             d = acc_array(js, binb, i).astype(np.float64)

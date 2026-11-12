@@ -251,3 +251,18 @@ The short loops still exist inside all of this: spot something from the air, lan
 4. **NPC routines and gossip:** day schedules, and "they remember you" lines driven by flags.
 5. **Trade and dragon upkeep.**
 6. **Accounts and cloud saves** (Supabase), and tracking which choices people make.
+
+## Built since: lore, onboarding, loops (see docs/research/onboarding-lore-ui.md and loops-and-social.md)
+
+- **De Kroniek** (`src/rpg/kroniek.ts`, K): 63 entries in four shelves (places, time and customs, people,
+  creatures). Each is labelled Geschiedenis, Volksverhaal or Verzonnen. Unlocks: reaching a place, first talk,
+  first kill, reading one of 15 readables in the world (`src/rpg/readables.ts`). Every tenth entry pays a reward.
+  Period words carry a hover glossary in conversations, the journal and the Kroniek.
+- **Onboarding**: a first-visit screen (what this is / is not), two story slides, and stall-based hints
+  (`src/ui/tutorial.ts`): a hint appears only if the player has not done the thing after a few seconds. The first
+  flight has four rings (`src/world/rings.ts`) that ask for steering and climbing.
+- **Klokkenronde**: a daily course of seven bells over Diest, seeded by the date; the first round counts and
+  yields a bell row to share (`src/ui/share.ts`). **Het Schilderij** (P): the view as a framed painting.
+- **Characters**: named NPCs are built from the townsfolk kit (`look` on `NpcDef`), not from the hero's body.
+- **To check with a local historian** before wider release: the Kroniek's "Tijd en zeden" entries were written
+  from general knowledge (1635 campaign, Berchmans, Holle Griet, the 1650 Orange succession, Diest's beer trade).

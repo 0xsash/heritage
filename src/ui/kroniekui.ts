@@ -2,9 +2,15 @@
 // notice in the world. Every entry carries its label: history, folk tale, or
 // invented. Locked entries show where to look.
 
-import { CATS, ENTRIES, TRUTH, type Cat, type Entry, type Kroniek } from '../rpg/kroniek';
+import { CATS, ENTRIES, TRUTH, gloss, type Cat, type Entry, type Kroniek } from '../rpg/kroniek';
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+/** The three sections of the player's book, as tabs in every panel header. */
+export const bookTabs = (on: 'journal' | 'kroniek' | 'character') =>
+  `<nav class="booktabs">${([['journal', 'Dagboek', 'J'], ['kroniek', 'Kroniek', 'K'], ['character', 'Personage', 'I']] as const)
+    .map(([id, name, key]) => `<button data-book="${id}" class="${id === on ? 'on' : ''}"><kbd>${key}</kbd>${name}</button>`)
+    .join('')}</nav>`;
+
 const badge = (e: Entry) => `<span class="truth t-${e.truth}" title="${esc(TRUTH[e.truth].note)}">${TRUTH[e.truth].name}</span>`;
 
 export class KroniekUI {
@@ -89,10 +95,10 @@ export class KroniekUI {
       .map((e) => (k.has(e.id) ? `<button data-e="${e.id}" class="${e.id === this.sel ? 'sel' : ''}">${esc(e.title)}<span class="dot t-${e.truth}"></span></button>` : `<button data-e="${e.id}" class="locked ${e.id === this.sel ? 'sel' : ''}">· · ·</button>`))
       .join('');
     let detail = '';
-    if (cur && k.has(cur.id)) detail = `<h1>${esc(cur.title)}</h1><div class="meta">${badge(cur)} <span>${esc(TRUTH[cur.truth].note)}</span></div><p class="lore">${esc(cur.text)}</p>`;
+    if (cur && k.has(cur.id)) detail = `<h1>${esc(cur.title)}</h1><div class="meta">${badge(cur)} <span>${esc(TRUTH[cur.truth].note)}</span></div><p class="lore">${gloss(esc(cur.text))}</p>`;
     else if (cur) detail = `<h1 class="dim">Nog onbekend</h1><p class="lore dim">${esc(cur.hint)}</p>`;
     const pct = Math.round((k.count / k.total) * 100);
-    this.el.innerHTML = `<header><h2>KRONIEK</h2><div class="kr-prog"><i style="width:${pct}%"></i></div><span class="purse">${k.count} van ${k.total} · K om te sluiten</span></header>
+    this.el.innerHTML = `<header>${bookTabs('kroniek')}<div class="kr-prog"><i style="width:${pct}%"></i></div><span class="purse">${k.count} van ${k.total} bladzijden</span></header>
       <div class="list"><div class="kr-tabs">${tabs}</div>${items}</div>
       <div class="detail">${detail}</div>
       <div class="inv">Wat hier staat is echt, tenzij er iets anders bij staat: <span class="truth t-geschiedenis">Geschiedenis</span> <span class="truth t-volksverhaal">Volksverhaal</span> <span class="truth t-verzonnen">Verzonnen</span></div>`;
