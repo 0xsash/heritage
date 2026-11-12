@@ -6,14 +6,14 @@
 import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { rng } from '../core/math';
 import { recolor } from '../render/recolor';
+import { dress, pickRole, type Role } from './folk';
 import type { World } from '../world/world';
 import type { QuestEngine } from './quests';
 
 const POOL = 36;
 const NEAR = 9, FAR = 70, DROP = 95;
-const CLOAKS = ['#2e4a3c', '#5a3a22', '#3b3f55', '#6b5a3a', '#7a2e22', '#4f4a44', '#2f2f33', '#7a6a4a', '#3d5a5a', '#5e2f45', '#8a7a5a', '#45503a'];
-const TINTS = ['#ffffff', '#f2ece4', '#e8e2dc', '#fff4e8'];
 
 interface Line { p: number[]; len: number; seg: number[] }
 interface Walker {
@@ -32,6 +32,13 @@ interface Walker {
   z: number;
   yaw: number;
   lod: number;
+  role: Role;
+  /** base walking pace for this person (m/s) */
+  pace: number;
+  /** body height scale (children walk with shorter strides) */
+  height: number;
+  pose: () => void;
+  lines: string[];
 }
 
 export class Crowd {
@@ -68,29 +75,43 @@ export class Crowd {
     }
     const walkClips = model.animations.filter((a) => a.name === 'walk' || a.name === 'walk_formal');
     const idleClip = model.animations.find((a) => a.name === 'talk') ?? model.animations.find((a) => a.name === 'idle')!;
+    const formal = walkClips.find((c) => c.name === 'walk_formal');
+    const plain = walkClips.find((c) => c.name === 'walk') ?? walkClips[0];
     for (let i = 0; i < POOL; i++) {
       const root = SkeletonUtils.clone(model.scene);
-      const cloak = CLOAKS[i % CLOAKS.length];
-      const tint = TINTS[i % TINTS.length];
+      // each person gets a role: build, costume, props, gait and lines (folk.ts)
+      const r = rng(1009 + i * 7919);
+      const role = pickRole(r);
+      const look = dress(root, role, r);
+      const garments: THREE.Mesh[] = [];
       root.traverse((o) => {
         const m = o as THREE.SkinnedMesh;
         if (!m.isMesh) return;
         if (m.name === 'sword' || o.parent?.name === 'sword') { m.visible = false; return; }
+        if (!m.isSkinnedMesh) { garments.push(m); return; }
         m.frustumCulled = false;
         m.castShadow = i % 3 === 0; // a third of them cast shadows: enough to ground the crowd
-        m.material = recolor(m.material as THREE.MeshStandardMaterial, /cloak/i.test(m.name) ? cloak : '#c94b34', tint);
+        if (/cloak/i.test(m.name)) {
+          if (!look.cloak) m.visible = false;
+          else m.material = recolor(m.material as THREE.MeshStandardMaterial, look.cloak, look.tint);
+        } else m.material = recolor(m.material as THREE.MeshStandardMaterial, '#c94b34', look.tint);
       });
-      root.scale.setScalar(0.9 + ((i * 37) % 17) / 100);
+      for (const g of garments) g.castShadow = i % 3 === 0;
+      root.scale.copy(look.scale);
       root.visible = false;
       const mixer = new THREE.AnimationMixer(root);
-      const walk = mixer.clipAction(walkClips[i % walkClips.length]);
+      const stately = role === 'burgher' || role === 'huik' || role === 'beguine' || role === 'friar';
+      const walk = mixer.clipAction((stately && formal) || plain);
       const idle = mixer.clipAction(idleClip);
       walk.play();
       idle.play();
       idle.weight = 0;
       walk.time = Math.random() * 2;
       this.group.add(root);
-      this.walkers.push({ root, mixer, walk, idle, line: null, s: 0, dir: 1, speed: 1.2, standT: 0, barkCd: 0, flee: 0, x: 0, z: 0, yaw: 0, lod: i });
+      this.walkers.push({
+        root, mixer, walk, idle, line: null, s: 0, dir: 1, speed: look.speed, standT: 0, barkCd: 0, flee: 0, x: 0, z: 0, yaw: 0, lod: i,
+        role, pace: look.speed, height: look.scale.y, pose: look.pose, lines: look.lines,
+      });
     }
   }
 
@@ -132,7 +153,7 @@ export class Crowd {
       w.line = line;
       w.s = s;
       w.dir = Math.random() < 0.5 ? 1 : -1;
-      w.speed = 0.9 + Math.random() * 0.6;
+      w.speed = w.pace * (0.9 + Math.random() * 0.2);
       w.standT = Math.random() < 0.25 ? 4 + Math.random() * 10 : 0;
       w.x = pos.x;
       w.z = pos.z;
@@ -217,13 +238,17 @@ export class Crowd {
       const target = moving ? 1 : 0;
       w.walk.weight += (target - w.walk.weight) * Math.min(1, dt * 5);
       w.idle.weight = 1 - w.walk.weight;
-      w.walk.timeScale = (w.flee > 0 ? 2.2 : w.speed / 1.3);
+      // stride length scales with body height, so children's feet don't slide
+      w.walk.timeScale = (w.flee > 0 ? 2.2 : w.speed / (1.3 * w.height));
       const d = Math.hypot(w.x - fx, w.z - fz);
       w.lod++;
       const every = d < 30 ? 1 : d < 60 ? 2 : 4;
-      if (w.lod % every === 0) w.mixer.update(dt * every);
+      if (w.lod % every === 0) {
+        w.mixer.update(dt * every);
+        w.pose();
+      }
       // greetings and gossip
-      if (player.onFoot && dPlayer < 3.6 && w.barkCd <= 0 && this.barkGlobal <= 0 && Math.random() < 0.6) this.say(w, this.line());
+      if (player.onFoot && dPlayer < 3.6 && w.barkCd <= 0 && this.barkGlobal <= 0 && Math.random() < 0.6) this.say(w, Math.random() < 0.45 ? w.lines[Math.floor(Math.random() * w.lines.length)] : this.line());
     }
   }
 
@@ -246,7 +271,7 @@ export class Crowd {
     if (q.test({ flag: 'seals_begijnhof' })) pool.push('Lijsbet weeft nu bij de begijnen. Beter zo, zeg ik.');
     if (q.test({ flag: 'toll_bribe' })) pool.push('*knipoog* Lekkere brandewijn gehad, gisteren?');
     if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push('Roelof de Rode is dood! Ze zeggen dat gij hem verslagen hebt!', 'De boeren van Kaggevinne slapen weer, dankzij u.');
-    if (q.test({ quest: 'side_kludde', state: 'done' })) pool.push('De Kludde! Gij hebt de Kludde verjaagd! Mijn grootmoeder zal het niet geloven.');
+    if (q.test({ quest: 'main_kludde', state: 'done' })) pool.push('De Kludde! Gij hebt de Kludde verjaagd! Mijn grootmoeder zal het niet geloven.');
     if (s.hero.level >= 5) pool.push('Dat is een stevig zwaard, {name}.');
     return pool[Math.floor(Math.random() * pool.length)];
   }
