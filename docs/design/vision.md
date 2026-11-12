@@ -6,12 +6,13 @@
 
 | Topic | Decision |
 |---|---|
+| Look | **Stylised, painterly** (Flemish Masters colour and light, Bosch for corrupted zones), smooth sculpted forms. Moodboard: `docs/art/moodboard.webp`. |
 | Genre | **Hybrid action RPG.** Third-person flight and combat, with an ARPG-style loot and build layer. In dense town fights the camera pulls up into a near-top-down "combat zoom". |
 | World | **Recognisable real Flanders.** Real street plans, waterways and landmarks from OpenStreetMap. You can fly to any town *and* land and walk its streets. |
 | Starting region | **Diest, the Demer valley and Scherpenheuvel.** Ghent is the first big city after that. |
 | Mount | **The gilded dragon** (see the alternatives below). |
 | Tone | **Dark main story, rooted in true history.** Side content is mischievous, dark and tongue-in-cheek. |
-| Era | A mythic blend of the 1300s–1500s, the "Long Golden Age", so that 1302 and the Orange-Nassau years can coexist. |
+| Era | **Diest in 1560**, historically accurate: the town and countryside rebuilt from the Ferraris map (see `docs/history/diest-1560.md`). In-game text sticks to history; legends are told as legends. |
 | Platform | **Desktop browser first**, with keyboard and mouse plus gamepad. |
 | Stack | Three.js, TypeScript and Vite. Hosted on Vercel; Supabase for saves and accounts later. Map data © OpenStreetMap contributors (ODbL). |
 

@@ -12,7 +12,11 @@ import { GeomBuilder, clipHalf, signedArea, triangulate } from './geom';
 import * as P from './palette';
 
 const UP: [number, number, number] = [0, 1, 0];
-const OLD_TOWN_R = 720; // metres from Grote Markt
+let inTown = (x: number, z: number) => Math.hypot(x, z) < 720;
+/** Tell the style rules where the town walls are. */
+export function setTownTest(test: (x: number, z: number) => boolean) {
+  inTown = test;
+}
 
 export interface BuildingStyle {
   wall: P.Surface;
@@ -25,7 +29,7 @@ export interface BuildingStyle {
 
 export function styleFor(f: Footprint): BuildingStyle {
   const s = f.id;
-  const dist = Math.hypot(f.cx, f.cz);
+  const town = inTown(f.cx, f.cz);
   const k = f.kind;
   const area = f.hu * f.hw * 4;
   const church = k === 'church' || k === 'basilica' || k === 'chapel' || k === 'cathedral';
@@ -34,18 +38,21 @@ export function styleFor(f: Footprint): BuildingStyle {
   if (church) {
     wall = k === 'basilica' ? P.WALL.limestone : P.WALL.ironstone;
     roof = P.ROOF.slate;
+  } else if (!town && (k === 'farm' || k === 'barn' || f.id < 0)) {
+    // farmsteads: whitewashed or timber-and-daub walls under thatch
+    wall = k === 'barn' ? (r < 0.7 ? P.WALL.barn : P.WALL.plaster) : r < 0.55 ? P.WALL.whitewash : r < 0.85 ? P.WALL.plaster : P.WALL.brickOld;
+    roof = hash01(s * 7 + 3) < 0.85 ? P.ROOF.thatchish : P.ROOF.clay;
   } else if (area > 900 || k === 'industrial' || k === 'warehouse' || k === 'retail' || k === 'barn' || k === 'farm_auxiliary') {
     wall = r < 0.5 ? P.WALL.barn : r < 0.8 ? P.WALL.brickOld : P.WALL.whitewash;
     roof = hash01(s * 7) < 0.8 ? P.ROOF.clay : P.ROOF.slate;
-  } else if (dist < OLD_TOWN_R) {
+  } else if (town) {
     wall = r < 0.34 ? P.WALL.brickRed : r < 0.54 ? P.WALL.brickOld : r < 0.64 ? P.WALL.brickDark : r < 0.84 ? P.WALL.whitewash : P.WALL.plaster;
     roof = hash01(s * 7 + 3) < 0.58 ? P.ROOF.clay : P.ROOF.slate;
   } else {
     wall = r < 0.36 ? P.WALL.whitewash : r < 0.66 ? P.WALL.brickRed : r < 0.84 ? P.WALL.brickOld : P.WALL.plaster;
-    roof = hash01(s * 7 + 3) < 0.76 ? P.ROOF.clay : P.ROOF.slate;
+    roof = hash01(s * 7 + 3) < 0.6 ? P.ROOF.thatchish : P.ROOF.clay;
   }
   const width = f.hw * 2;
-  const town = dist < OLD_TOWN_R;
   const stepped = !church && town && f.rise > 0 && width > 3.5 && width < 11 && f.hu * 2 > width * 0.9 && hash01(s * 13) < 0.62;
   const chimney = !church && f.rise > 1.2 && area > 35 && area < 700;
   return {

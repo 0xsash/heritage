@@ -37,11 +37,11 @@ export interface Look {
 const LOOKS: Record<string, Look> = {
   golden: {
     label: 'Golden hour', sunColor: '#ffb574', sunIntensity: 5.2, envIntensity: 1.75, fogDensity: 0.00015, night: 0.2, exposure: 0.86, stars: 0,
-    shadowTint: [0.96, 0.99, 1.05], highlightTint: [1.06, 1.0, 0.88], saturation: 1.1, lightElevation: 17,
+    shadowTint: [0.96, 0.99, 1.05], highlightTint: [1.06, 1.0, 0.9], saturation: 1.0, lightElevation: 17,
   },
   day: {
     label: 'High summer', sunColor: '#fff0d8', sunIntensity: 4.8, envIntensity: 1.25, fogDensity: 0.00009, night: 0, exposure: 0.66, stars: 0,
-    shadowTint: [0.97, 0.99, 1.04], highlightTint: [1.04, 1.0, 0.93], saturation: 1.08,
+    shadowTint: [0.97, 0.99, 1.04], highlightTint: [1.04, 1.0, 0.94], saturation: 0.98,
   },
   storm: {
     label: 'Storm light', sunColor: '#b8c2d0', sunIntensity: 0.9, envIntensity: 1.5, fogDensity: 0.00026, night: 0.45, exposure: 0.8, stars: 0,

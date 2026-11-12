@@ -43,7 +43,7 @@ async function boot() {
 
   // --- load everything
   const [data, meta] = await Promise.all([
-    fetch(asset('world/diest.json')).then((r) => r.json() as Promise<WorldData>),
+    fetch(asset(`world/${params.get('world') ?? 'diest_1560'}.json`)).then((r) => r.json() as Promise<WorldData>),
     fetch(asset('textures/materials.json')).then((r) => r.json() as Promise<Record<string, MaterialInfo[]>>),
   ]);
   const stub = { discoveries: [], data } as unknown as World;
@@ -109,7 +109,7 @@ async function boot() {
     sound.start();
     input.requestLock();
     setTimeout(() => {
-      hud.announce('PROLOGUE', 'The Quiet Bells', 'Somewhere below, the Mustard Pot has stopped ringing. Find out why — or at least look as if you are trying.');
+      hud.announce('PROLOGUE', 'The Quiet Bells', 'Somewhere below, the bells of Sint-Sulpitius have stopped ringing. Find out why, or at least look as if you are trying.');
     }, 900);
   });
   canvas.addEventListener('click', () => {
@@ -207,15 +207,10 @@ async function boot() {
       }
     }
 
-    // location line & prompts
-    const street = world.streetAt(px, pz, player.onFoot ? 14 : 30);
-    const near = nearestTown(px, pz);
-    if (player.onFoot) {
-      hud.setLocation(street ?? near, street ? near : 'On foot');
-    } else {
-      const alt = Math.max(0, Math.round(player.altitude()));
-      hud.setLocation(near, `${alt} m above ground · ${Math.round(player.speed * 3.6)} km/h${street && alt < 60 ? ' · over ' + street : ''}`);
-    }
+    // location line: where you are, in the world's own terms (no numbers)
+    const place = placeName(px, pz);
+    if (player.onFoot) hud.setLocation(place.name, place.where);
+    else hud.setLocation(place.name, pace(player.speed, player.boostTime > 0, player.altitude()));
     const key = input.device === 'pad' ? 'Y' : 'E';
     if (player.mode === 'fly' && player.canLand()) hud.setPrompt(`<kbd>${key}</kbd>Land`);
     else if (player.mode === 'walk') hud.setPrompt(player.distanceToDragon() < 7 ? `<kbd>${key}</kbd>Mount your dragon` : `<kbd>${key}</kbd>Call your dragon`);
@@ -241,12 +236,39 @@ async function boot() {
     }
   }
 
-  function nearestTown(x: number, z: number) {
-    if (Math.hypot(x, z) < 1500) return 'Diest';
-    if (Math.hypot(x + 5100, z - 520) < 1500) return 'Scherpenheuvel';
-    if (Math.hypot(x - 1413, z - 1276) < 900) return 'Webbekom';
-    if (Math.hypot(x + 2225, z - 669) < 800) return 'Kaggevinne';
-    return 'The Demer valley';
+  /** The nearest named place, and where it lies (inside the walls, before a gate, out in the fields). */
+  function placeName(x: number, z: number): { name: string; where: string } {
+    let best: { title: string; d: number } | null = null;
+    for (const d of world.discoveries) {
+      const dist = Math.hypot(d.x - x, d.z - z);
+      const reach = Math.min(d.r * 1.6, 260);
+      if (dist < reach && (!best || dist < best.d)) best = { title: d.title, d: dist };
+    }
+    const gates = Object.entries(world.data.walls?.gates ?? {});
+    const town = world.inTown(x, z);
+    if (town) return { name: best?.title ?? 'Diest', where: 'Within the walls of Diest' };
+    for (const [g, [gx, gz]] of gates) {
+      if (Math.hypot(gx - x, gz - z) < 220) {
+        const lore = world.discoveries.find((d) => d.key === g);
+        return { name: lore?.title ?? 'Diest', where: 'Outside the walls of Diest' };
+      }
+    }
+    const villages: [string, number, number, number][] = [
+      ['Scherpenheuvel', -5062, 518, 900], ['Kaggevinne', -2225, 669, 700], ['Webbekom', 1413, 1276, 800],
+    ];
+    for (const [n, vx, vz, r] of villages) if (Math.hypot(vx - x, vz - z) < r) return { name: best?.title ?? n, where: 'The Demer valley' };
+    if (Math.hypot(x, z) < 2000) return { name: best?.title ?? 'The fields of Diest', where: 'The Demer valley' };
+    return { name: best?.title ?? 'The Demer valley', where: 'Duchy of Brabant' };
+  }
+
+  /** How the dragon is flying, in words. */
+  function pace(speed: number, boosting: boolean, alt: number) {
+    if (boosting) return 'At full stretch';
+    if (speed < 2.5) return alt < 3 ? 'Settling' : 'Hovering';
+    if (speed < 10) return 'Drifting';
+    if (speed < 24) return 'Gliding';
+    if (speed < 42) return 'Flying hard';
+    return 'Racing the wind';
   }
 
   // Compile shaders before the curtain lifts, then hand over to the player.

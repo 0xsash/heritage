@@ -104,12 +104,12 @@ vec3 gNrm; float gRough; float gAO;`,
     float h = hash12(cell + 3.1);
     vec3 crop;
     if (arable) {
-      crop = h < 0.24 ? vec3(1.42, 1.22, 0.7)      // ripe wheat
-           : h < 0.46 ? vec3(0.82, 0.98, 0.72)     // green crop
-           : h < 0.62 ? vec3(1.12, 1.08, 0.86)     // pale barley
-           : h < 0.78 ? vec3(0.7, 0.86, 0.7)       // dark roots / beet
-           : h < 0.9 ? vec3(1.2, 0.98, 0.72)       // stubble
-           : vec3(0.82, 0.66, 0.52);               // ploughed earth
+      crop = h < 0.24 ? vec3(1.22, 1.08, 0.8)      // ripe wheat
+           : h < 0.46 ? vec3(0.9, 0.96, 0.84)      // green crop
+           : h < 0.62 ? vec3(1.1, 1.05, 0.92)      // pale barley
+           : h < 0.78 ? vec3(0.78, 0.84, 0.76)     // dark roots / beet
+           : h < 0.9 ? vec3(1.1, 0.98, 0.84)       // stubble
+           : vec3(0.8, 0.68, 0.56);                // ploughed earth
     } else {
       crop = vec3(0.86 + 0.3 * h, 0.9 + 0.2 * h, 0.84 + 0.18 * fract(h * 7.0)); // pasture: mown, grazed, lush
     }

@@ -30,6 +30,7 @@ export class Input {
   private padPrev: boolean[] = [];
   mouseDX = 0;
   mouseDY = 0;
+  private wheel = 0;
   pointerLocked = false;
   /** false once a pointer-lock request has failed (sandboxed iframes): use drag-to-look */
   lockSupported = true;
@@ -64,6 +65,14 @@ export class Input {
       this.mouseDY += e.movementY;
     });
     canvas.addEventListener('mousedown', () => (this.dragging = !this.pointerLocked));
+    canvas.addEventListener(
+      'wheel',
+      (e) => {
+        this.wheel += -Math.sign(e.deltaY);
+        e.preventDefault();
+      },
+      { passive: false },
+    );
     window.addEventListener('mouseup', () => (this.dragging = false));
     // A failed request only means "unsupported" if lock has never worked here:
     // browsers also reject re-locking for a moment after Esc.
@@ -163,6 +172,13 @@ export class Input {
     this.lookY = ly;
     this.throttle = thr;
     this.brakeAxis = brk;
+  }
+
+  /** Mouse-wheel notches since the last call (+ = up). */
+  consumeWheel() {
+    const w = this.wheel;
+    this.wheel = 0;
+    return w;
   }
 
   /** Call at end of frame. */

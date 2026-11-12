@@ -70,6 +70,7 @@ export function buildLandmarks(
   col: WorldCollision,
   buildingMat: THREE.Material,
   set: MaterialSet,
+  year = 2000,
 ): LandmarkResult {
   const group = new THREE.Group();
   const gb = new GeomBuilder();
@@ -81,13 +82,12 @@ export function buildLandmarks(
     const isChurch = f.kind === 'church' || f.kind === 'cathedral';
     const isChapel = f.kind === 'chapel';
     if (f.name === 'Sint-Sulpitius en Dionysiuskerk') {
-      sulpitius(gb, f, col, group);
+      sulpitius(gb, f, col, group, year);
       continue;
     }
     if (f.kind === 'basilica') {
       basilica(gb, f, col, group);
-      extraPois.push({ n: 'De Heilige Eik', x: f.cx - 20, z: f.cz - 95, k: 'oak' });
-      rootOak(group, f.cx - 20, f.cz - 95, col);
+
       continue;
     }
     if (isChurch && f.hu * f.hw * 4 > 180) {
@@ -114,7 +114,10 @@ export function buildLandmarks(
 
   for (const p of pois) {
     if (p.n === 'Holle Griet') cannon(group, p.x, p.z);
-    if (p.k === 'city_gate') gate(gb, p.x, p.z, col);
+    if (p.n === 'De Heilige Eik') {
+      rootOak(group, p.x, p.z, col);
+      continue;
+    }
     if (p.n === 'Tafelrondmotte') motte(gb, p.x, p.z, col);
   }
 
@@ -126,7 +129,7 @@ export function buildLandmarks(
 }
 
 // --- Sint-Sulpitius: brown ironstone tower with the bell-shaped "Mustard Pot" lantern
-function sulpitius(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: THREE.Group) {
+function sulpitius(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: THREE.Group, year: number) {
   const end = f.ux > 0 ? -1 : 1; // west end
   const half = Math.min(f.hw * 0.75, 6.5);
   const tx = f.cx + f.ux * (f.hu - half) * end;
@@ -146,6 +149,15 @@ function sulpitius(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: TH
   prism(gb, tx, tz, half * 0.62, 8, H, H + 4, P.IRONSTONE_DARK, Math.PI / 8);
   col.addColumn(tx, tz, half * 1.1, H);
 
+  if (year < 1650) {
+    // Before the Baroque carillon lantern ("the Mustard Pot") the tower stood
+    // unfinished: a squat stump of ironstone under a low provisional roof.
+    const prev = gb.curMat;
+    gb.curMat = M.slate;
+    spire(gb, tx, tz, half * 0.95, 4, H + 4, half * 0.9, SLATE, Math.atan2(f.uz, f.ux) + Math.PI / 4);
+    gb.curMat = prev;
+    return;
+  }
   // the bell-shaped cupola (lathe)
   const prof: THREE.Vector2[] = [];
   const R = half * 0.72;
@@ -228,20 +240,6 @@ function cannon(group: THREE.Group, x: number, z: number) {
   g.rotation.y = 0.6;
   g.traverse((o) => (o.castShadow = true));
   group.add(g);
-}
-
-// --- city gate: two round towers with conical roofs
-function gate(gb: GeomBuilder, x: number, z: number, col: WorldCollision) {
-  const brick = new THREE.Color('#8e5a44');
-  gb.curMat = M.brick;
-  for (const s of [-1, 1]) {
-    const tx = x + s * 6, tz = z;
-    prism(gb, tx, tz, 3, 10, 0, 13, brick);
-    spire(gb, tx, tz, 3.5, 10, 13, 6, SLATE);
-    col.addColumn(tx, tz, 3, 13);
-  }
-  prism(gb, x, z, 3.2, 4, 7, 11, brick, Math.PI / 4, 3.2);
-  gb.curMat = M.stone;
 }
 
 // --- Tafelrondmotte: grassy castle mound

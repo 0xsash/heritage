@@ -19,6 +19,8 @@ export interface RoadData {
   w: number;
   p: number[];
   b?: 1;
+  /** cobbled (inside the town walls) */
+  c?: 1;
   n?: string;
 }
 
@@ -52,4 +54,8 @@ export interface WorldData {
   waterAreas: number[][];
   land: LandData[];
   pois: PoiData[];
+  /** the year the world depicts, when it has been rebuilt from historical maps */
+  year?: number;
+  /** town wall and gates (tools/history/walls_1560.json) */
+  walls?: { ring: [number, number][]; gates: Record<string, [number, number]> };
 }

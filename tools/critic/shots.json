@@ -47,10 +47,10 @@
       "pose": {
         "sky": "night",
         "walk": true,
-        "x": -5100,
-        "z": 378,
-        "yaw": 0.3,
-        "pitch": 0.16
+        "x": -5040,
+        "z": 585,
+        "yaw": -2.8,
+        "pitch": 0.22
       }
     },
     {
@@ -78,6 +78,32 @@
         "yaw": 0,
         "camYaw": 3.3,
         "pitch": -0.02
+      }
+    },
+    {
+      "id": "leuven-gate",
+      "concept": "docs/art/concepts/diest-living-town.jpg",
+      "title": "The Leuven Gate from the road",
+      "pose": {
+        "sky": "golden",
+        "walk": true,
+        "x": -175,
+        "z": 455,
+        "yaw": 2.55,
+        "pitch": 0.14
+      }
+    },
+    {
+      "id": "diest-1560-aerial",
+      "concept": "docs/art/concepts/flight-demer-valley.jpg",
+      "title": "Walled Diest from the air",
+      "pose": {
+        "sky": "day",
+        "x": -700,
+        "y": 160,
+        "z": 700,
+        "yaw": 2.4,
+        "pitch": -0.32
       }
     }
   ]

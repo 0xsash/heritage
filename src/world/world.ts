@@ -4,19 +4,19 @@
 import * as THREE from 'three';
 import { hash01, rng } from '../core/math';
 import type { MaterialSet } from '../render/textures';
-import { addBuilding, makeBuildingMaterial, styleFor } from './buildings';
+import { addBuilding, makeBuildingMaterial, setTownTest, styleFor } from './buildings';
 import { WorldCollision } from './collision';
 import { analyse, pointInRing, toRing, type Footprint } from './footprint';
 import { GeomBuilder, triangulate } from './geom';
 import { makeGroundMaterial, makeWaterMaterial } from './ground';
 import { buildLandmarks } from './landmarks';
 import { LORE } from './lore';
-import { LAND, ROAD, pick, type Surface as P_Surface } from './palette';
+import { LAND, ROAD, pick } from './palette';
 import { TreeRenderer, type TreeAtlas, type TreeItem } from './trees';
+import { buildWalls, makeTownTest } from './walls';
 import type { PoiData, RoadData, WorldData } from './types';
 
 const CHUNK = 400;
-const OLD_TOWN_R = 680;
 // Overlays sit a few centimetres above the base ground so they never z-fight.
 const Y_LAND = 0.02, Y_WATER = 0.035, Y_ROAD = 0.05;
 
@@ -52,16 +52,26 @@ export class World {
   uniforms = { uNight: { value: 0 }, uTime: { value: 0 } };
   demerMat!: THREE.MeshStandardMaterial;
   oak?: THREE.Object3D;
+  /** inside the town walls? (a rough circle when the world has no wall data) */
+  inTown: (x: number, z: number) => boolean = (x, z) => Math.hypot(x, z) < 680;
+  private plainWater!: THREE.MeshStandardMaterial;
   private cullables: THREE.Mesh[] = [];
   /** cells (4 m) covered by roads or water, where trees must not stand */
   private blocked = new Set<number>();
 
-  constructor(public data: WorldData, private assets: WorldAssets) {}
+  constructor(public data: WorldData, private assets: WorldAssets) {
+    if (data.walls) {
+      this.inTown = makeTownTest(data.walls.ring);
+      setTownTest(this.inTown);
+    }
+  }
 
   /** Distance culling for building and tree chunks (the haze hides the cut). */
   cull(cam: THREE.Vector3) {
     for (const m of this.cullables) {
-      const s = m.geometry.boundingSphere ?? (m as THREE.InstancedMesh).boundingSphere;
+      // instanced meshes: the geometry's sphere is one local tree; the mesh's own sphere covers all instances
+      const im = m as THREE.InstancedMesh;
+      const s = im.isInstancedMesh ? im.boundingSphere : m.geometry.boundingSphere;
       if (!s) continue;
       const d = Math.hypot(s.center.x - cam.x, s.center.z - cam.z) - s.radius;
       m.visible = d < m.userData.cullDist;
@@ -127,20 +137,6 @@ export class World {
     const gb = new GeomBuilder();
     const idx = this.assets.ground.index;
     const c = new THREE.Color();
-    // The old town stands on cobbles and packed earth, not pasture: lay a town
-    // floor under everything inside the walls (markets, yards, unmapped squares).
-    {
-      const n = 48, rings: [number, string, P_Surface][] = [[OLD_TOWN_R + 40, 'outer', LAND.townYard], [330, 'core', LAND.townSquare]];
-      for (const [r, , surf] of rings) {
-        gb.curMat = idx[surf.mat];
-        c.copy(surf.tints[0]);
-        for (let i = 0; i < n; i++) {
-          const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
-          const r0 = r * (0.9 + 0.2 * hash01(i * 7 + r)), r1 = r * (0.9 + 0.2 * hash01(((i + 1) % n) * 7 + r));
-          gb.tri([0, Y_LAND * 0.5, 0], [Math.cos(a0) * r0, Y_LAND * 0.5, Math.sin(a0) * r0], [Math.cos(a1) * r1, Y_LAND * 0.5, Math.sin(a1) * r1], c, [0, 1, 0]);
-        }
-      }
-    }
     for (let li = 0; li < this.data.land.length; li++) {
       const l = this.data.land[li];
       let surf = LAND[l.k];
@@ -155,11 +151,6 @@ export class World {
         tag = [a, 0, 3];
       }
       const ring = toRing(l.p);
-      // inside the walls, gardens and greens are mostly trodden earth
-      if ((l.k === 'res' || l.k === 'ind' || l.k === 'grass') && Math.hypot(ring[0][0], ring[0][1]) < OLD_TOWN_R) {
-        surf = Math.hypot(ring[0][0], ring[0][1]) < 330 ? LAND.townSquare : LAND.townYard;
-        tag = [0, 0, 0];
-      }
       c.copy(pick(surf.tints, li * 13 + 7)).multiplyScalar(0.94 + hash01(li * 3) * 0.12);
       gb.curMat = idx[surf.mat];
       for (const [a, b, cc] of triangulate(ring)) {
@@ -191,6 +182,7 @@ export class World {
   // ---------------- water ----------------
   private buildWater() {
     const plain = makeWaterMaterial(this.uniforms, '#232f2b');
+    this.plainWater = plain;
     // The Demer: "dark water". Blacker than it should be, with a faint uncanny sheen.
     this.demerMat = makeWaterMaterial(this.uniforms, '#0f1716', '#0a2b25');
     const white = new THREE.Color(1, 1, 1);
@@ -225,7 +217,7 @@ export class World {
     for (let i = 0; i < roads.length; i++) {
       const r = roads[i];
       const mid = midpoint(r);
-      const inTown = Math.hypot(mid[0], mid[1]) < OLD_TOWN_R;
+      const inTown = this.data.walls ? r.c === 1 : Math.hypot(mid[0], mid[1]) < 680;
       const kind = r.k === 'rail' ? ROAD.rail : minor.has(r.k) ? ROAD.path : inTown || r.k === 'pedestrian' || r.k === 'living_street' ? ROAD.cobble : ROAD.dirt;
       c.set(kind.tint).multiplyScalar(0.93 + hash01(i * 7) * 0.14);
       gb.curMat = idx[kind.mat];
@@ -291,7 +283,8 @@ export class World {
       this.cullables.push(mesh);
       this.group.add(mesh);
     }
-    const lm = buildLandmarks(this.footprints, this.data.pois, this.collision, mat, set);
+    if (this.data.walls) this.group.add(buildWalls(this.data.walls, set, this.collision, mat, this.plainWater));
+    const lm = buildLandmarks(this.footprints, this.data.pois, this.collision, mat, set, this.data.year);
     this.group.add(lm.group);
     this.oak = lm.group.getObjectByName('rootOak');
     this.data.pois.push(...lm.extraPois);
@@ -315,7 +308,7 @@ export class World {
     };
 
     // woods, parks, orchards
-    const DENS: Record<string, number> = { wood: 1 / 60, park: 1 / 330, cemetery: 1 / 400, wet: 1 / 380, scrub: 1 / 300, farmyard: 1 / 900, meadow: 1 / 7000, farm: 1 / 14000, res: 1 / 520, grass: 1 / 2600 };
+    const DENS: Record<string, number> = { wood: 1 / 60, park: 1 / 160, cemetery: 1 / 400, wet: 1 / 900, scrub: 1 / 520, farmyard: 1 / 900, meadow: 1 / 3200, farm: 1 / 14000, res: 1 / 520, grass: 1 / 2600 };
     for (let li = 0; li < this.data.land.length; li++) {
       const l = this.data.land[li];
       const ring = toRing(l.p);
@@ -345,9 +338,11 @@ export class World {
         let sp = 'oak';
         const r = rand();
         if (l.k === 'wood') sp = lean < 0.25 ? (r < 0.7 ? 'pine' : 'oak') : r < 0.74 ? 'oak' : r < 0.86 ? 'poplar' : r < 0.94 ? 'pine' : 'willow';
-        else if (l.k === 'wet' || l.k === 'scrub') sp = r < 0.6 ? 'willow' : 'poplar';
+        else if (l.k === 'scrub') sp = r < 0.55 ? 'pine' : r < 0.85 ? 'oak' : 'willow'; // heath: pines and scrub oak
+        else if (l.k === 'wet' || l.k === 'meadow') sp = r < 0.7 ? 'willow' : 'poplar';
+        else if (l.k === 'park') sp = r < 0.6 ? 'apple' : r < 0.9 ? 'oak' : 'willow'; // town gardens and orchards
         else if (l.k === 'res' || l.k === 'farmyard') sp = r < 0.45 ? 'apple' : r < 0.85 ? 'oak' : 'willow';
-        add(x, z, sp, l.k === 'res' ? 0.7 : 1);
+        add(x, z, sp, l.k === 'res' || l.k === 'park' ? 0.75 : l.k === 'scrub' ? 0.8 : 1);
       }
     }
 
@@ -372,7 +367,7 @@ export class World {
       if (r.k !== 'primary' && r.k !== 'secondary' && r.k !== 'tertiary') continue;
       if (hash01(ri * 53 + 5) < 0.45) continue;
       alongLine(r.p, 18, (x, z, nx, nz, k) => {
-        if (Math.hypot(x, z) < 950) return;
+        if (this.inTown(x, z) || Math.hypot(x, z) < 950) return;
         const off = Math.min(r.w, 8) * 0.62 + 4.5;
         for (const side of [1, -1]) {
           const tx = x + nx * off * side, tz = z + nz * off * side;

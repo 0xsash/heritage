@@ -19,8 +19,11 @@ export interface PlayerEvents {
 }
 
 const CLEARANCE = 1.7; // dragon belly above surface
-const MIN_FLY_SPEED = 3;
+const MIN_FLY_SPEED = 0;
 const CRUISE = 20;
+/** speed is held like a throttle: W / S (or RT / LT, or the mouse wheel) set it, letting go keeps it */
+const THROTTLE_UP = 16; // m/s per second
+const THROTTLE_DOWN = 30;
 const MAX_SPEED = 52;
 const BOOST_SPEED = 82;
 
@@ -41,6 +44,8 @@ export class Player {
   turnRate = 0;
   boostTime = 0;
   thrust = 0;
+  /** the speed the dragon holds when you let go of the controls */
+  cruise = CRUISE;
   climbRate = 0;
 
   // Hero on-foot state
@@ -72,7 +77,8 @@ export class Player {
     this.pos.set(x, y, z);
     this.yaw = yaw;
     this.pitch = -0.08;
-    this.speed = 26;
+    this.speed = 22;
+    this.cruise = 22;
   }
 
   get forward() {
@@ -141,6 +147,9 @@ export class Player {
     }
     if (input.held('jump')) targetPitch = Math.max(targetPitch, 0.55);
     if (input.held('descend')) targetPitch = Math.min(targetPitch, -0.6);
+    // hovering: stay level (Space / C move straight up and down); turning still follows the aim
+    const hovering = clamp(1 - this.speed / 6, 0, 1);
+    targetPitch = lerp(targetPitch, 0, hovering);
 
     // Turn authority drops a little at speed — weight without losing control.
     const speedT = clamp(this.speed / MAX_SPEED, 0, 1.5);
@@ -152,9 +161,14 @@ export class Player {
     const dp = targetPitch - this.pitch;
     this.pitch += clamp(dp * 3.0, -1.6, 1.6) * dt;
 
-    // --- energy: dive to gain speed, climb to spend it
-    let target = CRUISE + this.thrust * (MAX_SPEED - CRUISE);
-    if (brake > 0) target = lerp(target, MIN_FLY_SPEED, brake);
+    // --- throttle: W/S (RT/LT, mouse wheel) raise and lower a held cruising speed.
+    // Letting go keeps the speed, so you can creep through streets or hover.
+    this.cruise += (input.throttle * THROTTLE_UP - brake * THROTTLE_DOWN) * dt + input.consumeWheel() * 4;
+    this.cruise = clamp(this.cruise, 0, MAX_SPEED);
+    // Low over the roofs the dragon holds back by itself; climb to open it up.
+    const alt = this.altitude();
+    const lowCap = clamp(8 + alt * 0.65, 8, MAX_SPEED);
+    let target = Math.min(this.cruise, lowCap);
     if (boost && this.boostTime <= 0 && this.speed > 8) {
       this.boostTime = 1.4;
       this.ev.trauma(0.32);
@@ -163,16 +177,20 @@ export class Player {
       this.boostTime -= dt;
       target = BOOST_SPEED;
     }
-    this.speed += -Math.sin(this.pitch) * 9.8 * 0.85 * dt; // gravity along the flight path
-    const rate = this.speed < target ? (this.boostTime > 0 ? 0.09 : 0.03) : brake > 0 ? 0.05 : 0.012;
+    // energy: diving gains speed and climbing spends it, less so close to the ground
+    const lowFactor = clamp(alt / 45, 0.25, 1);
+    this.speed += -Math.sin(this.pitch) * 9.8 * 0.85 * lowFactor * dt;
+    // speeding up is gradual; slowing down is quick (wings flare)
+    const rate = this.speed < target ? (this.boostTime > 0 ? 0.09 : 0.035) : brake > 0 ? 0.12 : 0.06;
     this.speed = lerp(this.speed, target, damp(rate, dt));
     this.speed = clamp(this.speed, MIN_FLY_SPEED, BOOST_SPEED + 15);
+    this.thrust = Math.max(input.throttle, this.speed < target - 2 ? 0.6 : 0);
 
     // Hovering: vertical control directly when slow.
     const hover = clamp(1 - this.speed / 12, 0, 1);
     let vyTarget = 0;
-    if (input.held('jump')) vyTarget = 9 * hover;
-    if (input.held('descend')) vyTarget = -9 * hover;
+    if (input.held('jump')) vyTarget = 10 * hover;
+    if (input.held('descend')) vyTarget = -10 * hover;
     this.vy = lerp(this.vy, vyTarget, damp(0.08, dt));
 
     // Roll from turning (bank), small pitch wobble with wingbeats handled by anim.
@@ -335,9 +353,11 @@ export class Player {
     this.hero.sit();
     this.mode = 'fly';
     this.grounded = 0;
-    this.speed = 10;
-    this.pitch = 0.55;
-    this.vy = 11;
+    // leap up and hang in the air; the rider chooses when to fly off (W)
+    this.speed = 2;
+    this.cruise = 0;
+    this.pitch = 0.15;
+    this.vy = 9;
     this.ev.takeoff();
     this.ev.trauma(0.3);
   }
@@ -442,6 +462,7 @@ export class Player {
     this.pitch = 0;
     this.roll = 0;
     this.speed = speed;
+    this.cruise = speed;
     this.vy = 0;
     this.turnRate = 0;
     this.grounded = 0;

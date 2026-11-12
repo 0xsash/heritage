@@ -30,7 +30,7 @@ export const WALL = {
 export const ROOF = {
   clay: S('roofClay', '#9f4f31', '#8f4429', '#ad5a37', '#94502f', '#a3613f'),
   slate: S('roofSlate', '#3e4149', '#474b53', '#363940', '#4a4a4e'),
-  thatchish: S('roofClay', '#7d5a3a', '#86603c'),
+  thatchish: S('roofClay', '#8a6a3e', '#93734a', '#7f6038'),
 };
 
 export const IRONSTONE = WALL.ironstone.tints[0];
@@ -43,10 +43,10 @@ export function pick<T>(arr: T[], seed: number): T {
 
 /** Land cover → ground material layer + tint choices. */
 export const LAND: Record<string, Surface> = {
-  farm: S('meadow', '#9a8750', '#6c7c44', '#8f8a50', '#a39257', '#61723f', '#807a48'),
+  farm: S('meadow', '#8c7e50', '#66743f', '#837f4c', '#938552', '#5d6b3c', '#787246'),
   soil: S('dirt', '#6d5940', '#77614a', '#5f4d38'),
   farmyard: S('rough', '#7d7052'),
-  meadow: S('meadow', '#5a6b3c', '#63733f', '#536238'),
+  meadow: S('meadow', '#56653b', '#5e6c3e', '#4f5d37'),
   grass: S('grass', '#55683a', '#5b6e3d'),
   wood: S('forest', '#3d4a2b', '#445030'),
   orchard: S('grass', '#566a3a'),

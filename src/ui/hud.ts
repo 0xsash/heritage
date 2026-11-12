@@ -39,8 +39,8 @@ export class Hud {
       'help',
       `<h3>CONTROLS</h3><table>
       <tr><td>Mouse</td><td>Steer &amp; look (click to capture, or drag)</td></tr>
-      <tr><td>W / S</td><td>Flap harder / brake &amp; hover</td></tr>
-      <tr><td>Space / C</td><td>Climb / dive</td></tr>
+      <tr><td>W / S · wheel</td><td>Faster / slower (the dragon holds its pace)</td></tr>
+      <tr><td>Space / C</td><td>Climb / dive (straight up and down when hovering)</td></tr>
       <tr><td>Shift</td><td>Boost (flying) · run (on foot)</td></tr>
       <tr><td>E</td><td>Land · mount · call your dragon</td></tr>
       <tr><td>WASD</td><td>Walk (on foot) · Space jump</td></tr>
@@ -49,10 +49,10 @@ export class Hud {
       </table>`,
     );
     this.map.appendChild(this.mapCanvas);
-    this.map.appendChild(el('legend', 'DIEST &amp; THE DEMER VALLEY — press M to close'));
+    this.map.appendChild(el('legend', 'DIEST &amp; THE DEMER VALLEY · ANNO 1560'));
+    this.map.appendChild(el('map-credit', 'Town plan after OpenStreetMap contributors (ODbL) and the Ferraris map of 1777 (Digitaal Vlaanderen)'));
     root.append(
       this.compass, this.card, this.loc, this.prompt, this.toast, this.help, this.map,
-      el('attrib', 'Map data © OpenStreetMap contributors'),
       this.overlay,
     );
   }
@@ -69,15 +69,15 @@ export class Hud {
   showTitle(loading: string) {
     this.overlay.innerHTML = `
       <h1>BELFORT</h1>
-      <h2>PROLOGUE · THE QUIET BELLS OF DIEST</h2>
-      <p>Flanders, in a Long Golden Age that never quite ended. The belfries have gone silent, the Demer runs black, and a gilded hatchling has chosen <em>you</em>. Neither of you is sure why.</p>
+      <h2>PROLOGUE · DIEST, IN THE YEAR 1560</h2>
+      <p>The Duchy of Brabant, under King Philip. Diest weaves its cloth, rings its bells and pays its tolls. Then a hatchling of bronze and green crawls out of the Demer reeds and chooses <em>you</em>. Neither of you is sure why.</p>
       <div class="loading">${loading}</div>`;
   }
 
   ready(onStart: () => void) {
     this.overlay.querySelector('.loading')?.remove();
     const cta = el('cta', 'CLICK TO TAKE FLIGHT');
-    const small = el('small', 'Best with mouse &amp; keyboard or a gamepad · headphones recommended');
+    const small = el('small', 'Best with mouse &amp; keyboard or a gamepad · headphones recommended<br><span class="credit">Town plan after OpenStreetMap contributors (ODbL) and the Ferraris map of 1777 (Digitaal Vlaanderen)</span>');
     this.overlay.append(cta, small);
     this.overlay.addEventListener(
       'click',
@@ -158,7 +158,7 @@ export class Hud {
         r2 = Math.atan2(Math.sin(r2), Math.cos(r2));
         // Only the marker nearest the centre gets a label; the rest are diamonds.
         const label = Math.abs(r2) < 0.07 && m === this.centred(camYaw, px, pz);
-        m.el.textContent = (d.found ? '◆' : '◇') + (label ? ' ' + d.title + '  ' + (dist > 1000 ? (dist / 1000).toFixed(1) + ' km' : Math.round(dist) + ' m') : '');
+        m.el.textContent = (d.found ? '◆' : '◇') + (label ? ' ' + d.title : '');
       }
       let rel = camYaw - yaw;
       rel = Math.atan2(Math.sin(rel), Math.cos(rel));
