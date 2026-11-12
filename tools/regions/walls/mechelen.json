@@ -1,20 +1,251 @@
 {
  "note": "Mechelen town wall c.1650 (14th-c. outer wall with later bastions), traced from the Ferraris map (1777). Local metres around the Grote Markt (x east, z south). Gate names: Dutch renderings of the French labels on the Villaret map (1745-48); positions from Ferraris.",
- "ring": [[-125,-740],[-220,-726],[-323.5,-716.8],[-395.5,-686.2],[-454,-644.8],[-490,-589],[-500.8,-508],[-515.2,-400],[-533.2,-301],[-563.8,-229],[-584.5,-209.2],[-611.5,-139],[-665.5,-9.5],[-679,58],[-683.5,157],[-665.5,247],[-634,328],[-593.5,409],[-544,481],[-490,562],[-431.5,635.8],[-346,683.5],[-220,733],[-85,760],[50,773.5],[85,782.5],[130,742],[220,697],[328,670],[427,647.5],[490,544],[526,454],[562,355],[598,247],[634,130],[683,20],[670,-40],[643,-112],[616,-161.5],[580,-229],[544,-274],[499,-346],[454,-427],[400,-499],[328,-544],[239.8,-589],[130,-634],[40,-679],[-50,-715]],
+ "ring": [
+  [
+   -125,
+   -740
+  ],
+  [
+   -220,
+   -726
+  ],
+  [
+   -323.5,
+   -716.8
+  ],
+  [
+   -395.5,
+   -686.2
+  ],
+  [
+   -454,
+   -644.8
+  ],
+  [
+   -490,
+   -589
+  ],
+  [
+   -500.8,
+   -508
+  ],
+  [
+   -515.2,
+   -400
+  ],
+  [
+   -533.2,
+   -301
+  ],
+  [
+   -563.8,
+   -229
+  ],
+  [
+   -584.5,
+   -209.2
+  ],
+  [
+   -611.5,
+   -139
+  ],
+  [
+   -665.5,
+   -9.5
+  ],
+  [
+   -679,
+   58
+  ],
+  [
+   -683.5,
+   157
+  ],
+  [
+   -665.5,
+   247
+  ],
+  [
+   -634,
+   328
+  ],
+  [
+   -593.5,
+   409
+  ],
+  [
+   -544,
+   481
+  ],
+  [
+   -490,
+   562
+  ],
+  [
+   -431.5,
+   635.8
+  ],
+  [
+   -346,
+   683.5
+  ],
+  [
+   -220,
+   733
+  ],
+  [
+   -85,
+   760
+  ],
+  [
+   50,
+   773.5
+  ],
+  [
+   85,
+   782.5
+  ],
+  [
+   130,
+   742
+  ],
+  [
+   220,
+   697
+  ],
+  [
+   328,
+   670
+  ],
+  [
+   427,
+   647.5
+  ],
+  [
+   490,
+   544
+  ],
+  [
+   526,
+   454
+  ],
+  [
+   562,
+   355
+  ],
+  [
+   598,
+   247
+  ],
+  [
+   634,
+   130
+  ],
+  [
+   683,
+   20
+  ],
+  [
+   670,
+   -40
+  ],
+  [
+   643,
+   -112
+  ],
+  [
+   616,
+   -161.5
+  ],
+  [
+   580,
+   -229
+  ],
+  [
+   544,
+   -274
+  ],
+  [
+   499,
+   -346
+  ],
+  [
+   454,
+   -427
+  ],
+  [
+   400,
+   -499
+  ],
+  [
+   328,
+   -544
+  ],
+  [
+   239.8,
+   -589
+  ],
+  [
+   130,
+   -634
+  ],
+  [
+   40,
+   -679
+  ],
+  [
+   -50,
+   -715
+  ]
+ ],
  "gates": {
-  "Antwerpsepoort": [-323.5,-716.8],
-  "Koepoort": [239.8,-589],
-  "Diestsepoort": [616,-161.5],
-  "Leuvensepoort": [490,544],
-  "Oude Brusselpoort": [85,782.5],
-  "Brusselpoort": [-431.5,635.8],
-  "Gentsepoort": [-665.5,-9.5],
-  "Waterpoort": [-584.5,-209.2]
+  "Antwerpsepoort": [
+   -323.5,
+   -716.8
+  ],
+  "Koepoort": [
+   239.8,
+   -589
+  ],
+  "Diestsepoort": [
+   616,
+   -161.5
+  ],
+  "Leuvensepoort": [
+   490,
+   544
+  ],
+  "Oude Brusselpoort": [
+   85,
+   782.5
+  ],
+  "Brusselpoort": [
+   -431.5,
+   635.8
+  ],
+  "Gentsepoort": [
+   -665.5,
+   -9.5
+  ],
+  "Waterpoort": [
+   -584.5,
+   -209.2
+  ]
  },
  "gateSources": {
-  "Antwerpsepoort": "Villaret 'Porte d'Anvers'", "Koepoort": "Villaret 'Porte de Vaches'", "Diestsepoort": "Villaret 'Porte de Diest'",
-  "Leuvensepoort": "Villaret 'Porte de Louvain'", "Oude Brusselpoort": "Villaret 'Vieille Porte de Bruxelles'",
-  "Brusselpoort": "Villaret 'Porte de Bruxelles' (the surviving Brusselpoort)", "Gentsepoort": "Villaret 'Porte de Gand'",
+  "Antwerpsepoort": "Villaret 'Porte d'Anvers'",
+  "Koepoort": "Villaret 'Porte de Vaches'",
+  "Diestsepoort": "Villaret 'Porte de Diest'",
+  "Leuvensepoort": "Villaret 'Porte de Louvain'",
+  "Oude Brusselpoort": "Villaret 'Vieille Porte de Bruxelles'",
+  "Brusselpoort": "Villaret 'Porte de Bruxelles' (the surviving Brusselpoort)",
+  "Gentsepoort": "Villaret 'Porte de Gand'",
   "Waterpoort": "Villaret 'Porte d'Eau' (where the Dijle leaves the town)"
- }
+ },
+ "moat": [
+  [
+   0,
+   48
+  ]
+ ]
 }

@@ -1,0 +1,94 @@
+{
+ "note": "Scherpenheuvel c.1650: the seven-sided enceinte with moat laid out by Wenceslas Cobergher around the basilica (town plan 1603-09, basilica consecrated 1627), traced from the Ferraris map (1777). Local metres around the basilica (x east, z south). Gate names: Dutch for the Ferraris labels.",
+ "ring": [
+  [
+   -49,
+   -186.7
+  ],
+  [
+   61.7,
+   -166.3
+  ],
+  [
+   166.7,
+   -166.3
+  ],
+  [
+   225,
+   -105
+  ],
+  [
+   283,
+   -40.8
+  ],
+  [
+   306.7,
+   -5.8
+  ],
+  [
+   263,
+   46.7
+  ],
+  [
+   286,
+   122.5
+  ],
+  [
+   225,
+   186.7
+  ],
+  [
+   155,
+   204
+  ],
+  [
+   26.7,
+   245
+  ],
+  [
+   -66.7,
+   221.6
+  ],
+  [
+   -163,
+   227.5
+  ],
+  [
+   -168.8,
+   81.6
+  ],
+  [
+   -174.6,
+   -46.7
+  ],
+  [
+   -125,
+   -105
+  ]
+ ],
+ "gates": {
+  "Zichemsepoort": [
+   61.7,
+   -166.3
+  ],
+  "Leuvensepoort": [
+   -172,
+   0
+  ],
+  "Diestsepoort": [
+   225,
+   186.7
+  ]
+ },
+ "gateSources": {
+  "Zichemsepoort": "Ferraris 'Porte de Sichem'",
+  "Leuvensepoort": "Ferraris 'Porte de Louvain'",
+  "Diestsepoort": "Ferraris 'Porte de Diest'"
+ },
+ "moat": [
+  [
+   0,
+   15
+  ]
+ ]
+}

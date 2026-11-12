@@ -1,0 +1,567 @@
+{
+ "note": "Per-town landmark rules for historicize_town.py (year 1650). 'keep': OSM building names (exact, or substring when the entry ends with '*') that existed by 1650: always kept, marked with lm = kind and given display name 'as' if set. Kinds: church, belfry, townhall, clothhall, beguinage, castle, abbey, hall (guild/meat hall), gate, tower, house. 'drop': name substrings of buildings known to be later than 1650 (removed even when Ferraris shows the plot built up, since their footprint is not a 1650 one). 'pois': extra points (town-local metres) for things that are areas rather than one building. A keep entry may name an OSM way id instead ('id'), for unnamed buildings.",
+ "common_drop": [
+  "Station",
+  "Moskee",
+  "Moskée",
+  "Mosque",
+  "Mariahal",
+  "Kazemat",
+  "Saillant",
+  "Citadel van",
+  "Fort Leopold",
+  "Boerentoren",
+  "Justitiepaleis",
+  "Gerechtshof",
+  "Provinciehuis",
+  "Universiteitsbibliotheek",
+  "Shopping",
+  "Cinema",
+  "UGC",
+  "Colruyt",
+  "Bunker",
+  "TPM1",
+  "Hotel",
+  "Oorlogsmonument"
+ ],
+ "towns": {
+  "antwerpen": {
+   "keep": [
+    {
+     "n": "Onze-Lieve-Vrouwekathedraal",
+     "lm": "church"
+    },
+    {
+     "n": "Stadhuis Antwerpen",
+     "lm": "townhall",
+     "as": "Stadhuis"
+    },
+    {
+     "n": "Het Steen",
+     "lm": "castle"
+    },
+    {
+     "n": "Vleeshuis",
+     "lm": "hall"
+    },
+    {
+     "n": "Hessenhuis",
+     "lm": "hall"
+    },
+    {
+     "n": "Sint-Jacobskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Sint-Pauluskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Sint-Andrieskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Sint-Carolus Borromeuskerk",
+     "lm": "church",
+     "as": "Jezuïetenkerk (Sint-Ignatius)"
+    },
+    {
+     "n": "Sint-Augustinuskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Plantin-Moretusmuseum",
+     "lm": "house",
+     "as": "Officina Plantiniana"
+    },
+    {
+     "n": "Rubenshuis",
+     "lm": "house"
+    },
+    {
+     "n": "Mercator-Orteliushuis",
+     "lm": "house"
+    },
+    {
+     "n": "Delbekehuis"
+    },
+    {
+     "n": "Huis Spaengien"
+    },
+    {
+     "n": "Erfgoedbibliotheek Hendrik Conscience",
+     "as": "Jezuïetenhuis"
+    },
+    {
+     "n": "Sint-Annakapel",
+     "lm": "church"
+    },
+    {
+     "n": "Ignatiuskapel",
+     "lm": "church"
+    }
+   ],
+   "drop": [
+    "Sint-Joriskerk",
+    "Waterpoort",
+    "Bourla",
+    "Stadsfeestzaal",
+    "Museum aan de Stroom",
+    "Handelsbeurs",
+    "Centraal Station",
+    "Vlaamse Opera",
+    "Sint-Walburgiskerk",
+    "Sint-Michielskerk",
+    "Toegangsgebouw",
+    "Havenhuis",
+    "Loodswezen",
+    "Montevideo",
+    "pershuis",
+    "Antwerp Tower",
+    "Century Center",
+    "Lindner",
+    "Nationale Bank",
+    "Modepaleis",
+    "Koninklijk Atheneum",
+    "Stadsschouwburg",
+    "Paleis op de Meir"
+   ],
+   "pois": [
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "x": 800,
+     "z": -180
+    }
+   ]
+  },
+  "mechelen": {
+   "keep": [
+    {
+     "n": "Sint-Romboutskathedraal",
+     "lm": "church",
+     "as": "Sint-Romboutskerk"
+    },
+    {
+     "n": "Stadhuis Mechelen",
+     "lm": "clothhall",
+     "as": "Lakenhalle en Paleis van de Grote Raad"
+    },
+    {
+     "n": "Schepenhuis",
+     "lm": "townhall"
+    },
+    {
+     "n": "Sint-Janskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Onze-Lieve-Vrouw-over-de-Dijlekerk",
+     "lm": "church"
+    },
+    {
+     "n": "Sint-Katelijnekerk",
+     "lm": "church"
+    },
+    {
+     "n": "Begijnhofkerk Sint-Alexius en Catharina",
+     "lm": "beguinage",
+     "as": "Groot Begijnhof, kerk"
+    },
+    {
+     "n": "Minderbroederskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Brusselpoort",
+     "lm": "gate"
+    },
+    {
+     "n": "Museum Hof van Busleyden",
+     "lm": "house",
+     "as": "Hof van Busleyden"
+    },
+    {
+     "n": "Hof van Savoye",
+     "lm": "castle",
+     "as": "Hof van Savoye (paleis van Margaretha van Oostenrijk)"
+    },
+    {
+     "n": "Hof van Kamerijk"
+    },
+    {
+     "n": "Volmolen"
+    },
+    {
+     "n": "Hofje van Olijven"
+    }
+   ],
+   "drop": [
+    "Hanswijkbasiliek",
+    "Sint-Pieter-en-Paulkerk",
+    "Nekkerhal",
+    "Dossin",
+    "Telenet",
+    "Kasteeltje Berkenhof",
+    "Heilig Hartkerk",
+    "Sint-Jan Berchmanskerk",
+    "Sint-Jozef-Colomakerk",
+    "De Goede Herder",
+    "Sint-Libertuskerk",
+    "Leliëndaalkerk"
+   ],
+   "pois": [
+    {
+     "n": "Groot Begijnhof",
+     "k": "beguinage",
+     "x": -390,
+     "z": -430
+    }
+   ]
+  },
+  "leuven": {
+   "keep": [
+    {
+     "n": "Sint-Pieterskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Stadhuis van Leuven",
+     "lm": "townhall",
+     "as": "Stadhuis"
+    },
+    {
+     "id": 27289013,
+     "lm": "clothhall",
+     "as": "Lakenhalle (Universiteitshal)",
+     "n": "#27289013"
+    },
+    {
+     "n": "Sint-Geertruikerk",
+     "lm": "abbey",
+     "as": "Sint-Geertrui-abdij, kerk"
+    },
+    {
+     "n": "Abtskwartier Sint-Geertruiabdij",
+     "lm": "abbey"
+    },
+    {
+     "n": "Sint-Jacobskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Sint-Kwintenskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Onze-Lieve-Vrouw-ten-Predikherenkerk",
+     "lm": "church",
+     "as": "Predikherenkerk"
+    },
+    {
+     "n": "Sint-Jan de Doperkerk",
+     "lm": "beguinage",
+     "as": "Groot Begijnhof, Sint-Jan-de-Doperkerk"
+    },
+    {
+     "n": "Sint-Antoniuskapel",
+     "lm": "church"
+    },
+    {
+     "n": "Atrechtcollege"
+    },
+    {
+     "n": "Hollands College"
+    },
+    {
+     "n": "Driutiuscollege"
+    },
+    {
+     "n": "Heilige-Geestcollege"
+    },
+    {
+     "n": "Van Dalecollege"
+    },
+    {
+     "n": "Toren stadsomwalling",
+     "lm": "tower"
+    },
+    {
+     "n": "Verloren Kosttoren",
+     "lm": "tower"
+    },
+    {
+     "n": "Janseniustoren",
+     "lm": "tower"
+    },
+    {
+     "n": "Minderbroederstoren",
+     "lm": "tower"
+    },
+    {
+     "n": "Sint-Donatustoren",
+     "lm": "tower"
+    },
+    {
+     "n": "Justus Lipsiustoren",
+     "lm": "tower"
+    },
+    {
+     "n": "Huize Coninck Carel"
+    },
+    {
+     "n": "De Hulstboom"
+    },
+    {
+     "n": "Den Horen"
+    }
+   ],
+   "drop": [
+    "Sint-Michielskerk",
+    "Stadsschouwburg",
+    "Station",
+    "Sint-Jozefskerk",
+    "Middelareskerk",
+    "Sint-Antonius van Paduakerk",
+    "Heilig-Hartkerk",
+    "Sint-Franciscuskerk",
+    "Verenigde Protestantse",
+    "Sint-Agathakerk",
+    "Sint-Jozef en Sint-Lambertuskerk",
+    "Martin's",
+    "Métropole",
+    "Instituut voor",
+    "Aula Pieter",
+    "Leercentrum",
+    "Campus",
+    "Dirk Bouts",
+    "OPEK",
+    "Silo",
+    "Maalderij",
+    "Kapel van Bleydenberg",
+    "Jezus in 't Steentje",
+    "Arenberginstituut",
+    "Theatrum",
+    "Octrooigebouw",
+    "Huis van de Tolerantie",
+    "Kolveniershof",
+    "College van Premonstreit"
+   ],
+   "pois": [
+    {
+     "n": "Groot Begijnhof",
+     "k": "beguinage",
+     "x": -330,
+     "z": 870
+    },
+    {
+     "n": "Klein Begijnhof",
+     "k": "beguinage",
+     "x": -110,
+     "z": -690
+    }
+   ]
+  },
+  "lier": {
+   "keep": [
+    {
+     "n": "Sint-Gummaruskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Stadhuis Lier",
+     "lm": "belfry",
+     "as": "Belfort en Lakenhalle"
+    },
+    {
+     "n": "Vleeshuis",
+     "lm": "hall"
+    },
+    {
+     "n": "Zimmertoren",
+     "lm": "tower",
+     "as": "Corneliustoren"
+    },
+    {
+     "n": "Binnenste Eeckelpoort",
+     "lm": "gate",
+     "as": "Gevangenenpoort"
+    },
+    {
+     "n": "Sint-Margaritakerk",
+     "lm": "beguinage",
+     "as": "Begijnhof, Sint-Margaritakerk"
+    },
+    {
+     "n": "Sint-Pieterskapel",
+     "lm": "church"
+    },
+    {
+     "n": "Sint-Jacobskapel",
+     "lm": "church"
+    },
+    {
+     "n": "Spuihuis"
+    },
+    {
+     "n": "Hof van Aragon"
+    },
+    {
+     "n": "Heilige Geestgebouw"
+    }
+   ],
+   "drop": [
+    "Heilig Kruiskerk",
+    "Heilig Hartkerk",
+    "Heilige Familiekerk",
+    "Onbevlekt Ontvangenkerk",
+    "Kapel van de Heilige Rita",
+    "CC De Mol",
+    "Dungelhoeff",
+    "Ringenhof",
+    "Concertzaal"
+   ],
+   "pois": [
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "x": -190,
+     "z": 300
+    }
+   ]
+  },
+  "diest": {
+   "keep": [
+    {
+     "n": "Sint-Sulpitius en Dionysiuskerk",
+     "lm": "church"
+    },
+    {
+     "n": "Lakenhalle",
+     "lm": "clothhall"
+    },
+    {
+     "n": "Stadhuis Diest",
+     "lm": "townhall",
+     "as": "Stadhuis"
+    },
+    {
+     "n": "Onze-Lieve-Vrouwekerk",
+     "lm": "church"
+    },
+    {
+     "n": "Sint-Catharinakerk",
+     "lm": "beguinage",
+     "as": "Begijnhof, Sint-Catharinakerk"
+    },
+    {
+     "n": "Ingang Begijnhof",
+     "lm": "beguinage",
+     "as": "Begijnhof, poort"
+    },
+    {
+     "n": "Hof van Nassau",
+     "lm": "castle"
+    },
+    {
+     "n": "Allerheiligenkapel",
+     "lm": "church"
+    },
+    {
+     "n": "Sint-Trudokerk",
+     "lm": "church"
+    },
+    {
+     "n": "De Gulden Maan"
+    },
+    {
+     "n": "Refugiehuis der Oratorianen"
+    },
+    {
+     "n": "Brouwerswoning Cercel"
+    },
+    {
+     "n": "Refugiehuis van Averbode"
+    },
+    {
+     "n": "Het Spijker - Refugiehuis van Tongerlo"
+    }
+   ],
+   "drop": [
+    "Sint-Barbarakerk",
+    "Sint-Jansruïne",
+    "Wachthuisje",
+    "Bezoekerscentrum",
+    "CC Den Amer",
+    "Poort Minderbroederklooster"
+   ],
+   "pois": [
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "x": 700,
+     "z": -330
+    }
+   ]
+  },
+  "scherpenheuvel": {
+   "keep": [
+    {
+     "n": "Basiliek van Onze-Lieve-Vrouw van Scherpenheuvel",
+     "lm": "church",
+     "as": "Basiliek van Onze-Lieve-Vrouw"
+    }
+   ],
+   "drop": [
+    "Mariahal",
+    "Stadhuis Scherpenheuvel-Zichem",
+    "Brandweerpost",
+    "Wijkdienst"
+   ],
+   "pois": []
+  },
+  "aarschot": {
+   "keep": [
+    {
+     "n": "Onze-Lieve-Vrouwekerk",
+     "lm": "church"
+    },
+    {
+     "n": "Begijnhof",
+     "lm": "beguinage"
+    },
+    {
+     "n": "Aurelianustoren",
+     "lm": "tower"
+    },
+    {
+     "n": "'s Hertogenmolens",
+     "lm": "hall",
+     "as": "Hertogenmolens"
+    },
+    {
+     "n": "Sint-Rochustoren",
+     "lm": "tower"
+    },
+    {
+     "n": "Kasteel van Schoonhoven",
+     "lm": "castle"
+    }
+   ],
+   "drop": [
+    "Christus Koningkerk",
+    "Aleydis",
+    "Stadsfeestzaal",
+    "Zwembad",
+    "sporthal",
+    "Vredegerecht",
+    "Brandweer",
+    "De Lijn",
+    "CC 't Gasthuis",
+    "Museum",
+    "Bibliotheek"
+   ],
+   "pois": []
+  }
+ }
+}

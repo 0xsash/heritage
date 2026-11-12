@@ -1,0 +1,142 @@
+{
+ "note": "Aarschot c.1650, traced from the Ferraris map (1777): the walled town on the south bank of the Demer, with the moated causeway suburb on the north bank ending at the Mechelen gate. Local metres around the Grote Markt (x east, z south). The west side follows the earth rampart Ferraris draws there; the north side follows the Demer. Gate names: Dutch for the Ferraris labels.",
+ "ring": [
+  [
+   -579,
+   -261
+  ],
+  [
+   -457.7,
+   -237
+  ],
+  [
+   -312,
+   -196.5
+  ],
+  [
+   -215,
+   -212.7
+  ],
+  [
+   -86,
+   -221
+  ],
+  [
+   -13.5,
+   -237
+  ],
+  [
+   60,
+   -330
+  ],
+  [
+   130,
+   -480
+  ],
+  [
+   150,
+   -620
+  ],
+  [
+   150,
+   -805
+  ],
+  [
+   255,
+   -825
+  ],
+  [
+   300,
+   -815
+  ],
+  [
+   360,
+   -680
+  ],
+  [
+   400,
+   -555
+  ],
+  [
+   292,
+   -392
+  ],
+  [
+   200,
+   -300
+  ],
+  [
+   132,
+   -204.6
+  ],
+  [
+   115.7,
+   -156
+  ],
+  [
+   51,
+   -10.8
+  ],
+  [
+   10.8,
+   102
+  ],
+  [
+   8,
+   160
+  ],
+  [
+   2.7,
+   215
+  ],
+  [
+   -94,
+   280
+  ],
+  [
+   -296,
+   320
+  ],
+  [
+   -466,
+   361
+  ],
+  [
+   -546.5,
+   179
+  ],
+  [
+   -610,
+   100
+  ],
+  [
+   -623,
+   -196.5
+  ]
+ ],
+ "gates": {
+  "Mechelsepoort": [
+   255,
+   -825
+  ],
+  "Waterpoort": [
+   8,
+   160
+  ],
+  "Tiensepoort": [
+   -94,
+   280
+  ],
+  "Leuvensepoort": [
+   -546.5,
+   179
+  ]
+ },
+ "gateSources": {
+  "Mechelsepoort": "Ferraris 'Porte de Malines'",
+  "Waterpoort": "Ferraris 'Porte de l'Eau'",
+  "Tiensepoort": "Ferraris 'Porte de Tirlemont'",
+  "Leuvensepoort": "Ferraris 'Porte de Louvain'"
+ },
+ "moat": []
+}

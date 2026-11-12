@@ -1,0 +1,204 @@
+{
+ "note": "Leuven second town wall (built 1357-63, still standing in 1650), traced from the Ferraris map (1777). Local metres around the Grote Markt (x east, z south). Gate names: Dutch for the Ferraris labels.",
+ "ring": [
+  [
+   -448,
+   -1086.5
+  ],
+  [
+   -142,
+   -1202
+  ],
+  [
+   374,
+   -955
+  ],
+  [
+   600,
+   -797
+  ],
+  [
+   901.5,
+   -438.5
+  ],
+  [
+   955,
+   -331
+  ],
+  [
+   987.7,
+   -169
+  ],
+  [
+   1009,
+   -50
+  ],
+  [
+   993,
+   115
+  ],
+  [
+   966,
+   331
+  ],
+  [
+   928,
+   589
+  ],
+  [
+   869,
+   675
+  ],
+  [
+   783,
+   815
+  ],
+  [
+   697,
+   934
+  ],
+  [
+   589,
+   1031
+  ],
+  [
+   487,
+   1090
+  ],
+  [
+   331,
+   1149
+  ],
+  [
+   169,
+   1192
+  ],
+  [
+   7.7,
+   1203
+  ],
+  [
+   -159.7,
+   1128.8
+  ],
+  [
+   -246,
+   1111.5
+  ],
+  [
+   -361.5,
+   1065
+  ],
+  [
+   -482.7,
+   1007.7
+  ],
+  [
+   -592,
+   892
+  ],
+  [
+   -710,
+   763
+  ],
+  [
+   -881,
+   696
+  ],
+  [
+   -996,
+   627
+  ],
+  [
+   -1111.5,
+   500
+  ],
+  [
+   -1192,
+   361.5
+  ],
+  [
+   -1255.8,
+   234.6
+  ],
+  [
+   -1273,
+   73
+  ],
+  [
+   -1300,
+   -120
+  ],
+  [
+   -1284.6,
+   -296
+  ],
+  [
+   -1227,
+   -469
+  ],
+  [
+   -973,
+   -798
+  ],
+  [
+   -719,
+   -1063.5
+  ]
+ ],
+ "gates": {
+  "Mechelsepoort": [
+   -448,
+   -1086.5
+  ],
+  "Aarschotsepoort": [
+   374,
+   -955
+  ],
+  "Diestsepoort": [
+   901.5,
+   -438.5
+  ],
+  "Tiensepoort": [
+   928,
+   589
+  ],
+  "Parkpoort": [
+   487,
+   1090
+  ],
+  "Naamsepoort": [
+   -159.7,
+   1128.8
+  ],
+  "Kapucijnenpoort": [
+   -710,
+   763
+  ],
+  "Tervuursepoort": [
+   -1255.8,
+   234.6
+  ],
+  "Brusselsepoort": [
+   -1227,
+   -469
+  ]
+ },
+ "gateSources": {
+  "Mechelsepoort": "Ferraris 'Pte de Malines'",
+  "Aarschotsepoort": "Ferraris 'Pte d'Aerschot ou ...' (second name illegible)",
+  "Diestsepoort": "Ferraris 'Pte de Diest'",
+  "Tiensepoort": "Ferraris 'Pte de Tirlemont'",
+  "Parkpoort": "Ferraris 'Pte de Parc'",
+  "Naamsepoort": "Ferraris 'Pte de Namur ou Heverl\u00e9'",
+  "Kapucijnenpoort": "inferred: unlabelled gate at the end of the Kapucijnenvoer",
+  "Tervuursepoort": "Ferraris 'Vieille Pte de Bruxelles ou du Ch\u00e2teau' (the road to the ducal castle at Tervuren)",
+  "Brusselsepoort": "Ferraris 'Pte de Bruxelles ou des Vignes'"
+ },
+ "moat": [
+  [
+   22,
+   28
+  ]
+ ]
+}
