@@ -1,4 +1,4 @@
-# BELFORT — Design Vision (v0.1)
+# BELFORT — Design Vision (v0.2)
 
 > *Flanders, in a Long Golden Age that never quite ended. The belfries have gone silent, the Demer runs black, and a gilded hatchling has chosen you. Neither of you is sure why.*
 
@@ -7,12 +7,12 @@
 | Topic | Decision |
 |---|---|
 | Look | **Stylised, painterly** (Flemish Masters colour and light, Bosch for corrupted zones), smooth sculpted forms. Moodboard: `docs/art/moodboard.webp`. |
-| Genre | **Hybrid action RPG.** Third-person flight and combat, with an ARPG-style loot and build layer. In dense town fights the camera pulls up into a near-top-down "combat zoom". |
-| World | **Recognisable real Flanders.** Real street plans, waterways and landmarks from OpenStreetMap. You can fly to any town *and* land and walk its streets. |
-| Starting region | **Diest, the Demer valley and Scherpenheuvel.** Ghent is the first big city after that. |
+| Genre | **Open-world action RPG.** Third-person flight and combat; quests with branching choices and lasting consequences; a journal; factions and per-town renown; rider and dragon progression. See `docs/design/gameplay.md`. |
+| World | **Real Brabant and Mechelen, 1650.** Diest, Scherpenheuvel, Aarschot, Leuven, Mechelen, Lier and Antwerp at full scale and walkable, with the countryside between them compressed. Street plans and land use from OpenStreetMap plus the Ferraris and Villaret maps. |
+| Starting region | **Diest and Scherpenheuvel** (Act I), then the road west to Aarschot and Leuven. |
 | Mount | **The gilded dragon** (see the alternatives below). |
 | Tone | **Dark main story, rooted in true history.** Side content is mischievous, dark and tongue-in-cheek. |
-| Era | **Diest in 1560**, historically accurate: the town and countryside rebuilt from the Ferraris map (see `docs/history/diest-1560.md`). In-game text sticks to history; legends are told as legends. |
+| Era | **1650, one year, no time travel.** The Spanish Netherlands under Philip IV and the governor Leopold Wilhelm; the war with France; the Scheldt closed since 1648; the basilica of Scherpenheuvel standing on the oak's roots. In-game text sticks to history; legends are told as legends. Method: `docs/history/diest-1560.md`; towns: `docs/history/regions-1650.md`. |
 | Platform | **Desktop browser first**, with keyboard and mouse plus gamepad. |
 | Stack | Three.js, TypeScript and Vite. Hosted on Vercel; Supabase for saves and accounts later. Map data © OpenStreetMap contributors (ODbL). |
 
@@ -26,7 +26,7 @@
 - **The belfries are wards.** Their carillons play an old song that keeps the drowned sea out of land reclaimed from it. Someone has stolen the bells' clappers.
 - **The Demer, "the dark water",** is the first river the sea has poisoned. Its servants are the **Kludde**: shape-shifters that can be a dog, a horse, a crow, or your uncle.
 - **Diest:**
-  - The **Mustard Pot** (the tower of Sint-Sulpitius) has cracked bells; repairing them is the first belfry quest.
+  - The **squat, unfinished tower of Sint-Sulpitius** has lost its bells' clappers; that is the first main quest (built).
   - The **Beguines** keep a Book of Quiet Bells and teach your first bell magic.
   - **Holle Griet** is a cannon with a memory.
   - The **Round Table mound** is waiting for something to sit on it.
@@ -44,10 +44,8 @@
 2. **Ros Beiaard.** The legendary magic horse of Dendermonde, which can stretch to carry four riders. That makes it a natural mount for co-op or companions, and it gallops across the sky.
 3. **A carillon kite.** A belfry-built glider powered by bell resonance. It's slower and more tactical, but each upgrade comes from ringing towers.
 
-## Core loops
-- **About 30 seconds:** fly, spot, dive-strike, hitstop, pull up, chain to the next target. Hitting in rhythm builds Resonance, which powers bell magic.
-- **About 20 minutes:** land in a town, hear gossip, take quests, fly out, resolve them, return, ring the belfry.
-- **Campaign:** free each belfry, which pushes the mist back and opens new regions. Grow the dragon, shift faction politics (guilds, Leliaerts vs Clauwaerts, Beguines, Reynaert's thieves), and uncover the mystery of the Lamb.
+## Core structure
+See `docs/design/gameplay.md` (v0.2): the main story *The Year the Bells Fell Silent* in three acts, quests built on choices and consequences, factions, progression, trade and a living world.
 
 ## Milestones
 - **M0 — Flight toy (this build).** Real Diest, the Demer valley and Scherpenheuvel. Dragon flight; landing; walking the streets; calling the dragon; discoveries with lore; compass; map; day and night; procedural audio.
