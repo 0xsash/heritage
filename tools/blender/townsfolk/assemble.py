@@ -114,6 +114,22 @@ def hide_covered(body_copy, garments, lm=None):
     return len(kill)
 
 
+def drop_regions(obj, hidden):
+    """The runtime rule: drop a triangle when all three of its vertices lie in hidden regions."""
+    from .game import REGIONS
+    if '_REGION' not in obj.data.attributes or not hidden:
+        return 0
+    codes = {REGIONS[h] for h in hidden if h in REGIONS}
+    reg = np.zeros(len(obj.data.vertices), dtype=np.float32)
+    obj.data.attributes['_REGION'].data.foreach_get('value', reg)
+    reg = np.rint(reg).astype(np.int32)
+    bm = get_bm(obj)
+    kill = [f for f in bm.faces if all(reg[v.index] in codes for v in f.verts)]
+    bmesh.ops.delete(bm, geom=kill, context='FACES')
+    put_bm(bm, obj)
+    return len(kill)
+
+
 def hair_under_hat(hair, hat):
     """A hat flattens the hair: drop the hair faces above the brim (and inside the brim's reach)."""
     co = np.array([v.co[:] for v in hat.data.vertices])
@@ -168,11 +184,17 @@ def build_archetypes():
             o['dye_rgb'] = dye_lin(dye)
             gs.append(o)
         hats = [o for o in gs if o.get('garment') in HATS]
+        body = instance(bpy.data.objects[f'body.{bid}'], rig, cname, f'{aid}.body', copy_data=True)
+        hidden = set()
+        allh = json.loads(bpy.context.scene.get('hides', '{}'))
+        for o in gs:
+            hidden.update(allh.get(o.get('garment'), []))
+        if hats:
+            hidden.add('hair_crown')
+        n = drop_regions(body, hidden)
         for h in [o for o in gs if o.get('slot') == 'hair'] if hats else []:
             h.data = h.data.copy()
-            hair_under_hat(h, hats[0])
-        body = instance(bpy.data.objects[f'body.{bid}'], rig, cname, f'{aid}.body', copy_data=True)
-        n = hide_covered(body, gs, json.loads(base_rig['landmarks']))
+            drop_regions(h, hidden)
         for e in ('eye_l', 'eye_r'):
             instance(bpy.data.objects[f'{e}.{bid}'], rig, cname, f'{aid}.{e}')
         pr = []

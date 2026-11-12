@@ -525,6 +525,11 @@ def paint_skin_tile(m, lm, bid):
         nails = np.clip(A[:, :, 2], 0, 1) * (z < nz - 0.2)
         p.col[M] = mixc(p.col, rgb('#e0bca8'), nails * 0.6)[M]
         p.shade(M, rgb('#6e3a30') / mid * 0.9, strength=0.7, cavity=0.25)
+        # faces must read under hat brims: a warm painted bounce lifts the face and its occlusion is relaxed
+        F = M & (z > nz + 0.015) & (y < ey + 0.07 * k)
+        bounce = (0.06 + 0.06 * sstep(ez - 0.01, ez - 0.07 * k, z))[..., None]
+        p.col[F] = np.clip(p.col * (1 + bounce) + rgb('#3a1e10') * bounce * 0.4, 0, 1)[F]
+        face_mask = F
         p.rough[M] = 0.62
         # eyes
         M = T & (pid == 2)
@@ -547,7 +552,9 @@ def paint_skin_tile(m, lm, bid):
             ms = M & (np.sign(x) == sx)
             p.col[ms] = (p.col * (1 - 0.6 * topshade[..., None]))[ms]
         p.rough[M] = 0.25
-    return finish_maps(p, pid)
+    col, orm, nrm = finish_maps(p, pid)
+    orm[..., 0][face_mask] = np.maximum(orm[..., 0], 0.95)[face_mask]
+    return col, orm, nrm
 
 
 # --------------------------------------------------------------------------
@@ -630,7 +637,7 @@ def stage_paint():
         offsets, occ = {}, []
         for i, (n, o) in enumerate(refs.items()):
             offsets[o] = 3.0 * (i + 1)
-            if o.get('body_id'):
+            if o.get('body_id') and o.get('slot') not in ('legs', 'legs_under', 'apron', 'feet'):
                 b = bpy.data.objects[f'body.{o["body_id"]}']
                 c = b.copy()
                 c.data = b.data.copy()

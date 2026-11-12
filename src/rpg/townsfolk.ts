@@ -78,6 +78,23 @@ export class TownsfolkKit {
     this.bodyNames = Object.keys(m.bodies).sort((a, b) => b.length - a.length);
     const scene = gltf.scene;
     scene.updateMatrixWorld(true);
+    // GLTFLoader makes node names unique across the file, so eight of the nine
+    // rigs arrive with bones like "pelvis_1". Restore the real names (kept in
+    // userData.name) on bones and in the clip tracks, so one clip set drives
+    // every body and hands are found by name.
+    const orig = new Map<string, string>();
+    scene.traverse((o) => {
+      if ((o as THREE.Bone).isBone && typeof o.userData.name === 'string' && o.name !== o.userData.name) {
+        orig.set(o.name, o.userData.name);
+        o.name = o.userData.name;
+      }
+    });
+    for (const c of gltf.animations)
+      for (const t of c.tracks) {
+        const i = t.name.lastIndexOf('.');
+        const n = orig.get(t.name.slice(0, i));
+        if (n) t.name = n + t.name.slice(i);
+      }
     // tag every mesh with what it is (extras when present, else the sanitised node name)
     const tagged: [THREE.Object3D, Tagged][] = [];
     scene.traverse((o) => {

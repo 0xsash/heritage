@@ -525,7 +525,7 @@ def g_doublet(ctx, ref):
             if d.length > 1e-6:
                 v.co += d.normalized() * 0.022 * ctx.k * t
     put_bm(bm, o)
-    rim(o, 0.006 * ctx.k)
+    rim(o, 0.006 * ctx.k, inward=0.005 * ctx.k)
     set_part(o, 'wool')
     o = finish(o, ctx)
     cuffs = cuff_ring(ctx, 'cuff', 0.030 * ctx.k, 0.035 * ctx.k, 0.012 * ctx.k, 'linen', [o], flare=0.008 * ctx.k)
@@ -555,10 +555,11 @@ def drape_band(ctx, name, surf_objs, centre, normal, depth_fn, count=48, rows=6,
         if n.dot(d) < 0:
             n = -n
         p = loc + n * gap + UP * lift * ctx.k
+        n0 = n.copy()
         dep = depth_fn(a) * ctx.k
         step = dep / (rows - 1)
         col = [p.copy()]
-        for j in range(1, rows):
+        for j in range(1, rows - 1):
             want = d * math.cos(slope) - UP * math.sin(slope)
             tng = want - n * want.dot(n)
             if tng.length < 1e-6:
@@ -573,6 +574,8 @@ def drape_band(ctx, name, surf_objs, centre, normal, depth_fn, count=48, rows=6,
             else:
                 p = q
             col.append(p.copy())
+        # inner edge tucked in against the neck and a little up, so no gap shows between collar and skin
+        col.insert(0, col[0] - n0 * (gap + 0.003 * ctx.k) + UP * 0.007 * ctx.k)
         for j, pp in enumerate(col):
             verts.append(pp)
             aux.append((j / (rows - 1), a / (2 * math.pi), dep))
@@ -611,7 +614,7 @@ def g_smock(ctx, ref):
     subdivide(up, 1)
     inflate_n(up, lambda co, n: ctx.k * (0.014 + 0.012 * smoothstep(0.25, 0.04, ctx.along_fore(co)) * (abs(co.x) > 0.24 * ctx.k)),
               smooth_iter=3)
-    rim(up, 0.005 * ctx.k)
+    rim(up, 0.005 * ctx.k, inward=0.005 * ctx.k)
     set_part(up, 'linen_d')
     up = finish(up, ctx)
     lo = dup(ctx.S, 'smock_lo')
@@ -630,6 +633,8 @@ def g_smock(ctx, ref):
     rim(lo, 0.005 * ctx.k)
     set_part(lo, 'linen_d')
     lo = finish(lo, ctx, 'S')
+    # a short skirt: mostly the hips, only part of the thighs, so sitting does not fling it up
+    blend_weights(lo, skirt_weights(ctx, ctx.waist_z, hz - 0.24 * ctx.k, follow=0.5))
     o = join([up, lo], 'smock')
     return o
 
@@ -655,7 +660,7 @@ def g_bodice(ctx, ref):
     smooth_boundary(o, 2)
     subdivide(o, 1)
     inflate_n(o, lambda co, n: ctx.k * (0.006 + 0.008 * (abs(co.x) > 0.22 * ctx.k)), smooth_iter=2)
-    rim(o, 0.005 * ctx.k)
+    rim(o, 0.005 * ctx.k, inward=0.005 * ctx.k)
     set_part(o, 'wool')
     o = finish(o, ctx)
     set_aux(o, [(abs(v.co.x) / ctx.k if v.co.y < ctx.neck.y else 1.0, 0, 0) for v in o.data.vertices])
@@ -940,7 +945,7 @@ def g_coif(ctx, ref):
     smooth_boundary(o, 4, 0.6)
     relax(o, 1, 0.3)
     fix_normals_out(o, lambda p: head_centre(ctx))
-    rim(o, 0.004 * ctx.k)
+    rim(o, 0.004 * ctx.k, inward=0.006 * ctx.k)
     rigid_weight(o, 'head')
     return finish(o, ctx, weights=None)
 
@@ -1033,18 +1038,52 @@ def scallop(name, size):
     return o
 
 
-@garment('cap_flat', 'head', MEN + ['boy'], 'man', 'flat woollen cap (bonnet)')
+@garment('cap_flat', 'head', MEN + ['boy'], 'man', 'soft floppy woollen bonnet that sits on the head and droops to one side')
 def g_cap_flat(ctx, ref):
-    prof = [(0.0, 0.058), (0.070, 0.058), (0.120, 0.050), (0.138, 0.038), (0.130, 0.026), (0.100, 0.020),
-            (0.093, 0.008), (0.091, -0.002), (0.085, -0.004), (0.083, 0.010), (0.080, 0.024), (0.0, 0.032)]
-    o = lathe_mesh('cap_flat', prof, 36, 'felt')
-    bm = get_bm(o)
-    for v in bm.verts:                                       # pulled down to one side, lower at the back
-        if v.co.z > 0.03:
-            v.co.z += -0.010 * v.co.x / 0.12 + 0.006 * (-v.co.y / 0.12)
-            v.co.x += 0.008
-    put_bm(bm, o)
-    hat_place(ctx, o, sink=-0.012, tilt=-10)
+    # a band resting on the hair (from the head's own radius field) carrying a soft, wide crown that
+    # overhangs it and droops towards the character's left
+    nu = 36
+    k = ctx.k
+    hc = head_centre(ctx)
+    band_el = [deg(30), deg(20)]
+    Rr = head_radius(ctx, nu, band_el, smooth=3, ears=False)
+    rows = []
+    for j, e in enumerate(band_el[::-1]):
+        jj = len(band_el) - 1 - j
+        row = []
+        for i in range(nu):
+            az = 2 * math.pi * i / nu
+            d = Vector((math.sin(az) * math.cos(e), -math.cos(az) * math.cos(e), math.sin(e)))
+            row.append(hc + d * (Rr[jj, i] + 0.017 * k))
+        rows.append(row)                                     # lower band ring first, then the upper one
+    top_z = max(p.z for p in rows[-1])
+    c = Vector((0.012 * k, hc.y + 0.006 * k, top_z + 0.004 * k))
+    rx, ry, rz = 0.128 * k, 0.122 * k, 0.040 * k
+    tilt = Matrix.Rotation(deg(14), 3, 'Y') @ Matrix.Rotation(deg(-6), 3, 'X')   # droops to the left and back
+    for lat in (-0.55, -0.15, 0.0, 0.35, 0.65, 0.88):
+        row = []
+        for i in range(nu):
+            az = 2 * math.pi * i / nu
+            ca = math.cos(math.asin(lat)) if abs(lat) < 1 else 0.0
+            soft = 1.0 + 0.05 * math.sin(3 * az + 0.7)
+            q = Vector((math.sin(az) * rx * ca * soft, -math.cos(az) * ry * ca * soft, lat * rz))
+            row.append(c + tilt @ q)
+        rows.append(row)
+    top = c + tilt @ Vector((0, 0, rz))
+    verts = [p for r in rows for p in r] + [top]
+    faces = []
+    for j in range(len(rows) - 1):
+        for i in range(nu):
+            i2 = (i + 1) % nu
+            faces.append((j * nu + i, j * nu + i2, (j + 1) * nu + i2, (j + 1) * nu + i))
+    ti = len(verts) - 1
+    base = (len(rows) - 1) * nu
+    for i in range(nu):
+        faces.append((base + i, base + (i + 1) % nu, ti))
+    o = new_mesh_obj('cap_flat', verts, faces, 'felt')
+    fix_normals_out(o, lambda p: hc)
+    relax(o, 1, 0.3)
+    solidify(o, 0.004 * k)
     rigid_weight(o, 'head')
     return finish(o, ctx, weights=None)
 
@@ -1081,41 +1120,42 @@ def g_morion(ctx, ref):
     return finish(hat, ctx, weights=None)
 
 
-@garment('beguine_veil', 'head', WOMEN, 'woman', 'beguine headdress: white wimple round the face and throat, white veil to the shoulder blades', layer=2)
+@garment('beguine_veil', 'head', WOMEN, 'woman', 'beguine headdress: white wimple closed round the face and under the chin, white veil to the shoulder blades', layer=2)
 def g_beguine_veil(ctx, ref):
-    el = ELEV_HEAD
+    # one closed panel: the skull shell carries on below the jaw round the throat (wimple), so the only opening
+    # is the face oval; below the neck it lies on the shoulders (short in front, the veil long behind)
+    el = [deg(a) for a in (82, 72, 60, 48, 36, 24, 12, 0, -12, -24, -36, -48, -58, -66, -74)]
     nu = 40
 
     def keep(az, e):
         return not face_opening(az, e, half=50, brow=26, chin=-40)
-    verts, faces, rows = head_shell(ctx, 'beguine_veil', 0.020, el, nu=nu, keep=keep, smooth=4,
-                                    bulge=lambda az, e: 0.012 * max(0.0, math.sin(e)) + 0.010 * math.exp(-((abs(az) - math.pi) / 0.9) ** 2))
+    verts, faces, rows = head_shell(ctx, 'beguine_veil', 0.020, el, nu=nu, keep=keep, smooth=6,
+                                    bulge=lambda az, e: 0.012 * max(0.0, math.sin(e)) + 0.010 * math.exp(-((abs(az) - math.pi) / 0.9) ** 2)
+                                    + 0.012 * max(0.0, -math.sin(e) - 0.6))
     surf = bvh_of([ctx.body, ctx.T] + [o for o in (bpy.data.objects.get(f'habit.{ctx.bid}'),) if o])
 
     def depth(az):
         a = abs(math.atan2(math.sin(az), math.cos(az)))
-        # the wimple only wraps the throat in front; the veil falls to the shoulder blades behind
-        return 0.07 + 0.11 * smoothstep(0.5, 1.4, a) + 0.22 * smoothstep(1.7, 3.1, a)
-    low = drape_rows(ctx, rows[-1], surf, 6, depth, mode='hug', gap=0.010)
+        return 0.06 + 0.08 * smoothstep(0.5, 1.5, a) + 0.20 * smoothstep(1.8, 3.1, a)
+    low = drape_rows(ctx, rows[-1], surf, 5, depth, mode='hang', gap=0.012, flare=0.35)
     nr = len(rows)
     allrows = rows + low
     vv = [p for r in allrows for p in r] + [verts[-1]]
-    ff = list(faces)
+    ff = [f if len(f) == 4 else (len(vv) - 1, f[1], f[2]) for f in faces]
     for j in range(nr - 1, len(allrows) - 1):
         for i in range(nu):
             i2 = (i + 1) % nu
             ff.append((j * nu + i, j * nu + i2, (j + 1) * nu + i2, (j + 1) * nu + i))
-    # cap fan indices refer to the old top vertex index: rebuild them
-    ff = [f if len(f) == 4 else (len(vv) - 1, f[1], f[2]) for f in ff]
     o = new_mesh_obj('beguine_veil', vv, ff, 'linen')
     bm = get_bm(o)
     bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
     put_bm(bm, o)
     snap_opening(ctx, o, 50, 26, -40)
-    relax(o, 2, 0.3)
+    relax(o, 4, 0.45)
+    smooth_boundary(o, 3, 0.5)
     fix_normals_out(o, lambda p: Vector((0, ctx.neck.y, min(p.z, head_centre(ctx).z))))
     solidify(o, 0.003 * ctx.k)
-    head_weights(ctx, o, ctx.headb.z + 0.03 * ctx.k, ctx.neck.z - 0.02 * ctx.k)
+    head_weights(ctx, o, ctx.headb.z - 0.02 * ctx.k, ctx.neck.z - 0.03 * ctx.k)
     return finish(o, ctx, weights=None)
 
 
@@ -1203,7 +1243,7 @@ def g_habit(ctx, ref):
     smooth_boundary(up, 2)
     inflate_n(up, lambda co, n: ctx.k * (0.017 + 0.040 * smoothstep(0.30, 0.0, ctx.along_fore(co)) * (abs(co.x) > 0.24 * ctx.k)),
               smooth_iter=4)
-    rim(up, 0.006 * ctx.k)
+    rim(up, 0.006 * ctx.k, inward=0.005 * ctx.k)
     set_part(up, 'wool')
     up = finish(up, ctx)
     lo = dup(ctx.S, 'habit_lo')
@@ -1451,7 +1491,7 @@ def lock_mesh(name, roots, n_locks, seed, length, width, droop, crown, part='hai
     The same seed gives the same locks on every body."""
     rng = np.random.RandomState(seed)
     verts, faces, auxv = [], [], []
-    ring = ((-1.0, 0.0), (-0.45, 0.55), (0.45, 0.55), (1.0, 0.0), (0.0, -0.35))
+    ring = ((-1.0, 0.0), (-0.5, 0.30), (0.5, 0.30), (1.0, 0.0), (0.0, -0.18))      # broad, flat clumps
     nr_ = len(ring)
     for (p0, nrm, flow_hint) in roots:
         away = p0 - crown
@@ -1463,7 +1503,7 @@ def lock_mesh(name, roots, n_locks, seed, length, width, droop, crown, part='hai
         side = nrm.cross(flow).normalized()
         L = length * rng.uniform(0.8, 1.2)
         W = width * rng.uniform(0.85, 1.15)
-        lift = rng.uniform(0.004, 0.010)
+        lift = rng.uniform(0.002, 0.005)
         a = p0 - nrm * 0.004 - flow * 0.01
         b = a + flow * (L * 0.55) + nrm * (lift + 0.006)
         c = a + flow * L + nrm * 0.002 - UP * droop * L
@@ -1584,7 +1624,7 @@ def hair_finish(ctx, o):
 @garment('hair_crop', 'hair', MEN + ['boy'], 'man', 'short cropped hair', layer=0)
 def g_hair_crop(ctx, ref):
     o = hair_style(ctx, 'hair_crop', 0.009, lambda a: hairline(a, 40, 30, 8, -36),
-                   [(64, 4, 0), (44, 3, 1), (24, 3, 0)], 0.060, 0.050, 0.30, 11)
+                   [(60, 5, 0), (38, 4, 2), (18, 4, 0)], 0.065, 0.080, 0.30, 11)
     return hair_finish(ctx, o)
 
 
@@ -1598,7 +1638,7 @@ def g_hair_long(ctx, ref):
         side = 1 if a >= 0 else -1
         return Vector((0.6 * side, 0.25, -1.0))
     o = hair_style(ctx, 'hair_long', 0.010, lambda a: hairline(a, 40, 26, 0, -30),
-                   [(64, 4, 0), (44, 3, 1), (24, 3, 0), (4, 3, 1)], 0.085, 0.055, 0.6, 12,
+                   [(60, 5, 0), (38, 4, 2), (16, 4, 0), (-4, 4, 2)], 0.090, 0.085, 0.6, 12,
                    drape=(4, depth, lambda a: abs(a) > 55), flow=flow)
     return hair_finish(ctx, o)
 
@@ -1610,7 +1650,7 @@ def g_hair_thin(ctx, ref):
     def hl(a):
         a = abs(a)
         return float(np.interp(a, [0, 70, 90, 130, 180], [90, 90, 12, -14, -32]))
-    o = hair_style(ctx, 'hair_thin', 0.006, hl, [(24, 3, 0), (4, 3, 1)], 0.050, 0.040, 0.5, 13)
+    o = hair_style(ctx, 'hair_thin', 0.006, hl, [(22, 4, 0), (2, 4, 2)], 0.055, 0.065, 0.5, 13)
     # remove the crown: only a band above the hairline stays
     hc = head_centre(ctx)
     bm = get_bm(o)
@@ -1635,7 +1675,7 @@ def g_hair_child(ctx, ref):
             return Vector((0.0, -1.0, -0.6))
         return None
     o = hair_style(ctx, 'hair_child', 0.010, lambda a: hairline(a, 28, 18, 4, -30),
-                   [(64, 4, 0), (44, 3, 1), (26, 3, 0)], 0.070, 0.055, 0.35, 14, flow=flow)
+                   [(60, 5, 0), (38, 4, 2), (20, 4, 0)], 0.075, 0.085, 0.35, 14, flow=flow)
     return hair_finish(ctx, o)
 
 

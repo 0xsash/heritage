@@ -222,49 +222,99 @@ ground). Staff and stick holders get a bent right elbow; held props are kept upr
   and can touch the skirt; staffs need a holding pose (phase B: a `hold_staff` variant of walk/idle).
 * **Long garments in motion**: skirts, habits and the huik follow MakeHuman's skirt weights / the cloak chain; a long
   stride can push a knee through the front of a habit; no cloth simulation.
-* **The beguine's wimple** is the weakest piece: below the chin the front drape columns end in a ragged, spiky
-  white edge (visible in `face_beguine.png`); it needs a dedicated wimple panel rather than the shared head-shell drape.
+* **The beguine's wimple** was rebuilt in phase B as one closed panel round the face and under the chin.
 * **Faces** are painted on a 682² tile per body (face ≈ 120 px across): enough at 5–20 m, soft in the close-ups.
   There are no blend shapes, jaw or eye bones.
 * **Hats over hair**: hats are sized 10–12 % over the head and the preview drops hair faces above the brim; in the game
   this becomes a per-hat hair mask (or a "hat hair" variant of each style).
 
-## Phase B plan and estimate
+## Phase B: the game kit (`public/models/townsfolk.glb` + `townsfolk.json`)
 
-**1. Game mesh (≈ 1.5–2 days).** Decimate each garment once on its reference fit and re-express every kept vertex as a
-barycentric point on the full-resolution reference triangle, then evaluate that on each body's full-resolution copy:
-the decimated copies keep one shared topology (indices, UVs, COLOR_0 and, because every body has the same bone names
-and order, JOINTS/WEIGHTS can be shared too; only POSITION/NORMAL differ per body). Targets: body 6–7 k triangles
-(hidden-region parts removed: torso skin is never visible), garments about half their current count, ≈ 60 k unique
-triangles in all. Re-pack the atlas with hair locks on a shared gradient strip and fewer, larger islands. Store the
-delete-mask as body regions (head, neck, upper/lower arm, hand, torso, hips, thigh, shin, foot; per side) that each
-garment hides.
+Stages are now `bodies → garments → game → mesh → paint → anim → assemble → export` (previews render after
+`assemble`, before `export`, because the export simplifies the materials in place). The export writes the two files
+in `public/models/` (override with `TOWNSFOLK_GLB` / `TOWNSFOLK_JSON`).
 
-**2. Animation (≈ 1–2 days).** Run the rider's `stage_anim()` retargeter (library → shared skeleton) once per body:
-`idle`, `walk` (1.5 m/s), `walk_formal` (1.3 m/s), `talk`, `sit`, plus `sword_idle`, `attack1-3`, `hit`, `death` for the
-two soldier bodies (`man_young`, `man`). The cloak chain gets the lagged sway for the huik. Because every body shares
-bone names and A-pose rest conventions, the local rotation tracks are nearly identical across bodies: ship **one** clip
-set (the `man` body's) and scale the `pelvis` translation track per body by its pelvis height (stored in the manifest);
-add per-body clips only where it shows (children's stride, the old bodies). Slower, older variants (`walk_old`: 0.9 m/s,
-a slight stoop from a spine offset) are cheap to add on top. Foot sliding at other speeds as on the rider (no IK).
+### Game meshes (`townsfolk/game.py`)
+* **Regions.** Every body vertex carries a region code (`_REGION`, float): face, ears, scalp, neck, chest_upper, chest,
+  belly, hips, upperarm, forearm_up, forearm_low, hand, thigh, knee, shin, foot (symmetric: one code for both sides).
+  Hair carries `hair_crown` (above the hat band) / `hair_low`. Codes are in the manifest's `regions`.
+* **Always-covered skin is deleted**: chest, belly, hips and thighs are covered by every outfit in the kit, so they are
+  not shipped. If a future outfit shows them, drop them from `game.ALWAYS_HIDDEN`.
+* **`hides`** per piece come from the phase-A ray test on the piece's reference fit (a region counts when ≥ 90 % of its
+  faces are covered), plus a few unions the ray test cannot see (`EXTRA_HIDES`: stockings → shin, hair → scalp; hats →
+  `hair_crown`). Face and neck are never hidden, so necklines never open a hole. Rule (as the runtime does it): a
+  triangle is dropped when **all three** of its vertices are in hidden regions.
+* **Decimation once, re-expressed everywhere.** Each piece is decimated on its reference fit; every kept vertex is stored
+  as a barycentric point (plus normal offset) on the full-resolution reference triangle it came from and evaluated on
+  each body's full-resolution copy; skin weights are interpolated from that copy. Every copy of a piece therefore has
+  one topology, one UV set and one COLOR_0 — the export stores those once and only POSITION / NORMAL / weights per body.
+  The body is decimated the same way (face and hands kept denser).
 
-**3. Export layout (≈ 1 day).** `public/models/townsfolk.glb`: nine skinned `body.<id>` meshes and their rigs (or one
-rig per body sharing bone names), every fitted `<piece>.<body>` mesh (hidden by default), seven `prop.<name>` meshes,
-two materials (`kit_garment` with COLOR_0 dye mask, `kit_skin`), the clips. `public/models/townsfolk.json` manifest:
-bodies (height, pelvis height, sex, age group, rest bone positions, grip offsets per hand), pieces (slot, fits which
-bodies, layer/depends-on, hidden body regions, dye: yes/no, default dyes), props (hand, grip), archetypes (body, piece
-→ dye, props, which clips), and the palette. `crowd.ts` then builds a walker by cloning a body skeleton, adding the
-archetype's pieces (SkeletonUtils.clone keeps skinning), setting dyes per instance.
+### Clips (`townsfolk/anim.py`): one shared set on `rig.man`
+The rider's own clips from `public/models/rider.glb` (idle, walk, walk_formal, talk, sit, run) are retargeted in world
+space onto the `man` body's rig; `walk_old`, `look_around` and `point` are derived from them. In place, 30 fps; tracks
+are joint **rotations** plus the **pelvis translation** only (no Root motion, no other translation or scale tracks).
+**Other bodies: ship one set, scale the pelvis translation track by `bodies[b].pelvisScale`** (pelvis height ratio to
+`man`), which is what `TownsfolkKit.clip()` does. `stride` = metres one loop covers on the `man` body (1.70 m), from the
+rider's planted-foot speeds scaled by leg length (walk / walk_formal / run) or measured (walk_old).
 
-**4. Expected download (budget < 10 MB):**
+| clip | duration | loop | stride per loop on `man` | source |
+|---|---|---|---|---|
+| `idle` | 4.000 s | yes | – | rider `idle` |
+| `walk` | 0.867 s | yes | 1.227 m (1.42 m/s) | rider `walk` (planted at 1.5 m/s on the rider) |
+| `walk_formal` | 1.000 s | yes | 1.227 m (1.23 m/s) | rider `walk_formal` |
+| `walk_old` | 1.133 s | yes | 0.695 m (0.61 m/s) | derived from `walk`: 1.3× slower, leg/arm swing 70 %, 14° stoop, head kept up, knees bent |
+| `talk` | 2.933 s | yes | – | rider `talk` |
+| `sit` | 3.333 s | yes | – | rider `sit` (seat ≈ 0.42 m × pelvisScale) |
+| `run` | 1.033 s | yes | 4.875 m (4.72 m/s) | rider `run` (for fleeing) |
+| `look_around` | 4.000 s | yes | – | derived from `idle`: head/neck/chest turn ±48° |
+| `point` | 2.500 s | no | – | derived from `idle`: right arm raised to point and lowered |
 
-| part | estimate |
+No sword clips (townsfolk do not fight).
+
+### Export layout
+* Scene roots: `folk.<body>` (one per body; extras `{"kit":"group","body":b}`) and `prop.<name>`.
+* Under `folk.<body>`, as **siblings**: the armature `rig.<body>` (extras `{"kit":"rig","body":b}`, joints named as in
+  rider.glb) and that body's skinned meshes `body.<body>` (extras `{"kit":"body","body":b}`, eyes included) and every
+  fitted piece `<piece>.<body>` (extras `{"kit":"piece","piece":p,"body":b}`). The meshes are deliberately *not*
+  children of the armature node: `TownsfolkKit.tag()` copies a node's tag to its whole subtree before visiting the
+  children, so pieces nested under the armature would all be tagged `rig`.
+* Props: unskinned, origin at the grip, +Y up the object, extras `{"kit":"prop","prop":name}`. Grips per body in the
+  manifest (`fist_r`, `hang_r`, `hang_l`): position + quaternion relative to the hand joint, chosen so that in `idle` a
+  hanging prop hangs straight down and a staff stands upright.
+* Materials `kit` and `skin`, embedded JPEG: base colour 2048², ORM and normal 1024² for each.
+* COLOR_0 (uint8 normalised RGBA) on pieces and props only; `_REGION` on bodies and hair.
+* Post-pass (`export.postprocess`, no third-party tools): KHR_mesh_quantization (normals int8, UVs uint16), weights and
+  colours uint8, identical buffer views and accessors shared (indices, UVs and COLOR_0 are stored once per piece for
+  all its bodies), translation/scale channels other than the pelvis' removed.
+
+**Bone names (please read):** GLTFLoader gives every node a unique name across the whole file, so only one armature's
+joints keep the plain names; the others arrive as `pelvis_1`, `spine_01_3`, ... (the loader keeps the original in
+`node.userData.name`). The shared clips only bind, and `getObjectByName('hand_r')` only finds the hand, after the
+names are restored. Before constructing `TownsfolkKit`, run:
+
+```ts
+const orig = new Map<string, string>();
+gltf.scene.traverse((o) => { if ((o as THREE.Bone).isBone && o.userData.name) { orig.set(o.name, o.userData.name); o.name = o.userData.name; } });
+for (const c of gltf.animations) for (const t of c.tracks) { const i = t.name.lastIndexOf('.'); const n = orig.get(t.name.slice(0, i)); if (n) t.name = n + t.name.slice(i); }
+```
+
+### Verified (Playwright + Chromium, three.js 0.170, the game's own `TownsfolkKit` bundled with esbuild)
+`scratchpad/townsfolk/web/` (test page) → `scratchpad/townsfolk/preview/phaseB_*.png` and `phaseB_report.json`:
+all 9 clips bind 57/57 tracks on every one of the 9 bodies (81 checks) once the bone names are restored; figures
+assembled from every archetype render with their dyes; hidden-region triangles drop (merchant outfit on `man_stout`:
+body 4,079 → 2,887 triangles); props sit in the hand from the manifest grips.
+
+| | |
 |---|---|
-| bodies, 9 × ~3.5 k verts (pos/nrm/uv/joints/weights) | ≈ 1.5 MB |
-| garments: shared topology (~35 k verts of UV/COLOR_0/joints/weights) + per-body POSITION/NORMAL for ~160 fitted copies (~120 k verts), KHR_mesh_quantization | ≈ 1.6–2.5 MB |
-| props | < 0.1 MB |
-| textures (measured at 2048²: garment base 1.11 MB, ORM 0.87, normal 0.07; skin base 0.55, ORM 0.44, normal 0.08 = 3.1 MB); with ORM/normal at 1024² | ≈ 2.2–3.1 MB |
-| clips: one shared crowd set (~0.4 MB) + soldier sword set (~0.4 MB) | ≈ 0.8 MB |
-| **total** | **≈ 7–8 MB** (without quantisation ≈ 9–10 MB); Draco or meshopt would bring the meshes under 1.5 MB if the loader allows it |
+| `townsfolk.glb` | 6.78 MB (≈ 9.0 MB as base64): geometry ≈ 4.8 MB, textures 1.93 MB, clips (9, one set) in the geometry share |
+| `townsfolk.json` | 39 kB: 18 regions, 9 bodies, 34 pieces, 7 props, 29 palette colours, 9 clips, 16 archetypes |
+| triangles per assembled figure | 6.0 k – 7.3 k (mean 6.7 k) after region hiding; bodies ship 3.8 k triangles (face ≈ 820, hands ≈ 1,100) |
 
-Not exported in phase A: no file under `public/` was written.
+### Known limitations (phase B)
+* **Bone names need the small shim above** (GLTFLoader's unique naming); without it only one body animates.
+* Rigid props swing with the hand in walk (no hand-hold poses); the staff tilts across the body while walking.
+* Decimation leaves a few small holes / jagged edges on thin double-sided pieces (shirt cuffs, kerchief edge).
+* Hair is broader and flatter than in phase A but the children's and cropped styles still read as clumps up close.
+* `walk_old` is derived procedurally from the rider's walk, not mocap; `look_around` / `point` are procedural.
+* The feet are deleted from the bodies (every outfit has shoes, clogs or boots); a barefoot outfit would need them back.
