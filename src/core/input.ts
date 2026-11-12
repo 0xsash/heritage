@@ -10,6 +10,11 @@ export type Action =
   | 'time' // T — advance time of day
   | 'map' // M / Back — toggle map
   | 'journal' // J / RB — quest journal
+  | 'attack' // left mouse / RT on foot — sword (on foot), fire (flying)
+  | 'skill' // right mouse / LT — origin skill
+  | 'skill2' // R / B on foot — second skill
+  | 'potion' // Q / d-pad down — drink a salve
+  | 'character' // I / C(on foot) — character and bag
   | 'help'; // H / Start
 
 const KEYMAP: Record<string, Action> = {
@@ -23,6 +28,10 @@ const KEYMAP: Record<string, Action> = {
   KeyT: 'time',
   KeyM: 'map',
   KeyJ: 'journal',
+  KeyR: 'skill2',
+  KeyQ: 'potion',
+  KeyI: 'character',
+  Tab: 'character',
   KeyH: 'help',
 };
 
@@ -30,6 +39,8 @@ export class Input {
   private keys = new Set<string>();
   private pressed = new Set<Action>();
   private padPrev: boolean[] = [];
+  private mouse = new Set<number>();
+  private trigPrev = [false, false];
   mouseDX = 0;
   mouseDY = 0;
   private wheel = 0;
@@ -56,7 +67,7 @@ export class Input {
       this.keys.add(e.code);
       const a = KEYMAP[e.code];
       if (a) this.pressed.add(a);
-      if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
+      if (e.code === 'Space' || e.code === 'Tab' || e.code.startsWith('Arrow')) e.preventDefault();
     });
     window.addEventListener('keyup', (e) => this.keys.delete(e.code));
     window.addEventListener('blur', () => this.keys.clear());
@@ -66,7 +77,15 @@ export class Input {
       this.mouseDX += e.movementX;
       this.mouseDY += e.movementY;
     });
-    canvas.addEventListener('mousedown', () => (this.dragging = !this.pointerLocked));
+    canvas.addEventListener('mousedown', (e) => {
+      this.dragging = !this.pointerLocked;
+      this.device = 'kbm';
+      this.mouse.add(e.button);
+      if (e.button === 0) this.pressed.add('attack');
+      if (e.button === 2) this.pressed.add('skill');
+    });
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    window.addEventListener('mouseup', (e) => this.mouse.delete(e.button));
     canvas.addEventListener(
       'wheel',
       (e) => {
@@ -104,6 +123,7 @@ export class Input {
   }
 
   held(a: Action): boolean {
+    if (a === 'attack' && this.mouse.has(0)) return true;
     for (const [code, act] of Object.entries(KEYMAP)) if (act === a && this.keys.has(code)) return true;
     const pad = this.pad();
     if (pad) {
@@ -112,6 +132,7 @@ export class Input {
       if (a === 'descend' && b(1)) return true;
       if (a === 'boost' && (b(2) || b(4) || b(10))) return true;
       if (a === 'interact' && b(3)) return true;
+      if (a === 'attack' && (pad.buttons[7]?.value ?? 0) > 0.5) return true;
     }
     return false;
   }
@@ -165,9 +186,16 @@ export class Input {
         [0, 'jump'],
         [8, 'map'],
         [5, 'journal'],
+        [13, 'potion'],
+        [1, 'skill2'],
         [9, 'help'],
         [12, 'time'],
       ];
+      // triggers as buttons: RT attacks, LT uses the skill (both also drive flight speed)
+      const trig = [(pad.buttons[7]?.value ?? 0) > 0.5, (pad.buttons[6]?.value ?? 0) > 0.5];
+      if (trig[0] && !this.trigPrev[0]) this.pressed.add('attack');
+      if (trig[1] && !this.trigPrev[1]) this.pressed.add('skill');
+      this.trigPrev = trig;
       for (const [i, a] of map) {
         const now = !!pad.buttons[i]?.pressed;
         if (now && !this.padPrev[i]) this.pressed.add(a);

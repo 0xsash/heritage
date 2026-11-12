@@ -24,7 +24,10 @@ export type Effect =
   | { florins: number }
   | { renown: [town: string, amount: number] }
   | { note: [quest: string, text: string] } // add a journal entry
-  | { toast: string };
+  | { toast: string }
+  | { xp: number }
+  | { gear: string } // a named piece of gear from the catalogue (character.ts)
+  | { open: 'shop' | 'character' }; // open a panel
 
 export type QuestStatus = 'active' | 'done' | 'failed';
 
@@ -58,11 +61,16 @@ export interface NpcDef {
   talk: { if?: Cond; start: string }[];
   /** quests this NPC gives (drives the "!" marker) */
   offers?: string[];
+  /** sells potions and gear */
+  shop?: boolean;
+  /** a small walk around their spot, so the square does not look like a waxworks */
+  wander?: number;
 }
 
 export type Objective =
   | { id: string; text: string; kind: 'talk'; npc: string }
-  | { id: string; text: string; kind: 'reach'; at: [number, number]; r: number; minY?: number }
+  | { id: string; text: string; kind: 'reach'; at: [number, number]; r: number; minY?: number; onFoot?: boolean }
+  | { id: string; text: string; kind: 'kill'; enemy?: string; camp?: string; count: number; at: [number, number]; r: number }
   | { id: string; text: string; kind: 'collect'; item: string; count: number; spawns: [number, number][] }
   | { id: string; text: string; kind: 'flag'; flag: string; hint?: [number, number] };
 
@@ -83,7 +91,9 @@ export interface QuestDef {
   giver?: string;
   summary: string;
   stages: Stage[];
-  reward?: { florins?: number; renown?: [string, number][]; items?: [string, number][] };
+  reward?: { xp?: number; florins?: number; renown?: [string, number][]; items?: [string, number][]; gear?: string[] };
+  /** the level the quest is meant for (shown in the journal and on markers) */
+  level?: number;
 }
 
 export interface ItemDef {
@@ -94,7 +104,25 @@ export interface ItemDef {
   quest?: boolean;
 }
 
+/** A group of enemies that holds a place. */
+export interface CampDef {
+  id: string;
+  name: string;
+  at: [number, number];
+  /** how far they wander from the spot */
+  r: number;
+  /** [enemy type, level, count] */
+  enemies: [string, number, number][];
+  /** a named, tougher leader */
+  elite?: { type: string; level: number; name: string };
+  /** seconds before a cleared camp fills again (0 = never) */
+  respawn: number;
+  /** only there while this holds */
+  if?: Cond;
+}
+
 export interface Content {
+  camps: CampDef[];
   npcs: NpcDef[];
   quests: QuestDef[];
   dialogue: Record<string, Line>;

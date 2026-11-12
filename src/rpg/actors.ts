@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { recolor } from '../render/recolor';
 import type { WorldCollision } from '../world/collision';
 import type { QuestEngine } from './quests';
 import type { NpcDef } from './types';
@@ -72,11 +73,8 @@ export class Actors {
           if (!mesh.isMesh) return;
           mesh.castShadow = true;
           mesh.frustumCulled = false;
-          if (def.tint && /cloak/i.test(mesh.name)) {
-            const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
-            mat.color.set(def.tint);
-            mesh.material = mat;
-          }
+          if (mesh.name === 'sword' || o.parent?.name === 'sword') { mesh.visible = false; return; }
+          mesh.material = recolor(mesh.material as THREE.MeshStandardMaterial, /cloak/i.test(mesh.name) ? def.tint ?? '#7a3a2a' : '#c94b34');
         });
         root.add(m);
         mixer = new THREE.AnimationMixer(m);
@@ -91,7 +89,8 @@ export class Actors {
         body.position.y = 0.9;
         root.add(body);
       }
-      const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex['!'], depthTest: true, transparent: true }));
+      const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex['!'], depthTest: true, depthWrite: false, transparent: true }));
+      marker.renderOrder = 20;
       marker.scale.setScalar(0.75);
       marker.position.y = 2.35;
       marker.visible = false;
@@ -163,7 +162,14 @@ export class Actors {
         n.marker.visible = !!m;
         if (m) (n.marker.material as THREE.SpriteMaterial).map = this.tex[m];
       }
-      if (m) n.marker.position.y = 2.35 + Math.sin(this.time * 2.4) * 0.06;
+      if (m) {
+        // big enough to spot from the air, and seen through roofs when far away
+        const dist = Math.sqrt(d2);
+        const sc = Math.min(14, Math.max(0.75, dist * 0.024));
+        n.marker.scale.setScalar(sc);
+        n.marker.position.y = 2.2 + sc * 0.45 + Math.sin(this.time * 2.4) * 0.06;
+        (n.marker.material as THREE.SpriteMaterial).depthTest = dist < 40;
+      }
     }
     for (const p of this.pickups.values()) {
       const gem = p.mesh.children[0];

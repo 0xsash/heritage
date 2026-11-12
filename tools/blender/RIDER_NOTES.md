@@ -15,7 +15,8 @@ Blender 4.2 LTS, headless, CPU only (Cycles is used just for baking). A full bui
 extensions from the cached zip on first run if it is not already there. Optional environment variables
 (`RIDER_OUT`, `RIDER_WORK`, `RIDER_FROM`, `RIDER_UNTIL`, `RIDER_REUSE_BAKE`) are described at the top of the script;
 with `RIDER_WORK` set, each stage (`human`, `garments`, `mesh`, `paint`, `anim`) saves a `.blend` and can be resumed.
-The build is deterministic (fixed random seed).
+The build is deterministic (fixed random seed). To rebuild only the clips and the sword from a saved paint stage
+(about 10 s), run with `RIDER_WORK=<dir> RIDER_FROM=paint`.
 
 ## What is in the file
 
@@ -23,14 +24,16 @@ The build is deterministic (fixed random seed).
 |---|---|
 | Space | glTF: +Y up, the character **faces +Z**, its left is +X, metres, origin on the ground between the feet |
 | Height | 1.78 m to the top of the skull (the hair adds about 5 cm: bounding box top is 1.83 m) |
-| Nodes | `rider_rig` (armature, identity transform) → skinned meshes `rider_body` and `rider_cloak` |
+| Nodes | `rider_rig` (armature, identity transform) → skinned meshes `rider_body` and `rider_cloak`; the unskinned mesh `sword` is a child of the `hand_r` joint |
 | `rider_body` | head, hands, eyes, hair, tunic sleeves, jerkin, hose, boots, bracers, belts, straps, buckles, pouches, bell — 24,519 triangles |
 | `rider_cloak` | cloak (outer + lining + rim), shoulder mantle, cowl, hood (down), clasp — 7,634 triangles. Separate so the game can hide or restyle it |
-| Triangles | **32,153** in total (budget 35,000) |
-| Material | one, `rider`: opaque, double-sided, metallic-roughness |
+| `sword` | arming sword, 792 triangles, own material — see [The sword](#the-sword) |
+| Triangles | **32,945** in total (budget 35,000): 32,153 for the character, 792 for the sword |
+| Material | `rider`: opaque, double-sided, metallic-roughness; `sword`: opaque, single-sided, same texture layout (base colour + ORM, no normal map) |
 | Textures | 2048², embedded JPEG: `rider_basecolor` (sRGB), `rider_normal` (tangent space, +Y, deliberately mild), `rider_orm` (R occlusion, G roughness, B metallic — one texture used for both `occlusionTexture` and `metallicRoughnessTexture`) |
 | Skinning | 58 joints, max 4 influences per vertex, weights normalised; no Draco, no morph targets, no extensions |
-| Size | **3.20 MB** including the 7 animation clips |
+| Textures (sword) | 256×512 JPEG: `sword_basecolor`, `sword_orm` (about 36 kB together) |
+| Size | **4.01 MB** including the 18 animation clips |
 
 Hand-painted look: the base colour already contains painted occlusion, fold shading, edge lights and an eye
 highlight, so it reads correctly under flat lighting. Use the occlusion channel gently (`aoMapIntensity` around 0.5)
@@ -227,8 +230,28 @@ game moves the character. Looping clips repeat the first pose on their last key.
 | `fall` | 1.000 s | 30 | yes | `Jump_Loop` | airborne loop, cloak lifted |
 | `land` | 0.500 s | 15 | no | `Jump_Land` (first 70 %) | impact crouch and most of the recovery; cross-fade to `idle` |
 | `ride_idle` | 4.000 s | 120 | yes | posed in `make_rider.py` | astride a dragon: thighs raised 70° and spread 37°, knees bent 80°, torso leaning 15°, hands forward on the reins; small sway and breathing |
+| `sword_idle` | 2.500 s | 75 | yes | `Sword_Idle` (slowed from 1.667 s) | crouched guard, sword held low at the right hip pointing forward-right; the pose every attack starts from |
+| `attack1` | 0.667 s | 20 | no | `Sword_Attack` 0–42 % | from the guard: wind-up over the right shoulder, diagonal downward cut to low left, ends in the follow-through (lunge, pelvis down 0.22 m) |
+| `attack2` | 0.533 s | 16 | no | `Sword_Attack` 47–85 % | the library clip's second swing: from `attack1`'s end pose a rising backhand across the body back to the guard. Starts from (nearly) the pose `attack1` ends in |
+| `attack3` | 0.900 s | 27 | no | `Sword_Attack` 0–53 %, retimed | finisher: the `attack1` cut with a slower wind-up (0.41 s, leaning back 7°), a faster strike (0.11 s), the chest thrown 8° further down and 2 cm lower, and a held follow-through |
+| `roll` | 1.000 s | 30 | no | `Roll` 0–92 % (sped up 1.35×) | forward dive roll, **in place**: the straight-line travel is removed (the game moves the character); ends in a low crouch rising to stand |
+| `hit` | 0.400 s | 12 | no | `Hit_Chest` (slowed from 0.333 s) | flinch back from a blow to the chest |
+| `death` | 1.600 s | 48 | no | `Death01` 0–68 % | buckles and falls on its back; the pelvis drop is kept and it ends lying still, about 0.5 m behind where it stood. Hold the last frame |
+| `cast` | 0.500 s | 15 | no | `Spell_Simple_Shoot` | left arm thrust forward, palm out |
+| `talk` | 2.933 s | 88 | yes | `Idle_Talking_Loop` | standing conversation gestures (NPCs) |
+| `walk_formal` | 1.000 s | 30 | yes | `Walk_Formal_Loop` | upright, measured walk with the arms still. Feet are planted at **1.3 m/s**; play at `speed / 1.3` |
+| `sit` | 3.333 s | 100 | yes | `Sitting_Idle_Loop` (slowed 0.5×) | seated: pelvis joint 0.57 m up, thighs level, feet about 0.45 m in front of the origin; place on a seat about 0.42 m high. The cloak folds back on the floor behind |
 
-`mount` (optional in the brief) was not made.
+`mount` (optional in the brief) was not made. The one-shot clips are not set to `LoopOnce` in the file: the game decides
+(`attack*`, `roll`, `hit`, `death`, `cast` are meant to play once; `death` to clamp on its last frame).
+
+Notes on the combat set: the clips added with the sword align the hands' **roll** to the library as well as their
+direction (the older clips align only the direction, which leaves the fist rolled about 25° against the library's;
+they are unchanged), so the blade points where the library's sword would. Their cloak takes back more of a forward
+torso lean (85 % above 8°), and in the clips that crouch or reach the ground (`sword_idle`, `attack*`, `roll`, `death`,
+`sit`) the cloak bones are swung, frame by frame and by the least angle, so that the hem stays above the floor
+(then smoothed in time). `death` and `roll` are lifted 4–6 cm while on the ground because this body is thicker than
+the library's mannequin.
 
 How the speeds were set: after retargeting, the script measures how fast the planted foot travels backwards in each
 cycle and retimes the cycle so that this equals the target speed. `Walk_Loop` was 1.333 s at 0.99 m/s and is played
@@ -240,7 +263,25 @@ T-pose. For each bone and frame the source bone's world-space rotation away from
 matching bone here, after a fixed per-bone swing that accounts for the different rest poses (T-pose there, A-pose
 here). Hip translation is scaled by the leg-length ratio (1.06) and shifted so the soles meet the ground.
 `stage_anim()` in the script is self-contained and will retarget any other action from the library by adding a line
-to `CLIPS`.
+to `CLIPS` (the options — pelvis reference, ground contact, retiming, emphasis, floor clamp — are listed above it).
+
+## The sword
+
+`sword` is a plain (unskinned) mesh node whose **parent is the `hand_r` joint**, so it follows the right hand in every
+clip and can be shown or hidden on its own. It is exported visible; hide it in code where it should not show
+(riding, town, NPCs that share the model): `gltf.scene.getObjectByName('sword').visible = false`.
+
+A stylised arming sword: 0.80 m straight double-edged blade (5.2 cm wide at the guard, tapering to a point, a
+flattened-hexagon section with sharp edges and a painted fuller), a 20 cm brass crossguard with quillons curving
+slightly towards the blade, a 10 cm dark-leather grip with brass collars, and a brass wheel pommel; 0.97 m overall.
+Steel is metallic (0.9, roughness ~0.35), brass as on the rider (metallic 1, roughness 0.36), leather dielectric.
+
+Node frame: origin at the centre of the grip, **+Z along the blade**, +X towards the edges, +Y the flat's normal.
+The grip frame was found from the fist in `sword_idle` (centre of the curled fingers; axis from the little-finger
+knuckle to the index knuckle; edges in line with the knuckles) and is stored as the node's local transform:
+translation (-0.026, 0.105, 0.001), rotation (x, y, z, w) (0.531, 0.754, 0.189, 0.337) relative to `hand_r`.
+Only the sword clips close the fist: in `idle`, `walk`, `ride_idle`, `talk` and the rest the sword sits loosely in an
+open hand and its blade passes through the body or legs, so hide it there.
 
 ## How the model is made
 
@@ -266,7 +307,7 @@ to `CLIPS`.
 | MPFB2 2.0.18 (MakeHuman Plugin For Blender) | build tool; also supplies the MakeHuman base mesh, shape targets, the "game engine" rig and its skin weights | Joel Palmius and the MakeHuman community — https://extensions.blender.org/add-ons/mpfb/ | add-on code GPL-3.0-or-later (a tool: no code ships in the GLB); the MakeHuman/MPFB assets it bundles are published as CC0 |
 | `jartur69_middleage_slavic_male_with_genitals_and_beard` skin | only the face region, blurred heavily, as a guide for where the beard shadow falls | jartur69 — MakeHuman community asset pack `skins02_cc0` | CC0 |
 | `culturalibre_male_boots` | the boots (inner shell removed, decimated to 2,700 triangles, repainted) | culturalibre — MakeHuman community asset pack `shoes01_cc0` | CC0 |
-| Universal Animation Library (Standard) | motion for `idle`, `walk`, `run`, `jump`, `fall`, `land` | Quaternius — https://quaternius.com/packs/universalanimationlibrary.html (downloaded via itch.io) | CC0 |
+| Universal Animation Library (Standard) | motion for `idle`, `walk`, `run`, `jump`, `fall`, `land`, `sword_idle`, `attack1-3`, `roll`, `hit`, `death`, `cast`, `talk`, `walk_formal`, `sit` (the sword is modelled in the script) | Quaternius — https://quaternius.com/packs/universalanimationlibrary.html (downloaded via itch.io) | CC0 |
 
 No CC-BY or other attribution-required assets are used, and no photographic texture libraries. One caveat: the CC0
 status of MakeHuman's base mesh, targets and rig is taken from the MakeHuman/MPFB project's published licence terms;
@@ -288,3 +329,7 @@ the add-on zip itself only carries the GPL notice for its code.
 * Limb cross-sections are 12–16 sided, which is smooth at gameplay distance but visible in extreme close-up; the hair
   locks are separate interpenetrating shapes rather than one welded sculpt.
 * The face has no blend shapes and no jaw or eye bones.
+* Combat set: the sword passes into the ground for a few frames of `roll` (the hand is planted, blade down) and its tip
+  touches it at the bottom of the `attack3` cut. During `roll` the cloak still moves as one sheet with the back (it
+  streams up for a moment while upside down). `attack2` is the library's backhand return, a lighter swing than `attack1`.
+  `sit` has the cloak where a chair's back would be. `cast` is a short push with the left hand from a standing pose.

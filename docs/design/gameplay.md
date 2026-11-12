@@ -204,18 +204,49 @@ The short loops still exist inside all of this: spot something from the air, lan
 ## 11. What is built, and what is next
 
 **Built (playable now):**
-- Diest and Scherpenheuvel in 1650, rebuilt from the Ferraris and Villaret maps.
-- Flight, landing, walking, and calling the dragon.
-- Discoveries with 1650 lore.
-- The quest engine: stages; objectives (talk, reach, collect, flag); conditions; effects; rewards; per-town renown; flags remembered across quests; saves.
-- Nine NPCs with ! and ? markers.
-- Dialogue with numbered choices.
-- Act I of the main quest, three branching town quests and one contract.
-- The journal, with tracking on the compass, the map and the tracker.
+- **The whole game is in Flemish**, with the 17th-century "gij".
+- **The front end:**
+  - a title screen;
+  - five painted story slides;
+  - character creation: name, one of three origins, cloak colour, your dragon's name.
+- **The origins:**
+  - *Schuttersgezel* (sword);
+  - *Klokkenluiderskind* (bell magic);
+  - *Smokkelaarsjong* (pistol and smoke).
+- **Combat:**
+  - a three-hit sword combo with buffering and target assist;
+  - a dodge roll you can't be hit during;
+  - two skills per origin;
+  - dragon fire from the air;
+  - hitstop, white flashes, knockback, damage numbers.
+- **Enemies:**
+  - telegraphs and attack tokens, at most two swinging at once;
+  - leashing back to their camp;
+  - elites with a boss bar.
+- **The game layer:**
+  - XP and levels;
+  - four loot rarities, a bag, three gear slots;
+  - a shop, potions, death and respawn.
+- **Townsfolk:** a recycled crowd walks the real streets. They greet you, gossip about your choices, know your name once you are famous, and scatter when the dragon lands.
+- **Guidance:**
+  - one tracked objective, shown as a pillar of light in the world;
+  - a ground circle for areas to search or clear;
+  - an on-screen waypoint that clamps to the edge;
+  - a three-quest tracker;
+  - quest givers' ! and ? markers, readable from the air;
+  - map marks for quest givers and enemy camps;
+  - banners for new quests, completed quests and level-ups.
+- **Quests:**
+  - the prologue and Act I of the main story: the stolen clappers, the road to Scherpenheuvel, the hunt for the Kludde, and the bells ringing again;
+  - five side quests with branching endings, among them a bounty and a wisp hunt;
+  - one contract;
+  - seven enemy camps spread out by level.
+- **The world:** Diest and Scherpenheuvel in 1650.
+- **Data, not yet in the game:** six more towns (`public/world/regions/`).
 
 **Next, in order:**
-1. **Multi-town world:** stream Aarschot, Leuven, Mechelen, Lier and Antwerp; compressed countryside; rivers, roads and villages. (Data is being prepared in `tools/regions/`.)
-2. **Combat prototype:** deserters on the Aarschot road; ground sword fight; dive strike; hitstop. The first Kludde encounter in the Demer meadows at night, which already pays off a hint in *Woundwort from the Broek*.
+1. **Multi-town world:** stream Aarschot, Leuven, Mechelen, Lier and Antwerp into the game. The data is ready in `public/world/regions/`: compressed countryside, rivers, roads, villages.
+2. **Combat depth:** a dive strike from the dragon, elite affixes, a talent choice at each level, and night-only Kludde hunts.
 3. **Act II in Leuven:** a mystery quest, the faction split, and the first faction reputation.
 4. **NPC routines and gossip:** day schedules, and "they remember you" lines driven by flags.
 5. **Trade and dragon upkeep.**

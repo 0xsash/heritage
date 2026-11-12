@@ -57,16 +57,18 @@ export class DialogueUI {
     this.line = line;
     this.q.apply(line.effects);
     const npc = this.q.npcs.get(line.who);
-    const who = line.who === 'you' ? 'You' : npc?.name ?? line.who;
+    const who = line.who === 'you' ? this.q.s.hero.name : npc?.name ?? line.who;
     const role = line.who === 'you' ? '' : npc?.role ?? '';
     const choices = this.visibleChoices();
     this.el.innerHTML = `<div class="who">${esc(who)}<span class="role">${esc(role)}</span></div>
-      <div class="text${line.who === 'you' ? ' you' : ''}">${esc(line.text)}</div>
-      ${choices.length ? '<div class="choices"></div>' : '<div class="cont">SPACE / E · CONTINUE</div>'}`;
+      <div class="text${line.who === 'you' ? ' you' : ''}">${esc(this.q.fill(line.text))}</div>
+      ${choices.length ? '<div class="choices"></div>' : '<div class="cont">SPATIE / E · VERDER</div>'}`;
     const box = this.el.querySelector('.choices');
     choices.forEach((c, i) => {
       const b = document.createElement('button');
-      b.innerHTML = `<span class="n">${i + 1}</span>${esc(c.text)}`;
+      const starts = c.effects?.find((e) => 'start' in e) as { start: string } | undefined;
+      const tag = starts ? '<span class="qtag">opdracht</span>' : '';
+      b.innerHTML = `<span class="n">${i + 1}</span>${esc(this.q.fill(c.text))}${tag}`;
       b.addEventListener('click', () => this.choose(i));
       box?.appendChild(b);
     });
@@ -126,7 +128,6 @@ export class JournalUI {
     const by = (kind: string, status: string) =>
       quests.filter((x) => x.kind === kind && s.quests[x.id].status === status).sort((a, b) => s.quests[b.id].started - s.quests[a.id].started);
     if (!this.sel || !s.quests[this.sel]) this.sel = quests[0]?.id ?? null;
-    const renown = Object.entries(s.renown).map(([t, n]) => `${t} ${n}`).join(' · ');
     const section = (title: string, list: typeof quests) =>
       list.length
         ? `<h3>${title}</h3>` +
@@ -135,9 +136,9 @@ export class JournalUI {
             .join('')
         : '';
     const list =
-      section('MAIN', by('main', 'active')) + section('QUESTS', by('side', 'active')) + section('CONTRACTS', by('contract', 'active')) +
-      section('COMPLETED', [...by('main', 'done'), ...by('side', 'done'), ...by('contract', 'done'), ...quests.filter((x) => s.quests[x.id].status === 'failed')]);
-    let detail = '<div class="empty">No quests yet. Talk to the people of Diest: look for the gold ! above their heads.</div>';
+      section('HOOFDVERHAAL', by('main', 'active')) + section('ZIJVERHALEN', by('side', 'active')) + section('OPDRACHTEN', by('contract', 'active')) +
+      section('VOLTOOID', [...by('main', 'done'), ...by('side', 'done'), ...by('contract', 'done'), ...quests.filter((x) => s.quests[x.id].status === 'failed')]);
+    let detail = '<div class="empty">Nog geen opdrachten. Spreek met de mensen van Diest: zoek het gouden ! boven hun hoofd.</div>';
     const cur = this.sel ? this.q.quest(this.sel) : null;
     if (cur) {
       const st = s.quests[cur.id];
@@ -147,28 +148,28 @@ export class JournalUI {
         st.status === 'active'
           ? (stage?.objectives ?? [])
               .map((o) => {
-                let t = o.text;
-                if (o.kind === 'collect') t += ` (${Math.min(s.inv[o.item] ?? 0, o.count)}/${o.count})`;
+                const t = this.q.fill(o.text) + this.q.progress(cur.id, o);
                 return `<div class="obj ${st.done.includes(o.id) ? 'ok' : ''}">${st.done.includes(o.id) ? '☑' : '☐'} ${esc(t)}</div>`;
               })
               .join('')
-          : `<div class="obj ok">${st.status === 'done' ? 'Completed' : 'Failed'}</div>`;
+          : `<div class="obj ok">${st.status === 'done' ? 'Voltooid' : 'Mislukt'}</div>`;
       const r = cur.reward;
       const reward = r
-        ? [r.florins ? `${r.florins} florins` : '', ...(r.renown ?? []).map(([t, n]) => `${t} renown +${n}`), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`)].filter(Boolean).join(' · ')
+        ? [r.xp ? `${r.xp} ervaring` : '', r.florins ? `${r.florins} florijnen` : '', ...(r.renown ?? []).map(([t, n]) => `${t} +${n} aanzien`), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`), ...(r.gear?.length ? ['een uniek voorwerp'] : [])].filter(Boolean).join(' · ')
         : '';
       detail = `<h1>${esc(cur.title)}</h1>
-        <div class="meta">${cur.kind === 'main' ? 'Main quest' : cur.kind === 'contract' ? 'Contract' : 'Quest'} · ${esc(cur.town)}${giver ? ' · from ' + esc(giver) : ''}</div>
+        <div class="meta">${cur.kind === 'main' ? 'Hoofdverhaal' : cur.kind === 'contract' ? 'Opdracht' : 'Zijverhaal'} · ${esc(cur.town)}${cur.level ? ' · niveau ' + cur.level : ''}${giver ? ' · van ' + esc(giver) : ''}</div>
         ${objs}
-        ${reward ? `<div class="reward">Reward: ${esc(reward)}</div>` : ''}
-        ${st.status === 'active' ? `<div class="actions"><button data-track="${cur.id}">${s.tracked === cur.id ? 'UNTRACK' : 'TRACK'}</button></div>` : ''}
-        <div class="entries">${[...st.log].reverse().map((p) => `<p>${esc(p)}</p>`).join('')}</div>`;
+        ${reward ? `<div class="reward">Beloning: ${esc(reward)}</div>` : ''}
+        ${st.status === 'active' ? `<div class="actions"><button data-track="${cur.id}">${s.tracked === cur.id ? 'NIET MEER VOLGEN' : 'VOLG DEZE OPDRACHT'}</button></div>` : ''}
+        <div class="entries">${[...st.log].reverse().map((p) => `<p>${esc(this.q.fill(p))}</p>`).join('')}</div>`;
     }
     const inv = Object.entries(s.inv).filter(([, n]) => n > 0).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`).join(' · ');
-    this.el.innerHTML = `<header><h2>JOURNAL</h2><span class="purse">${s.florins} florins${renown ? ' · Renown: ' + esc(renown) : ''} · J to close</span></header>
-      <div class="list">${list || '<div class="empty">Nothing yet.</div>'}</div>
+    const fame = Object.entries(s.renown).map(([t, n]) => `${t} ${n}`).join(' · ');
+    this.el.innerHTML = `<header><h2>DAGBOEK</h2><span class="purse">${s.florins} florijnen${fame ? ' · Aanzien: ' + esc(fame) : ''} · J om te sluiten</span></header>
+      <div class="list">${list || '<div class="empty">Nog niets.</div>'}</div>
       <div class="detail">${detail}</div>
-      <div class="inv">Carrying: ${inv ? esc(inv) : 'nothing of note'}</div>`;
+      <div class="inv">Op zak: ${inv ? esc(inv) : 'niets bijzonders'}</div>`;
     this.el.querySelectorAll<HTMLButtonElement>('button[data-q]').forEach((b) =>
       b.addEventListener('click', () => {
         this.sel = b.dataset.q!;

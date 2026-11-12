@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clamp, damp, lerp } from '../core/math';
+import { recolor, makeSword } from '../render/recolor';
 
 const M = (color: string, extra: Partial<THREE.MeshStandardMaterialParameters> = {}) =>
   new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true, ...extra });
@@ -30,6 +31,11 @@ export class Hero {
   private cloakSwing = 0;
   private riding = true;
   private tmp = new THREE.Vector3();
+  /** a one-shot clip (attack, roll, hit, death) that overrides walking */
+  private shot: { name: string; t: number; dur: number } | null = null;
+  sword?: THREE.Object3D;
+  private armed = false;
+  private lungeLean = 0;
 
   constructor() {
     const cloakM = M('#2e4a3c');
@@ -97,18 +103,67 @@ export class Hero {
     this.mixer = new THREE.AnimationMixer(this.model);
     for (const clip of gltf.animations) {
       const a = this.mixer.clipAction(clip);
-      if (clip.name === 'jump' || clip.name === 'land') {
+      if (['jump', 'land', 'attack1', 'attack2', 'attack3', 'roll', 'hit', 'death', 'cast'].includes(clip.name)) {
         a.setLoop(THREE.LoopOnce, 1);
         a.clampWhenFinished = true;
       }
       this.actions.set(clip.name, a);
     }
     this.pelvis = this.model.getObjectByName('pelvis');
+    this.sword = this.model.getObjectByName('sword') ?? undefined;
+    if (!this.sword) {
+      const hand = this.model.getObjectByName('hand_r');
+      if (hand) {
+        this.sword = makeSword();
+        hand.add(this.sword);
+      }
+    }
+    if (this.sword) this.sword.visible = false;
     for (const n of ['cloak1', 'cloak2', 'cloak3', 'cloak4']) {
       const b = this.model.getObjectByName(n);
       if (b) this.cloak.push(b);
     }
     this.play(this.riding ? 'ride_idle' : 'idle', 0);
+  }
+
+  /** Recolour the cloak (the red of the painted texture). */
+  setCloak(color: string) {
+    this.model?.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh && /cloak/i.test(m.name)) m.material = recolor(m.material as THREE.MeshStandardMaterial, color);
+    });
+  }
+
+  setArmed(on: boolean) {
+    this.armed = on;
+    if (this.sword) this.sword.visible = on && !this.riding;
+  }
+
+  has(name: string) {
+    return this.actions.has(name);
+  }
+
+  /** Play a one-shot clip over the walk cycle; `dur` overrides the clip length. */
+  act(name: string, dur?: number, speed = 1) {
+    const a = this.actions.get(name);
+    const len = dur ?? (a ? a.getClip().duration / speed : 0.5);
+    this.shot = { name, t: 0, dur: len };
+    if (a) {
+      this.current = '';
+      a.timeScale = a.getClip().duration / len;
+      this.play(name, 0.06);
+    } else if (name.startsWith('attack')) this.lungeLean = 0.35; // no clip yet: lean into the blow
+  }
+
+  /** Back on your feet after falling in battle. */
+  revive() {
+    this.shot = null;
+    this.current = '';
+    this.lungeLean = 0;
+  }
+
+  get acting() {
+    return this.shot?.name ?? null;
   }
 
   private play(name: string, fade = 0.22) {
@@ -148,6 +203,8 @@ export class Hero {
   /** Riding pose on the dragon. */
   sit() {
     this.riding = true;
+    this.shot = null;
+    if (this.sword) this.sword.visible = false;
     if (this.mixer) {
       this.play('ride_idle', 0.15);
       return;
@@ -164,9 +221,21 @@ export class Hero {
   update(dt: number, speed: number, accel: number, airborne: boolean) {
     this.time += dt;
     this.riding = false;
+    if (this.sword) this.sword.visible = this.armed;
+    if (this.shot) {
+      this.shot.t += dt;
+      if (this.shot.t >= this.shot.dur && this.shot.name !== 'death') this.shot = null;
+    }
+    this.lungeLean = lerp(this.lungeLean, 0, damp(0.12, dt));
+    if (this.model) this.model.rotation.x = this.lungeLean;
+    if (this.mixer && this.shot && this.actions.has(this.shot.name)) {
+      this.mixer.update(dt);
+      this.blowCloak(dt, speed, 0.5);
+      return;
+    }
     if (this.mixer) {
       // pick the clip from how the rider is actually moving, and play it at the pace of the feet
-      let clip = 'idle', rate = 1;
+      let clip = this.armed && this.actions.has('sword_idle') ? 'sword_idle' : 'idle', rate = 1;
       if (airborne) clip = 'fall';
       else if (speed > 4.2) { clip = 'run'; rate = clamp(speed / 5.0, 0.7, 1.5); }
       else if (speed > 0.35) { clip = 'walk'; rate = clamp(speed / 1.5, 0.5, 2.6); }

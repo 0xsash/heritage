@@ -1,18 +1,25 @@
-// BELFORT — Brabant, 1650. Fly a dragon over the real streets of Diest, land
-// anywhere, walk the town, take on quests from its people and keep a journal.
+// BELFORT — Brabant, 1650. An open-world action RPG: make a character, fly a
+// dragon over the real streets of Diest, land, talk, take on quests, fight,
+// level up, and decide how the troubles of the town end.
 
 import * as THREE from 'three';
 import { Sound } from './audio/sound';
 import { CameraRig } from './camera/rig';
+import { Combat } from './combat/combat';
+import { diest } from './content/diest';
 import { Input } from './core/input';
 import { clamp } from './core/math';
 import { Player } from './player/player';
 import { Post } from './render/post';
 import { loadModel } from './render/models';
 import { loadMaterialSet, type MaterialInfo } from './render/textures';
-import { diest } from './content/diest';
 import { Actors } from './rpg/actors';
+import { RARITY, type Gear, uniqueGear } from './rpg/character';
+import { Crowd } from './rpg/crowd';
 import { QuestEngine } from './rpg/quests';
+import { freshSave, loadSave, writeSave } from './rpg/state';
+import { runFrontEnd } from './ui/creation';
+import { Banner, CharacterPanel, Guide, PlayerFrame, type SlotView } from './ui/gamehud';
 import { Hud } from './ui/hud';
 import { DialogueUI, JournalUI } from './ui/rpgui';
 import { Atmosphere } from './world/sky';
@@ -45,29 +52,41 @@ async function boot() {
   const input = new Input(canvas);
   const sound = new Sound();
 
+  // --- the front end runs while the world loads behind it
+  const loading = document.createElement('div');
+  loading.className = 'overlay';
+  loading.innerHTML = '<h1>BELFORT</h1><h2>HET HERTOGDOM BRABANT · ANNO 1650</h2><div class="loading">De pigmenten worden gemalen…</div>';
+  uiRoot.appendChild(loading);
+  const setLoading = (m: string) => {
+    const l = loading.querySelector('.loading');
+    if (l) l.textContent = m;
+  };
+  const peek = loadSave();
+  const skipFront = params.has('autostart');
+  const front = skipFront
+    ? Promise.resolve({ mode: 'continue' as const })
+    : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, origin: peek.hero.origin } : null, () => sound.start());
+
   // --- load everything
   const [data, meta] = await Promise.all([
     fetch(asset(`world/${params.get('world') ?? 'diest_1650'}.json`)).then((r) => r.json() as Promise<WorldData>),
     fetch(asset('textures/materials.json')).then((r) => r.json() as Promise<Record<string, MaterialInfo[]>>),
   ]);
-  const stub = { discoveries: [], data } as unknown as World;
-  let hud = new Hud(uiRoot, stub);
-  hud.showTitle('Grinding pigments…');
   await nextFrame();
   const [build, ground, trees] = await Promise.all([
     loadMaterialSet('build', meta, renderer, lowQ),
     loadMaterialSet('ground', meta, renderer, lowQ),
     loadTreeAtlas(renderer),
   ]);
-  hud.setLoading('Unrolling the map of Diest…');
+  setLoading('De kaart van Diest wordt opengerold…');
   await nextFrame();
   const world = new World(data, { build, ground, trees });
-  world.build((m) => hud.setLoading(m));
-  uiRoot.innerHTML = '';
-  hud = new Hud(uiRoot, world);
-  hud.showTitle('Priming the sky…');
+  world.build(setLoading);
+  const hud = new Hud(uiRoot, world);
+  hud.overlay.classList.add('hidden');
   hud.initMarks();
   scene.add(world.group);
+  setLoading('De hemel wordt geschilderd…');
 
   const atmo = new Atmosphere(scene, renderer, quality === 'high' ? 4096 : quality === 'medium' ? 2048 : 0);
   const rig = new CameraRig(window.innerWidth / window.innerHeight, world.collision);
@@ -86,30 +105,104 @@ async function boot() {
     step: () => sound.step(),
   });
   scene.add(player.group);
-  hud.setLoading('Waking the dragon…');
+  setLoading('De draak wordt gewekt…');
   const dragonModel = await loadModel('models/dragon.glb');
   if (dragonModel) player.dragon.useModel(dragonModel.scene);
   const riderModel = await loadModel('models/rider.glb');
   if (riderModel) player.hero.useModel(riderModel);
-  // --- quests, people, journal
+  setLoading('Klaar. Uw verhaal wacht.');
+
+  // --- who are you?
+  const fe = await front;
+  loading.classList.add('hidden');
+  setTimeout(() => loading.remove(), 700);
+  sound.start();
+  const isNew = fe.mode === 'new' || !peek.created;
+  if (fe.mode === 'new') {
+    const s = freshSave();
+    s.created = true;
+    s.hero = { ...s.hero, ...fe.hero, hp: 99999 };
+    writeSave(s);
+  } else if (!peek.created) {
+    // straight in (debug / screenshot): a default character
+    const s = freshSave();
+    s.created = true;
+    writeSave(s);
+  }
+
+  // --- quests, people, combat, HUD
   const toasts: string[] = [];
   let toastAt = 0;
-  const late: { journal?: JournalUI; actors?: Actors } = {};
+  let pendingShop = false;
+  const late: { journal?: JournalUI; actors?: Actors; chars?: CharacterPanel; banner?: Banner } = {};
+  const lootNotice = (g: Gear) => {
+    if (g.rarity >= 2) late.banner?.show('loot', RARITY[g.rarity].name.toUpperCase(), g.name, ['Druk op I om het te bekijken']);
+    else toasts.push(`OPGERAAPT · ${g.name}`);
+    late.chars?.render();
+  };
   const quests = new QuestEngine(diest, {
     toast: (kicker, text) => toasts.push(kicker ? `${kicker} · ${text}` : text),
     changed: () => {
       late.journal?.render();
       late.actors?.syncPickups();
     },
+    banner: (kind, title, lines) => {
+      late.banner?.show(kind, kind === 'start' ? 'NIEUWE OPDRACHT' : kind === 'done' ? 'OPDRACHT VOLBRACHT' : 'MISLUKT', title, lines);
+      if (kind === 'done') sound.questDone();
+    },
+    xp: (_n, levels) => {
+      if (!levels) return;
+      const L = quests.s.hero.level;
+      const o = quests.sheet.origin;
+      late.banner?.show('level', 'NIEUW NIVEAU', `Niveau ${L}`, [
+        'Uw kracht groeit. Levenskracht hersteld.',
+        L === o.skill2.level ? `Nieuwe vaardigheid: ${o.skill2.name} (R)` : '',
+      ]);
+      sound.levelUp();
+      combat.fx.ring(player.onFoot ? player.heroPos : player.pos, 6, '#c8a8ff', 0.8);
+    },
+    gear: lootNotice,
+    open: (panel) => {
+      if (panel === 'shop') pendingShop = true;
+      else late.chars?.toggle(true);
+    },
   });
+  const d0 = quests.sheet.derived();
+  if (quests.s.hero.hp > d0.maxHp || quests.s.hero.hp <= 0) quests.s.hero.hp = d0.maxHp;
+  if (isNew && !quests.s.hero.gear.wapen) {
+    // starting gear for the origin
+    const w = uniqueGear(quests.sheet.origin.start);
+    if (w) quests.s.hero.gear.wapen = w;
+    quests.s.hero.hp = quests.sheet.derived().maxHp;
+  }
+  player.hero.setCloak(quests.s.hero.cloak);
+
   const actors = (late.actors = new Actors(riderModel, quests, world.collision));
   actors.spawnNpcs(diest.npcs);
   actors.syncPickups();
   scene.add(actors.group);
+  const combat = new Combat(riderModel, world.collision, player, quests, sound, uiRoot, {
+    trauma: (t) => rig.addTrauma(t),
+    hurt: (f) => frame.hurt(f),
+    died: () => respawn(),
+    levelUp: () => {},
+    loot: lootNotice,
+  });
+  combat.setCamps(diest.camps);
+  scene.add(combat.group);
+  const crowd = riderModel ? new Crowd(riderModel, world, quests, (text, at) => combat.floaters.add(text, at, 'bark', 3.2, 0.35)) : null;
+  if (crowd) scene.add(crowd.group);
+  const guide = new Guide(uiRoot);
+  scene.add(guide.group);
+  const frame = new PlayerFrame(uiRoot);
+  const banner = (late.banner = new Banner(uiRoot));
   const dialogue = new DialogueUI(uiRoot, quests);
   const journal = (late.journal = new JournalUI(uiRoot, quests));
+  const chars = (late.chars = new CharacterPanel(uiRoot, quests, () => player.hero.setCloak(quests.s.hero.cloak), () => sound.coins()));
   let uiClosedAt = 0;
-  const uiOpen = () => dialogue.open || journal.open;
+  const uiOpen = () => dialogue.open || journal.open || chars.open;
+  let bellsRang = !!quests.s.flags.bells_ring;
+  let bellTimer = 30;
 
   // Spawn east of town over the Demer meadows, gliding toward the Grote Markt.
   const sx = 1150, sz = 380;
@@ -126,20 +219,20 @@ async function boot() {
   };
   window.addEventListener('resize', resize);
 
-  let running = false;
+  let running = true;
   let paused = false;
-  hud.ready(() => {
-    running = true;
-    sound.start();
-    input.requestLock();
-    setTimeout(() => {
-      const fresh = !Object.keys(quests.s.quests).length;
-      if (fresh) hud.announce('BRABANT · 1650', 'The Quiet Bells', 'The war with France drags on, Antwerp\'s river is closed, and the bells of Diest have stopped ringing. Land in town and talk to people: look for the gold ! above their heads.');
-      else hud.announce('BRABANT · 1650', 'Welcome back', 'Your journal is as you left it. Press J to read it.');
-    }, 900);
-  });
+  input.requestLock();
+  if (isNew) {
+    quests.start('main_arrive');
+    setTimeout(() => hud.announce('BRABANT · 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, `Volg het gouden licht naar de Grote Markt van Diest. Druk op E om te landen. Linkermuis spuwt vuur, H toont de besturing.`), 2600);
+  } else {
+    hud.toggleHelp();
+    banner.show('start', 'WELKOM TERUG', quests.s.hero.name, [`Niveau ${quests.s.hero.level} · ${quests.s.florins} florijnen`, 'J: dagboek · I: personage']);
+  }
+  if (isNew) setTimeout(() => hud.toggleHelp(), 30000);
+
   canvas.addEventListener('click', () => {
-    if (running) input.requestLock();
+    if (running && !uiOpen()) input.requestLock();
   });
   document.addEventListener('pointerlockchange', () => {
     if (!running) return;
@@ -151,11 +244,7 @@ async function boot() {
     if (paused) hud.overlay.addEventListener('click', () => input.requestLock(), { once: true });
   });
 
-  // Debug / screenshot hooks
-  if (params.has('autostart')) {
-    running = true;
-    uiRoot.querySelector('.overlay')?.classList.add('hidden');
-  }
+  if (params.has('autostart')) uiRoot.querySelector('.frontend')?.remove();
   /**
    * Debug hook used by the critic loop (tools/critic): put the player and the
    * camera in an exact, repeatable pose so every round shoots the same frame.
@@ -182,7 +271,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal };
+  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -190,29 +279,38 @@ async function boot() {
   // Dynamic resolution: hold a playable frame rate on weaker GPUs.
   const adaptive = !params.has('dpr') && !lowQ;
   let fpsFrames = 0, fpsTime = 0;
+  let mapTimer = 0;
+  const LIGHT: Record<string, string> = { 'Gouden uur': 'GOUDEN UUR', Hoogzomer: 'HOOGZOMER', Stormlicht: 'STORMLICHT', Maannacht: 'MAANNACHT' };
 
-  function frame() {
-    requestAnimationFrame(frame);
+  function frameLoop() {
+    requestAnimationFrame(frameLoop);
     const dt = clamp(clock.getDelta(), 0, 1 / 20);
     input.poll();
+    let sdt = dt;
     if (running && !paused) {
       if (input.consume('help')) hud.toggleHelp();
       if (input.consume('time')) {
         atmo.advance();
-        setTimeout(() => hud.flash(atmo.look.label.toUpperCase()), 400);
+        setTimeout(() => hud.flash(LIGHT[atmo.look.label] ?? atmo.look.label.toUpperCase()), 400);
       }
       if (input.consume('map') && !uiOpen()) mapOpen = hud.toggleMap();
-      if (input.consume('journal') && !dialogue.open) {
+      if (input.consume('journal') && !dialogue.open && !chars.open) {
         if (!journal.toggle()) closeUi();
       }
+      if (input.consume('character') && !dialogue.open && !journal.open) {
+        if (!chars.toggle()) closeUi();
+      }
+      const blocked = uiOpen() || mapOpen;
+      combat.update(blocked ? 0 : dt, input, rig.yaw, rig.camera, !blocked && performance.now() - uiClosedAt > 250);
+      sdt = blocked ? 0 : dt * combat.timeScale;
       if (uiOpen()) {
         // the world waits while you read; keys belong to the open panel
         input.consume('interact');
         input.consume('jump');
       } else if (!mapOpen) {
-        if (player.mode === 'walk' && performance.now() - uiClosedAt > 250 && talkOrPickUp()) {
+        if (player.mode === 'walk' && !player.dead && performance.now() - uiClosedAt > 250 && talkOrPickUp()) {
           // the press went to a person or a thing on the ground
-        } else player.update(dt, input, rig.yaw, rig.pitch);
+        } else player.update(sdt, input, rig.yaw, rig.pitch);
       }
       rig.update(dt, input, player);
     } else {
@@ -228,19 +326,53 @@ async function boot() {
       for (const m of world.oak.children) m.position.y += Math.sin(world.uniforms.uTime.value * 0.8 + m.userData.float) * 0.012;
     }
 
-    // discoveries
     const px = player.onFoot ? player.heroPos.x : player.pos.x;
     const pz = player.onFoot ? player.heroPos.z : player.pos.z;
     const py = player.onFoot ? player.heroPos.y : player.pos.y;
     uiRoot.classList.toggle('ui-open', uiOpen());
     if (running && !paused) {
-      quests.update(px, py, pz);
-      actors.update(dt, px, pz, dialogue.npcId);
+      quests.update(px, py, pz, player.mode === 'walk');
+      actors.update(sdt, px, pz, dialogue.npcId);
+      crowd?.update(sdt, px, pz, player.onFoot ? 0 : player.altitude(), rig.camera, {
+        x: px, z: pz, onFoot: player.onFoot, dragonX: player.pos.x, dragonZ: player.pos.z, dragonDown: player.mode === 'walk' || player.mode === 'calling',
+      });
+      // where to go next: the tracked objective, or the nearest person with work
       const t = quests.target();
-      hud.questTarget = t ? { x: t.x, z: t.z, title: t.quest.title, objective: t.objective.text } : null;
+      if (t) {
+        const o = t.objective;
+        const r = o.kind === 'kill' ? o.r : o.kind === 'reach' && o.r >= 40 ? o.r : 0;
+        const text = quests.fill(o.text) + quests.progress(t.quest.id, o);
+        guide.target = { x: t.x, z: t.z, r, title: t.quest.title, text, person: o.kind === 'talk' };
+        hud.questTarget = { x: t.x, z: t.z, title: t.quest.title, objective: text, r };
+      } else {
+        const g = quests.nearestGiver(px, pz);
+        guide.target = g ? { x: g.x, z: g.z, r: 0, title: 'Werk', text: `${g.npc.name} heeft werk voor u`, person: true } : null;
+        hud.questTarget = g ? { x: g.x, z: g.z, title: 'Werk', objective: `Spreek met ${g.npc.name}` } : null;
+      }
+      const list = quests.activeList().map((a) => ({
+        title: a.quest.title,
+        kind: a.quest.kind,
+        level: a.quest.level,
+        tracked: a.tracked,
+        objectives: a.objectives.map((o) => quests.fill(o.text) + quests.progress(a.quest.id, o)),
+      }));
+      hud.trackerList = list.length ? list : [{ title: 'Op zoek naar werk', kind: 'side', objectives: ['Zoek iemand met een gouden ! boven het hoofd'], tracked: true }];
       if (toasts.length && performance.now() - toastAt > 1900) {
         hud.flash(toasts.shift()!);
         toastAt = performance.now();
+      }
+      // the bells of Diest, once they ring again
+      const ring = !!quests.s.flags.bells_ring;
+      if (ring && !bellsRang) {
+        bellsRang = true;
+        banner.show('done', 'DIEST', 'De klokken luiden weer', ['Voor het eerst sinds zondag weet de stad hoe laat het is.']);
+        for (let i = 0; i < 3; i++) setTimeout(() => sound.chime(), i * 1400);
+        rig.addTrauma(0.15);
+      }
+      bellTimer -= dt;
+      if (ring && bellTimer <= 0) {
+        bellTimer = 75;
+        if (Math.hypot(px, pz) < 1600) sound.chime();
       }
       for (const d of world.discoveries) {
         if (d.found) continue;
@@ -248,8 +380,21 @@ async function boot() {
         if ((d.x - px) ** 2 + (d.z - pz) ** 2 < r * r) {
           d.found = true;
           hud.discover(d);
-          sound.chime(d.key === 'Sint-Sulpitius en Dionysiuskerk');
+          sound.chime(d.key === 'Sint-Sulpitius en Dionysiuskerk' && !ring);
+          quests.addXp(15);
         }
+      }
+      mapTimer -= dt;
+      if (mapTimer <= 0) {
+        mapTimer = 0.5;
+        const marks: typeof hud.mapMarks = [];
+        for (const n of diest.npcs) {
+          const m = quests.marker(n.id);
+          const p = quests.npcPos.get(n.id);
+          if (m && p) marks.push({ x: p[0], z: p[1], kind: m, label: n.name });
+        }
+        for (const c of combat.campMarks()) marks.push({ x: c.x, z: c.z, kind: c.cleared ? 'camp-cleared' : 'camp', label: `${c.name} · ${c.level}` });
+        hud.mapMarks = marks;
       }
     }
 
@@ -258,14 +403,35 @@ async function boot() {
     if (player.onFoot) hud.setLocation(place.name, place.where);
     else hud.setLocation(place.name, pace(player.speed, player.boostTime > 0, player.altitude()));
     const key = input.device === 'pad' ? 'Y' : 'E';
-    const near = player.mode === 'walk' && !uiOpen() ? nearby() : null;
-    if (uiOpen()) hud.setPrompt(null);
-    else if (near?.npc) hud.setPrompt(`<kbd>${key}</kbd>Talk to ${near.npc.name}`);
-    else if (near?.pickup) hud.setPrompt(`<kbd>${key}</kbd>Pick up ${quests.item(near.pickup.item)?.name ?? near.pickup.item}`);
-    else if (player.mode === 'fly' && player.canLand()) hud.setPrompt(`<kbd>${key}</kbd>Land`);
-    else if (player.mode === 'walk') hud.setPrompt(player.distanceToDragon() < 7 ? `<kbd>${key}</kbd>Mount your dragon` : `<kbd>${key}</kbd>Call your dragon`);
+    const near = player.mode === 'walk' && !uiOpen() && !player.dead ? nearby() : null;
+    const dragon = quests.s.hero.dragon;
+    if (uiOpen() || player.dead) hud.setPrompt(null);
+    else if (near?.npc) hud.setPrompt(`<kbd>${key}</kbd>Spreek met ${near.npc.name}${near.npc.shop ? ' · winkel' : ''}`);
+    else if (near?.loot) hud.setPrompt(`<kbd>${key}</kbd>Raap op: <span style="color:${RARITY[near.loot.rarity].color}">${near.loot.name}</span>`);
+    else if (near?.pickup) hud.setPrompt(`<kbd>${key}</kbd>Raap op: ${quests.item(near.pickup.item)?.name ?? near.pickup.item}`);
+    else if (player.mode === 'fly' && player.canLand()) hud.setPrompt(`<kbd>${key}</kbd>Landen`);
+    else if (player.mode === 'walk') hud.setPrompt(player.distanceToDragon() < 7 ? `<kbd>${key}</kbd>Bestijg ${dragon}` : combat.inCombat ? null : `<kbd>${key}</kbd>Roep ${dragon}`);
     else hud.setPrompt(null);
 
+    // the player frame and action bar
+    const o = quests.sheet.origin;
+    const flying = !player.onFoot;
+    const slots: SlotView[] = flying
+      ? [
+          { key: 'LMB', name: 'Drakenvuur', cd: combat.fire < 18 ? 1 - combat.fire / 18 : 0, ready: combat.fire >= 18 },
+          { key: 'Q', name: 'Zalf', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
+        ]
+      : [
+          { key: 'LMB', name: 'Zwaard', cd: 0, ready: true },
+          { key: 'RMB', name: o.skill.name, cd: combat.cds.skill / o.skill.cooldown, ready: combat.cds.skill <= 0 && combat.resonance >= o.skill.cost },
+          { key: 'R', name: o.skill2.name, cd: combat.cds.skill2 / o.skill2.cooldown, ready: combat.cds.skill2 <= 0 && combat.resonance >= o.skill2.cost, locked: quests.s.hero.level < o.skill2.level ? `niveau ${o.skill2.level}` : undefined },
+          { key: 'SPATIE', name: 'Rollen', cd: 0, ready: combat.inCombat },
+          { key: 'Q', name: 'Zalf', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
+        ];
+    frame.update(quests, combat.resonance, flying ? 'Vuur' : 'Resonantie', slots, flying ? combat.fire : null);
+    banner.update(dt);
+    hud.hold = banner.active;
+    guide.update(dt, rig.camera, px, pz, (x, z) => world.collision.heightAt(x, z));
     sound.wind(player.onFoot ? 0 : player.speed, player.boostTime > 0);
     hud.update(dt, rig.yaw, px, pz);
     post.render(dt);
@@ -289,12 +455,14 @@ async function boot() {
   function nearby() {
     const x = player.heroPos.x, z = player.heroPos.z;
     const npc = actors.nearestNpc(x, z);
-    if (npc) return { npc, pickup: null };
+    if (npc) return { npc, pickup: null, loot: null };
+    const loot = combat.nearestLoot(x, z);
+    if (loot) return { npc: null, pickup: null, loot };
     const pickup = actors.nearestPickup(x, z);
-    return pickup ? { npc: null, pickup } : null;
+    return pickup ? { npc: null, pickup, loot: null } : null;
   }
 
-  /** E near a person starts a conversation; near a quest item picks it up. */
+  /** E near a person starts a conversation; near something on the ground picks it up. */
   function talkOrPickUp(): boolean {
     if (!input.peek('interact')) return false;
     const near = nearby();
@@ -303,9 +471,17 @@ async function boot() {
     if (near.npc) {
       const start = quests.conversationFor(near.npc.id);
       if (start) {
-        mapOpen = mapOpen && hud.toggleMap();
-        dialogue.start(near.npc.id, start, closeUi);
+        if (mapOpen) mapOpen = hud.toggleMap();
+        dialogue.start(near.npc.id, start, () => {
+          closeUi();
+          if (pendingShop) {
+            pendingShop = false;
+            chars.toggle(true, true);
+          }
+        });
       }
+    } else if (near.loot) {
+      near.loot.take();
     } else if (near.pickup) {
       quests.take(near.pickup.key, near.pickup.item);
       sound.chime(false);
@@ -315,7 +491,28 @@ async function boot() {
 
   function closeUi() {
     uiClosedAt = performance.now();
-    if (input.device === 'kbm') input.requestLock();
+    if (input.device === 'kbm' && !uiOpen()) input.requestLock();
+  }
+
+  /** Fallen in battle: wake up in the nearest town, a little poorer. */
+  function respawn() {
+    const towns: [number, number, string][] = [[40, 70, 'Diest'], [-5040, 560, 'Scherpenheuvel']];
+    const px = player.onFoot ? player.heroPos.x : player.pos.x, pz = player.onFoot ? player.heroPos.z : player.pos.z;
+    const [tx, tz, name] = towns.sort((a, b) => Math.hypot(a[0] - px, a[1] - pz) - Math.hypot(b[0] - px, b[1] - pz))[0];
+    const fee = Math.floor(quests.s.florins * 0.1);
+    quests.s.florins -= fee;
+    let x = tx, z = tz;
+    const c = world.collision;
+    search: for (let r = 0; r < 60; r += 1.5)
+      for (let a = 0; a < 6.28; a += 0.3) {
+        const sx2 = tx + Math.cos(a) * r, sz2 = tz + Math.sin(a) * r;
+        if (c.heightAround(sx2, sz2, 1.5) < 0.1) { x = sx2; z = sz2; break search; }
+      }
+    player.debugPlaceOnFoot(x, z, 0);
+    player.hero.revive();
+    combat.reset();
+    quests.save();
+    banner.show('failed', 'GESNEUVELD', `Ge komt bij in ${name}`, [fee ? `De chirurgijn rekende ${fee} florijnen aan.` : 'De chirurgijn wilde niets aannemen.']);
   }
 
   /** The nearest named place, and where it lies (inside the walls, before a gate, out in the fields). */
@@ -328,37 +525,37 @@ async function boot() {
     }
     const gates = Object.entries(world.data.walls?.gates ?? {});
     const town = world.inTown(x, z);
-    if (town) return { name: best?.title ?? 'Diest', where: 'Within the walls of Diest' };
+    if (town) return { name: best?.title ?? 'Diest', where: 'Binnen de muren van Diest' };
     for (const [g, [gx, gz]] of gates) {
       if (Math.hypot(gx - x, gz - z) < 220) {
         const lore = world.discoveries.find((d) => d.key === g);
-        return { name: lore?.title ?? 'Diest', where: 'Outside the walls of Diest' };
+        return { name: lore?.title ?? 'Diest', where: 'Buiten de muren van Diest' };
       }
     }
     const villages: [string, number, number, number][] = [
       ['Scherpenheuvel', -5062, 518, 900], ['Kaggevinne', -2225, 669, 700], ['Webbekom', 1413, 1276, 800],
     ];
-    for (const [n, vx, vz, r] of villages) if (Math.hypot(vx - x, vz - z) < r) return { name: best?.title ?? n, where: 'The Demer valley' };
-    if (Math.hypot(x, z) < 2000) return { name: best?.title ?? 'The fields of Diest', where: 'The Demer valley' };
-    return { name: best?.title ?? 'The Demer valley', where: 'Duchy of Brabant' };
+    for (const [n, vx, vz, r] of villages) if (Math.hypot(vx - x, vz - z) < r) return { name: best?.title ?? n, where: 'Het Demerdal' };
+    if (Math.hypot(x, z) < 2000) return { name: best?.title ?? 'De velden van Diest', where: 'Het Demerdal' };
+    return { name: best?.title ?? 'Het Demerdal', where: 'Hertogdom Brabant' };
   }
 
   /** How the dragon is flying, in words. */
   function pace(speed: number, boosting: boolean, alt: number) {
-    if (boosting) return 'At full stretch';
-    if (speed < 2.5) return alt < 3 ? 'Settling' : 'Hovering';
-    if (speed < 10) return 'Drifting';
-    if (speed < 24) return 'Gliding';
-    if (speed < 42) return 'Flying hard';
-    return 'Racing the wind';
+    if (boosting) return 'Op volle snelheid';
+    if (speed < 2.5) return alt < 3 ? 'Landend' : 'Zwevend';
+    if (speed < 10) return 'Drijvend';
+    if (speed < 24) return 'Glijdend';
+    if (speed < 42) return 'Hard vliegend';
+    return 'Sneller dan de wind';
   }
 
   // Compile shaders before the curtain lifts, then hand over to the player.
   post.render(0);
-  frame();
+  frameLoop();
 }
 
 boot().catch((e) => {
   console.error(e);
-  uiRoot.innerHTML = `<div class="overlay"><h2>Something went wrong</h2><p>${String(e)}</p></div>`;
+  uiRoot.innerHTML = `<div class="overlay"><h2>Er ging iets mis</h2><p>${String(e)}</p></div>`;
 });

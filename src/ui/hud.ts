@@ -1,5 +1,5 @@
-// HUD: compass with landmarks, discovery cards, location line (real street
-// names), context prompts, controls help, and a parchment map.
+// HUD: compass with landmarks, discovery cards, location line, context
+// prompts, the quest tracker, controls help, and a parchment map.
 
 import type { Discovery, World } from '../world/world';
 
@@ -17,7 +17,11 @@ export class Hud {
   private questMark = el('mark quest', '');
   private tracker = el('tracker', '');
   /** the tracked quest objective: shown on the compass, the map and the tracker */
-  questTarget: { x: number; z: number; title: string; objective: string } | null = null;
+  questTarget: { x: number; z: number; title: string; objective: string; r?: number } | null = null;
+  /** up to three quests for the tracker: the tracked one first, with its objectives */
+  trackerList: { title: string; kind: string; level?: number; objectives: string[]; tracked: boolean }[] = [];
+  /** extra map marks: quest givers (! / ?), enemy camps */
+  mapMarks: { x: number; z: number; kind: '!' | '?' | 'camp' | 'camp-cleared'; label: string }[] = [];
   private card = el('discovery');
   private loc = el('loc');
   private prompt = el('prompt');
@@ -30,33 +34,37 @@ export class Hud {
   private cardTimer = 0;
   private cardQueue: { kicker: string; title: string; text: string }[] = [];
   overlay = el('overlay');
+  /** hold discovery cards back (a banner is showing) */
+  hold = false;
 
   constructor(root: HTMLElement, private world: World) {
     this.root = root;
     this.compass.appendChild(el('needle'));
     this.compass.appendChild(this.questMark);
-    for (const [label, yaw] of [['N', Math.PI], ['E', Math.PI / 2], ['S', 0], ['W', -Math.PI / 2]] as const) {
+    for (const [label, yaw] of [['N', Math.PI], ['O', Math.PI / 2], ['Z', 0], ['W', -Math.PI / 2]] as const) {
       const m = el('mark card', label);
       this.compass.appendChild(m);
       this.compassMarks.push({ el: m, yaw });
     }
     this.help = el(
       'help',
-      `<h3>CONTROLS</h3><table>
-      <tr><td>Mouse</td><td>Steer &amp; look (click to capture, or drag)</td></tr>
-      <tr><td>W / S · wheel</td><td>Faster / slower (the dragon holds its pace)</td></tr>
-      <tr><td>Space / C</td><td>Climb / dive (straight up and down when hovering)</td></tr>
-      <tr><td>Shift</td><td>Boost (flying) · run (on foot)</td></tr>
-      <tr><td>E</td><td>Land · mount · call your dragon</td></tr>
-      <tr><td>WASD</td><td>Walk (on foot) · Space jump</td></tr>
-      <tr><td>J · M</td><td>Journal (quests) · map</td></tr>
-      <tr><td>T · H</td><td>Change the light · hide help</td></tr>
-      <tr><td>Gamepad</td><td>LS steer · RS camera · RT/LT speed · A climb · B dive · X boost · Y land/mount</td></tr>
+      `<h3>BESTURING</h3><table>
+      <tr><td>Muis</td><td>Sturen en kijken (klik om de muis te vangen)</td></tr>
+      <tr><td>W / S · wiel</td><td>Sneller / trager vliegen (de draak houdt het tempo)</td></tr>
+      <tr><td>Spatie / C</td><td>Stijgen / dalen · te voet: springen, in gevecht: rollen</td></tr>
+      <tr><td>Shift</td><td>Versnellen (vliegend) · lopen (te voet)</td></tr>
+      <tr><td>E</td><td>Landen · praten · oprapen · draak roepen en bestijgen</td></tr>
+      <tr><td>Linkermuis</td><td>Zwaardslag (te voet) · drakenvuur (vliegend)</td></tr>
+      <tr><td>Rechtermuis · R</td><td>Vaardigheden van uw afkomst</td></tr>
+      <tr><td>Q</td><td>Begijnenzalf drinken</td></tr>
+      <tr><td>J · M · I</td><td>Dagboek · kaart · personage en zak</td></tr>
+      <tr><td>T · H</td><td>Licht veranderen · hulp verbergen</td></tr>
+      <tr><td>Gamepad</td><td>LS sturen · RS camera · RT/LT snelheid en aanvallen · A stijgen · B dalen · Y landen/praten</td></tr>
       </table>`,
     );
     this.map.appendChild(this.mapCanvas);
-    this.map.appendChild(el('legend', 'DIEST &amp; THE DEMER VALLEY · ANNO 1560'));
-    this.map.appendChild(el('map-credit', 'Town plan after OpenStreetMap contributors (ODbL) and the Ferraris map of 1777 (Digitaal Vlaanderen)'));
+    this.map.appendChild(el('legend', 'DIEST &amp; HET DEMERDAL · ANNO 1650'));
+    this.map.appendChild(el('map-credit', 'Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)'));
     root.append(
       this.compass, this.tracker, this.card, this.loc, this.prompt, this.toast, this.help, this.map,
       this.overlay,
@@ -75,15 +83,14 @@ export class Hud {
   showTitle(loading: string) {
     this.overlay.innerHTML = `
       <h1>BELFORT</h1>
-      <h2>PROLOGUE · DIEST, IN THE YEAR 1560</h2>
-      <p>The Duchy of Brabant, under King Philip. Diest weaves its cloth, rings its bells and pays its tolls. Then a hatchling of bronze and green crawls out of the Demer reeds and chooses <em>you</em>. Neither of you is sure why.</p>
+      <h2>HET HERTOGDOM BRABANT · ANNO 1650</h2>
       <div class="loading">${loading}</div>`;
   }
 
   ready(onStart: () => void) {
     this.overlay.querySelector('.loading')?.remove();
-    const cta = el('cta', 'CLICK TO TAKE FLIGHT');
-    const small = el('small', 'Best with mouse &amp; keyboard or a gamepad · headphones recommended<br><span class="credit">Town plan after OpenStreetMap contributors (ODbL) and the Ferraris map of 1777 (Digitaal Vlaanderen)</span>');
+    const cta = el('cta', 'KLIK OM TE BEGINNEN');
+    const small = el('small', 'Best met muis en toetsenbord of een gamepad · met koptelefoon<br><span class="credit">Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)</span>');
     this.overlay.append(cta, small);
     this.overlay.addEventListener(
       'click',
@@ -102,7 +109,7 @@ export class Hud {
 
   pauseOverlay(show: boolean) {
     if (show) {
-      this.overlay.innerHTML = '<h2>PAUSED</h2><div class="cta">CLICK TO RESUME</div>';
+      this.overlay.innerHTML = '<h2>GEPAUZEERD</h2><div class="cta">KLIK OM VERDER TE SPELEN</div>';
       this.overlay.classList.remove('hidden');
     } else this.overlay.classList.add('hidden');
   }
@@ -120,7 +127,7 @@ export class Hud {
   }
 
   discover(d: Discovery) {
-    this.cardQueue.push({ kicker: d.major ? 'DISCOVERED' : 'NOTED', title: d.title, text: d.text });
+    this.cardQueue.push({ kicker: d.major ? 'ONTDEKT' : 'GEZIEN', title: d.title, text: d.text });
   }
 
   announce(kicker: string, title: string, text: string) {
@@ -142,7 +149,7 @@ export class Hud {
     // cards
     this.cardTimer -= dt;
     if (this.cardTimer <= 0 && this.card.classList.contains('show')) this.card.classList.remove('show');
-    if (this.cardTimer < -1.2 && this.cardQueue.length) {
+    if (this.cardTimer < -1.2 && this.cardQueue.length && !this.hold) {
       const c = this.cardQueue.shift()!;
       this.card.innerHTML = `<div class="kicker">${c.kicker}</div><div class="title">${c.title}</div><div class="rule"></div><div class="text">${c.text}</div>`;
       this.card.classList.add('show');
@@ -182,13 +189,16 @@ export class Hud {
       this.questMark.style.display = '';
       this.questMark.style.left = `${w / 2 + (r / (fovSpan / 2)) * (w / 2)}px`;
       this.questMark.textContent = edge ? (rel < 0 ? '◂ ⬥' : '⬥ ▸') : '⬥';
-      const html = `<div class="t-title">${qt.title}</div><div class="t-obj">${qt.objective}</div>`;
-      if (this.tracker.innerHTML !== html) this.tracker.innerHTML = html;
-      this.tracker.style.display = '';
     } else {
       this.questMark.style.display = 'none';
-      this.tracker.style.display = 'none';
     }
+    const html = this.trackerList
+      .slice(0, 3)
+      .map((t) => `<div class="tq${t.tracked ? ' on' : ''} k-${t.kind}"><div class="t-title">${t.kind === 'main' ? '◆ ' : ''}${t.title}${t.level ? `<span class="t-lv">${t.level}</span>` : ''}</div>${(t.tracked ? t.objectives : t.objectives.slice(0, 1)).map((o) => `<div class="t-obj">${o}</div>`).join('')}</div>`)
+      .join('');
+    const full = html || (qt ? `<div class="tq on"><div class="t-title">${qt.title}</div><div class="t-obj">${qt.objective}</div></div>` : '');
+    if (this.tracker.innerHTML !== full) this.tracker.innerHTML = full;
+    this.tracker.style.display = full ? '' : 'none';
     if (this.map.classList.contains('show')) this.drawMap(px, pz, camYaw);
   }
 
@@ -272,8 +282,41 @@ export class Hud {
       g.beginPath(); g.arc(X, Y, 4 * devicePixelRatio, 0, Math.PI * 2); g.fill();
       g.fillText(d.found ? d.title : '?', X, Y - 8 * devicePixelRatio);
     }
+    g.font = `bold ${15 * devicePixelRatio}px Cinzel, Georgia, serif`;
+    for (const m of this.mapMarks) {
+      const [MX, MY] = toScreen(m.x, m.z);
+      if (m.kind === '!' || m.kind === '?') {
+        g.lineWidth = 4 * devicePixelRatio;
+        g.strokeStyle = '#2a1a08';
+        g.strokeText(m.kind, MX, MY);
+        g.fillStyle = '#e8a91e';
+        g.fillText(m.kind, MX, MY);
+      } else {
+        g.fillStyle = m.kind === 'camp' ? '#8a1e14' : '#6a5a48';
+        g.beginPath();
+        g.arc(MX, MY - 5 * devicePixelRatio, 6 * devicePixelRatio, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#f2e6cc';
+        g.font = `${10 * devicePixelRatio}px "EB Garamond", serif`;
+        g.fillText('✕', MX, MY - 1.5 * devicePixelRatio);
+        g.fillStyle = m.kind === 'camp' ? '#6a160e' : '#6a5a48';
+        g.font = `${12 * devicePixelRatio}px "EB Garamond", serif`;
+        g.fillText(m.label, MX, MY + 12 * devicePixelRatio);
+        g.font = `bold ${15 * devicePixelRatio}px Cinzel, Georgia, serif`;
+      }
+    }
+    g.font = `${13 * devicePixelRatio}px "EB Garamond", serif`;
     if (this.questTarget) {
       const [QX, QY] = toScreen(this.questTarget.x, this.questTarget.z);
+      if (this.questTarget.r) {
+        g.fillStyle = 'rgba(232, 169, 30, 0.22)';
+        g.strokeStyle = 'rgba(160, 100, 10, 0.8)';
+        g.lineWidth = 2 * devicePixelRatio;
+        g.beginPath();
+        g.arc(QX, QY, this.questTarget.r * S * zoom, 0, Math.PI * 2);
+        g.fill();
+        g.stroke();
+      }
       g.fillStyle = '#c8901e';
       g.strokeStyle = '#2a1a08';
       g.lineWidth = 2 * devicePixelRatio;

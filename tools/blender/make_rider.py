@@ -2286,7 +2286,18 @@ def pose_stand(rig, arm_down=62.0):
 # --------------------------------------------------------------------------
 FPS = 30
 TORSO = ('Root', 'pelvis', 'spine_01', 'spine_02', 'spine_03', 'neck_01', 'head')
-# clip name -> (UAL action, loop?, ground speed m/s or None, duration s or None, (start, end) fraction of source)
+# clip name -> (UAL action, loop?, ground speed m/s or None, duration s or None, (start, end) fraction of source[, options])
+# options (all optional):
+#   ref     horizontal pelvis reference: 'mean' (loops), 'first' / 'last' source frame, or 'detrend' (remove the
+#           straight-line travel between the window's ends: in place, for clips that would otherwise move the body)
+#   ground  'min' (lowest toe joint over the source meets the ground) or 'first' (the first frame's does)
+#   warp    [(t_out, t_window), ...] piecewise-linear retiming, both as fractions of the clip / of the window
+#   accent  name of a procedural emphasis added on top (see accent())
+#   lean_cap  limit the forward lean the cloak reacts to (for tumbling clips)
+#   hang    (gain, threshold deg): how much of the torso's forward lean cloak1 takes back so the cloak still hangs
+#   floor   keep the cloak's hem above the ground (clips that crouch, lie or tumble), smoothed in time unless smooth=False;
+#           fold=True lets the lowest bone fold back onto the floor instead of swinging the whole cloak out
+#   hands   'full': align the hands' roll to the library's too (the fist matters once a sword is in it)
 CLIPS = [
     ('idle', 'Idle_Loop', True, None, 4.0, (0.0, 1.0)),
     ('walk', 'Walk_Loop', True, 1.5, None, (0.0, 1.0)),
@@ -2294,6 +2305,20 @@ CLIPS = [
     ('jump', 'Jump_Start', False, None, 0.5, (0.30, 1.0)),
     ('fall', 'Jump_Loop', True, None, 1.0, (0.0, 1.0)),
     ('land', 'Jump_Land', False, None, 0.5, (0.0, 0.70)),
+    # combat and townsfolk set
+    ('sword_idle', 'Sword_Idle', True, None, 2.5, (0.0, 1.0), dict(hands='full', hang=(0.85, 8.0), floor=True, ground='min')),
+    # Sword_Attack is two swings: an overhead diagonal cut (to ~0.64 s) and a rising backhand back to the guard
+    ('attack1', 'Sword_Attack', False, None, 0.65, (0.0, 0.42), dict(hands='full', hang=(0.85, 8.0), floor=True, ref='first', ground='min')),
+    ('attack2', 'Sword_Attack', False, None, 0.55, (0.47, 0.85), dict(hands='full', hang=(0.85, 8.0), floor=True, ref='first', ground='min')),
+    ('attack3', 'Sword_Attack', False, None, 0.9, (0.0, 0.53), dict(hands='full', hang=(0.85, 8.0), floor=True, ref='first', ground='min', accent='heavy',
+                                                                   warp=[(0, 0), (0.36, 0.38), (0.46, 0.43), (0.58, 0.62), (1, 1)])),
+    ('roll', 'Roll', False, None, 1.0, (0.0, 0.92), dict(hands='full', hang=(0.85, 8.0), floor=True, smooth=False, ref='detrend', ground='first', lean_cap=25.0, accent='tumble')),
+    ('hit', 'Hit_Chest', False, None, 0.4, (0.0, 1.0), dict(hands='full', hang=(0.85, 8.0), ref='first', ground='min')),
+    ('death', 'Death01', False, None, 1.6, (0.0, 0.68), dict(hands='full', hang=(0.85, 8.0), floor=True, ref='first', ground='first', lean_cap=0.0, accent='lie')),
+    ('cast', 'Spell_Simple_Shoot', False, None, 0.5, (0.0, 1.0), dict(hands='full', hang=(0.85, 8.0), ref='first', ground='min')),
+    ('talk', 'Idle_Talking_Loop', True, None, 2.933, (0.0, 1.0), dict(hands='full', hang=(0.85, 8.0), ground='min')),
+    ('walk_formal', 'Walk_Formal_Loop', True, 1.3, None, (0.0, 1.0), dict(hands='full', hang=(0.85, 8.0), ground='min')),
+    ('sit', 'Sitting_Idle_Loop', True, None, 3.333, (0.0, 1.0), dict(hands='full', hang=(0.85, 8.0), floor=True, fold=True, ground='min')),
 ]
 # cloak chain: per clip (backward tilt per bone in degrees, swing amplitude, swings per clip, side sway amplitude)
 CLOAK = {
@@ -2304,7 +2329,316 @@ CLOAK = {
     'fall': ((24, 18, 12, 8), 4.0, 2, 2.0),
     'land': ((10, 8, 5, 3), 0.0, 0, 0.0),
     'ride_idle': ((7, 6, 5, 4), 2.0, 1, 1.5),
+    'sword_idle': ((1, 1, 1, 1), 1.5, 1, 1.0),
+    'attack1': ((4, 5, 5, 4), 3.0, 1, 3.0),
+    'attack2': ((4, 5, 5, 4), 3.0, 1, -3.0),
+    'attack3': ((6, 7, 7, 6), 4.0, 1, 3.5),
+    'roll': ((8, 10, 10, 8), 4.0, 1, 1.5),
+    'hit': ((3, 4, 4, 3), 2.5, 1, 1.0),
+    'death': ((0, 0, 0, 0), 2.0, 1, 1.0),
+    'cast': ((3, 3, 3, 2), 2.0, 1, 1.5),
+    'talk': ((0, 0, 0, 0), 1.2, 1, 0.8),
+    'walk_formal': ((1, 1, 1, 1), 2.0, 2, 1.2),
+    'sit': ((0, 0, 0, 0), 0.8, 1, 0.5),
 }
+BELL = {'idle': 1.5, 'walk': 7.0, 'run': 12.0, 'fall': 8.0, 'ride_idle': 3.0, 'sword_idle': 2.0, 'talk': 1.5,
+        'walk_formal': 5.0, 'sit': 1.0, 'roll': 10.0, 'attack3': 7.0}
+
+
+def accent(kind, t):
+    """Procedural emphasis at clip fraction t: (upper-body pitch in degrees, + = forward, extra pelvis drop in m)."""
+    if kind == 'heavy':
+        # lean back into the wind-up, then throw the chest down through the cut and stay low
+        back = -7.0 * math.sin(math.pi * min(1.0, t / 0.46)) if t < 0.46 else 0.0
+        fwd = 8.0 * sstep(0.40, 0.60, t) * (1.0 - 0.35 * sstep(0.75, 1.0, t))
+        drop = 0.02 * sstep(0.42, 0.62, t) * (1.0 - 0.4 * sstep(0.8, 1.0, t))
+        return float(back + fwd), float(drop)
+    if kind == 'lie':            # the body is thicker than the library's mannequin: lift it once it is on its back
+        return 0.0, -0.045 * float(sstep(0.45, 0.75, t))
+    if kind == 'tumble':         # same, while the roll goes over the shoulders
+        return 0.0, -0.06 * math.exp(-((t - 0.47) / 0.12) ** 2)
+    return 0.0, 0.0
+
+
+# --------------------------------------------------------------------------
+# the sword: a separate mesh node parented to hand_r (the game shows it in combat only)
+# sword space: origin at the centre of the grip, +Z along the blade, +X towards the edges, +Y the flat's normal
+# --------------------------------------------------------------------------
+SWORD_TEX = (256, 512)                 # width, height
+SW_BLADE = (0.02, 0.48, 0.01, 0.99)    # u0, u1, v0, v1 regions of the sword texture
+SW_GUARD = (0.54, 0.96, 0.01, 0.20)
+SW_GRIP = (0.54, 0.96, 0.25, 0.55)
+SW_POMMEL = (0.54, 0.96, 0.60, 0.80)
+SW_GRIP_Z = (-0.052, 0.052)
+SW_GUARD_Z = 0.058
+SW_BLADE_Z = (0.062, 0.862)            # 0.80 m of blade, 0.796 m visible above the guard
+
+
+class MeshBuilder:
+    def __init__(self):
+        self.verts, self.faces, self.uvs = [], [], []
+
+    def v(self, co):
+        self.verts.append(Vector(co))
+        return len(self.verts) - 1
+
+    def f(self, idx, uv):
+        self.faces.append(tuple(idx))
+        self.uvs.append(tuple(uv))
+
+    def loft(self, rings, uv_fn, closed=True, cap0=None, cap1=None):
+        """rings: list of point lists (same length K). uv_fn(i, k) -> (u, v) with k in 0..K (K = the seam).
+        cap0/cap1: None, 'fan' (centre vertex) or a point to close the end to (a tip)."""
+        K = len(rings[0])
+        ids = [[self.v(p) for p in r] for r in rings]
+        nk = K if closed else K - 1
+        for i in range(len(rings) - 1):
+            for k in range(nk):
+                k1 = (k + 1) % K
+                self.f((ids[i][k], ids[i][k1], ids[i + 1][k1], ids[i + 1][k]),
+                       (uv_fn(i, k), uv_fn(i, k + 1), uv_fn(i + 1, k + 1), uv_fn(i + 1, k)))
+        for end, cap in ((0, cap0), (len(rings) - 1, cap1)):
+            if cap is None:
+                continue
+            ring = rings[end]
+            c = sum(ring, Vector()) / K if cap == 'fan' else Vector(cap)
+            ci = self.v(c)
+            cu = uv_fn(end, None)
+            for k in range(nk):
+                k1 = (k + 1) % K
+                tri = (ids[end][k], ids[end][k1], ci)
+                uvt = (uv_fn(end, k), uv_fn(end, k + 1), cu)
+                if end == 0:
+                    tri, uvt = tri[::-1], uvt[::-1]
+                self.f(tri, uvt)
+
+    def build(self, name):
+        me = bpy.data.meshes.new(name)
+        me.from_pydata([tuple(v) for v in self.verts], [], self.faces)
+        me.update()
+        uvl = me.uv_layers.new(name='UVMap')
+        flat = [c for uv in self.uvs for c in uv]
+        uvl.data.foreach_set('uv', [x for c in flat for x in c])
+        for p in me.polygons:
+            p.use_smooth = True
+        ob = link(bpy.data.objects.new(name, me))
+        bm = get_bm(ob)
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        put_bm(bm, ob)
+        return ob
+
+
+def region_uv(reg, a, b):
+    u0, u1, v0, v1 = reg
+    return (u0 + (u1 - u0) * a, v0 + (v1 - v0) * b)
+
+
+def sword_mesh():
+    mb = MeshBuilder()
+    # ---- blade: flattened hexagonal section (edge, bevel, flat), tapering to a point ----
+    zb0, zb1 = SW_BLADE_Z
+    L = zb1 - zb0
+    prof = [(0.0, 0.0262, 0.0046), (0.05, 0.0255, 0.0045), (0.25, 0.0238, 0.0042), (0.50, 0.0215, 0.0038),
+            (0.72, 0.0190, 0.0034), (0.86, 0.0150, 0.0029), (0.94, 0.0098, 0.0021), (0.98, 0.0048, 0.0012)]
+    FL = 0.42
+    rings, ws = [], []
+    for s, w, t in prof:
+        z = zb0 + L * s
+        rings.append([Vector(p) for p in ((w, 0, z), (FL * w, t, z), (-FL * w, t, z), (-w, 0, z), (-FL * w, -t, z), (FL * w, -t, z))])
+        ws.append(w)
+
+    def blade_uv(i, k):
+        if k is None:
+            return region_uv(SW_BLADE, 0.5, 1.0 if i else 0.0)
+        p = rings[i][k % 6]
+        return region_uv(SW_BLADE, 0.5 + 0.5 * p.x / ws[i], prof[i][0])
+    mb.loft(rings, blade_uv, cap0='fan', cap1=(0, 0, zb1))
+    # ---- crossguard: an oval bar along X, quillons curving slightly towards the blade, knobbed ends ----
+    half = [(0.0, 0.0115, 0.0100), (0.018, 0.0105, 0.0092), (0.030, 0.0082, 0.0078), (0.060, 0.0072, 0.0070),
+            (0.084, 0.0076, 0.0074), (0.092, 0.0094, 0.0092), (0.099, 0.0080, 0.0078), (0.102, 0.0040, 0.0040)]
+    secs = [(-x, ry, rz) for x, ry, rz in reversed(half[1:])] + half
+    NG = 8
+    grings = []
+    for x, ry, rz in secs:
+        cz = SW_GUARD_Z + 0.0085 * (abs(x) / 0.1) ** 2
+        grings.append([Vector((x, ry * math.cos(2 * math.pi * k / NG), cz + rz * math.sin(2 * math.pi * k / NG))) for k in range(NG)])
+    gx = [x for x, _, _ in secs]
+
+    def guard_uv(i, k):
+        a = (gx[i] + 0.104) / 0.208
+        return region_uv(SW_GUARD, a, 0.5 if k is None else k / NG)
+    mb.loft(grings, guard_uv, cap0='fan', cap1='fan')
+    # ---- grip: slightly swelling oval, leather-wrapped, with brass collars at both ends ----
+    NR = 10
+    z0, z1 = SW_GRIP_Z
+    zs = [z0, z0 + 0.004, z0 + 0.009, -0.025, 0.0, 0.025, z1 - 0.009, z1 - 0.004, z1]
+    rrings = []
+    for z in zs:
+        e = abs(z) / z1
+        sw = 1.0 + 0.10 * (1 - e * e)
+        if e > 0.9:
+            sw = 1.12                     # collar
+        rrings.append([Vector((0.0140 * sw * math.cos(2 * math.pi * k / NR), 0.0118 * sw * math.sin(2 * math.pi * k / NR), z)) for k in range(NR)])
+
+    def grip_uv(i, k):
+        return region_uv(SW_GRIP, 0.5 if k is None else k / NR, (zs[i] - z0) / (z1 - z0))
+    mb.loft(rrings, grip_uv)
+    # ---- wheel pommel (axis = flat normal Y) with a raised boss and a small peen ----
+    pz = z0 - 0.0215
+    pprof = [(0.0100, 0.0108), (0.0135, 0.0088), (0.0205, 0.0078), (0.0250, 0.0036), (0.0250, -0.0036),
+             (0.0205, -0.0078), (0.0135, -0.0088), (0.0100, -0.0108)]
+    NP = 16
+    prings = [[Vector((r * math.cos(2 * math.pi * k / NP), y, pz + r * math.sin(2 * math.pi * k / NP))) for k in range(NP)] for r, y in pprof]
+
+    def pommel_uv(i, k):
+        return region_uv(SW_POMMEL, 0.5 if k is None else k / NP, (i + 1) / (len(pprof) + 1) if k is not None else (0.0 if i == 0 else 1.0))
+    mb.loft(prings, pommel_uv, cap0='fan', cap1='fan')
+    nz = pz - 0.0245
+    nrings = [[Vector((r * math.cos(2 * math.pi * k / 8), r * math.sin(2 * math.pi * k / 8), z)) for k in range(8)]
+              for r, z in ((0.0058, nz + 0.004), (0.0058, nz - 0.002), (0.0040, nz - 0.0055))]
+
+    def nub_uv(i, k):
+        return region_uv(SW_POMMEL, 0.5 if k is None else k / 8, 0.95 - 0.04 * i)
+    mb.loft(nrings, nub_uv, cap1='fan')
+    ob = mb.build('sword')
+    sharpen_by_angle(ob, 60.0)
+    return ob
+
+
+def paint_sword():
+    W, H = SWORD_TEX
+    v, u = np.meshgrid((np.arange(H) + 0.5) / H, (np.arange(W) + 0.5) / W, indexing='ij')
+    col = np.zeros((H, W, 3), np.float32)
+    rough = np.full((H, W), 0.6, np.float32)
+    metal = np.zeros((H, W), np.float32)
+    ao = np.ones((H, W), np.float32)
+    nz = fbm(np.stack([u * 70.0, v * 3.0, np.full_like(u, 0.5)], axis=-1), 3)          # streaks along the blade
+    nb = fbm(np.stack([u * 9.0, v * 9.0, np.full_like(u, 2.5)], axis=-1), 3)           # soft blotches
+
+    def reg(r, pad=0.012):
+        u0, u1, v0, v1 = r
+        m = (u >= u0 - pad) & (u <= u1 + pad) & (v >= v0 - pad) & (v <= v1 + pad)
+        return m, np.clip((u - u0) / (u1 - u0), 0, 1), np.clip((v - v0) / (v1 - v0), 0, 1)
+    # ---- blade (steel) ----
+    M, a, b = reg(SW_BLADE)
+    d = np.abs(a - 0.5) * 2                                          # 0 at the spine, 1 at the edge
+    flat = mixc(rgb('#79838c'), rgb('#aab3ba'), 0.25 + 0.55 * b)
+    bevel = mixc(rgb('#b4bcc3'), rgb('#e1e7eb'), sstep(0.45, 1.0, d))
+    c = mixc(flat, bevel, sstep(0.40, 0.46, d))
+    c = mixc(c, rgb('#5f6870'), 0.45 * np.exp(-((d - 0.43) / 0.025) ** 2))      # crease where flat meets bevel
+    fuller = sstep(0.13, 0.06, d) * sstep(0.0, 0.04, b) * sstep(0.66, 0.56, b)
+    c = mixc(c, rgb('#4f5860'), 0.80 * fuller)
+    c = mixc(c, rgb('#d0d8dd'), 0.45 * np.exp(-((d - 0.15) / 0.025) ** 2) * sstep(0.0, 0.04, b) * sstep(0.66, 0.56, b))
+    c = mixc(c, rgb('#f4f7f8'), sstep(0.93, 0.99, d))                           # edge light
+    c = c * (1.0 + 0.06 * nz[..., None] + 0.04 * nb[..., None])
+    c = mixc(c, rgb('#6b6458'), 0.25 * sstep(0.06, 0.0, b))                     # a little warm grime at the guard
+    col[M] = c[M]
+    metal[M] = 0.9
+    rough[M] = (0.36 + 0.10 * fuller - 0.08 * sstep(0.5, 1.0, d) + 0.04 * nz)[M]
+    ao[M] = (1.0 - 0.18 * fuller - 0.25 * sstep(0.05, 0.0, b))[M]
+    # ---- brass parts: lit from above in the painting ----
+    def brass(M, light):
+        cb = mixc(rgb('#5e4419'), rgb('#a8832f'), sstep(-1.0, 0.0, light))
+        cb = mixc(cb, rgb('#e2bf6a'), sstep(0.25, 1.0, light))
+        cb = mixc(cb, rgb('#fff0b8'), sstep(0.88, 1.0, light) * 0.7)
+        cb = cb * (1.0 + 0.05 * nb[..., None])
+        col[M] = cb[M]
+        metal[M] = 1.0
+        rough[M] = (0.36 + 0.05 * nb)[M]
+    M, a, b = reg(SW_GUARD)
+    light = np.sin(2 * math.pi * b) * 0.85 + 0.15 * np.cos(math.pi * (a - 0.5))
+    brass(M, light)
+    ao[M] = (1.0 - 0.3 * np.exp(-((a - 0.5) / 0.06) ** 2) * sstep(0.0, -0.6, np.sin(2 * math.pi * b)))[M]
+    M, a, b = reg(SW_POMMEL)
+    light = np.cos(math.pi * (b - 0.35) * 1.4) * 0.9 + 0.25 * np.sin(2 * math.pi * a)
+    brass(M, np.clip(light, -1, 1))
+    # ---- grip: dark leather, spiral wrap ----
+    M, a, b = reg(SW_GRIP)
+    lit = np.sin(2 * math.pi * (a - 0.15))
+    leather = mixc(rgb('#1f140e'), rgb('#4a3222'), sstep(-0.8, 0.9, lit))
+    ph = (b * 13.0 + a * 1.0) % 1.0
+    groove = np.exp(-((ph - 0.5) / 0.09) ** 2)
+    leather = mixc(leather, rgb('#0f0906'), 0.75 * groove)
+    leather = mixc(leather, rgb('#6b4b34'), 0.35 * np.exp(-((ph - 0.25) / 0.10) ** 2) * sstep(-0.2, 0.9, lit))
+    leather = leather * (1.0 + 0.08 * nb[..., None])
+    col[M] = leather[M]
+    metal[M] = 0.0
+    rough[M] = (0.78 - 0.1 * np.exp(-((ph - 0.25) / 0.1) ** 2))[M]
+    ao[M] = (1.0 - 0.35 * groove)[M]
+    collar = M & ((b < 0.095) | (b > 0.905))
+    brass(collar, np.sin(2 * math.pi * (a - 0.15)) * 0.9)
+    base = np.clip(col, 0, 1)
+    orm = np.stack([np.clip(ao, 0, 1), np.clip(rough, 0.05, 1), np.clip(metal, 0, 1)], axis=2)
+    return base, orm
+
+
+def build_sword(rig, grip_action):
+    """Model the sword and hang it from hand_r. The grip frame is found from the fist in a sword clip:
+    centre = middle of the curled fingers, axis = from the little-finger side to the index side."""
+    sc = bpy.context.scene
+    rig.animation_data_create()
+    rig.animation_data.action = grip_action
+    frames = [0, 8, 16]
+    acc = []
+    for fr in frames:
+        sc.frame_set(fr)
+        P = rig.pose.bones
+        hm = rig.matrix_world @ P['hand_r'].matrix
+        pts = []
+        for f in ('index', 'middle', 'ring', 'pinky'):
+            loop = [P[f'{f}_0{k}_r'].head for k in (1, 2, 3)] + [P[f'{f}_03_r'].tail]
+            pts.append(sum(loop, Vector()) / 4)
+        c = sum(pts, Vector()) / 4
+        ax = ((P['index_01_r'].head + P['index_02_r'].head) - (P['pinky_01_r'].head + P['pinky_02_r'].head)).normalized()
+        ed = P['middle_01_r'].head - P['hand_r'].head
+        ed = (ed - ax * ed.dot(ax)).normalized()
+        g = Matrix((ed, ax.cross(ed), ax)).transposed().to_4x4()
+        g.translation = c
+        acc.append(hm.inverted() @ rig.matrix_world @ g)       # grip frame in the hand bone's pose space
+    loc = sum((m.translation for m in acc), Vector()) / len(acc)
+    q = acc[0].to_quaternion()
+    for m in acc[1:]:
+        q = q.slerp(m.to_quaternion(), 1.0 / len(acc))
+    local = Matrix.Translation(loc) @ q.to_matrix().to_4x4()
+    log('sword grip in hand_r space: offset %s, blade axis %s' % (tuple(round(x, 4) for x in loc), tuple(round(x, 3) for x in (q.to_matrix() @ Vector((0, 0, 1))))))
+    rig.animation_data.action = None
+    reset_pose(rig)
+
+    ob = sword_mesh()
+    base, orm = paint_sword()
+    tmp = WORK or bpy.app.tempdir
+    i_base = save_image('sword_basecolor', base, os.path.join(tmp, 'sword_basecolor.jpg'), True, 92)
+    i_orm = save_image('sword_orm', orm, os.path.join(tmp, 'sword_orm.jpg'), False, 92)
+    mat = bpy.data.materials.new('sword')
+    mat.use_nodes = True
+    nt = mat.node_tree
+    bsdf = nt.nodes['Principled BSDF']
+    tb_ = nt.nodes.new('ShaderNodeTexImage')
+    tb_.image = i_base
+    nt.links.new(tb_.outputs['Color'], bsdf.inputs['Base Color'])
+    to = nt.nodes.new('ShaderNodeTexImage')
+    to.image = i_orm
+    sep = nt.nodes.new('ShaderNodeSeparateColor')
+    nt.links.new(to.outputs['Color'], sep.inputs[0])
+    nt.links.new(sep.outputs[1], bsdf.inputs['Roughness'])
+    nt.links.new(sep.outputs[2], bsdf.inputs['Metallic'])
+    grp = bpy.data.node_groups.get('glTF Material Output') or bpy.data.node_groups.new('glTF Material Output', 'ShaderNodeTree')
+    if not grp.interface.items_tree:
+        grp.interface.new_socket('Occlusion', in_out='INPUT', socket_type='NodeSocketFloat')
+    gn = nt.nodes.new('ShaderNodeGroup')
+    gn.node_tree = grp
+    nt.links.new(sep.outputs[0], gn.inputs[0])
+    mat.use_backface_culling = True
+    ob.data.materials.append(mat)
+    # hang it from the hand: the node is a child of the hand_r joint in the glTF
+    ob.parent = rig
+    ob.parent_type = 'BONE'
+    ob.parent_bone = 'hand_r'
+    bpy.context.view_layer.update()
+    ob.matrix_world = rig.matrix_world @ rig.data.bones['hand_r'].matrix_local @ local
+    bpy.context.view_layer.update()
+    log('sword: %d triangles, %d vertices' % (tri_count(ob), len(ob.data.vertices)))
+    return ob
 
 
 def import_ual():
@@ -2368,6 +2702,18 @@ def stage_anim():
             align[n] = Quaternion()
         else:
             align[n] = t_child_dir(n, False).rotation_difference(t_child_dir(n, True))
+    # full (swing + twist) alignment for the hands, used by the clips added with the sword (opt hands='full'):
+    # matching only the hand's pointing direction leaves the fist rolled ~25 deg against the library's, which
+    # the older clips keep (unchanged); with a weapon in the fist the roll matters
+    def frame(d, lat):
+        y = (lat - d * lat.dot(d)).normalized()
+        return Matrix((d, y, d.cross(y))).transposed()
+    align_full = dict(align)
+    for sd in ('l', 'r'):
+        n = f'hand_{sd}'
+        lat_s = s_head(f'index_01_{sd}') - s_head(f'pinky_01_{sd}')
+        lat_t = tb[f'index_01_{sd}'].head_local - tb[f'pinky_01_{sd}'].head_local
+        align_full[n] = (frame(t_child_dir(n, True), lat_s) @ frame(t_child_dir(n, False), lat_t).inverted()).to_quaternion()
     order = [b.name for b in tb]                       # parents come before children
     k_len = tb['pelvis'].head_local.z / s_head('pelvis').z
     s_pel_rest = s_head('pelvis')
@@ -2385,8 +2731,9 @@ def stage_anim():
             pel.append((SW @ src.pose.bones['pelvis'].matrix).translation.copy())
         return rots, pel, (f1 - f0) / sc.render.fps      # the importer lays keys out at the scene fps
 
-    def target_world(src_rot):
-        return {m: src_rot[m] @ q_s_rest[m].inverted() @ align[m] @ q_t_rest[m] for m in mapped}
+    def target_world(src_rot, al=None):
+        al = al or align
+        return {m: src_rot[m] @ q_s_rest[m].inverted() @ al[m] @ q_t_rest[m] for m in mapped}
 
     def fk_foot(world, pel_pos):
         """World positions of ankle and ball joints for both sides."""
@@ -2456,7 +2803,7 @@ def stage_anim():
     reset_pose(rig)
     log('cloak bones: +X rotation swings', 'backwards' if back_sign > 0 else 'forwards', '; +Z rotation swings to the character\'s', 'left (+X)' if side_sign > 0 else 'right (-X)')
 
-    def secondary(name, j, n, loop, lean=0.0):
+    def secondary(name, j, n, loop, lean=0.0, hang=(0.6, 20.0)):
         """Lagged-sine sway for the cloak chain and the bell at frame j of n."""
         tilt, amp, cycles, side = CLOAK[name]
         ph = 2 * math.pi * j / n
@@ -2468,13 +2815,70 @@ def stage_anim():
             a = tilt[k] * (env if name == 'jump' else (1 - 0.6 * env if name == 'land' else 1.0))
             a += amp * (0.6 + 0.25 * k) * math.sin(cycles * ph - 0.7 * k)
             if k == 0:
-                a -= 0.6 * max(0.0, lean - 20.0)      # when the torso pitches far forward the cloak still hangs
+                a -= hang[0] * max(0.0, lean - hang[1])   # when the torso pitches far forward the cloak still hangs
             z = side * (0.5 + 0.3 * k) * math.sin((cycles / 2 if cycles > 1 else 1) * ph - 0.6 * k + 0.4)
             out[f'cloak{k + 1}'] = Quaternion((1, 0, 0), math.radians(a) * back_sign) @ Quaternion((0, 0, 1), math.radians(z))
-        b_amp = {'idle': 1.5, 'walk': 7.0, 'run': 12.0, 'fall': 8.0, 'ride_idle': 3.0}.get(name, 5.0)
+        b_amp = BELL.get(name, 5.0)
         c = max(cycles, 1)
         out['bell'] = Quaternion((1, 0, 0), math.radians(b_amp * math.sin(c * ph - 1.0))) @ Quaternion((0, 0, 1), math.radians(0.6 * b_amp * math.sin(c * ph / (2 if c > 1 else 1) + 0.5)))
         return out
+
+    # points of the cloak that must stay above the floor, per cloak bone, in that bone's rest frame:
+    # the lowest vertices it carries across the back and at both side corners of the hem
+    cl = bpy.data.objects['rider_cloak']
+    gi = {g.name: g.index for g in cl.vertex_groups}
+    hem = {}
+    for k in range(1, 5):
+        c = f'cloak{k}'
+        vs = [cl.matrix_world @ v.co for v in cl.data.vertices
+              if any(g.group == gi[c] and g.weight >= 0.5 for g in v.groups)]
+        pts = [tb[c].tail_local.copy()]
+        for lo, hi in ((-9, -0.25), (-0.25, 0.25), (0.25, 9)):
+            band = sorted((p for p in vs if lo <= p.x < hi), key=lambda p: p.z)[:2]
+            pts += band
+        hem[c] = [q_t_rest[c].inverted() @ (p - tb[c].head_local) for p in pts]
+    rings = [(r, [(r * math.cos(2 * math.pi * i / 16), r * math.sin(2 * math.pi * i / 16)) for i in range(16)])
+             for r in np.arange(2.0, 92.0, 2.0)]
+
+    def floor_cloak(fr, w, pel_pos, floor=0.04, fold=False):
+        """Swing each cloak bone (least angle, about its local X and Z) so that the hem it carries stays above
+        the floor: for clips that crouch, lie or tumble, where the rigid chain would otherwise run through it.
+        fold=True only looks at each bone's own hem, so the lowest bone folds back onto the floor (sitting)."""
+        pos = {'pelvis': pel_pos}
+        for a, b in (('pelvis', 'spine_01'), ('spine_01', 'spine_02'), ('spine_02', 'spine_03')):
+            pos[b] = pos[a] + (w[a] @ q_t_rest[a].inverted()) @ (tb[b].head_local - tb[a].head_local)
+        parent, wp, head = 'spine_03', w['spine_03'], pos['spine_03']
+        for k in range(1, 5):
+            c = f'cloak{k}'
+            head = head + (wp @ q_t_rest[parent].inverted()) @ (tb[c].head_local - tb[parent].head_local)
+            base = wp @ q_t_rest[parent].inverted() @ q_t_rest[c]
+
+            def low(q):
+                """lowest hem point of this bone and of the ones below it (they keep their current turn), so the
+                upper bones lift the whole cloak before the lower ones have to fold it"""
+                r, h, out = base @ q, head, 9.0
+                for kk in range(k, k + 1 if fold else 5):
+                    cc = f'cloak{kk}'
+                    if kk > k:
+                        pc = f'cloak{kk - 1}'
+                        h = h + (r @ q_t_rest[pc].inverted()) @ (tb[cc].head_local - tb[pc].head_local)
+                        r = r @ q_t_rest[pc].inverted() @ q_t_rest[cc] @ fr[cc]
+                    out = min(out, min((h + r @ p).z for p in hem[cc]))
+                return out
+            best = fr[c]
+            if low(best) < floor:
+                for r, dirs in rings:
+                    cands = []
+                    for ax, az in dirs:
+                        q = fr[c] @ Quaternion((1, 0, 0), math.radians(ax * back_sign)) @ Quaternion((0, 0, 1), math.radians(az))
+                        z = low(q)
+                        if z >= floor:
+                            cands.append((z + 0.002 * ax, q))       # a slight preference for swinging backwards
+                    if cands:
+                        best = max(cands, key=lambda t: t[0])[1]
+                        break
+            fr[c] = best
+            parent, wp = c, base @ best
 
     def ground_speed(feet, src_dur):
         """Speed implied by the planted foot (it travels backwards = +Y while in contact)."""
@@ -2489,29 +2893,48 @@ def stage_anim():
                     v.append((feet[i + 1][f'foot_{sd}'].y - feet[i][f'foot_{sd}'].y) / dt)
         return float(np.median(v))
 
-    def prepare(sname, loop, name):
+    def prepare(sname, loop, name, opt=None, window=(0.0, 1.0)):
+        opt = opt or {}
         rots, pel, src_dur = sample(src_actions[sname])
         ns = len(rots)
-        world = [target_world(r) for r in rots]
+        world = [target_world(r, align_full if opt.get('hands') == 'full' else None) for r in rots]
         offs = [(p - s_pel_rest) * k_len for p in pel]
         # in place: no net horizontal travel; keep the sway about the mean
-        mx = sum(o.x for o in offs) / ns
-        my = sum(o.y for o in offs) / ns
-        if not loop:
-            ref = offs[0] if name == 'land' else offs[-1]
-            mx, my = ref.x, ref.y
-        offs = [Vector((o.x - mx, o.y - my, o.z)) for o in offs]
+        mode = opt.get('ref', 'mean' if loop else ('first' if name == 'land' else 'last'))
+        if mode == 'detrend':
+            # remove the straight-line travel between the ends of the window (keeps the in-between surge)
+            i0, i1 = window[0] * (ns - 1), window[1] * (ns - 1)
+            a, b = slerp_sample(offs, i0), slerp_sample(offs, i1)
+            ramp = lambda i: a.lerp(b, min(1.0, max(0.0, (i - i0) / (i1 - i0))))
+            offs = [Vector((o.x - ramp(i).x, o.y - ramp(i).y, o.z)) for i, o in enumerate(offs)]
+        else:
+            if mode == 'mean':
+                mx = sum(o.x for o in offs) / ns
+                my = sum(o.y for o in offs) / ns
+            else:
+                ref = offs[0] if mode == 'first' else offs[-1]
+                mx, my = ref.x, ref.y
+            offs = [Vector((o.x - mx, o.y - my, o.z)) for o in offs]
         feet = [fk_foot(w, tb['pelvis'].head_local + o) for w, o in zip(world, offs)]
         return world, offs, feet, src_dur
 
     info = {}
-    for name, sname, loop, speed, dur, (u0, u1) in CLIPS:
+    def subtree(n):
+        out = [n]
+        for c in tb[n].children:
+            out += subtree(c.name)
+        return [m for m in out if m in mapped]
+    upper = subtree('spine_02')
+
+    for entry in CLIPS:
+        name, sname, loop, speed, dur, (u0, u1) = entry[:6]
+        opt = entry[6] if len(entry) > 6 else {}
         note = ''
         if speed:
             # of the candidate cycles, take the one that needs the least retiming to plant its feet at this speed
             best = None
             for cand in sname.split('|'):
-                world, offs, feet, src_dur = prepare(cand, loop, name)
+                world, offs, feet, src_dur = prepare(cand, loop, name, opt, (u0, u1))
                 v_src = ground_speed(feet, src_dur)
                 factor = speed / v_src
                 log('  %s candidate %-13s cycle %.3f s, planted-foot speed %.2f m/s, retime x%.2f' % (name, cand, src_dur, v_src, factor))
@@ -2521,23 +2944,34 @@ def stage_anim():
             dur = src_dur / factor
             note = 'source %.3f s at %.2f m/s, played x%.2f -> %.2f m/s' % (src_dur, v_src, factor, speed)
         else:
-            world, offs, feet, src_dur = prepare(sname, loop, name)
+            world, offs, feet, src_dur = prepare(sname, loop, name, opt, (u0, u1))
         ns = len(world)
         n = max(2, int(round(dur * FPS)))
-        if name in ('idle', 'walk', 'run', 'land'):
+        ground = opt.get('ground', 'min' if name in ('idle', 'walk', 'run', 'land') else None)
+        if ground:
             # keep the lowest sole joint at its rest height so the feet meet the ground
-            low = min(min(f['ball_l'].z, f['ball_r'].z) for f in feet)
+            low = min(min(f['ball_l'].z, f['ball_r'].z) for f in (feet if ground == 'min' else feet[:1]))
             dz = tb['ball_l'].head_local.z - low
             offs = [o + Vector((0, 0, dz)) for o in offs]
             note += ' pelvis dz %+.3f' % dz
         qp = q_t_rest['pelvis'].inverted()
         frames = []
+        warp = opt.get('warp')
         for j in range(n + 1):
-            u = (u0 + (u1 - u0) * j / n) * (ns - 1)
+            t = j / n
+            if warp:
+                t = float(np.interp(t, [k[0] for k in warp], [k[1] for k in warp]))
+            u = (u0 + (u1 - u0) * t) * (ns - 1)
             if loop and j == n:
                 u = u0 * (ns - 1)
             fr = {}
             w = {m: slerp_sample([wd[m] for wd in world], u) for m in mapped}
+            pitch, drop = accent(opt.get('accent'), j / n)
+            if pitch:
+                # tip the whole upper body about the spine_02 joint (world X: + bends forward)
+                r = Quaternion((1, 0, 0), math.radians(pitch))
+                for m in upper:
+                    w[m] = r @ w[m]
             for b in order:
                 if b not in w:
                     continue
@@ -2549,9 +2983,31 @@ def stage_anim():
             fr['Root'] = Quaternion()
             up_v = (w['spine_03'] @ q_t_rest['spine_03'].inverted()) @ Vector((0, 0, 1))
             lean = math.degrees(math.atan2(-up_v.y, up_v.z))
-            fr.update(secondary(name, j if not (loop and j == n) else 0, n, loop, lean))
-            fr['_loc'] = qp @ slerp_sample(offs, u)
+            if 'lean_cap' in opt:
+                lean = min(lean, opt['lean_cap'])
+            fr.update(secondary(name, j if not (loop and j == n) else 0, n, loop, lean, opt.get('hang', (0.6, 20.0))))
+            fr['_loc'] = qp @ (slerp_sample(offs, u) - Vector((0, 0, drop)))
+            if opt.get('floor'):
+                floor_cloak(fr, w, tb['pelvis'].head_local + slerp_sample(offs, u) - Vector((0, 0, drop)), fold=opt.get('fold', False))
             frames.append(fr)
+        if opt.get('floor') and opt.get('smooth', True):
+            # the floor clamp is solved frame by frame: smooth it in time so the cloak does not pop
+            # (not for the roll, whose corrections change too quickly between frames)
+            for c in ('cloak1', 'cloak2', 'cloak3', 'cloak4'):
+                seq = [fr[c] for fr in frames]
+                out = []
+                for j in range(len(seq)):
+                    acc, ref = np.zeros(4), seq[j]
+                    for dj, wt in ((-2, 1), (-1, 2), (0, 3), (1, 2), (2, 1)):
+                        jj = j + dj
+                        jj = (jj % n) if loop else min(max(jj, 0), len(seq) - 1)
+                        q = seq[jj]
+                        acc += np.array(q[:]) * (wt if q.dot(ref) >= 0 else -wt)
+                    out.append(Quaternion(tuple(acc / np.linalg.norm(acc))))
+                if loop:
+                    out[n] = out[0]
+                for fr, q in zip(frames, out):
+                    fr[c] = q
         write_action(name, frames)
         info[name] = dict(duration=n / FPS, frames=n, loop=loop, source=sname, note=note.strip())
         log('clip %-9s %.3f s (%d frames) loop=%s  <- %s  %s' % (name, n / FPS, n, loop, sname, note))
@@ -2582,6 +3038,12 @@ def stage_anim():
     log('clip ride_idle %.3f s (%d frames) loop=True  <- posed' % (n / FPS, n))
     reset_pose(rig)
 
+    # ---- the sword, hung from the right hand in the grip the sword clips imply ----
+    old = bpy.data.objects.get('sword')
+    if old is not None:
+        bpy.data.objects.remove(old)
+    build_sword(rig, made['sword_idle'])
+
     # ---- tidy up: only our clips remain, each on its own NLA track ----
     bpy.data.objects.remove(src)
     for a in list(bpy.data.actions):
@@ -2609,6 +3071,8 @@ def stage_anim():
 def export_glb(with_animation):
     rig = bpy.data.objects['rider_rig']
     meshes = [bpy.data.objects['rider_body'], bpy.data.objects['rider_cloak']]
+    if with_animation and bpy.data.objects.get('sword') is not None:
+        meshes.append(bpy.data.objects['sword'])
     reset_pose(rig)
     bpy.context.scene.frame_set(0)
     os.makedirs(os.path.dirname(OUT_GLB), exist_ok=True)

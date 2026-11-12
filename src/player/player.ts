@@ -55,6 +55,10 @@ export class Player {
   heroVy = 0;
   heroGrounded = true;
   private heroSpeed = 0;
+  /** seconds the rider's legs belong to combat (attacks, rolls): input does not steer */
+  lock = 0;
+  /** the rider is down */
+  dead = false;
   private prevHeroSpeed = 0;
   private stepAcc = 0;
 
@@ -113,7 +117,7 @@ export class Player {
         break;
       case 'walk':
         this.updateWalk(dt, input, aimYaw);
-        if (input.consume('interact')) {
+        if (!this.dead && input.consume('interact')) {
           if (this.distanceToDragon() < 7) this.beginMount();
           else this.beginCall();
         }
@@ -272,9 +276,35 @@ export class Player {
   }
 
   // ---------------------------------------------------------------- on foot
+  /** Move the rider by (dx, dz), sliding along walls. Used by attacks and rolls. */
+  push(dx: number, dz: number) {
+    const STEP = 0.55, R = 0.32;
+    const tryMove = (nx: number, nz: number) => {
+      const h = this.col.heightAround(nx, nz, R);
+      if (h > this.heroPos.y + STEP) return false;
+      this.heroPos.x = nx;
+      this.heroPos.z = nz;
+      return true;
+    };
+    if (!tryMove(this.heroPos.x + dx, this.heroPos.z + dz)) {
+      tryMove(this.heroPos.x + dx, this.heroPos.z);
+      tryMove(this.heroPos.x, this.heroPos.z + dz);
+    }
+  }
+
+  /** Camera-relative move direction from the sticks / WASD (zero if none). */
+  moveDir(input: Input, camYaw: number) {
+    const fx = Math.sin(camYaw), fz = Math.cos(camYaw);
+    const rx = -Math.cos(camYaw), rz = Math.sin(camYaw);
+    const v = new THREE.Vector3(fx * input.moveY + rx * input.moveX, 0, fz * input.moveY + rz * input.moveX);
+    return v.lengthSq() > 0.01 ? v.normalize() : v.set(0, 0, 0);
+  }
+
   private updateWalk(dt: number, input: Input, camYaw: number) {
     const run = input.held('boost');
-    const maxSpeed = run ? 6.8 : 3.3;
+    const locked = this.lock > 0 || this.dead;
+    this.lock = Math.max(0, this.lock - dt);
+    const maxSpeed = locked ? 0 : run ? 6.8 : 3.3;
     // camera-relative move: forward = camera facing
     const fx = Math.sin(camYaw), fz = Math.cos(camYaw);
     const rx = -Math.cos(camYaw), rz = Math.sin(camYaw);
@@ -286,9 +316,9 @@ export class Player {
     this.heroVel.x = lerp(this.heroVel.x, mx * maxSpeed, damp(accel, dt));
     this.heroVel.z = lerp(this.heroVel.z, mz * maxSpeed, damp(accel, dt));
     const sp = Math.hypot(this.heroVel.x, this.heroVel.z);
-    if (sp > 0.3) this.heroYaw += angleDelta(this.heroYaw, Math.atan2(this.heroVel.x, this.heroVel.z)) * damp(0.2, dt);
+    if (sp > 0.3 && !locked) this.heroYaw += angleDelta(this.heroYaw, Math.atan2(this.heroVel.x, this.heroVel.z)) * damp(0.2, dt);
 
-    if (input.consume('jump') && this.heroGrounded) {
+    if (!locked && input.consume('jump') && this.heroGrounded) {
       this.heroVy = 5.2;
       this.heroGrounded = false;
     }

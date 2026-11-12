@@ -142,4 +142,101 @@ export class Sound {
     const notes = cracked ? [196, 233, 175] : [392, 330, 294, 262];
     notes.forEach((f, i) => setTimeout(() => this.bell(f, 0.22, cracked), i * 260));
   }
+
+  // ---------------------------------------------------------------- combat
+  // Layered like the research says: a body (low thump), a bite (noise), and a
+  // little random pitch so a hundred hits never sound like one.
+
+  swing(heavy = false) {
+    this.burst(heavy ? 0.28 : 0.18, heavy ? 1400 : 2600 + Math.random() * 700, heavy ? 0.16 : 0.1, 'bandpass', 1.2);
+  }
+
+  hit(crit = false, metal = false) {
+    this.thump(70 + Math.random() * 20, crit ? 0.55 : 0.38, 0.22);
+    this.burst(0.16, metal ? 4200 : 1500 + Math.random() * 500, crit ? 0.32 : 0.22, metal ? 'bandpass' : 'lowpass', metal ? 6 : 0.8);
+    if (metal) this.ring(1800 + Math.random() * 400, 0.05, 0.25);
+  }
+
+  kill() {
+    this.thump(45, 0.6, 0.5);
+    this.burst(0.45, 900, 0.25);
+  }
+
+  hurt() {
+    this.thump(90, 0.45, 0.25);
+    this.burst(0.22, 600, 0.25);
+  }
+
+  whoosh() {
+    this.burst(0.35, 1200, 0.2, 'bandpass', 0.9);
+  }
+
+  fire() {
+    this.burst(0.5, 800 + Math.random() * 200, 0.3, 'lowpass', 0.6);
+    this.thump(80, 0.15, 0.2);
+  }
+
+  boom() {
+    this.thump(38, 0.8, 0.7);
+    this.burst(0.9, 1100, 0.4, 'lowpass', 0.5);
+  }
+
+  shot() {
+    this.burst(0.08, 5000, 0.5, 'highpass', 0.7);
+    this.thump(60, 0.6, 0.3);
+    this.burst(0.6, 700, 0.15);
+  }
+
+  howl() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(220, t);
+    o.frequency.linearRampToValueAtTime(420, t + 0.5);
+    o.frequency.linearRampToValueAtTime(300, t + 1.6);
+    const f = this.ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = 700;
+    f.Q.value = 3;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.12, t + 0.2);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+    o.connect(f).connect(g).connect(this.master);
+    o.start(t);
+    o.stop(t + 1.9);
+  }
+
+  coins() {
+    for (let i = 0; i < 4; i++) setTimeout(() => this.ring(2600 + Math.random() * 900, 0.06, 0.12), i * 55);
+  }
+
+  loot(rarity: number) {
+    // rarer things get a brighter, longer jingle (Diablo's drop sounds)
+    const notes = [[523], [523, 659], [523, 659, 784], [523, 659, 784, 1047]][rarity] ?? [523];
+    notes.forEach((f, i) => setTimeout(() => this.bell(f, 0.12 + rarity * 0.04), i * 110));
+  }
+
+  levelUp() {
+    [262, 330, 392, 523, 659].forEach((f, i) => setTimeout(() => this.bell(f, 0.22), i * 140));
+  }
+
+  questDone() {
+    [392, 523, 659].forEach((f, i) => setTimeout(() => this.bell(f, 0.2), i * 180));
+  }
+
+  private ring(freq: number, gain: number, dur: number) {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    o.type = 'triangle';
+    o.frequency.value = freq;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(this.master);
+    o.start(t);
+    o.stop(t + dur + 0.05);
+  }
 }

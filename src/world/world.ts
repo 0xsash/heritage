@@ -79,17 +79,17 @@ export class World {
   }
 
   build(onProgress: (msg: string) => void) {
-    onProgress('Raising the polders…');
+    onProgress('De polders worden opgehoogd…');
     this.buildGround();
-    onProgress('Ploughing the Hageland…');
+    onProgress('Het Hageland wordt geploegd…');
     this.buildLand();
-    onProgress('Letting in the Demer…');
+    onProgress('De Demer wordt binnengelaten…');
     this.buildWater();
-    onProgress('Laying cobbles…');
+    onProgress('De kasseien worden gelegd…');
     this.buildRoads();
-    onProgress('Building Diest, brick by brick…');
+    onProgress('Diest wordt gebouwd, baksteen per baksteen…');
     this.buildBuildings();
-    onProgress('Planting willows and poplars…');
+    onProgress('Wilgen en populieren worden geplant…');
     this.buildTrees();
     this.buildDiscoveries();
   }
