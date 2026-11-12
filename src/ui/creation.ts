@@ -51,6 +51,32 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
       resolve(r);
     };
 
+    // ---------------------------------------------------------------- what this is (first visit)
+    const promise = (back: boolean) => {
+      el.innerHTML = `<div class="fe-title fe-promise" style="background-image:url(${asset('ui/intro/flight-demer-valley.jpg')})">
+        <div class="fe-shade"></div>
+        <div class="fe-center">
+          <h1>BELFORT</h1>
+          <h2>EEN AVONTUUR IN BRABANT · ANNO 1650</h2>
+          <div class="fe-cols">
+            <div><h3>DIT IS</h3>
+              <p><b>Een actie-avontuur.</b> Vlieg op een draak, land waar ge wilt, vecht, verdien, word sterker.</p>
+              <p><b>Echt Brabant.</b> De straten, kerken en muren van Diest liggen waar ze in 1650 lagen.</p>
+              <p><b>Folklore die bijt.</b> De Kludde, dwaallichten, en klokken met macht.</p>
+            </div>
+            <div><h3>DIT IS NIET</h3>
+              <p><b>Een geschiedenisles.</b> Wat echt is en wat verzonnen, staat eerlijk in de Kroniek.</p>
+              <p><b>Een simulator.</b> De draak vliegt vanzelf. Gij stuurt.</p>
+              <p><b>Af.</b> Dit is het eerste hoofdstuk: Diest en Scherpenheuvel, een goed uur spel.</p>
+            </div>
+          </div>
+          <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN UW VERHAAL'}</button></div>
+          <div class="fe-small">Muis en toetsenbord of een gamepad · geluid aan · uw voortgang wordt op dit toestel bewaard</div>
+        </div>
+      </div>`;
+      el.querySelector('[data-go="ok"]')!.addEventListener('click', () => (back ? title() : story(0)));
+    };
+
     // ---------------------------------------------------------------- title
     const title = () => {
       el.innerHTML = `<div class="fe-title" style="background-image:url(${asset('ui/intro/flight-demer-valley.jpg')})">
@@ -62,11 +88,12 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
             ${save ? `<button data-go="continue">VERDER SPELEN<small>${esc(save.name)} · ${esc(ORIGINS[save.origin as OriginId]?.name ?? '')} · niveau ${save.level}</small></button>` : ''}
             <button data-go="new">${save ? 'NIEUW VERHAAL' : 'BEGIN UW VERHAAL'}</button>
           </div>
-          <div class="fe-small">Best met muis en toetsenbord of een gamepad · met koptelefoon</div>
+          <div class="fe-small">Best met muis en toetsenbord of een gamepad · met geluid · <button class="fe-link" data-go="what">wat is dit?</button></div>
         </div>
         <div class="fe-credit">Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)</div>
       </div>`;
       el.querySelector('[data-go="continue"]')?.addEventListener('click', () => done({ mode: 'continue' }));
+      el.querySelector('[data-go="what"]')!.addEventListener('click', () => promise(true));
       el.querySelector('[data-go="new"]')!.addEventListener('click', () => {
         if (save && !confirm('Een nieuw verhaal beginnen? Uw huidige personage gaat verloren.')) return;
         story(0);
@@ -171,6 +198,8 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
       nameIn.select();
     };
 
-    title();
+    // a first-time visitor is told what this is before anything else; a returning one goes to the title
+    if (save) title();
+    else promise(false);
   });
 }

@@ -25,6 +25,7 @@ import { runFrontEnd } from './ui/creation';
 import { Banner, CharacterPanel, Guide, PlayerFrame, type SlotView } from './ui/gamehud';
 import { Hud } from './ui/hud';
 import { KroniekUI } from './ui/kroniekui';
+import { Tutorial } from './ui/tutorial';
 import { DialogueUI, JournalUI } from './ui/rpgui';
 import { Atmosphere } from './world/sky';
 import { loadTreeAtlas } from './world/trees';
@@ -215,6 +216,11 @@ async function boot() {
   scene.add(readables.group);
   const kroniekUI = new KroniekUI(uiRoot, kroniek);
   kroniekUI.onClose = () => closeUi();
+  const tutorial = new Tutorial(uiRoot, quests.s.flags, () => quests.save(), (id) => {
+    sound.chime(false);
+    if (id === 'land') kroniek.unlock('tijd:draken');
+  });
+  const tut = { turned: 0, walked: 0, lastYaw: 0, lastX: 0, lastZ: 0, goal: Infinity };
   {
     // creatures enter the Kroniek the first time one falls
     const onKill = quests.onKill.bind(quests);
@@ -271,12 +277,10 @@ async function boot() {
   input.requestLock();
   if (isNew) {
     quests.start('main_arrive');
-    setTimeout(() => hud.announce('BRABANT · 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, `Volg het gouden licht naar de Grote Markt van Diest. Druk op E om te landen. Linkermuis spuwt vuur, H toont de besturing.`), 2600);
+    setTimeout(() => hud.announce('BRABANT · ANNO 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, 'Onder u ligt Diest. De klokken zwijgen.'), 2600);
   } else {
-    hud.toggleHelp();
-    banner.show('start', 'WELKOM TERUG', quests.s.hero.name, [`Niveau ${quests.s.hero.level} · ${quests.s.florins} florijnen`, 'J: dagboek · I: personage']);
+    banner.show('start', 'WELKOM TERUG', quests.s.hero.name, [`Niveau ${quests.s.hero.level} · ${quests.s.florins} florijnen`]);
   }
-  if (isNew) setTimeout(() => hud.toggleHelp(), 30000);
 
   canvas.addEventListener('click', () => {
     if (running && !uiOpen()) input.requestLock();
@@ -318,7 +322,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables };
+  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -390,6 +394,21 @@ async function boot() {
       quests.update(px, py, pz, player.mode === 'walk');
       actors.update(sdt, px, pz, dialogue.npcId);
       readables.update(sdt, px, pz);
+      // learning by doing: what has the player done so far?
+      if (player.mode === 'fly') tut.turned += Math.abs(Math.atan2(Math.sin(player.yaw - tut.lastYaw), Math.cos(player.yaw - tut.lastYaw)));
+      else if (player.mode === 'walk') tut.walked += Math.min(1, Math.hypot(px - tut.lastX, pz - tut.lastZ));
+      tut.lastYaw = player.yaw;
+      tut.lastX = px;
+      tut.lastZ = pz;
+      tutorial.update(dt, {
+        mode: player.mode, pad: input.device === 'pad', turned: tut.turned, walked: tut.walked,
+        throttle: input.throttle - (input.held('brake') ? 1 : 0), climbing: input.held('jump') || input.held('descend'), boosting: input.held('boost'),
+        canLand: player.canLand(), toGoal: tut.goal, goalIsHere: tut.goal < 30,
+        talking: dialogue.open, bookOpen: journal.open || kroniekUI.open, nearGiver: false,
+        quests: Object.keys(quests.s.quests).length, inCombat: combat.inCombat,
+        hpFrac: quests.s.hero.hp / quests.sheet.derived().maxHp, salves: quests.s.inv.salve ?? 0,
+        tally: combat.tally, dragon: quests.s.hero.dragon, skill: quests.sheet.origin.skill.name, uiOpen: uiOpen() || mapOpen,
+      });
       crowd?.update(sdt, px, pz, player.onFoot ? 0 : player.altitude(), rig.camera, {
         x: px, z: pz, onFoot: player.onFoot, dragonX: player.pos.x, dragonZ: player.pos.z, dragonDown: player.mode === 'walk' || player.mode === 'calling',
       });
@@ -400,11 +419,13 @@ async function boot() {
         const r = o.kind === 'kill' ? o.r : o.kind === 'reach' && o.r >= 40 ? o.r : 0;
         const text = quests.fill(o.text) + quests.progress(t.quest.id, o);
         guide.target = { x: t.x, z: t.z, r, title: t.quest.title, text, person: o.kind === 'talk' };
+        tut.goal = Math.hypot(t.x - px, t.z - pz);
         hud.questTarget = { x: t.x, z: t.z, title: t.quest.title, objective: text, r };
       } else {
         const g = quests.nearestGiver(px, pz);
         guide.target = g ? { x: g.x, z: g.z, r: 0, title: 'Werk', text: `${g.npc.name} heeft werk voor u`, person: true } : null;
         hud.questTarget = g ? { x: g.x, z: g.z, title: 'Werk', objective: `Spreek met ${g.npc.name}` } : null;
+        tut.goal = g ? Math.hypot(g.x - px, g.z - pz) : Infinity;
       }
       const list = quests.activeList().map((a) => ({
         title: a.quest.title,

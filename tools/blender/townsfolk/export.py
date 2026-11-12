@@ -328,7 +328,10 @@ def stage_export():
     meta = json.loads(sc['garments'])
     hides = json.loads(sc['hides'])
     clips = json.loads(sc['clips'])
-    morph_pieces = set(json.loads(sc.get('morph_pieces', '[]')))
+    # pieces that frame the face follow the face morphs; body garments never need to
+    meta_ = json.loads(sc['garments'])
+    morph_pieces = {g for g in json.loads(sc.get('morph_pieces', '[]'))
+                    if meta_.get(g, {}).get('slot') in ('head', 'hair', 'beard', 'mantle', 'collar')}
     man = bpy.data.objects['rig.man']
     idle = bpy.data.actions['idle']
     pel_man = man.data.bones['pelvis'].head_local.z

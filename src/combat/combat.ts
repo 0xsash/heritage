@@ -158,6 +158,8 @@ export class Combat {
   private lastFight = -99;
   private deadT = -1;
   inCombat = false;
+  /** things the player has done (the tutorial watches these) */
+  tally = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0 };
   /** the elite you are fighting, for the bar at the top of the screen */
   bossTarget: Enemy | null = null;
 
@@ -350,6 +352,7 @@ export class Combat {
         this.roll = { t: 0, dir };
         this.atk = null;
         this.invuln = 0.42;
+        this.tally.rolls++;
         p.heroYaw = Math.atan2(dir.x, dir.z);
         hero.act('roll', 0.55);
         this.sound.whoosh();
@@ -473,6 +476,7 @@ export class Combat {
   }
 
   private useSkill(id: string, input: Input, camYaw: number, d: ReturnType<Combat['sheet']['derived']>) {
+    this.tally.skills++;
     const p = this.player;
     const o = this.sheet.origin;
     const def = o.skill.id === id ? o.skill : o.skill2;
@@ -554,6 +558,7 @@ export class Combat {
     }
     inv.salve--;
     this.cds.potion = 12;
+    this.tally.potions++;
     this.heal += maxHp * 0.5;
     const at = this.player.onFoot ? this.player.heroPos : this.player.pos;
     this.fx.particles.emit(at.clone().setY(at.y + 1), { n: 26, color: '#7dffa0', speed: 1.5, up: 2.5, life: 1, size: 0.12, gravity: -1 });
@@ -604,6 +609,7 @@ export class Combat {
     const dragonDmg = (14 + this.sheet.h.level * 6) * d.power * (1 + d.fire / 100);
     this.projectiles.push({ kind: 'fire', pos: start, vel, dmg: Math.round(dragonDmg), life: 4, sprite: s, hit: new Set() });
     this.sound.fire();
+    this.tally.breaths++;
     this.ev.trauma(0.06);
   }
 
@@ -695,6 +701,7 @@ export class Combat {
     this.floaters.add(String(dmg), top, crit ? 'dmg crit' : 'dmg', crit ? 1.0 : 0.8, crit ? 2.2 : 1.6);
     this.fx.sparks(top.clone().setY(e.pos.y + 1.1), dir, e.type.body === 'hound' ? '#9fd6ff' : '#ffcf7a', crit ? 22 : 12);
     this.sound.hit(crit, e.type.body === 'human');
+    this.tally.hits++;
     // alert the camp
     for (const o of e.camp.enemies) if (o.alive && o.pos.distanceToSquared(e.pos) < 400) o.aggro = true;
     if (e.hp <= 0) return this.kill(e, dir);
@@ -944,6 +951,7 @@ export class Combat {
           e.hitThisSwing = false;
           e.aimAt.copy(target);
           e.body.act('windup', t.windup);
+          this.tally.telegraphs++;
           if (ranged?.projectile === 'shot') this.fx.flash(e.pos.clone().setY(e.pos.y + 1.5), 0.6, '#ff5030', t.windup);
           break;
         }

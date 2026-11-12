@@ -57,11 +57,12 @@ export class Hud {
       <tr><td>Linkermuis</td><td>Zwaardslag (te voet) · drakenvuur (vliegend)</td></tr>
       <tr><td>Rechtermuis · R</td><td>Vaardigheden van uw afkomst</td></tr>
       <tr><td>Q</td><td>Begijnenzalf drinken</td></tr>
-      <tr><td>J · M · I</td><td>Dagboek · kaart · personage en zak</td></tr>
+      <tr><td>J · K · I · M</td><td>Dagboek · Kroniek · personage en zak · kaart</td></tr>
       <tr><td>T · H</td><td>Licht veranderen · hulp verbergen</td></tr>
       <tr><td>Gamepad</td><td>LS sturen · RS camera · RT/LT snelheid en aanvallen · A stijgen · B dalen · Y landen/praten</td></tr>
       </table>`,
     );
+    this.help.classList.add('hidden'); // H shows it; the tutorial teaches the rest as you go
     this.map.appendChild(this.mapCanvas);
     this.map.appendChild(el('legend', 'DIEST &amp; HET DEMERDAL · ANNO 1650'));
     this.map.appendChild(el('map-credit', 'Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)'));

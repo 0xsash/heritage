@@ -385,3 +385,28 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .journal, .charpanel { z-index: 5; }
 .journal .list button { width: 100%; box-sizing: border-box; }
 .journal .list .kr-tabs button { width: auto; }
+
+/* ---------- tutorial hint: one line, above the prompt ---------- */
+.tut { position: absolute; left: 50%; bottom: 212px; transform: translate(-50%, 8px); display: flex; align-items: center; gap: 12px; padding: 9px 18px 9px 12px; background: linear-gradient(180deg, rgba(30, 22, 12, 0.92), rgba(16, 12, 7, 0.92)); border: 1px solid rgba(214, 173, 87, 0.55); border-radius: 3px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5); font-size: 17px; opacity: 0; transition: opacity 0.3s, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s; white-space: nowrap; max-width: calc(100vw - 32px); }
+.tut.show { opacity: 1; transform: translate(-50%, 0); }
+.tut.dim { opacity: 0 !important; }
+.tut kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 7px; box-sizing: border-box; margin-right: 4px; font-family: var(--display); font-size: 13px; color: var(--gold); border: 1px solid rgba(214, 173, 87, 0.7); border-bottom-width: 2px; border-radius: 4px; background: rgba(0, 0, 0, 0.35); }
+.tut kbd .mouse { width: 12px; height: 17px; }
+.tut-ok { width: 0; overflow: hidden; color: #9fe6a0; font-size: 18px; transition: width 0.2s; }
+.tut.ok { border-color: #9fe6a0; }
+.tut.ok .tut-ok { width: 18px; }
+.tut.ok .tut-text { color: #cfeccf; }
+@media (max-width: 760px) { .tut { white-space: normal; font-size: 15px; } }
+
+/* ---------- first visit: what this is ---------- */
+.fe-promise .fe-center { max-width: min(880px, calc(100% - 48px)); }
+.fe-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 44px; text-align: left; margin: 26px 0 8px; }
+.fe-cols h3 { font-family: var(--display); font-weight: 500; font-size: 13px; letter-spacing: 0.34em; color: var(--gold); margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(214, 173, 87, 0.35); }
+.fe-cols div:last-child h3 { color: #d8a898; border-color: rgba(216, 168, 152, 0.35); }
+.fe-cols p { margin: 0 0 9px; font-size: 17px; line-height: 1.45; color: #e2d8c0; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); }
+.fe-cols b { color: #fff3d6; font-weight: 600; }
+:where(.frontend) button.fe-link { all: unset; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; color: var(--gold); }
+@media (max-width: 700px) { .fe-cols { grid-template-columns: 1fr; } }
+@media (max-height: 700px) { .fe-cols { margin: 14px 0 4px; } .fe-cols p { font-size: 15.5px; margin-bottom: 6px; } }
+.fe-cols { background: rgba(10, 8, 5, 0.5); padding: 18px 24px 10px; border: 1px solid rgba(214, 173, 87, 0.18); backdrop-filter: blur(3px); }
+.fe-promise .fe-menu { margin-top: 18px; }

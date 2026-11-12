@@ -1861,8 +1861,8 @@ def g_bandolier(ctx, ref):
     pts, ln = convex_ring(bv, c, n, count=32)
     band = strap_mesh('bandolier_band', pts, ln, n, c, 0.040 * k, 0.005, 0.004, 'leather')
     charges = []
-    front = [i for i in range(len(pts)) if pts[i].y < ctx.hip.y - 0.02 and ctx.waist_z + 0.02 * k < pts[i].z < ctx.neck.z - 0.10 * k]
-    for i in front[::2][:6]:
+    for j in (-6, -4, -2, 0, 2, 4):                        # fixed places along the front of the strap (same on every body)
+        i = j % len(pts)
         p, out, tan = ring_frame(pts, i, n.normalized(), c)
         ch = lathe_mesh('charge', [(0.0, 0.0), (0.009, -0.002), (0.011, -0.012), (0.011, -0.050), (0.0, -0.054)], 5, 'wood')
         ch.data.transform(Matrix.Translation(p + out * 0.016 * k - UP * 0.026 * k))
