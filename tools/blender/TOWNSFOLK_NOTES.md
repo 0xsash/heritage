@@ -318,3 +318,113 @@ body 4,079 → 2,887 triangles); props sit in the hand from the manifest grips.
 * Hair is broader and flatter than in phase A but the children's and cropped styles still read as clumps up close.
 * `walk_old` is derived procedurally from the rider's walk, not mocap; `look_around` / `point` are procedural.
 * The feet are deleted from the bodies (every outfit has shoes, clogs or boots); a barefoot outfit would need them back.
+
+## Phase C: unique faces, enemies, named NPCs
+
+### Face morph targets
+Every `body.<body>` mesh carries the same glTF morph targets, in the same order (`mesh.extras.targetNames`, so
+three.js fills `morphTargetDictionary`). Each is the half-difference of a MakeHuman `incr` / `decr` detail-target pair
+(MPFB's CC0 targets, read from the add-on's data), times a gain, so +1 is about the `incr` shape and −1 about the
+`decr` one. Defined in `bodies.FACE_MORPHS`; ranges in the manifest's `faceMorphs`.
+
+| target | +1 … −1 | MakeHuman targets | gain | safe range |
+|---|---|---|---|---|
+| `nose_length` | longer, drooping … short, turned up | nose-scale-vert, nose-point | 1.0 | −1 … 1 |
+| `nose_width` | broad, flared … narrow | nose-scale-horiz, nose-flaring | 1.4 | −1 … 1 |
+| `nose_bridge` | humped, prominent … flat, scooped | nose-hump, nose-scale-depth | 1.0 | −1 … 1 |
+| `jaw_width` | broad jaw … narrow jaw | chin-bones, chin-width | 1.0 | −1 … 1 |
+| `chin_length` | long, forward chin … short, receding | chin-height, chin-prominent | 1.0 | −1 … 1 |
+| `cheeks` | full … hollow | l/r-cheek-volume | 1.3 | −1 … 1 |
+| `brow` | heavy, low brow … high, flat | eyebrows-trans forward/back + down/up | 1.0 | **−0.6** … 1 (below −0.6 the forehead ridges) |
+| `eyes` | larger … smaller | l/r-eye-scale | 1.6 | −1 … 1 |
+| `mouth_width` | wide … narrow | mouth-scale-horiz | 1.5 | −1 … 1 |
+| `lips` | full … thin | mouth-upper/lowerlip-volume | 1.6 | −1 … 1 |
+| `face_fat` | fleshy face and jowls … gaunt | head-fat | 1.5 | −1 … 1 |
+
+Largest displacement per target is 4–15 mm at weight 1. The deltas are stored sparse (only the head moves) as
+normalised int16 (1 unit = 1/32767 m): about 0.2 MB for all bodies and pieces.
+
+**Fit of headwear and facial hair: matching morphs.** Pieces that frame the face carry the *same* targets (same
+names and order; `"morphs": true` in the manifest) so one set of weights drives body and pieces together, which
+`TownsfolkKit` already does through `morphTargetDictionary`. Their deltas are the skin's own deltas at the nearest
+point of that body's surface, fading out between 3.5 and 8 cm from the skin (`game.FullBody.sample`). They are:
+`coif`, `beguine_veil`, `huik`, `capuche`, `pelerine`, `collar_band`, `kerchief`, `bands`, all hair (`hair_*`) and
+all beards (`beard_*`, `moustache`). Rigid headwear has none and needs none (the targets do not move the skull):
+`hat_wide`, `hat_pilgrim`, `cap_flat`, `morion`, `skullcap`, `plume`. Body garments have none.
+
+### Skin tone
+Body meshes now have `COLOR_0`: r = 1 on skin, 0 on the lips and the eyeballs (brows and lashes are painted in the
+skin texture and take the tone with the skin). `skinTones` in the manifest: eight linear-RGB multipliers from pale to
+weathered. Note: a body mesh rendered with the stock glTF material would be multiplied by COLOR_0 (black lips and
+eyes), so the body always needs the toned material (`TownsfolkKit.toned`), also for the neutral tone.
+
+### Clips added (same shared set, same rules)
+`sword_idle` (2.5 s, loop), `attack1` (0.667 s), `attack2` (0.533 s), `hit` (0.4 s), `death` (1.6 s; hold the last
+frame) are the rider's clips, retargeted like the others (the fist closes in them). `aim` (3.0 s, loop) and `pray`
+(4.0 s, loop) are posed in `anim.py` from the idle: `aim` turns the body a quarter right, levels the right forearm
+(the musket lies along it) at chest/shoulder height, brings the left hand forward under the barrel; `pray` is
+standing, hands together before the chest, head bowed (not kneeling).
+
+### Props and grips added
+* `sword`: plain backsword (0.86 m blade, cross-guard with a knuckle bow), grip **`sword_r`**: fixed in the fist with
+  the blade along the fist's axis (little finger → index), as the rider's sword; not straightened by gravity.
+* `musket`: matchlock caliver, 1.2 m, grip **`along_r`**: held at the wrist of the stock, the barrel pointing where
+  the fingers point, the butt lying back along the forearm. (The brief said `fist_r`; that grip is the upright one
+  used by staffs, so the two weapon grips got their own kinds. `TownsfolkKit` reads `props[p].grip` generically.)
+
+### Pieces added
+`skullcap` (men; clergy; wear with `hair_thin`), `bands` (men; white clerical collar with two tabs; requires
+`habit`), `plume` (men; ostrich feather; requires `hat_wide`; dyeable), `bandolier` (men; leather strap with six
+wooden charges; requires `doublet`, excludes `buff_coat`, `sash`, `pelerine`).
+
+### Archetypes
+Every archetype now has an explicit `"crowd"` flag: `true` on the 16 street archetypes, `false` on the two new enemy
+templates `deserter` (man, man_young, man_stout: doublet or smock in dull dyes, optional buff coat, battered hat or cap
+or bare head, boots, beards; sword, musket or nothing) and `musketeer` (man, man_young: wide hat, optional plume,
+doublet, optional falling band, bandolier, boots; musket). Both have role `soldier`.
+
+### Named NPCs: pieces to use (all verified to assemble with `buildSpec`)
+| who | body | wear |
+|---|---|---|
+| sexton / koster | `man_old` | `hair_thin`, `skullcap`, `habit` (umber or black = a plain gown), `rope_belt` or none, `shoes`; prop `lantern`. Or `doublet` + `collar_band` + `breeches` + `stockings` |
+| drossaard | `man_stout` | `hair_long`, `beard_pointed`, `hat_wide` (black) + `plume` (white), `doublet` (black), `collar_band`, `breeches`, `stockings` (black), `shoes`; prop `stick` |
+| provost / priest | `man` or `man_old` | `hair_thin`, `skullcap`, `habit` (black = cassock), `bands`, `shoes`; prop `rosary` |
+| carter | `man_stout` | `hair_crop`, `moustache`, `cap_flat`, `smock`, `belt`, `breeches`, `stockings`, `clogs` |
+| toll collector | `man` | `hair_long`, `beard_pointed`, `hat_wide`, `doublet`, `collar_band`, `breeches`, `stockings`, `shoes` |
+| weavers' dean | `man_old` | `hair_thin`, `beard_full`, `cap_flat` (black), `doublet` (madder_dk), `collar_band`, `breeches`, `stockings`, `shoes` |
+| market pedlar woman | `woman_stout` | `hair_bun`, `coif`, `bodice`, `kerchief`, `skirt`, `apron`, `clogs`; prop `basket` |
+| weaver's widow | `woman_old` (or `woman`) | `hair_bun`, `coif`, `bodice` (black), `kerchief`, `skirt` (umber / black), `shoes` |
+| pilgrim-badge seller | `woman` | `hair_bun`, `coif`, `bodice`, `kerchief`, `pelerine` (fits all adults, with its scallop shells), `skirt`, `shoes`; prop `basket` |
+| farmer | `man` | `hair_crop`, `beard_full`, `hat_wide` (brown), `smock`, `belt`, `breeches`, `stockings`, `clogs`; prop `staff` |
+
+### Other changes in phase C
+* Collars, kerchief, bonnet and shirt cuffs are built at game resolution as single layers and are no longer decimated;
+  buttons, cuffs, the plume and the bandolier's charges are protected from decimation (`keep` attribute); the open
+  edges of coif, veil and huik hood are protected too, so the face openings stay clean curves.
+* The wimple/veil is a single layer (the sliver at its side came from decimating a thin double shell).
+* Hair: locks are blunter; a hat now hides every lock that reaches above the hat band (`hair_crown` is assigned per
+  lock), so no hair pokes through crowns or brims.
+* Export: unreferenced animation data is no longer written and joint rotations are stored as normalised int16
+  quaternions (core glTF), which more than paid for the morphs and the seven new clips.
+
+### Verified and sizes (phase C)
+Playwright + Chromium with the game's `TownsfolkKit` (`scratchpad/townsfolk/web/testC.ts`), screenshots
+`scratchpad/townsfolk/preview/phaseC_*.png` and `phaseC_report.json`: twelve heads of one body with random morph
+weights and tones, bare-headed and under coif, wimple, huik, hat, bonnet and with beards (four bodies: `faces`,
+`faces_men`, `faces_old`, `faces_boy`) show no poke-through; every clip used binds all its tracks; the two enemy
+archetypes assemble and never appear in 400 crowd draws; all ten named outfits assemble with nothing dropped.
+
+| | |
+|---|---|
+| `townsfolk.glb` | **6.13 MB** (8.2 MB as base64): geometry 2.9 MB, face morphs 0.2 MB, 16 clips 0.37 MB, textures 1.92 MB, JSON chunk 0.7 MB |
+| `townsfolk.json` | 51 kB: 9 bodies, 38 pieces, 9 props, 16 clips, 18 archetypes (16 crowd, 2 enemy), 11 face morphs, 8 skin tones |
+| triangles per figure | 5.7 k – 7.4 k (crowd mean 6.5 k) |
+
+### Known limitations (phase C)
+* The morphs are MakeHuman's detail targets: they change who someone is at 2–10 m, but two people of the same body
+  with middling weights still look related; the texture (brows, age lines) is shared per body.
+* `aim` is a levelled-musket pose at chest/shoulder height with both hands on the gun; the cheek is not on the stock.
+  Walking with the musket carries it along the forearm, muzzle down and forward.
+* `pray` is standing only. `hair_bun` has a hard hairline when worn bare-headed (it is meant to sit under a coif).
+* A small dark flap can show at the corner of the huik's hood by the cheek; the hat band keeps a few small bumps.
+* The plume is a simple curved ribbon; the bandolier is fitted over the doublet only.

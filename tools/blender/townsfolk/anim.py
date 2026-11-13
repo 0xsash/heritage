@@ -298,7 +298,7 @@ def derive_aim(rig, idle, dur=3.0):
         pos = fk(rig, W, off)
         sh_r = pos['upperarm_r']
         aim_pt = Vector((0.0, -1.0, 0.0))
-        hand_r = sh_r + Vector((0.10 * k, -0.20 * k, -0.075 * k + 0.004 * sway))
+        hand_r = sh_r + Vector((0.10 * k, -0.21 * k, -0.035 * k + 0.004 * sway))
         reach(rig, W, off, 'r', hand_r, Vector((-0.8, 0.5, -0.2)), aim_pt)
         aim_subtree(rig, W, 'lowerarm_r', aim_pt + Vector((0.10, 0, 0.0)), 0.55)
         aim_subtree(rig, W, 'hand_r', aim_pt, 1.0)

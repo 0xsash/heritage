@@ -31,7 +31,7 @@ EXTRA_HIDES = {'stockings': ['shin'], 'hair_crop': ['scalp'], 'hair_long': ['sca
 # triangle budgets at game resolution
 TARGET = {'body': 3800, 'stockings': 260, 'breeches': 650, 'shoes': 420, 'clogs': 380, 'boots': 600, 'doublet': 1050,
           'smock': 1000, 'bodice': 900, 'skirt': 860, 'coif': 330, 'hat_wide': 420, 'hat_pilgrim': 420,
-          'cap_flat': 330, 'morion': 460, 'habit': 1100, 'collar_band': 9999, 'kerchief': 9999, 'bands': 9999, 'plume': 9999, 'skullcap': 9999, 'bandolier': 420, 'apron': 420,
+          'cap_flat': 9999, 'morion': 460, 'habit': 1100, 'collar_band': 9999, 'kerchief': 9999, 'bands': 9999, 'plume': 9999, 'skullcap': 9999, 'bandolier': 420, 'apron': 420,
           'belt': 160, 'rope_belt': 380, 'capuche': 520, 'pelerine': 480, 'buff_coat': 760, 'beguine_veil': 800,
           'huik': 980, 'sash': 260, 'hair_crop': 560, 'hair_long': 700, 'hair_thin': 360, 'hair_child': 560,
           'hair_bun': 380, 'beard_pointed': 160, 'moustache': 100, 'beard_full': 260}
@@ -156,15 +156,41 @@ def piece_hides(piece_obj, body, codes, lm):
 
 
 def hair_regions(obj, bid):
+    """hair_crown = what a hat covers: the shell above the hat band, and every loose lock that reaches above it
+    (locks are separate islands; a lock is hidden whole, so none pokes through a crown or brim)."""
     rig = bpy.data.objects[f'rig.{bid}']
     from .garments import Ctx, head_centre
     hc = head_centre(Ctx(bid))
     k = rig_landmarks(rig)['top'] / 1.70
-    co = np.zeros(len(obj.data.vertices) * 3)
-    obj.data.vertices.foreach_get('co', co)
-    co = co.reshape(-1, 3)
-    crown = co[:, 2] > hc.z + 0.012 * k
-    return np.where(crown, REGIONS['hair_crown'], REGIONS['hair_low'])
+    thr = hc.z + 0.004 * k
+    bm = get_bm(obj)
+    bm.verts.ensure_lookup_table()
+    out = np.full(len(bm.verts), REGIONS['hair_low'], dtype=np.int32)
+    seen = set()
+    for v0 in bm.verts:
+        if v0.index in seen:
+            continue
+        isl, stack = [], [v0]
+        seen.add(v0.index)
+        while stack:
+            v = stack.pop()
+            isl.append(v)
+            for e in v.link_edges:
+                w = e.other_vert(v)
+                if w.index not in seen:
+                    seen.add(w.index)
+                    stack.append(w)
+        top = max(v.co.z for v in isl)
+        if len(isl) <= 40:
+            if top > thr:
+                for v in isl:
+                    out[v.index] = REGIONS['hair_crown']
+        else:
+            for v in isl:
+                if v.co.z > thr:
+                    out[v.index] = REGIONS['hair_crown']
+    bm.free()
+    return out
 
 
 # --------------------------------------------------------------------------

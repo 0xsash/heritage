@@ -70,6 +70,34 @@
       0.860692,
       0.114365
      ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01964,
+      0.10136,
+      0.00757
+     ],
+     "quat": [
+      0.547722,
+      0.758697,
+      0.174343,
+      0.306567
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02705,
+      0.08042,
+      0.01933
+     ],
+     "quat": [
+      -0.059293,
+      0.41445,
+      -0.012186,
+      0.908057
+     ]
     }
    }
   },
@@ -119,6 +147,34 @@
       0.276362,
       0.861758,
       0.110763
+     ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01994,
+      0.10134,
+      0.008
+     ],
+     "quat": [
+      0.547446,
+      0.759908,
+      0.174905,
+      0.303728
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02722,
+      0.08031,
+      0.0197
+     ],
+     "quat": [
+      -0.058486,
+      0.416347,
+      -0.009934,
+      0.907268
      ]
     }
    }
@@ -170,6 +226,34 @@
       0.863747,
       0.111493
      ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01868,
+      0.09832,
+      0.00667
+     ],
+     "quat": [
+      0.547293,
+      0.756349,
+      0.17501,
+      0.312695
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02688,
+      0.07883,
+      0.01887
+     ],
+     "quat": [
+      -0.060391,
+      0.409235,
+      -0.015438,
+      0.910298
+     ]
     }
    }
   },
@@ -219,6 +303,34 @@
       0.277467,
       0.880838,
       0.088598
+     ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01582,
+      0.09296,
+      0.00271
+     ],
+     "quat": [
+      0.542803,
+      0.736897,
+      0.188369,
+      0.356182
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02666,
+      0.07649,
+      0.01512
+     ],
+     "quat": [
+      -0.064526,
+      0.366299,
+      -0.033302,
+      0.92766
      ]
     }
    }
@@ -270,6 +382,34 @@
       0.894333,
       0.111456
      ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01663,
+      0.08637,
+      0.00303
+     ],
+     "quat": [
+      0.535681,
+      0.728689,
+      0.21386,
+      0.369218
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02899,
+      0.07217,
+      0.01526
+     ],
+     "quat": [
+      -0.059933,
+      0.340392,
+      -0.022967,
+      0.938091
+     ]
     }
    }
   },
@@ -319,6 +459,34 @@
       0.256552,
       0.897752,
       0.107368
+     ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01622,
+      0.08855,
+      0.00185
+     ],
+     "quat": [
+      0.534281,
+      0.720836,
+      0.21768,
+      0.38413
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02872,
+      0.07371,
+      0.01359
+     ],
+     "quat": [
+      -0.061636,
+      0.325431,
+      -0.029969,
+      0.943079
      ]
     }
    }
@@ -370,6 +538,34 @@
       0.89331,
       0.112056
      ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01502,
+      0.09095,
+      0.00043
+     ],
+     "quat": [
+      0.536827,
+      0.716979,
+      0.210015,
+      0.391984
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02745,
+      0.07559,
+      0.01213
+     ],
+     "quat": [
+      -0.065928,
+      0.323333,
+      -0.040859,
+      0.943101
+     ]
     }
    }
   },
@@ -420,6 +616,34 @@
       0.875583,
       0.12744
      ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01315,
+      0.0734,
+      0.00242
+     ],
+     "quat": [
+      0.542063,
+      0.735801,
+      0.194755,
+      0.35614
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02749,
+      0.06518,
+      0.01685
+     ],
+     "quat": [
+      -0.063639,
+      0.362711,
+      -0.028696,
+      0.929283
+     ]
     }
    }
   },
@@ -469,6 +693,34 @@
       0.264082,
       0.86632,
       0.087
+     ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01542,
+      0.07606,
+      0.00681
+     ],
+     "quat": [
+      0.547101,
+      0.76525,
+      0.171662,
+      0.292585
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02676,
+      0.06562,
+      0.02237
+     ],
+     "quat": [
+      -0.057547,
+      0.426804,
+      -0.004596,
+      0.9025
      ]
     }
    }
@@ -607,6 +859,7 @@
    "dyeable": false,
    "hides": [],
    "desc": "plain white linen falling band collar",
+   "morphs": true,
    "requires": [
     "doublet"
    ]
@@ -664,6 +917,7 @@
    "dyeable": false,
    "hides": [],
    "desc": "white linen neckerchief / partlet over the shoulders",
+   "morphs": true,
    "requires": [
     "bodice"
    ]
@@ -735,7 +989,8 @@
    "hides": [
     "scalp"
    ],
-   "desc": "white linen cap covering the hair, framing the face"
+   "desc": "white linen cap covering the hair, framing the face",
+   "morphs": true
   },
   "hat_wide": {
    "slot": "head",
@@ -812,6 +1067,7 @@
     "scalp"
    ],
    "desc": "beguine headdress: white wimple closed round the face and under the chin, white veil to the shoulder blades",
+   "morphs": true,
    "requires": [
     "habit"
    ],
@@ -837,6 +1093,7 @@
     "scalp"
    ],
    "desc": "the huik: long black hooded mantle from the head to below the knees, with the tuit on top",
+   "morphs": true,
    "requires": [
     "bodice",
     "skirt"
@@ -913,6 +1170,7 @@
    "dyeable": true,
    "hides": [],
    "desc": "Capuchin hood (down, long point) on a short shoulder cape",
+   "morphs": true,
    "requires": [
     "habit"
    ],
@@ -940,6 +1198,7 @@
    "dyeable": true,
    "hides": [],
    "desc": "pilgrim's short shoulder cape, open at the front, with two scallop shells",
+   "morphs": true,
    "excludes": [
     "capuche",
     "huik",
@@ -995,7 +1254,8 @@
    "hides": [
     "scalp"
    ],
-   "desc": "short cropped hair"
+   "desc": "short cropped hair",
+   "morphs": true
   },
   "hair_long": {
    "slot": "hair",
@@ -1010,7 +1270,8 @@
    "hides": [
     "scalp"
    ],
-   "desc": "shoulder-length hair with a centre parting (1650 fashion)"
+   "desc": "shoulder-length hair with a centre parting (1650 fashion)",
+   "morphs": true
   },
   "hair_thin": {
    "slot": "hair",
@@ -1023,7 +1284,8 @@
    ],
    "dyeable": true,
    "hides": [],
-   "desc": "thin grey hair: bald crown, fringe round the sides and back"
+   "desc": "thin grey hair: bald crown, fringe round the sides and back",
+   "morphs": true
   },
   "hair_child": {
    "slot": "hair",
@@ -1035,7 +1297,8 @@
    "hides": [
     "scalp"
    ],
-   "desc": "boy's bowl-cut hair with a straight fringe"
+   "desc": "boy's bowl-cut hair with a straight fringe",
+   "morphs": true
   },
   "hair_bun": {
    "slot": "hair",
@@ -1050,7 +1313,8 @@
    "hides": [
     "scalp"
    ],
-   "desc": "hair parted in the middle and pulled back into a bun"
+   "desc": "hair parted in the middle and pulled back into a bun",
+   "morphs": true
   },
   "beard_pointed": {
    "slot": "beard",
@@ -1063,7 +1327,8 @@
    ],
    "dyeable": true,
    "hides": [],
-   "desc": "pointed chin beard and upturned moustache (1650 fashion)"
+   "desc": "pointed chin beard and upturned moustache (1650 fashion)",
+   "morphs": true
   },
   "moustache": {
    "slot": "beard",
@@ -1076,7 +1341,8 @@
    ],
    "dyeable": true,
    "hides": [],
-   "desc": "moustache only"
+   "desc": "moustache only",
+   "morphs": true
   },
   "beard_full": {
    "slot": "beard",
@@ -1089,7 +1355,89 @@
    ],
    "dyeable": true,
    "hides": [],
-   "desc": "full rounded spade beard with moustache (older men)"
+   "desc": "full rounded spade beard with moustache (older men)",
+   "morphs": true
+  },
+  "skullcap": {
+   "slot": "head",
+   "layer": 6,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "small black skullcap (zucchetto) on the crown; wear it with hair_thin or hair_crop",
+   "excludes": [
+    "hat_wide",
+    "hat_pilgrim",
+    "cap_flat",
+    "morion",
+    "beguine_veil",
+    "huik",
+    "coif"
+   ]
+  },
+  "bands": {
+   "slot": "collar",
+   "layer": 4,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": false,
+   "hides": [],
+   "desc": "clerical white collar with two short tabs at the throat (over the habit / cassock)",
+   "morphs": true,
+   "requires": [
+    "habit"
+   ],
+   "excludes": [
+    "capuche",
+    "collar_band",
+    "beguine_veil"
+   ]
+  },
+  "plume": {
+   "slot": "plume",
+   "layer": 7,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "ostrich feather curling back from the band of the wide hat",
+   "requires": [
+    "hat_wide"
+   ]
+  },
+  "bandolier": {
+   "slot": "bandolier",
+   "layer": 5,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": false,
+   "hides": [],
+   "desc": "musketeer's leather bandolier, left shoulder to right hip, with wooden powder charges",
+   "requires": [
+    "doublet"
+   ],
+   "excludes": [
+    "buff_coat",
+    "sash",
+    "pelerine"
+   ]
   }
  },
  "props": {
@@ -1109,6 +1457,10 @@
    "grip": "hang_r",
    "hand": "hand_r"
   },
+  "musket": {
+   "grip": "along_r",
+   "hand": "hand_r"
+  },
   "rosary": {
    "grip": "hang_r",
    "hand": "hand_r"
@@ -1119,6 +1471,10 @@
   },
   "stick": {
    "grip": "fist_r",
+   "hand": "hand_r"
+  },
+  "sword": {
+   "grip": "sword_r",
    "hand": "hand_r"
   }
  },
@@ -1181,6 +1537,26 @@
    "duration": 1.033,
    "stride": 4.875
   },
+  "sword_idle": {
+   "loop": true,
+   "duration": 2.5
+  },
+  "attack1": {
+   "loop": false,
+   "duration": 0.667
+  },
+  "attack2": {
+   "loop": false,
+   "duration": 0.533
+  },
+  "hit": {
+   "loop": false,
+   "duration": 0.4
+  },
+  "death": {
+   "loop": false,
+   "duration": 1.6
+  },
   "walk_old": {
    "loop": true,
    "duration": 1.133,
@@ -1193,6 +1569,14 @@
   "point": {
    "loop": false,
    "duration": 2.5
+  },
+  "aim": {
+   "loop": true,
+   "duration": 3.0
+  },
+  "pray": {
+   "loop": true,
+   "duration": 4.0
   }
  },
  "clipNotes": "one shared set keyed on rig.man; stride = metres covered per loop on the man body (1.70 m); scale the pelvis translation track by bodies[b].pelvisScale for other bodies",
@@ -1200,6 +1584,96 @@
   "attribute": "COLOR_0.r",
   "rule": "base = texture * dye / 0.55 where COLOR_0.r = 1"
  },
+ "faceMorphs": {
+  "nose_length": {
+   "min": -1.0,
+   "max": 1.0
+  },
+  "nose_width": {
+   "min": -1.0,
+   "max": 1.0
+  },
+  "nose_bridge": {
+   "min": -1.0,
+   "max": 1.0
+  },
+  "jaw_width": {
+   "min": -1.0,
+   "max": 1.0
+  },
+  "chin_length": {
+   "min": -1.0,
+   "max": 1.0
+  },
+  "cheeks": {
+   "min": -1.0,
+   "max": 1.0
+  },
+  "brow": {
+   "min": -0.6,
+   "max": 1.0
+  },
+  "eyes": {
+   "min": -1.0,
+   "max": 1.0
+  },
+  "mouth_width": {
+   "min": -1.0,
+   "max": 1.0
+  },
+  "lips": {
+   "min": -1.0,
+   "max": 1.0
+  },
+  "face_fat": {
+   "min": -1.0,
+   "max": 1.0
+  }
+ },
+ "faceMorphNotes": "morph targets of these names, in this order, on every body mesh and on the pieces marked morphs:true; drive them together with the same weights",
+ "skinTones": [
+  [
+   1.06,
+   1.03,
+   1.01
+  ],
+  [
+   1.0,
+   1.0,
+   1.0
+  ],
+  [
+   1.03,
+   0.97,
+   0.94
+  ],
+  [
+   0.98,
+   0.96,
+   0.9
+  ],
+  [
+   0.97,
+   0.9,
+   0.84
+  ],
+  [
+   0.92,
+   0.86,
+   0.8
+  ],
+  [
+   0.9,
+   0.81,
+   0.73
+  ],
+  [
+   0.95,
+   0.94,
+   0.93
+  ]
+ ],
+ "skinToneNotes": "multiply into the base colour of body meshes where COLOR_0.r = 1 (skin; 0 on lips and eyes)",
  "archetypes": [
   {
    "id": "beguine",
@@ -1267,7 +1741,8 @@
      "basket",
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "peasant_woman",
@@ -1365,7 +1840,8 @@
      null,
      3
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "maid",
@@ -1457,7 +1933,8 @@
      null,
      3
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "burgher_wife",
@@ -1529,7 +2006,8 @@
      "rosary",
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "burgher_wife_bare",
@@ -1600,7 +2078,8 @@
      "basket",
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "old_woman",
@@ -1687,7 +2166,8 @@
      null,
      2
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "old_woman_huik",
@@ -1753,7 +2233,8 @@
      "rosary",
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "girl",
@@ -1837,7 +2318,8 @@
      "bread",
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "peasant_man",
@@ -1972,7 +2454,8 @@
      "basket",
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "journeyman",
@@ -2097,7 +2580,8 @@
      null,
      2
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "merchant",
@@ -2220,7 +2704,8 @@
      "stick",
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "soldier",
@@ -2344,7 +2829,8 @@
      "lantern",
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "friar",
@@ -2417,7 +2903,8 @@
      "staff",
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "pilgrim",
@@ -2541,7 +3028,8 @@
      null,
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "old_man",
@@ -2646,7 +3134,8 @@
      null,
      1
     ]
-   ]
+   ],
+   "crowd": true
   },
   {
    "id": "boy",
@@ -2744,6 +3233,326 @@
     ],
     [
      "bundle",
+     1
+    ]
+   ],
+   "crowd": true
+  },
+  {
+   "id": "deserter",
+   "role": "soldier",
+   "weight": 1,
+   "crowd": false,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout"
+   ],
+   "gait": "walk",
+   "slots": {
+    "hair": [
+     {
+      "piece": "hair_crop",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "hair_long",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     }
+    ],
+    "beard": [
+     {
+      "piece": "beard_full",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "moustache",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "beard_pointed",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     }
+    ],
+    "head": [
+     {
+      "piece": "hat_wide",
+      "dye": [
+       "umber",
+       "grey",
+       "brown"
+      ]
+     },
+     {
+      "piece": "cap_flat",
+      "dye": [
+       "umber",
+       "grey",
+       "russet"
+      ]
+     }
+    ],
+    "torso": [
+     {
+      "piece": "doublet",
+      "dye": [
+       "umber",
+       "brown",
+       "grey",
+       "slate",
+       "russet",
+       "green_dk"
+      ]
+     },
+     {
+      "piece": "doublet",
+      "dye": [
+       "umber",
+       "brown",
+       "grey",
+       "slate",
+       "russet",
+       "green_dk"
+      ]
+     },
+     {
+      "piece": "smock",
+      "dye": [
+       "grey",
+       "linen"
+      ]
+     }
+    ],
+    "coat": [
+     {
+      "piece": "buff_coat"
+     }
+    ],
+    "belt": [
+     {
+      "piece": "belt"
+     }
+    ],
+    "legs": [
+     {
+      "piece": "breeches",
+      "dye": [
+       "umber",
+       "brown",
+       "grey",
+       "slate",
+       "russet",
+       "green_dk"
+      ]
+     }
+    ],
+    "legs_under": [
+     {
+      "piece": "stockings",
+      "dye": [
+       "grey",
+       "umber",
+       "linen"
+      ]
+     }
+    ],
+    "feet": [
+     {
+      "piece": "boots"
+     }
+    ]
+   },
+   "optional": {
+    "beard": 0.8,
+    "head": 0.5,
+    "coat": 0.5
+   },
+   "props": [
+    [
+     "sword",
+     4
+    ],
+    [
+     "musket",
+     1
+    ],
+    [
+     null,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "musketeer",
+   "role": "soldier",
+   "weight": 1,
+   "crowd": false,
+   "bodies": [
+    "man",
+    "man_young"
+   ],
+   "gait": "walk",
+   "slots": {
+    "hair": [
+     {
+      "piece": "hair_long",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "hair_crop",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     }
+    ],
+    "beard": [
+     {
+      "piece": "moustache",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "beard_pointed",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     }
+    ],
+    "head": [
+     {
+      "piece": "hat_wide",
+      "dye": [
+       "black",
+       "umber",
+       "grey"
+      ]
+     }
+    ],
+    "plume": [
+     {
+      "piece": "plume",
+      "dye": [
+       "white",
+       "madder",
+       "ochre"
+      ]
+     }
+    ],
+    "torso": [
+     {
+      "piece": "doublet",
+      "dye": [
+       "madder_dk",
+       "woad_dk",
+       "ochre",
+       "slate",
+       "umber"
+      ]
+     }
+    ],
+    "collar": [
+     {
+      "piece": "collar_band"
+     }
+    ],
+    "bandolier": [
+     {
+      "piece": "bandolier"
+     }
+    ],
+    "legs": [
+     {
+      "piece": "breeches",
+      "dye": [
+       "slate",
+       "umber",
+       "madder_dk",
+       "grey"
+      ]
+     }
+    ],
+    "legs_under": [
+     {
+      "piece": "stockings",
+      "dye": [
+       "grey",
+       "linen",
+       "madder"
+      ]
+     }
+    ],
+    "feet": [
+     {
+      "piece": "boots"
+     }
+    ]
+   },
+   "optional": {
+    "beard": 0.8,
+    "plume": 0.5,
+    "collar": 0.6
+   },
+   "props": [
+    [
+     "musket",
      1
     ]
    ]

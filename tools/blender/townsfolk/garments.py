@@ -206,6 +206,19 @@ def set_keep(obj, value=1.0):
     a.data.foreach_set('value', np.full(len(obj.data.vertices), value, dtype=np.float32))
 
 
+def keep_boundary(obj, z_min):
+    """Protect the open edge above z_min (a face opening) from the game-mesh decimation, so it stays a clean curve."""
+    a = obj.data.attributes.get('keep') or obj.data.attributes.new('keep', 'FLOAT', 'POINT')
+    vals = np.zeros(len(obj.data.vertices), dtype=np.float32)
+    a.data.foreach_get('value', vals)
+    bm = get_bm(obj)
+    for v in bm.verts:
+        if v.is_boundary and v.co.z > z_min:
+            vals[v.index] = 1.0
+    bm.free()
+    obj.data.attributes['keep'].data.foreach_set('value', vals)
+
+
 def finish(obj, ctx, weights='T', extra=()):
     """Weights, cleanup, armature."""
     bones = ctx.bones
@@ -596,7 +609,8 @@ def drape_band(ctx, name, surf_objs, centre, normal, depth_fn, count=48, rows=6,
             faces.append((i * rows + j, i2 * rows + j, i2 * rows + j + 1, i * rows + j + 1))
     o = new_mesh_obj(name, verts, faces, part)
     relax(o, 1, 0.3)
-    fix_normals_out(o, lambda p: Vector((centre.x, centre.y, p.z + 0.25)))
+    # outwards = away from the body's axis a little below (these bands lie on top of the shoulders)
+    fix_normals_out(o, lambda p: Vector((centre.x, centre.y, p.z - 0.25)))
     set_aux(o, aux)
     return o
 
@@ -953,6 +967,7 @@ def g_coif(ctx, ref):
     smooth_boundary(o, 4, 0.6)
     relax(o, 1, 0.3)
     fix_normals_out(o, lambda p: head_centre(ctx))
+    keep_boundary(o, ctx.neck.z)
     rim(o, 0.004 * ctx.k, inward=0.006 * ctx.k)
     rigid_weight(o, 'head')
     return finish(o, ctx, weights=None)
@@ -1050,7 +1065,7 @@ def scallop(name, size):
 def g_cap_flat(ctx, ref):
     # a band resting on the hair (from the head's own radius field) carrying a soft, wide crown that
     # overhangs it and droops towards the character's left
-    nu = 36
+    nu = 22
     k = ctx.k
     hc = head_centre(ctx)
     band_el = [deg(30), deg(20)]
@@ -1091,7 +1106,6 @@ def g_cap_flat(ctx, ref):
     o = new_mesh_obj('cap_flat', verts, faces, 'felt')
     fix_normals_out(o, lambda p: hc)
     relax(o, 1, 0.3)
-    solidify(o, 0.004 * k)
     rigid_weight(o, 'head')
     return finish(o, ctx, weights=None)
 
@@ -1162,6 +1176,7 @@ def g_beguine_veil(ctx, ref):
     relax(o, 4, 0.45)
     smooth_boundary(o, 3, 0.5)
     fix_normals_out(o, lambda p: Vector((0, ctx.neck.y, min(p.z, head_centre(ctx).z))))
+    keep_boundary(o, ctx.neck.z + 0.02 * ctx.k)
     head_weights(ctx, o, ctx.headb.z - 0.02 * ctx.k, ctx.neck.z - 0.03 * ctx.k)
     return finish(o, ctx, weights=None)
 
@@ -1206,11 +1221,13 @@ def g_huik(ctx, ref):
     snap_opening(ctx, o, 62, 30, -46)
     relax(o, 2, 0.35)
     fix_normals_out(o, lambda p: Vector((0, ctx.hip.y, min(p.z, hc.z))))
+    keep_boundary(o, ctx.neck.z + 0.02 * ctx.k)
     solidify(o, 0.005 * ctx.k)
-    tuit = lathe_mesh('tuit', [(0.0, 0.075), (0.010, 0.068), (0.018, 0.045), (0.026, 0.015), (0.032, 0.0), (0.0, -0.004)], 12, 'wool')
-    tuit.data.transform(Matrix.Diagonal((1.0, 0.6, 1.0, 1.0)))
-    tuit.data.transform(Matrix.Rotation(deg(-28), 4, 'X'))
-    tuit.data.transform(Matrix.Translation(hc + Vector((0, -0.035 * ctx.k, max(p.z for p in rows[0]) - hc.z - 0.008 * ctx.k))))
+    # the tuit: a short stiff stalk with a little knob, leaning forward over the forehead
+    tuit = lathe_mesh('tuit', [(0.0, 0.050), (0.008, 0.048), (0.010, 0.040), (0.006, 0.032), (0.007, 0.012), (0.016, 0.0), (0.0, -0.004)], 8, 'wool')
+    tuit.data.transform(Matrix.Rotation(deg(55), 4, 'X'))
+    tuit.data.transform(Matrix.Translation(hc + Vector((0, -0.060 * ctx.k, max(p.z for p in rows[0]) - hc.z - 0.016 * ctx.k))))
+    set_keep(tuit)
     o = join([o, tuit], 'huik')
     # weights: head for the hood, shoulders from the helper, the long fall on the cloak chain
     transfer_weights(o, ctx.T, ctx.bones)
@@ -1522,7 +1539,7 @@ def lock_mesh(name, roots, n_locks, seed, length, width, droop, crown, part='hai
             p = a * (1 - u) ** 2 + b * (2 * u * (1 - u)) + c * (u * u)
             tan = ((b - a) * (1 - u) + (c - b) * u).normalized()
             upv = side.cross(tan).normalized()
-            wv = W * min(1.0, 0.6 + 1.6 * u) * (1.0 - u ** 2.2) ** 0.75
+            wv = W * min(1.0, 0.6 + 1.6 * u) * (1.0 - u ** 4) ** 0.5          # broad to the end, a blunt tip
             if k == nseg:
                 verts.append(p)
                 auxv.append((1.0, rnd, 0.0))
@@ -1682,7 +1699,7 @@ def g_hair_child(ctx, ref):
             return Vector((0.0, -1.0, -0.6))
         return None
     o = hair_style(ctx, 'hair_child', 0.010, lambda a: hairline(a, 28, 18, 4, -30),
-                   [(60, 5, 0), (38, 4, 2), (20, 4, 0)], 0.075, 0.085, 0.35, 14, flow=flow)
+                   [(60, 5, 0), (40, 4, 2), (26, 4, 0)], 0.058, 0.085, 0.35, 14, flow=flow)
     return hair_finish(ctx, o)
 
 
