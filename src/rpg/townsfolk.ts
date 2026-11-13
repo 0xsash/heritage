@@ -197,7 +197,7 @@ export class TownsfolkKit {
   }
 
   /** Assemble one person from an archetype (random within its variants). */
-  build(r: () => number, role?: Role, archetype?: string): Folk | null {
+  build(r: () => number, role?: Role, archetype?: string, forceProp?: string | null): Folk | null {
     if (!this.ok) return null;
     const a = (archetype && this.m.archetypes.find((x) => x.id === archetype)) || this.pickArchetype(r, role);
     const bodies = a.bodies.filter((b) => this.templates.has(b));
@@ -217,6 +217,7 @@ export class TownsfolkKit {
     let x = r() * props.reduce((s, [, w]) => s + w, 0);
     let prop: string | null = null;
     for (const [p, w] of props) if ((x -= w) <= 0) { prop = p; break; }
+    if (forceProp !== undefined) prop = forceProp;
     return this.assemble(body, chosen, prop, r, a.role, a.id, a.gait);
   }
 
@@ -242,11 +243,16 @@ export class TownsfolkKit {
 
     // the face: every person gets their own (morph weights and skin tone), when the kit has them
     const face = new Map<string, number>();
-    for (const [name, lim] of Object.entries(this.m.faceMorphs ?? {})) {
-      // two draws: most people sit near the middle, a few are striking
-      const t = (r() + r()) / 2;
-      face.set(name, lim.min + (lim.max - lim.min) * t);
-    }
+    const morphs = Object.entries(this.m.faceMorphs ?? {});
+    // three features carry the likeness (a big nose, a narrow jaw, hollow cheeks): those go to the
+    // ends of their range; the rest stay moderate, so people are distinct without being grotesque
+    const signature = new Set<number>();
+    while (morphs.length && signature.size < Math.min(3, morphs.length)) signature.add(Math.floor(r() * morphs.length));
+    morphs.forEach(([name, lim], i) => {
+      const mid = (lim.min + lim.max) / 2, half = (lim.max - lim.min) / 2;
+      const t = signature.has(i) ? (r() < 0.5 ? -1 : 1) * (0.7 + r() * 0.3) : (r() * 2 - 1) * 0.45;
+      face.set(name, mid + half * t);
+    });
     const tones = this.m.skinTones ?? [];
     const tone = tones.length ? tones[Math.floor(r() * tones.length)] : null;
 

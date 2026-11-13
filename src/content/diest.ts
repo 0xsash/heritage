@@ -46,7 +46,7 @@ export const diest: Content = {
   npcs: [
     {
       id: 'pieter', name: 'Pieter Vandenbempt', role: 'koster van Sint-Sulpitius', at: [30, 55], facing: Math.PI, tint: '#3a3330',
-      look: { body: 'man_old', wear: { hair_thin: 'h_grey', beard_full: 'h_grey', doublet: 'umber', collar_band: null, breeches: 'black', stockings: 'grey', shoes: null } },
+      look: { body: 'man_old', wear: { hair_thin: 'h_grey', skullcap: 'black', habit: 'umber', rope_belt: null, shoes: null }, prop: 'lantern' },
       offers: [BELLS],
       talk: [
         { if: { any: [{ quest: ARRIVE, state: 'active' }, { quest: BELLS, state: 'none' }] }, start: 'pieter_intro' },
@@ -87,7 +87,7 @@ export const diest: Content = {
     },
     {
       id: 'drossaard', name: 'Jonker Hendrik van Gorp', role: 'drossaard van Diest', at: [400, 140], facing: 2.2, tint: '#1e2a3a',
-      look: { body: 'man', wear: { hair_long: 'h_dark', beard_pointed: 'h_dark', hat_wide: 'black', doublet: 'black', collar_band: null, breeches: 'black', stockings: 'black', boots: null } },
+      look: { body: 'man', wear: { hair_long: 'h_dark', beard_pointed: 'h_dark', hat_wide: 'black', plume: 'madder', doublet: 'black', collar_band: null, breeches: 'black', stockings: 'black', boots: null } },
       offers: ['contract_letter'],
       talk: [
         { if: { quest: LEUVEN, state: 'active', stage: 'pass' }, start: 'dross_pass' },
@@ -136,7 +136,7 @@ export const diest: Content = {
     },
     {
       id: 'truyken', name: 'Truyken', role: 'verkoopster van pelgrimstekens', at: [-5005, 545], facing: -2.0, tint: '#5a3f2a',
-      look: { body: 'woman_stout', wear: { hair_bun: 'h_blond', coif: null, bodice: 'ochre', kerchief: null, skirt: 'russet', apron: 'linen', clogs: null }, prop: 'basket' },
+      look: { body: 'woman_stout', wear: { hair_bun: 'h_blond', coif: null, bodice: 'ochre', kerchief: null, pelerine: 'russet', skirt: 'umber', clogs: null }, prop: 'basket' },
       talk: [
         { if: { quest: BELLS, state: 'active', stage: 'scherpenheuvel' }, start: 'truyken_main' },
         { start: 'truyken_idle' },
@@ -144,7 +144,7 @@ export const diest: Content = {
     },
     {
       id: 'provost', name: 'Proost Jan Cools', role: 'proost van Scherpenheuvel', at: [-5085, 470], facing: 0.8, tint: '#e8e0d0',
-      look: { body: 'man_old', wear: { hair_thin: 'h_white', habit: 'black', rope_belt: null, shoes: null } },
+      look: { body: 'man_old', wear: { hair_thin: 'h_white', skullcap: 'black', habit: 'black', bands: null, shoes: null } },
       offers: ['side_wisps'],
       talk: [
         { if: { quest: 'contract_letter', state: 'active', stage: 'deliver' }, start: 'provost_letter' },

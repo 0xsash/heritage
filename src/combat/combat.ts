@@ -8,6 +8,7 @@
 //  - the dodge roll has invulnerable frames; enemies leash back to their camp
 
 import * as THREE from 'three';
+import type { TownsfolkKit } from '../rpg/townsfolk';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Sound } from '../audio/sound';
 import type { Input } from '../core/input';
@@ -157,6 +158,8 @@ export class Combat {
   private critsLeft = 0;
   private lastFight = -99;
   private deadT = -1;
+  /** the townsfolk kit, when loaded: human enemies are built from it */
+  kit: TownsfolkKit | null = null;
   inCombat = false;
   /** things the player has done (the tutorial watches these) */
   tally = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0 };
@@ -235,7 +238,7 @@ export class Combat {
       const a = (i / list.length) * Math.PI * 2 + Math.random();
       const r = elite ? 0 : 3 + Math.random() * c.def.r * 0.5;
       const home: [number, number] = [c.def.at[0] + Math.cos(a) * r, c.def.at[1] + Math.sin(a) * r];
-      const e = new Enemy(t, level, name, elite, c, makeBody(t, this.model, elite), home);
+      const e = new Enemy(t, level, name, elite, c, makeBody(t, this.model, elite, this.kit), home);
       e.pos.y = this.col.heightAt(e.pos.x, e.pos.z);
       e.wanderTo.copy(e.pos);
       e.body.root.position.copy(e.pos);

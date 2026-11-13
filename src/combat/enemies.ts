@@ -3,6 +3,8 @@
 // still, the Kludde's hounds flank fast, will-o'-the-wisps harass from the air.
 
 import * as THREE from 'three';
+import { rng } from '../core/math';
+import type { Folk, TownsfolkKit } from '../rpg/townsfolk';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { makeSword, recolor } from '../render/recolor';
@@ -87,9 +89,32 @@ class HumanBody implements Body {
   private model: THREE.Object3D;
   private dead = false;
 
-  constructor(gltf: GLTF, cloak: string, weapon: 'sword' | 'musket' | undefined, scale: number) {
-    this.model = SkeletonUtils.clone(gltf.scene);
-    this.model.traverse((o) => {
+  /** `model`: a skinned figure with its own materials (they glow when hit); `clips`: its animations by name. */
+  constructor(model: THREE.Object3D, clips: THREE.AnimationClip[], mats: THREE.MeshStandardMaterial[], scale: number, private ranged = false) {
+    this.model = model;
+    this.mats = mats;
+    this.model.scale.multiplyScalar(scale);
+    this.top *= scale;
+    this.root.add(this.model);
+    this.mixer = new THREE.AnimationMixer(this.model);
+    for (const c of clips) {
+      const name = c.name.split('@')[0];
+      const a = this.mixer.clipAction(c);
+      if (['attack1', 'attack2', 'attack3', 'hit', 'death', 'cast'].includes(name)) {
+        a.setLoop(THREE.LoopOnce, 1);
+        a.clampWhenFinished = true;
+      }
+      this.actions.set(name, a);
+    }
+    this.play(this.actions.has('sword_idle') ? 'sword_idle' : 'idle', 0);
+    this.actions.get(this.current)!.time = Math.random() * 2;
+  }
+
+  /** The hero's body, recoloured (used only when the townsfolk kit is missing). */
+  static fromRider(gltf: GLTF, cloak: string, weapon: 'sword' | 'musket' | undefined, scale: number) {
+    const model = SkeletonUtils.clone(gltf.scene);
+    const mats: THREE.MeshStandardMaterial[] = [];
+    model.traverse((o) => {
       const m = o as THREE.SkinnedMesh;
       if (!m.isMesh) return;
       m.castShadow = true;
@@ -98,27 +123,37 @@ class HumanBody implements Body {
       const mat = recolor(m.material as THREE.MeshStandardMaterial, /cloak/i.test(m.name) ? cloak : '#c94b34', '#d8d2c8', true);
       mat.emissive = new THREE.Color(0, 0, 0);
       m.material = mat;
-      this.mats.push(mat);
+      mats.push(mat);
     });
-    const own = this.model.getObjectByName('sword');
+    const own = model.getObjectByName('sword');
     if (own) own.visible = weapon === 'sword';
-    const hand = this.model.getObjectByName('hand_r');
+    const hand = model.getObjectByName('hand_r');
     if (hand && weapon === 'sword' && !own) hand.add(makeSword());
     if (hand && weapon === 'musket') hand.add(makeMusket());
-    this.model.scale.setScalar(scale);
-    this.top *= scale;
-    this.root.add(this.model);
-    this.mixer = new THREE.AnimationMixer(this.model);
-    for (const c of gltf.animations) {
-      const a = this.mixer.clipAction(c);
-      if (['attack1', 'attack2', 'attack3', 'hit', 'death', 'cast'].includes(c.name)) {
-        a.setLoop(THREE.LoopOnce, 1);
-        a.clampWhenFinished = true;
-      }
-      this.actions.set(c.name, a);
-    }
-    this.play(this.actions.has('sword_idle') ? 'sword_idle' : 'idle', 0);
-    this.actions.get(this.current)!.time = Math.random() * 2;
+    return new HumanBody(model, gltf.animations, mats, scale);
+  }
+
+  /** A person from the townsfolk kit: their own body, face and clothes, a real weapon in hand. */
+  static fromFolk(folk: Folk, scale: number, ranged: boolean) {
+    const mats: THREE.MeshStandardMaterial[] = [];
+    folk.root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = true;
+      m.frustumCulled = false;
+      // their own copy of each material, so one enemy can flash without the whole camp flashing
+      const src = m.material as THREE.MeshStandardMaterial;
+      const mat = src.clone();
+      mat.onBeforeCompile = src.onBeforeCompile;
+      mat.customProgramCacheKey = src.customProgramCacheKey;
+      mat.emissive = new THREE.Color(0, 0, 0);
+      m.material = mat;
+      mats.push(mat);
+    });
+    const clips = ['idle', 'walk', 'run', 'sword_idle', 'attack1', 'attack2', 'hit', 'death', 'aim'].map((n) => folk.clip(n)).filter((c): c is THREE.AnimationClip => !!c);
+    const b = new HumanBody(folk.root, clips, mats, scale, ranged);
+    b.top = 1.72 * folk.height * scale + 0.35;
+    return b;
   }
 
   private play(name: string, fade = 0.2, speed = 1) {
@@ -152,11 +187,13 @@ class HumanBody implements Body {
       return;
     }
     if (what === 'windup') {
-      // hold the start of the swing: the pause before the blow is the tell
-      if (this.play('attack1', 0.1, 0.25)) this.lock = dur;
+      // a musketeer levels the gun; a swordsman holds the start of the swing: the pause before the blow is the tell
+      if (this.ranged && this.play('aim', 0.15)) this.lock = dur;
+      else if (this.play('attack1', 0.1, 0.25)) this.lock = dur;
       else this.leanTarget = -0.25;
     } else if (what === 'strike') {
-      if (this.current === 'attack1') this.actions.get('attack1')!.timeScale = 1.4;
+      if (this.ranged && this.current === 'aim') { /* the shot leaves from the levelled gun */ }
+      else if (this.current === 'attack1') this.actions.get('attack1')!.timeScale = 1.4;
       else if (this.play('attack1', 0.05, 1.4)) { /* started */ } else this.leanTarget = 0.45;
       this.lock = dur;
     } else if (what === 'hit') {
@@ -374,10 +411,18 @@ class WispBody implements Body {
   }
 }
 
-export function makeBody(t: EnemyType, model: GLTF | null, elite: boolean): Body {
+export function makeBody(t: EnemyType, model: GLTF | null, elite: boolean, kit: TownsfolkKit | null = null): Body {
   if (t.body === 'hound') return new HoundBody(t.scale * (elite ? 1.25 : 1), t.id === 'kludde' ? '#9fe2ff' : '#7cc4ff');
   if (t.body === 'wisp') return new WispBody();
+  if (kit) {
+    const r = rng(Math.floor(Math.random() * 1e9));
+    // an elite is a captain: red doublet, buff coat, sash and a feathered hat
+    const folk = elite
+      ? kit.buildSpec({ body: 'man_stout', role: 'soldier', seed: Math.floor(r() * 1e9), prop: t.weapon ?? 'sword', wear: { hair_long: 'h_red', beard_full: 'h_red', hat_wide: 'black', plume: 'madder', doublet: 'madder_dk', buff_coat: null, sash: null, breeches: 'black', stockings: 'black', boots: null } })
+      : kit.build(r, undefined, t.weapon === 'musket' ? 'musketeer' : 'deserter', t.weapon ?? null);
+    if (folk) return HumanBody.fromFolk(folk, t.scale * (elite ? 1.12 : 1), t.weapon === 'musket');
+  }
   if (!model) return new HoundBody(0.8); // never happens in practice: the rider model ships with the game
   const cloaks = t.cloak ?? ['#444'];
-  return new HumanBody(model, elite ? '#9a1a12' : cloaks[Math.floor(Math.random() * cloaks.length)], t.weapon, t.scale * (elite ? 1.12 : 1));
+  return HumanBody.fromRider(model, elite ? '#9a1a12' : cloaks[Math.floor(Math.random() * cloaks.length)], t.weapon, t.scale * (elite ? 1.12 : 1));
 }

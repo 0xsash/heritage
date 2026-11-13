@@ -322,6 +322,7 @@ async function boot() {
     levelUp: () => {},
     loot: lootNotice,
   });
+  combat.kit = townsfolk;
   combat.setCamps(diest.camps);
   scene.add(combat.group);
   const crowd = riderModel ? new Crowd(riderModel, world, quests, (text, at) => combat.floaters.add(text, at, 'bark', 3.2, 0.35), townsfolk) : null;
