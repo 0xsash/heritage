@@ -447,10 +447,15 @@ async function boot() {
       if (input.consume('map') && !uiOpen()) mapOpen = hud.toggleMap();
       if (input.consume('paint') && !uiOpen()) {
         // Het Schilderij: render this very frame and frame it
+        // (without the game's own signs: no beacons, markers or rings in a painting)
+        const signs = [guide.group, rings.group, ...readables.signs(), ...actors.npcs.map((n) => n.marker)];
+        const was = signs.map((o) => o.visible);
+        for (const o of signs) o.visible = false;
         post.render(0);
+        signs.forEach((o, i) => (o.visible = was[i]));
         const where = placeName(player.onFoot ? player.heroPos.x : player.pos.x, player.onFoot ? player.heroPos.z : player.pos.z).name;
         const h = quests.s.hero;
-        const title = player.onFoot ? `«${h.name} in ${where}»` : `«${h.name} en ${h.dragon} boven ${where}»`;
+        const title = player.onFoot ? `«${h.name}, ${where}»` : `«${h.name} en ${h.dragon} boven ${where}»`;
         const url = publicUrl();
         sound.chime(false);
         void paintPicture(canvas, title, `Brabant, anno 1650${url ? ' · ' + url.replace(/^https?:\/\//, '') : ''}`).then((image) => {

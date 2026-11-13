@@ -476,3 +476,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .gl { position: relative; border-bottom: 1px dotted rgba(214, 173, 87, 0.8); cursor: help; outline: none; }
 .gl::after { content: attr(data-g); position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translate(-50%, 4px); width: max-content; max-width: 300px; padding: 8px 12px; font-family: var(--serif); font-size: 16px; font-style: normal; line-height: 1.4; letter-spacing: 0; text-align: left; color: #2a1c0e; background: #e6d6ac; border: 1px solid #8a6a34; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); opacity: 0; pointer-events: none; transition: opacity var(--t-2) var(--ease-out) 0.25s, transform var(--t-2) var(--ease-out) 0.25s; z-index: 9; white-space: normal; }
 .gl:hover::after, .gl:focus::after { opacity: 1; transform: translate(-50%, 0); }
+/* gear cards: the button row wraps instead of pushing out of the card */
+.gcard .gb { flex-wrap: wrap; gap: 6px; }
+.gcard .up { font-size: 13px; flex-basis: 100%; }
+.charpanel button { font-size: 11.5px; padding: 4px 9px; }
+.charpanel .ware span { min-width: 0; }
+.fe-dots { gap: 8px; width: max-content; }

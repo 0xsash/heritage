@@ -145,6 +145,11 @@ export class Readables {
     return best ? { def: best.def, read: this.kroniek.has(best.def.entry) } : null;
   }
 
+  /** The marks over unread things (hidden when the view is painted). */
+  signs(): THREE.Object3D[] {
+    return this.items.flatMap((it) => [it.mark, it.glint]);
+  }
+
   /** Unread ones, for the map. */
   unread() {
     return this.items.filter((it) => !this.kroniek.has(it.def.entry)).map((it) => ({ x: it.x, z: it.z }));
