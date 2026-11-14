@@ -482,3 +482,28 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .charpanel button { font-size: 11.5px; padding: 4px 9px; }
 .charpanel .ware span { min-width: 0; }
 .fe-dots { gap: 8px; width: max-content; }
+
+/* ---------- prologue: a film you walk through ---------- */
+.pro-fade { position: absolute; inset: 0; background: #050403; opacity: 0; transition: opacity 1.2s ease; pointer-events: none; z-index: 7; }
+.pro-card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; opacity: 0; transition: opacity 1.4s ease; pointer-events: none; z-index: 8; text-shadow: 0 2px 20px #000; }
+.pro-card.show { opacity: 1; }
+.pc-kick { font-family: var(--display); font-size: 13px; letter-spacing: 0.5em; color: var(--gold); }
+.pc-title { font-family: var(--serif); font-style: italic; font-size: clamp(26px, 3.6vw, 42px); margin: 12px 0 6px; color: #efe6cf; }
+.pc-sub { font-family: var(--display); font-size: 14px; letter-spacing: 0.4em; color: var(--ink-dim); }
+.pc-big { font-family: var(--display); font-weight: 700; font-size: clamp(54px, 10vw, 128px); letter-spacing: 0.32em; margin-right: -0.32em; color: #e9c56a; }
+.pro-card.title { justify-content: flex-start; padding-top: 16vh; }
+.cine { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+.cine::before, .cine::after { content: ''; position: absolute; left: 0; right: 0; height: 9vh; background: #050403; }
+.cine::before { top: 0; }
+.cine::after { bottom: 0; }
+.cine-sub { position: absolute; left: 50%; bottom: calc(9vh + 26px); transform: translateX(-50%); width: min(820px, calc(100% - 48px)); text-align: center; font-size: clamp(19px, 2.1vw, 25px); line-height: 1.45; color: #f3ead2; text-shadow: 0 1px 3px #000, 0 0 16px rgba(0, 0, 0, 0.95); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
+.cine-sub.show { opacity: 1; }
+.cine-sub b { display: block; font-family: var(--display); font-weight: 500; font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 2px; }
+.cine-sub .narr { font-style: italic; }
+.cine-obj { position: absolute; left: 50%; top: calc(9vh + 18px); transform: translateX(-50%); font-family: var(--display); font-size: 14px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); text-shadow: 0 1px 8px #000; opacity: 0; transition: opacity 0.5s; z-index: 1; }
+.cine-obj.show { opacity: 1; }
+.cine-skip { position: absolute; right: 22px; bottom: calc(9vh - 26px); z-index: 1; font-size: 13px; color: rgba(232, 220, 196, 0.38); transition: color 0.2s; }
+.cine.skipping .cine-skip { color: var(--gold); }
+/* nothing of the game's furniture during the prologue */
+#ui.prologue .pframe, #ui.prologue .compass, #ui.prologue .tracker, #ui.prologue .loc, #ui.prologue .waypoint .wp-text, #ui.prologue .dv, #ui.prologue .help, #ui.prologue .toast { display: none !important; }
+#ui.prologue .prompt { bottom: calc(9vh + 110px); z-index: 7; }

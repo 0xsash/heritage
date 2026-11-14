@@ -26,6 +26,8 @@ import { Banner, CharacterPanel, Guide, PlayerFrame, type SlotView } from './ui/
 import { Hud } from './ui/hud';
 import { KroniekUI } from './ui/kroniekui';
 import { Tutorial } from './ui/tutorial';
+import { Prologue } from './story/prologue';
+import { Voice } from './audio/voice';
 import { ShareCard, publicUrl } from './ui/share';
 import { paintPicture } from './ui/painting';
 import { RingCourse, FIRST_FLIGHT, dayCourse, dayKey, dayNumber } from './world/rings';
@@ -297,11 +299,16 @@ async function boot() {
       },
     });
   };
-  if (!quests.s.flags.tut_land) {
+  const startFirstFlight = () => {
     course = 'first';
     rings.start(FIRST_FLIGHT, '#ffcc66', false, { pass: () => sound.chime(false) });
     tutGate = () => (course !== 'first' || !rings.active ? null : rings.index === 1 ? 'steer' : rings.index === 2 && player.pos.y < rings.defs[2].y - 14 ? 'climb' : null);
-  } else startDayCourse();
+  };
+  // a new character begins with the prologue: the night the bells fell silent
+  const runPrologue = (fe.mode === 'new' || params.has('prologue')) && !quests.s.flags.prologue && !quests.s.quests.main_arrive;
+  if (runPrologue) course = null;
+  else if (!quests.s.flags.tut_land) startFirstFlight();
+  else startDayCourse();
   {
     // creatures enter the Kroniek the first time one falls
     const onKill = quests.onKill.bind(quests);
@@ -373,10 +380,48 @@ async function boot() {
   let running = true;
   let paused = false;
   input.requestLock();
-  if (isNew) {
+  // spoken lines, where recordings exist (see src/audio/voice.ts)
+  const voice = new Voice();
+  void voice.load();
+  dialogue.onLine = (id) => void voice.play(`dlg_${id}`);
+  const beginChapter = () => {
     quests.start('main_arrive');
     setTimeout(() => hud.announce('BRABANT · ANNO 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, 'Onder u ligt Diest. De klokken zwijgen.'), 2600);
-  } else {
+  };
+  const prologue = new Prologue({
+    scene, ui: uiRoot, player, kit: townsfolk, voice, name: quests.s.hero.name, dragon: quests.s.hero.dragon,
+    setSky: (id) => atmo.setPreset(id),
+    bell: (strong) => sound.bell(strong ? 147 : 196, strong ? 0.5 : 0.42),
+    howl: () => sound.howl(),
+    fire: () => sound.fire(),
+    boom: () => sound.boom(),
+    trauma: (t) => rig.addTrauma(t),
+    hurt: (f) => frame.hurt(f),
+    blast: (at) => {
+      combat.fx.flash(at, 9, '#ffb060', 0.5);
+      combat.fx.ring(at, 7, '#ff9040', 0.7);
+      combat.fx.scorch(at.clone().setY(0.05), 4);
+    },
+    finish: (skipped) => {
+      quests.s.flags.prologue = true;
+      combat.quiet = false;
+      tutorial.enabled = true;
+      if (skipped) {
+        player.debugPlaceFlying(sx, 95, sz, Math.atan2(-sx, -sz));
+        rig.yaw = player.yaw;
+      }
+      kroniek.unlock('mens:neelke', true);
+      startFirstFlight();
+      beginChapter();
+      quests.save();
+    },
+  });
+  if (runPrologue) {
+    combat.quiet = true;
+    tutorial.enabled = false;
+    void prologue.start().then(() => (rig.yaw = -Math.PI / 2));
+  } else if (isNew) beginChapter();
+  if (!isNew && !runPrologue) {
     // "last time": the last line of the journal, so the thread is picked up at once
     const tq = quests.s.tracked ? quests.s.quests[quests.s.tracked] : null;
     const last = tq?.log.length ? quests.fill(tq.log[tq.log.length - 1]) : '';
@@ -423,7 +468,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, shareCard };
+  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, shareCard, prologue, voice };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -468,14 +513,15 @@ async function boot() {
       if (input.consume('kroniek')) book('kroniek');
       if (input.consume('character')) book('character');
       const blocked = uiOpen() || mapOpen;
-      combat.update(blocked ? 0 : dt, input, rig.yaw, rig.camera, !blocked && performance.now() - uiClosedAt > 250);
+      combat.update(blocked ? 0 : dt, input, rig.yaw, rig.camera, !blocked && !prologue.active && performance.now() - uiClosedAt > 250);
       sdt = blocked ? 0 : dt * combat.timeScale;
       if (uiOpen()) {
         // the world waits while you read; keys belong to the open panel
         input.consume('interact');
         input.consume('jump');
       } else if (!mapOpen) {
-        if (player.mode === 'walk' && !player.dead && performance.now() - uiClosedAt > 250 && talkOrPickUp()) {
+        prologue.update(dt, input);
+        if (!prologue.active && player.mode === 'walk' && !player.dead && performance.now() - uiClosedAt > 250 && talkOrPickUp()) {
           // the press went to a person or a thing on the ground
         } else player.update(sdt, input, rig.yaw, rig.pitch);
       }
@@ -554,6 +600,10 @@ async function boot() {
       }));
       // a standing invitation, once a day
       if (course === 'day' && quests.s.flags.dv_day !== dayKey() && list.length < 3) list.push({ title: 'Klokkenronde', kind: 'contract', level: undefined, tracked: false, objectives: [rings.running ? 'Luid de zeven klokken, ring na ring' : 'Vlieg door de blauwe ring boven de Grote Markt'] });
+      if (prologue.active) {
+        guide.target = prologue.target ? { x: prologue.target.x, z: prologue.target.z, r: 0, title: '', text: '', person: false } : null;
+        hud.questTarget = null;
+      }
       hud.trackerList = list.length ? list : [{ title: 'Op zoek naar werk', kind: 'side', objectives: ['Zoek iemand met een gouden ! boven het hoofd'], tracked: true }];
       if (toasts.length && performance.now() - toastAt > 1900) {
         hud.flash(toasts.shift()!);
@@ -574,7 +624,7 @@ async function boot() {
         if (Math.hypot(px, pz) < 1600) sound.chime();
       }
       for (const d of world.discoveries) {
-        if (d.found) continue;
+        if (d.found || prologue.active) continue;
         const r = d.r + (player.onFoot ? 0 : Math.min(py * 0.5, 120));
         if ((d.x - px) ** 2 + (d.z - pz) ** 2 < r * r) {
           d.found = true;
@@ -605,7 +655,8 @@ async function boot() {
     const key = input.device === 'pad' ? 'Y' : 'E';
     const near = player.mode === 'walk' && !uiOpen() && !player.dead ? nearby() : null;
     const dragon = quests.s.hero.dragon;
-    if (uiOpen() || player.dead) hud.setPrompt(null);
+    if (prologue.active) hud.setPrompt(prologue.prompt);
+    else if (uiOpen() || player.dead) hud.setPrompt(null);
     else if (near?.npc) hud.setPrompt(`<kbd>${key}</kbd>Spreek met ${near.npc.name}${near.npc.shop ? ' · winkel' : ''}`);
     else if (near?.loot) hud.setPrompt(`<kbd>${key}</kbd>Raap op: <span style="color:${RARITY[near.loot.rarity].color}">${near.loot.name}</span>`);
     else if (near?.read) hud.setPrompt(`<kbd>${key}</kbd>${near.read.read ? 'Herlees' : 'Lees'} ${near.read.def.label}`);

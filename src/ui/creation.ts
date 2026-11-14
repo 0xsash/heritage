@@ -72,7 +72,7 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
           <div class="fe-small">Muis en toetsenbord of een gamepad · geluid aan · uw voortgang wordt op dit toestel bewaard</div>
         </div>
       </div>`;
-      el.querySelector('[data-go="ok"]')!.addEventListener('click', () => (back ? title() : story(0)));
+      el.querySelector('[data-go="ok"]')!.addEventListener('click', () => (back ? title() : create()));
     };
 
     // ---------------------------------------------------------------- title
@@ -94,7 +94,7 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
       el.querySelector('[data-go="what"]')!.addEventListener('click', () => promise(true));
       el.querySelector('[data-go="new"]')!.addEventListener('click', () => {
         if (save && !confirm('Een nieuw verhaal beginnen? Uw huidige personage gaat verloren.')) return;
-        story(0);
+        create(); // the story is told in the prologue, which you play
       });
     };
 

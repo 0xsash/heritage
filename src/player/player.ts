@@ -392,6 +392,13 @@ export class Player {
     this.ev.trauma(0.3);
   }
 
+  /** Story: the dragon comes to the hero from somewhere particular (out of the river, the first time). */
+  summonFrom(x: number, y: number, z: number) {
+    this.pos.set(x, y, z);
+    this.dragon.root.visible = true;
+    this.beginCall();
+  }
+
   private beginCall() {
     this.mode = 'calling';
     this.tTimer = 0;

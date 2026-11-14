@@ -14,6 +14,8 @@ export class DialogueUI {
   npcId: string | null = null;
   private line: Line | null = null;
   private onClose?: () => void;
+  /** a line is shown (the voice plays it, if it has been recorded) */
+  onLine: (id: string) => void = () => {};
 
   constructor(root: HTMLElement, private q: QuestEngine) {
     this.el.className = 'dialogue';
@@ -56,6 +58,7 @@ export class DialogueUI {
       console.warn('missing dialogue line', id);
       return this.close();
     }
+    this.onLine(id);
     this.line = line;
     this.q.apply(line.effects);
     const npc = this.q.npcs.get(line.who);

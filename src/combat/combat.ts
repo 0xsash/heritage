@@ -160,6 +160,8 @@ export class Combat {
   private deadT = -1;
   /** the townsfolk kit, when loaded: human enemies are built from it */
   kit: TownsfolkKit | null = null;
+  /** story scenes: no camps spawn */
+  quiet = false;
   inCombat = false;
   /** things the player has done (the tutorial watches these) */
   tally = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0 };
@@ -212,6 +214,7 @@ export class Combat {
 
   // ================================================================ camps
   private manageCamps(px: number, pz: number) {
+    if (this.quiet) return;
     for (const c of this.camps) {
       const d = Math.hypot(c.def.at[0] - px, c.def.at[1] - pz);
       const allowed = this.quests.test(c.def.if);

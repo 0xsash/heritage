@@ -87,6 +87,8 @@ const tijd: Entry[] = [
 ];
 
 const mensen: Entry[] = [
+  { id: 'mens:neelke', cat: 'mens', truth: 'verzonnen', title: 'Neelke', hint: 'Uw zusje.',
+    text: 'Uw zusje. Ze telde alles: stappen, sterren, de slagen van de klok. In de nacht dat de klokken van Diest zwegen, nam het water haar mee. Wat het water neemt, geeft het soms terug.' },
   { id: 'mens:pieter', cat: 'mens', truth: 'verzonnen', title: 'Pieter Vandenbempt', hint: 'Spreek met de koster van Sint-Sulpitius.',
     text: 'Koster van Sint-Sulpitius. Hij luidt de klokken, graaft de graven en weet van iedereen in Diest wanneer hij gedoopt is en wat hij nog schuldig is aan de kerkfabriek.' },
   { id: 'mens:marieke', cat: 'mens', truth: 'verzonnen', title: 'Marieke Smets', hint: 'Spreek met de marskraamster op de Grote Markt.',
