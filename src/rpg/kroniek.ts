@@ -131,6 +131,15 @@ const wezens: Entry[] = [
 export const ENTRIES: Entry[] = [...places, ...tijd, ...mensen, ...wezens];
 const BY_ID = new Map(ENTRIES.map((e) => [e.id, e]));
 
+/** More pages, written elsewhere (src/content/diest_life.ts: what guides and townsfolk teach). */
+export function addEntries(list: Entry[]) {
+  for (const e of list) {
+    if (BY_ID.has(e.id)) continue;
+    ENTRIES.push(e);
+    BY_ID.set(e.id, e);
+  }
+}
+
 /** Things to read in and around Diest (positions are adjusted to open ground when placed). */
 export const READABLES: Readable[] = [
   { entry: 'tijd:klokken', label: 'het klokkenreglement', at: [22, 44] },

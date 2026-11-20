@@ -21,7 +21,9 @@ export class Hud {
   /** up to three quests for the tracker: the tracked one first, with its objectives */
   trackerList: { title: string; kind: string; level?: number; objectives: string[]; tracked: boolean }[] = [];
   /** extra map marks: quest givers (! / ?), enemy camps */
-  mapMarks: { x: number; z: number; kind: '!' | '?' | 'camp' | 'camp-cleared'; label: string }[] = [];
+  mapMarks: { x: number; z: number; kind: '!' | '?' | 'camp' | 'camp-cleared' | 'svc' | 'pin'; label: string; glyph?: string }[] = [];
+  /** map zoom (1: the whole valley); opening the map near Diest zooms in on the town, the wheel changes it */
+  mapScale = 1;
   private card = el('discovery');
   private loc = el('loc');
   private prompt = el('prompt');
@@ -65,7 +67,11 @@ export class Hud {
     );
     this.help.classList.add('hidden'); // H shows it; the tutorial teaches the rest as you go
     this.map.appendChild(this.mapCanvas);
-    this.map.appendChild(el('legend', 'DIEST &amp; HET DEMERDAL · ANNO 1650'));
+    this.map.appendChild(el('legend', 'DIEST &amp; HET DEMERDAL · ANNO 1650 <span class="mapzoom">· wiel: in- en uitzoomen</span>'));
+    window.addEventListener('wheel', (e) => {
+      if (!this.map.classList.contains('show')) return;
+      this.mapScale = Math.max(1, Math.min(8, this.mapScale * (e.deltaY < 0 ? 1.25 : 0.8)));
+    });
     this.map.appendChild(el('map-credit', 'Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)'));
     root.append(
       this.compass, this.tracker, this.card, this.loc, this.prompt, this.toast, this.help, this.map,
@@ -220,9 +226,12 @@ export class Hud {
     return best;
   }
 
-  toggleMap() {
+  toggleMap(px?: number, pz?: number) {
     this.map.classList.toggle('show');
-    return this.map.classList.contains('show');
+    const open = this.map.classList.contains('show');
+    // in and around Diest the town is what you want to see; out in the valley, the valley
+    if (open && px !== undefined && pz !== undefined) this.mapScale = Math.hypot(px - 200, pz) < 1500 ? 4 : 1;
+    return open;
   }
 
   private bakeMap() {
@@ -271,8 +280,13 @@ export class Hud {
     const g = this.mapCanvas.getContext('2d')!;
     const [x0, z0] = this.world.data.bounds;
     const S = 0.25;
-    const zoom = Math.min(cw / base.width, ch / base.height) * 1.0;
-    const ox = (cw - base.width * zoom) / 2, oy = (ch - base.height * zoom) / 2;
+    const zoom = Math.min(cw / base.width, ch / base.height) * this.mapScale;
+    let ox = (cw - base.width * zoom) / 2, oy = (ch - base.height * zoom) / 2;
+    if (this.mapScale > 1) {
+      // zoomed: keep the player in the middle, but never show past the edge of the map
+      ox = Math.min(0, Math.max(cw - base.width * zoom, cw / 2 - (px - x0) * S * zoom));
+      oy = Math.min(0, Math.max(ch - base.height * zoom, ch / 2 - (pz - z0) * S * zoom));
+    }
     g.fillStyle = '#1a140d';
     g.fillRect(0, 0, cw, ch);
     g.drawImage(base, ox, oy, base.width * zoom, base.height * zoom);
@@ -289,7 +303,27 @@ export class Hud {
     g.font = `bold ${15 * devicePixelRatio}px Cinzel, Georgia, serif`;
     for (const m of this.mapMarks) {
       const [MX, MY] = toScreen(m.x, m.z);
-      if (m.kind === '!' || m.kind === '?') {
+      if (m.kind === 'svc' || m.kind === 'pin') {
+        // a service (shop, guide, board) or a place someone pointed you to
+        const r = (m.kind === 'pin' ? 9 : 7.5) * devicePixelRatio;
+        g.fillStyle = m.kind === 'pin' ? '#e8a91e' : '#f2e6cc';
+        g.strokeStyle = '#2a1a08';
+        g.lineWidth = 1.5 * devicePixelRatio;
+        g.beginPath(); g.arc(MX, MY, r, 0, Math.PI * 2); g.fill(); g.stroke();
+        g.fillStyle = '#2a1a08';
+        g.font = `${11 * devicePixelRatio}px "EB Garamond", serif`;
+        g.textBaseline = 'middle';
+        g.fillText(m.glyph ?? '•', MX, MY + 0.5 * devicePixelRatio);
+        g.textBaseline = 'alphabetic';
+        if (m.kind === 'pin' || this.mapScale >= 3) {
+          g.font = `${12 * devicePixelRatio}px "EB Garamond", serif`;
+          g.lineWidth = 3 * devicePixelRatio;
+          g.strokeStyle = 'rgba(242, 230, 204, 0.85)';
+          g.strokeText(m.label, MX, MY + r + 12 * devicePixelRatio);
+          g.fillText(m.label, MX, MY + r + 12 * devicePixelRatio);
+        }
+        g.font = `bold ${15 * devicePixelRatio}px Cinzel, Georgia, serif`;
+      } else if (m.kind === '!' || m.kind === '?') {
         g.lineWidth = 4 * devicePixelRatio;
         g.strokeStyle = '#2a1a08';
         g.strokeText(m.kind, MX, MY);

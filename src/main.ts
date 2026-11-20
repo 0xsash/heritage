@@ -18,6 +18,7 @@ import { RARITY, type Gear, rollGear, uniqueGear } from './rpg/character';
 import { Crowd } from './rpg/crowd';
 import { loadTownsfolk } from './rpg/townsfolk';
 import { Kroniek, READABLES, ENTRIES } from './rpg/kroniek';
+import { Life, type Near as LifeNear } from './life/life';
 import { Readables } from './rpg/readables';
 import { QuestEngine } from './rpg/quests';
 import { freshSave, loadSave, writeSave } from './rpg/state';
@@ -182,7 +183,7 @@ async function boot() {
   const toasts: string[] = [];
   let toastAt = 0;
   let pendingShop = false;
-  const late: { journal?: JournalUI; actors?: Actors; chars?: CharacterPanel; banner?: Banner } = {};
+  const late: { journal?: JournalUI; actors?: Actors; chars?: CharacterPanel; banner?: Banner; life?: Life } = {};
   const lootNotice = (g: Gear) => {
     if (g.rarity >= 2) late.banner?.show('loot', RARITY[g.rarity].name.toUpperCase(), g.name, ['Druk op I om het te bekijken']);
     else toasts.push(`OPGERAAPT · ${g.name}`);
@@ -214,6 +215,10 @@ async function boot() {
       if (panel === 'shop') pendingShop = true;
       else late.chars?.toggle(true);
     },
+    // everyday life in town (src/life): dialogue hooks, standing that follows renown and quests
+    call: (id) => late.life?.call(id),
+    renown: (town, n) => late.life?.renown(town, n),
+    completed: (id, outcome) => late.life?.completed(id, outcome),
   });
   const d0 = quests.sheet.derived();
   if (quests.s.hero.hp > d0.maxHp || quests.s.hero.hp <= 0) quests.s.hero.hp = d0.maxHp;
@@ -365,6 +370,18 @@ async function boot() {
   const dialogue = new DialogueUI(uiRoot, quests);
   const journal = (late.journal = new JournalUI(uiRoot, quests));
   const chars = (late.chars = new CharacterPanel(uiRoot, quests, () => player.hero.setCloak(quests.s.hero.cloak), () => sound.coins()));
+  // merchants, guides, the notice board, things in the streets, talk with anyone (src/life)
+  const life = (late.life = new Life({
+    quests, kroniek, world, crowd, kit: townsfolk, combat, hud, chars, dialogue, sound, ui: uiRoot,
+    toast: (t) => toasts.push(t),
+    closeUi: () => closeUi(),
+    night: () => atmo.night,
+    pixelRatio: () => renderer.getPixelRatio(),
+    heroPos: () => (player.onFoot ? player.heroPos : player.pos),
+  }));
+  life.init();
+  scene.add(life.group);
+  chars.extra = () => life.standing.html();
   let uiClosedAt = 0;
   // one book, three sections: opening one closes the others
   const book = (which: 'journal' | 'kroniek' | 'character') => {
@@ -492,7 +509,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, shareCard, prologue, voice, kit: townsfolk, dragonModel };
+  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, shareCard, prologue, voice, kit: townsfolk, dragonModel, life, hud, guide };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -514,11 +531,11 @@ async function boot() {
         atmo.advance();
         setTimeout(() => hud.flash(LIGHT[atmo.look.label] ?? atmo.look.label.toUpperCase()), 400);
       }
-      if (input.consume('map') && !uiOpen()) mapOpen = hud.toggleMap();
+      if (input.consume('map') && !uiOpen()) mapOpen = hud.toggleMap(player.onFoot ? player.heroPos.x : player.pos.x, player.onFoot ? player.heroPos.z : player.pos.z);
       if (input.consume('paint') && !uiOpen()) {
         // Het Schilderij: render this very frame and frame it
         // (without the game's own signs: no beacons, markers or rings in a painting)
-        const signs = [guide.group, rings.group, ...readables.signs(), ...actors.npcs.map((n) => n.marker)];
+        const signs = [guide.group, rings.group, ...readables.signs(), ...actors.npcs.map((n) => n.marker), ...life.signs()];
         const was = signs.map((o) => o.visible);
         for (const o of signs) o.visible = false;
         post.render(0);
@@ -600,6 +617,7 @@ async function boot() {
       crowd?.update(sdt, px, pz, player.onFoot ? 0 : player.altitude(), rig.camera, {
         x: px, z: pz, onFoot: player.onFoot, dragonX: player.pos.x, dragonZ: player.pos.z, dragonDown: player.mode === 'walk' || player.mode === 'calling',
       });
+      life.update(dt, sdt, px, pz, py, player.mode === 'fly', prologue.active);
       // where to go next: the tracked objective, or the nearest person with work
       const t = quests.target();
       if (t) {
@@ -624,6 +642,10 @@ async function boot() {
       }));
       // a standing invitation, once a day
       if (course === 'day' && quests.s.flags.dv_day !== dayKey() && list.length < 3) list.push({ title: 'Klokkenronde', kind: 'contract', level: undefined, tracked: false, objectives: [rings.running ? 'Luid de zeven klokken, ring na ring' : 'Vlieg door de blauwe ring boven de Grote Markt'] });
+      if (life.pointer) {
+        // someone in town pointed the way: show it for a while
+        guide.target = { x: life.pointer.x, z: life.pointer.z, r: 0, title: life.pointer.label, text: life.pointer.label, person: false };
+      }
       if (prologue.active) {
         guide.target = prologue.target ? { x: prologue.target.x, z: prologue.target.z, r: 0, title: '', text: '', person: false } : null;
         hud.questTarget = null;
@@ -668,6 +690,7 @@ async function boot() {
           if (m && p) marks.push({ x: p[0], z: p[1], kind: m, label: n.name });
         }
         for (const c of combat.campMarks()) marks.push({ x: c.x, z: c.z, kind: c.cleared ? 'camp-cleared' : 'camp', label: `${c.name} · ${c.level}` });
+        if (!prologue.active) marks.push(...life.mapMarks());
         hud.mapMarks = marks;
       }
     }
@@ -685,6 +708,7 @@ async function boot() {
     else if (near?.loot) hud.setPrompt(`<kbd>${key}</kbd>Raap op: <span style="color:${RARITY[near.loot.rarity].color}">${near.loot.name}</span>`);
     else if (near?.read) hud.setPrompt(`<kbd>${key}</kbd>${near.read.read ? 'Herlees' : 'Lees'} ${near.read.def.label}`);
     else if (near?.pickup) hud.setPrompt(`<kbd>${key}</kbd>Raap op: ${quests.item(near.pickup.item)?.name ?? near.pickup.item}`);
+    else if (near?.life) hud.setPrompt(life.prompt(near.life, key));
     else if (player.mode === 'fly' && player.canLand()) hud.setPrompt(`<kbd>${key}</kbd>Landen`);
     else if (player.mode === 'walk') hud.setPrompt(player.distanceToDragon() < 7 ? `<kbd>${key}</kbd>Bestijg ${dragon}` : combat.inCombat ? null : `<kbd>${key}</kbd>Roep ${dragon}`);
     else hud.setPrompt(null);
@@ -732,13 +756,16 @@ async function boot() {
   function nearby() {
     const x = player.heroPos.x, z = player.heroPos.z;
     const npc = actors.nearestNpc(x, z);
-    if (npc) return { npc, pickup: null, loot: null, read: null };
+    if (npc) return { npc, pickup: null, loot: null, read: null, life: null };
     const loot = combat.nearestLoot(x, z);
-    if (loot) return { npc: null, pickup: null, loot, read: null };
+    if (loot) return { npc: null, pickup: null, loot, read: null, life: null };
     const pickup = actors.nearestPickup(x, z);
-    if (pickup) return { npc: null, pickup, loot: null, read: null };
+    if (pickup) return { npc: null, pickup, loot: null, read: null, life: null };
     const read = readables.nearest(x, z);
-    return read ? { npc: null, pickup: null, loot: null, read } : null;
+    if (read) return { npc: null, pickup: null, loot: null, read, life: null };
+    // merchants, guides, the board, anyone in the street, a sign, a door, a well, a shrine
+    const l: LifeNear | null = prologue.active ? null : life.nearest(x, z);
+    return l ? { npc: null, pickup: null, loot: null, read: null, life: l } : null;
   }
 
   /** E near a person starts a conversation; near something on the ground picks it up. */
@@ -757,6 +784,7 @@ async function boot() {
           sound.chime(false);
         }
         kroniekUI.show(e, isNew, `+${xp} ervaring`);
+        life.onRead(e.id);
       }
     } else if (near.npc) {
       const start = quests.conversationFor(near.npc.id);
@@ -767,10 +795,13 @@ async function boot() {
           closeUi();
           if (pendingShop) {
             pendingShop = false;
-            chars.toggle(true, true);
+            chars.toggle(true, true, life.shopFor(near.npc!.id));
           }
         });
       }
+    } else if (near.life) {
+      if (mapOpen) mapOpen = hud.toggleMap();
+      life.interact(near.life);
     } else if (near.loot) {
       near.loot.take();
     } else if (near.pickup) {

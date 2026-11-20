@@ -16,8 +16,8 @@ import type { QuestEngine } from './quests';
 const POOL = 36;
 const NEAR = 9, FAR = 70, DROP = 95;
 
-interface Line { p: number[]; len: number; seg: number[]; /** how far off the middle people may walk, per point */ side: number[] }
-interface Walker {
+export interface Line { p: number[]; len: number; seg: number[]; /** how far off the middle people may walk, per point */ side: number[] }
+export interface Walker {
   root: THREE.Object3D;
   mixer: THREE.AnimationMixer;
   walk: THREE.AnimationAction;
@@ -49,6 +49,10 @@ interface Walker {
   height: number;
   pose: () => void;
   lines: string[];
+  /** a woman or a girl (for names and forms of address in src/life) */
+  female: boolean;
+  /** seconds left talking with the player: stands still and faces them */
+  chat: number;
 }
 
 export class Crowd {
@@ -133,6 +137,7 @@ export class Crowd {
           root, mixer, walk, idle, talk, run, stride: folk.stride, talkT: 0, post: null,
           line: null, s: 0, dir: 1, speed: folk.speed, standT: 0, barkCd: 0, flee: 0, x: 0, z: 0, yaw: 0, lod: i,
           role: folk.role, pace: folk.speed, height: folk.height, pose: () => {}, lines: folk.lines,
+          female: kit?.m.bodies[folk.body]?.sex === 'f', chat: 0,
         });
         continue;
       }
@@ -169,6 +174,7 @@ export class Crowd {
         root, mixer, walk, idle, talk: null, run: null, stride: 0, talkT: 0, post: null,
         line: null, s: 0, dir: 1, speed: look.speed, standT: 0, barkCd: 0, flee: 0, x: 0, z: 0, yaw: 0, lod: i,
         role, pace: look.speed, height: look.scale.y, pose: look.pose, lines: look.lines,
+        female: role === 'peasantWoman' || role === 'huik' || role === 'beguine' || role === 'oldWoman', chat: 0,
       });
     }
     this.kitted = !!kit?.ok;
@@ -321,6 +327,7 @@ export class Crowd {
       if (!w.root.visible) continue;
       w.barkCd -= dt;
       w.talkT -= dt;
+      w.chat -= dt;
       const dPlayer = Math.hypot(player.x - w.x, player.z - w.z);
       const dDragon = Math.hypot(player.dragonX - w.x, player.dragonZ - w.z);
       let moving = false;
@@ -342,7 +349,7 @@ export class Crowd {
           if (this.barkGlobal <= 0 && Math.random() < 0.5) this.say(w, FLEE[Math.floor(Math.random() * FLEE.length)]);
         }
         w.flee -= dt;
-        moving = w.standT <= 0 && w.talkT <= 0;
+        moving = w.standT <= 0 && w.talkT <= 0 && w.chat <= 0;
         if (w.standT > 0) w.standT -= dt;
         if (moving) {
           const sp = w.speed * (w.flee > 0 ? 2.4 : 1);
@@ -407,11 +414,53 @@ export class Crowd {
         w.pose();
       }
       // greetings and gossip: stop, turn, and say it
-      if (player.onFoot && dPlayer < 3.6 && w.barkCd <= 0 && this.barkGlobal <= 0 && Math.random() < 0.6) {
+      if (player.onFoot && dPlayer < 3.6 && w.chat <= 0 && w.barkCd <= 0 && this.barkGlobal <= 0 && Math.random() < 0.6) {
         this.say(w, Math.random() < 0.45 ? w.lines[Math.floor(Math.random() * w.lines.length)] : this.line());
         if (w.talk && w.flee <= 0) w.talkT = 2.6;
       }
     }
+  }
+
+  /** The streets people walk (for src/life: where to put things, and the density measure). */
+  streets(): readonly Line[] {
+    return this.lines;
+  }
+
+  /** The walker within reach of (x, z), if any: anyone in the street can be spoken to. */
+  nearestWalker(x: number, z: number, reach = 2.6): Walker | null {
+    let best: Walker | null = null, bd = reach * reach;
+    for (const w of this.walkers) {
+      if (!w.root.visible || w.flee > 0) continue;
+      const d = (w.x - x) ** 2 + (w.z - z) ** 2;
+      if (d < bd) { bd = d; best = w; }
+    }
+    return best;
+  }
+
+  /** Which of the pool this is (stable for the session: the same body and clothes). */
+  indexOf(w: Walker) {
+    return this.walkers.indexOf(w);
+  }
+
+  /** Stop, turn to the player and talk for a while. */
+  engage(w: Walker, seconds: number, px: number, pz: number) {
+    w.chat = seconds;
+    w.talkT = Math.min(seconds, 3);
+    w.flee = 0;
+    w.barkCd = Math.max(w.barkCd, 20);
+    // the world stops while the conversation is open: stand and face the player now
+    w.yaw = Math.atan2(px - w.x, pz - w.z);
+    w.root.rotation.y = w.yaw;
+    w.walk.weight = 0;
+    if (w.run) w.run.weight = 0;
+    if (w.talk) w.talk.weight = 1;
+    w.idle.weight = w.talk ? 0 : 1;
+    w.mixer.update(0);
+  }
+
+  /** Keep a talking walker gesturing while the rest of the world waits. */
+  tickChat(dt: number) {
+    for (const w of this.walkers) if (w.chat > 0 && w.root.visible) w.mixer.update(dt);
   }
 
   private say(w: Walker, text: string) {
