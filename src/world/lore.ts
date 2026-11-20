@@ -115,7 +115,7 @@ export const LORE: Record<string, LoreEntry> = {
   },
   Leuvensepoort: {
     title: 'De Leuvense Poort',
-    text: 'De weg naar het zuidwesten, naar Leuven, zijn universiteit en het hof van de landvoogd in Brussel. Geleerden en advocaten komen langs hier, zelden samen.',
+    text: 'De weg naar het zuidwesten, naar Leuven, zijn universiteit en het hof van de landvoogd in Brussel. Geleerden en advocaten komen hier langs, zelden samen.',
     r: 60,
   },
   Allerheiligenpoort: {

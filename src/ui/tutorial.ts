@@ -57,16 +57,16 @@ const STEPS: Step[] = [
   { id: 'climb', keys: (p) => (p ? ['A', 'B'] : ['SPATIE', 'C']), text: 'Stijgen en dalen', when: (c) => c.mode === 'fly' && c.gate === 'climb', done: (c, t) => (t.acc.climb += c.climbing ? t.dt : 0) > 0.5, stall: 2.5 },
   { id: 'land', keys: (p) => (p ? ['Y'] : ['E']), text: 'Daal boven het plein en land', when: (c) => c.mode === 'fly' && c.toGoal < 260, done: (c) => c.mode !== 'fly', stall: 2 },
   { id: 'walk', keys: (p) => (p ? ['L'] : ['W', 'A', 'S', 'D']), text: 'Lopen · Shift rent', when: (c) => c.mode === 'walk', done: (c) => c.walked > 8 },
-  { id: 'talk', keys: (p) => (p ? ['Y'] : ['E']), text: 'Spreek wie een gouden ! draagt', when: (c) => c.mode === 'walk' && !c.inCombat, done: (c) => c.talking, stall: 6 },
+  { id: 'talk', keys: (p) => (p ? ['Y'] : ['E']), text: 'Praat met wie een gouden ! draagt', when: (c) => c.mode === 'walk' && !c.inCombat, done: (c) => c.talking, stall: 6 },
   { id: 'dodge', keys: (p) => (p ? ['A'] : ['SPATIE']), text: 'Gloeit hij rood? Rol weg', when: (c, t) => c.mode === 'walk' && c.inCombat && c.tally.telegraphs > t.base.telegraphs, done: (c, t) => c.tally.rolls > t.base.rolls, stall: 0.1 },
   { id: 'attack', keys: () => ['LMB'], text: 'Sla toe. Drie slagen vormen een reeks', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.hits - t.base.hits >= 3, stall: 2 },
-  { id: 'salve', keys: (p) => (p ? ['▼'] : ['Q']), text: 'Begijnenzalf geneest u', when: (c) => c.hpFrac < 0.5 && c.salves > 0, done: (c, t) => c.tally.potions > t.base.potions, stall: 1 },
+  { id: 'salve', keys: (p) => (p ? ['▼'] : ['Q']), text: 'Begijnenzalf geneest je', when: (c) => c.hpFrac < 0.5 && c.salves > 0, done: (c, t) => c.tally.potions > t.base.potions, stall: 1 },
   { id: 'skill', keys: () => ['RMB'], text: '{skill}', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.skills > t.base.skills, stall: 5 },
   { id: 'breath', keys: () => ['LMB'], text: '{dragon} spuwt vuur', when: (c) => c.mode === 'fly' && c.inCombat, done: (c) => c.tally.breaths > 0, stall: 2 },
   { id: 'mount', keys: (p) => (p ? ['Y'] : ['E']), text: 'Ver weg? Roep {dragon} en vlieg', when: (c) => c.mode === 'walk' && c.toGoal > 300 && c.toGoal < 1e8 && !c.inCombat, done: (c) => c.mode === 'fly', stall: 6 },
   // the second flight: now speed matters
   { id: 'speed', keys: (p) => (p ? ['RT', 'LT'] : ['W', 'S']), text: 'Sneller en trager', when: (c, t) => c.mode === 'fly' && t.learned('land'), done: (c, t) => (t.acc.speed += Math.abs(c.throttle) > 0.3 ? t.dt : 0) > 0.8, stall: 5 },
-  { id: 'book', keys: () => ['J', 'K'], text: 'Uw dagboek en de Kroniek', when: (c) => c.quests >= 2 && !c.talking && !c.inCombat, done: (c) => c.bookOpen, patience: 14, stall: 8 },
+  { id: 'book', keys: () => ['J', 'K'], text: 'Je dagboek en de Kroniek', when: (c) => c.quests >= 2 && !c.talking && !c.inCombat, done: (c) => c.bookOpen, patience: 14, stall: 8 },
 ];
 
 export class Tutorial {
