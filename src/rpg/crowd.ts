@@ -429,21 +429,21 @@ export class Crowd {
     const fame = (s.renown.Diest ?? 0) + (s.renown.Begijnhof ?? 0);
     if (fame >= 15) pool.push(...FAMOUS, ...FAMOUS);
     if (q.test({ quest: 'main_bells', state: 'active' }) || q.test({ quest: 'main_bells', state: 'none' })) pool.push(...BELLS);
-    if (q.test({ flag: 'seals_reported' })) pool.push('Vranckx\' weduwe is verbannen. Hard, maar de wet is de wet.', 'Ze zeggen dat gij de valse zegels gevonden hebt. Den ambacht is u dankbaar.');
+    if (q.test({ flag: 'seals_reported' })) pool.push('Vranckx\' weduwe is verbannen. Hard, maar de wet is de wet.', 'Ze zeggen dat jij de valse zegels gevonden hebt. Het ambacht is je dankbaar.');
     if (q.test({ flag: 'seals_begijnhof' })) pool.push('Lijsbet weeft nu bij de begijnen. Beter zo, zeg ik.');
     if (q.test({ flag: 'toll_bribe' })) pool.push('*knipoog* Lekkere brandewijn gehad, gisteren?');
-    if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push('Roelof de Rode is dood! Ze zeggen dat gij hem verslagen hebt!', 'De boeren van Kaggevinne slapen weer, dankzij u.');
-    if (q.test({ quest: 'main_kludde', state: 'done' })) pool.push('De Kludde! Gij hebt de Kludde verjaagd! Mijn grootmoeder zal het niet geloven.');
+    if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push('Roelof de Rode is dood! Ze zeggen dat jij hem verslagen hebt!', 'De boeren van Kaggevinne slapen weer, dankzij jou.');
+    if (q.test({ quest: 'main_kludde', state: 'done' })) pool.push('De Kludde! Jij hebt de Kludde verjaagd! Mijn grootmoeder zal het niet geloven.');
     if (s.hero.level >= 5) pool.push('Dat is een stevig zwaard, {name}.');
     return pool[Math.floor(Math.random() * pool.length)];
   }
 }
 
 const GREET = [
-  'Goeiendag.', 'Dag, vreemdeling.', 'Allee, kijk uit waar ge loopt!', 'Schoon weer vandaag, hé.', 'God zij met u.',
-  'Hebt ge al gegeten? De wafels aan de Lakenhalle zijn goed.', 'De tol is weer omhoog. Altijd omhoog.', 'Mijn koe is ziek. Weet gij iets van koeien?',
+  'Goeiendag.', 'Dag, vreemdeling.', 'Allee, kijk uit waar je loopt!', 'Schoon weer vandaag, hé.', 'Goeiemorgen, hé.',
+  'Al gegeten? De wafels aan de Lakenhalle zijn goed.', 'De tol is weer omhoog. Altijd omhoog.', 'Mijn koe is ziek. Weet jij iets van koeien?',
   'Ze zeggen dat de Fransen in Henegouwen zitten.', 'Amai, wat een mantel.', 'Pas op voor de zakkenrollers aan de markt.',
-  'De Demer staat hoog dit jaar.', 'Gij zijt niet van hier, hé?', 'Het bier van Diest is beter dan dat van Leuven. Zeg het voort.',
+  'De Demer staat hoog dit jaar.', 'Jij bent niet van hier, hé?', 'Het bier van Diest is beter dan dat van Leuven. Zeg het voort.',
 ];
 const BELLS = [
   'De klokken zwijgen al dagen. Ik weet niet meer hoe laat het is.', 'Zonder klokken gaan de poorten dicht wanneer de wachter er zin in heeft.',
@@ -451,7 +451,7 @@ const BELLS = [
 ];
 const FAMOUS = [
   'Daar is {name}! Die van de draak!', 'Goeiendag, {name}! Hoe gaat het met {dragon}?', '{name}! Mijn zoon wil later ook een draak.',
-  'Iedereen spreekt over u, {name}.', 'Kijk, daar gaat {name}. Ze zeggen dat die de Kludde niet vreest.',
+  'Iedereen praat over jou, {name}.', 'Kijk, daar gaat {name}. Ze zeggen dat die de Kludde niet vreest.',
 ];
 interface Anchor { x: number; z: number; r: number; p: number }
 /** Where each kind of person tends to be (p: how often they stick to it). */

@@ -315,10 +315,10 @@ export class CharacterPanel {
       ? h.bag
           .map((g) => gearCard(g, `<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ beter</span>' : ''}<button data-eq="${g.uid}">DRAAG</button>${this.shop ? `<button data-sell="${g.uid}">VERKOOP · ${gearValue(g)}</button>` : ''}</div>`))
           .join('')
-      : '<div class="empty">Uw zak is leeg. Verslagen vijanden laten soms iets vallen.</div>';
+      : '<div class="empty">Je zak is leeg. Verslagen vijanden laten soms iets vallen.</div>';
     const shopHtml = this.shop
       ? `<div class="shop"><h3>MARIEKES WAREN</h3>
-          <div class="ware"><span>Begijnenzalf (geneest de helft van uw leven)</span><button data-buy="salve">KOOP · 6</button></div>
+          <div class="ware"><span>Begijnenzalf (geneest de helft van je leven)</span><button data-buy="salve">KOOP · 6</button></div>
           ${this.wares.map((g, i) => gearCard(g, `<div class="gb"><button data-buyg="${i}">KOOP · ${gearValue(g) * 4}</button></div>`)).join('')}
         </div>`
       : '';
@@ -332,7 +332,7 @@ export class CharacterPanel {
           <h3>VAARDIGHEDEN</h3>
           <div class="sk"><b>Rechtermuis · ${esc(o.skill.name)}</b><p>${esc(o.skill.text)}</p></div>
           <div class="sk${h.level < o.skill2.level ? ' locked' : ''}"><b>R · ${esc(o.skill2.name)}${h.level < o.skill2.level ? ` (niveau ${o.skill2.level})` : ''}</b><p>${esc(o.skill2.text)}</p></div>
-          <div class="sk"><b>Linkermuis in de lucht · Drakenvuur</b><p>${esc(h.dragon)} spuwt vuur waar ge kijkt.</p></div>
+          <div class="sk"><b>Linkermuis in de lucht · Drakenvuur</b><p>${esc(h.dragon)} spuwt vuur waar je kijkt.</p></div>
         </div>
         <div class="col"><h3>GEDRAGEN</h3>${worn}</div>
         <div class="col"><h3>ZAK</h3><div class="bag">${bag}</div></div>

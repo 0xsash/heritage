@@ -39,7 +39,7 @@ export interface PrologueDeps {
 /** Every spoken line, by id: [speaker, text]. {name} and {dragon} are filled in. */
 export const PROLOGUE_LINES: Record<string, [string, string]> = {
   pro_n1: ['', 'We waren te laat. Dat waren we altijd, Neelke en ik.'],
-  pro_s1: ['Neelke', 'Ge loopt te rap. Mijn benen zijn korter dan de uwe.'],
+  pro_s1: ['Neelke', 'Je loopt te rap. Mijn benen zijn korter dan de jouwe.'],
   pro_n2: ['', 'Mijn zusje telde alles. Stappen. Sterren. De slagen van de klok.'],
   pro_s2: ['Neelke', 'Als we voor de laatste slag binnen zijn, heeft moeder niets gezien.'],
   pro_s3: ['Neelke', 'Zeven. Het is middernacht. Waar zijn de andere vijf?'],

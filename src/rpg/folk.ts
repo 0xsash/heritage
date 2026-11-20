@@ -319,15 +319,15 @@ export function dress(root: THREE.Object3D, role: Role, r: () => number): Dresse
 }
 
 export const LINES: Record<Role, string[]> = {
-  peasant: ['De haver staat goed dit jaar.', 'Weer tol betalen. Altijd tol.', 'Hebt ge mijn koe gezien? Een bruine.'],
+  peasant: ['De haver staat goed dit jaar.', 'Weer tol betalen. Altijd tol.', 'Heb je mijn koe gezien? Een bruine.'],
   peasantWoman: ['Verse eieren! Wie wil er eieren?', 'Mijn man zit weer in de herberg.', 'Pas op, de kasseien zijn glad.'],
-  burgher: ['Goedendag. Ik heb het druk.', 'De lakenhandel gaat slecht, slecht.', 'Een draak in de stad. Wat zal de schepenbank daarvan zeggen?'],
-  huik: ['Goedendag, heer.', 'Mijn man is schepen. Ge hebt van hem gehoord.', 'Zulk een beest in de stad... schandalig.'],
-  beguine: ['God zegene u.', 'Kom eens naar onze kapel.', 'Wij bidden voor de klokken.'],
+  burgher: ['Goeiedag. Ik heb het druk.', 'De lakenhandel gaat slecht, slecht.', 'Een draak in de stad. Wat zal de schepenbank daarvan zeggen?'],
+  huik: ['Goedendag, heer.', 'Mijn man is schepen. Je hebt vast van hem gehoord.', 'Zo\'n beest in de stad... schandalig.'],
+  beguine: ['God zegen je.', 'Kom eens naar onze kapel.', 'Wij bidden voor de klokken.'],
   soldier: ['¡Hola! Pas op, ruiter.', 'Halt. Ah, de drakenrijder. Ga maar.', 'De soldij is drie maanden te laat. Weer.'],
   friar: ['Pax tecum.', 'Een aalmoes voor de kapucijnen?', 'Ook draken zijn schepselen van God. Denk ik.'],
   pilgrim: ['Op weg naar Scherpenheuvel.', 'Onze-Lieve-Vrouw zal mijn knie genezen.', 'Nog zeven dagen stappen.'],
-  child: ['Een draak! Mag ik hem aaien?', 'Mijn vader zegt dat ge een tovenaar zijt.', 'Kunt ge vuurspuwen? Toe, één keer!'],
+  child: ['Een draak! Mag ik hem aaien?', 'Mijn vader zegt dat jij een tovenaar bent.', 'Kun je vuurspuwen? Toe, één keer!'],
   oldMan: ['In mijn tijd hadden we geen draken.', 'Mijn rug, mijn rug.', 'De klokken... vroeger luidden ze altijd.'],
-  oldWoman: ['Ach jongen, ge zijt veel te mager.', 'De Kludde, ik heb hem gezien, toen ik zo klein was.', 'God zegene u en uw beest.'],
+  oldWoman: ['Ach jongen, je bent veel te mager.', 'De Kludde, ik heb hem gezien, toen ik zo klein was.', 'God zegen je, en je beest ook.'],
 };

@@ -20,7 +20,7 @@ const asset = (p: string) => new URL(p, document.baseURI).toString();
 // Two slides, about twenty seconds: the hook and you. The rest of the story is told in play.
 const SLIDES: [string, string, string][] = [
   ['kludde-river-remembers', 'Diest, anno 1650', 'Op een zondag zwijgen de klokken van Sint-Sulpitius. De klepels zijn weg uit een gesloten toren. Op de klokkenstoel ligt nat rivierwier, en staat de afdruk van klauwen.'],
-  ['root-oak-forbidden-pilgrimage', 'Gij', 'Gij hebt geen land, geen titel en geen meester. Gij hebt een draak, die op een nacht uit het riet van de Demer kroop en u koos. Niemand weet waarom.'],
+  ['root-oak-forbidden-pilgrimage', 'Jij', 'Jij hebt geen land, geen titel en geen meester. Je hebt een draak, die op een nacht uit het riet van de Demer kroop en jou koos. Niemand weet waarom.'],
 ];
 
 const NAMES = ['Lieven', 'Joris', 'Rombout', 'Gommaar', 'Bartel', 'Machteld', 'Clara', 'Katelijne', 'Margriet', 'Barbara', 'Josijne', 'Geertruid', 'Arnout', 'Willem'];
@@ -58,18 +58,18 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
           <h2>EEN AVONTUUR IN BRABANT · ANNO 1650</h2>
           <div class="fe-cols">
             <div><h3>DIT IS</h3>
-              <p><b>Een avontuur.</b> Vlieg op een draak, land waar ge wilt, kies partij, vecht.</p>
+              <p><b>Een avontuur.</b> Vlieg op een draak, land waar je wilt, kies partij, vecht.</p>
               <p><b>Echt Brabant.</b> Diest ligt waar het in 1650 lag, straat voor straat.</p>
               <p><b>Folklore die bijt.</b> De Kludde, dwaallichten, klokken met macht.</p>
             </div>
             <div><h3>DIT IS NIET</h3>
               <p><b>Een geschiedenisles.</b> De Kroniek zegt eerlijk wat verzonnen is.</p>
-              <p><b>Een simulator.</b> De draak vliegt vanzelf. Gij stuurt.</p>
+              <p><b>Een simulator.</b> De draak vliegt vanzelf. Jij stuurt.</p>
               <p><b>Af.</b> Dit is het eerste hoofdstuk: een goed uur spel.</p>
             </div>
           </div>
-          <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN UW VERHAAL'}</button></div>
-          <div class="fe-small">Muis en toetsenbord of een gamepad · geluid aan · uw voortgang wordt op dit toestel bewaard</div>
+          <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN JE VERHAAL'}</button></div>
+          <div class="fe-small">Muis en toetsenbord of een gamepad · geluid aan · je voortgang wordt op dit toestel bewaard</div>
         </div>
       </div>`;
       el.querySelector('[data-go="ok"]')!.addEventListener('click', () => (back ? title() : create()));
@@ -84,7 +84,7 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
           <h2>HET HERTOGDOM BRABANT · ANNO 1650</h2>
           <div class="fe-menu">
             ${save ? `<button data-go="continue">VERDER SPELEN<small>${esc(save.name)} · ${esc(ORIGINS[save.origin as OriginId]?.name ?? '')} · niveau ${save.level}</small></button>` : ''}
-            <button data-go="new">${save ? 'NIEUW VERHAAL' : 'BEGIN UW VERHAAL'}</button>
+            <button data-go="new">${save ? 'NIEUW VERHAAL' : 'BEGIN JE VERHAAL'}</button>
           </div>
           <div class="fe-small">Best met muis en toetsenbord of een gamepad · met geluid · <button class="fe-link" data-go="what">wat is dit?</button></div>
         </div>
@@ -93,7 +93,7 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
       el.querySelector('[data-go="continue"]')?.addEventListener('click', () => done({ mode: 'continue' }));
       el.querySelector('[data-go="what"]')!.addEventListener('click', () => promise(true));
       el.querySelector('[data-go="new"]')!.addEventListener('click', () => {
-        if (save && !confirm('Een nieuw verhaal beginnen? Uw huidige personage gaat verloren.')) return;
+        if (save && !confirm('Een nieuw verhaal beginnen? Je huidige personage gaat verloren.')) return;
         create(); // the story is told in the prologue, which you play
       });
     };
@@ -134,7 +134,7 @@ export function runFrontEnd(root: HTMLElement, save: { name: string; level: numb
       el.innerHTML = `<div class="fe-create">
         <div class="fe-portrait" style="background-image:url(${asset('ui/intro/rider-guild-equipment.jpg')})"><div class="fe-tint"></div><div class="fe-pname"></div></div>
         <div class="fe-form">
-          <h2>WIE ZIJT GIJ?</h2>
+          <h2>WIE BEN JIJ?</h2>
           <label>Naam<div class="fe-row"><input class="fe-name" maxlength="18" value="${esc(h.name)}"><button class="fe-dice" data-dice="name" title="Een andere naam">⚄</button></div></label>
           <div class="fe-label">Klasse</div>
           <div class="fe-origins">

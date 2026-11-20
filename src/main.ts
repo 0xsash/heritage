@@ -133,7 +133,7 @@ async function boot() {
   if (riderModel) player.hero.useModel(riderModel);
   setLoading('De stad komt tot leven…');
   const townsfolk = await loadTownsfolk();
-  setLoading('Klaar. Uw verhaal wacht.');
+  setLoading('Klaar. Je verhaal wacht.');
 
   // --- who are you?
   const fe = await front;
@@ -179,7 +179,7 @@ async function boot() {
       const L = quests.s.hero.level;
       const o = quests.sheet.origin;
       late.banner?.show('level', 'NIEUW NIVEAU', `Niveau ${L}`, [
-        'Uw kracht groeit. Levenskracht hersteld.',
+        'Je kracht groeit. Levenskracht hersteld.',
         L === o.skill2.level ? `Nieuwe vaardigheid: ${o.skill2.name} (R)` : '',
       ]);
       sound.levelUp();
@@ -289,7 +289,7 @@ async function boot() {
             title: first ? (medal ? `${medal[0].toUpperCase()}${medal.slice(1)}` : 'Rond') : 'Oefenronde',
             big: clockText(secs),
             lines: [
-              first ? `${onTime} van 7 klokken op tijd · beloond met florijnen en ervaring` : `Uw ronde van vandaag: ${clockText(time)} · beste oefentijd ${clockText(best)}`,
+              first ? `${onTime} van 7 klokken op tijd · beloond met florijnen en ervaring` : `Je ronde van vandaag: ${clockText(time)} · beste oefentijd ${clockText(best)}`,
               `Goud onder ${clockText(today.gold)} · zilver onder ${clockText(today.silver)} · morgen een nieuwe ronde`,
             ],
             text,
@@ -386,7 +386,7 @@ async function boot() {
   dialogue.onLine = (id) => void voice.play(`dlg_${id}`);
   const beginChapter = () => {
     quests.start('main_arrive');
-    setTimeout(() => hud.announce('BRABANT · ANNO 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, 'Onder u ligt Diest. De klokken zwijgen.'), 2600);
+    setTimeout(() => hud.announce('BRABANT · ANNO 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, 'Onder je ligt Diest. De klokken zwijgen.'), 2600);
   };
   const prologue = new Prologue({
     scene, ui: uiRoot, player, kit: townsfolk, voice, name: quests.s.hero.name, dragon: quests.s.hero.dragon,
@@ -587,7 +587,7 @@ async function boot() {
         hud.questTarget = { x: t.x, z: t.z, title: t.quest.title, objective: text, r };
       } else {
         const g = quests.nearestGiver(px, pz);
-        guide.target = g ? { x: g.x, z: g.z, r: 0, title: 'Werk', text: `${g.npc.name} heeft werk voor u`, person: true } : null;
+        guide.target = g ? { x: g.x, z: g.z, r: 0, title: 'Werk', text: `${g.npc.name} heeft werk voor je`, person: true } : null;
         hud.questTarget = g ? { x: g.x, z: g.z, title: 'Werk', objective: `Spreek met ${g.npc.name}` } : null;
         tut.goal = g ? Math.hypot(g.x - px, g.z - pz) : Infinity;
       }
@@ -779,7 +779,7 @@ async function boot() {
     player.hero.revive();
     combat.reset();
     quests.save();
-    banner.show('failed', 'GESNEUVELD', `Ge komt bij in ${name}`, [fee ? `De chirurgijn rekende ${fee} florijnen aan.` : 'De chirurgijn wilde niets aannemen.']);
+    banner.show('failed', 'GESNEUVELD', `Je komt bij in ${name}`, [fee ? `De chirurgijn rekende ${fee} florijnen aan.` : 'De chirurgijn wilde niets aannemen.']);
   }
 
   /** The nearest named place, and where it lies (inside the walls, before a gate, out in the fields). */
