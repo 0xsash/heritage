@@ -38,6 +38,16 @@ export interface KitManifest {
   faceMorphs?: Record<string, { min: number; max: number }>;
   /** multipliers for the skin, where the body's COLOR_0.r marks skin */
   skinTones?: [number, number, number][];
+  /** what the player's hero may be made of (see src/rpg/look.ts); absent in kits made before the hero existed */
+  hero?: HeroKit;
+}
+
+/** The manifest's `hero` section: bodies, hair and beards the hero may choose, and an outfit per class. */
+export interface HeroKit {
+  bodies?: Partial<Record<'m' | 'f', string[]>>;
+  hair?: Partial<Record<'m' | 'f', (string | null)[]>>;
+  beards?: (string | null)[];
+  outfits?: Record<string, { wear: Record<string, string | null>; prop?: string | null }>;
 }
 
 export interface KitArchetype {
@@ -63,6 +73,10 @@ export interface FolkSpec {
   gait?: string;
   /** fixes the face */
   seed?: number;
+  /** an explicit face: morph name -> weight (missing morphs stay at 0); overrides the seed's face */
+  face?: Record<string, number>;
+  /** an explicit skin tone (index into the manifest's skinTones) */
+  skin?: number;
 }
 
 export interface Folk {
@@ -93,6 +107,8 @@ export class TownsfolkKit {
   private clipCache = new Map<string, THREE.AnimationClip>();
   private mats = new Map<string, THREE.Material>();
   private geos = new Map<string, THREE.BufferGeometry>();
+  /** the kit's own material of each dyed or toned mesh, so a piece can be re-dyed on a live figure */
+  private bases = new WeakMap<THREE.Object3D, THREE.MeshStandardMaterial>();
   private bodyNames: string[];
 
   constructor(private gltf: GLTF, readonly m: KitManifest) {
@@ -155,6 +171,48 @@ export class TownsfolkKit {
 
   get ok() {
     return this.templates.size > 0 && this.m.archetypes.length > 0;
+  }
+
+  /** the shared clip set (all bodies), as loaded */
+  get animations() {
+    return this.gltf.animations;
+  }
+
+  hasBody(body: string) {
+    return this.templates.has(body);
+  }
+
+  /** Does this piece exist, fitted to this body? */
+  fits(piece: string, body: string) {
+    return !!this.m.pieces[piece]?.bodies.includes(body);
+  }
+
+  hasClip(name: string) {
+    return this.gltf.animations.some((c) => c.name === name);
+  }
+
+  /** A face as the crowd gets one: three features at the ends of their range, the rest moderate. */
+  randomFace(r: () => number): Record<string, number> {
+    const face: Record<string, number> = {};
+    const morphs = Object.entries(this.m.faceMorphs ?? {});
+    const signature = new Set<number>();
+    while (morphs.length && signature.size < Math.min(3, morphs.length)) signature.add(Math.floor(r() * morphs.length));
+    morphs.forEach(([name, lim], i) => {
+      const mid = (lim.min + lim.max) / 2, half = (lim.max - lim.min) / 2;
+      const t = signature.has(i) ? (r() < 0.5 ? -1 : 1) * (0.7 + r() * 0.3) : (r() * 2 - 1) * 0.45;
+      face[name] = mid + half * t;
+    });
+    return face;
+  }
+
+  /** Re-dye one piece on a figure already built (the hero's cloak). */
+  redye(root: THREE.Object3D, piece: string, dye: string | null) {
+    const hex = this.dye(dye ?? undefined);
+    root.traverse((o) => {
+      const t = o.userData.folk as Tagged | undefined;
+      const base = this.bases.get(o);
+      if (t?.kind === 'piece' && t.piece === piece && base) (o as THREE.Mesh).material = this.dyed(base, hex);
+    });
   }
 
   /** Identify a kit node: from glTF extras, or by its name ("hat_wide.man" arrives as "hat_wideman"). */
@@ -226,10 +284,10 @@ export class TownsfolkKit {
     if (!this.ok || !this.templates.has(spec.body)) return null;
     const chosen = new Map<string, string | null>();
     for (const [piece, dye] of Object.entries(spec.wear)) if (this.m.pieces[piece]?.bodies.includes(spec.body)) chosen.set(piece, this.dye(dye ?? undefined));
-    return this.assemble(spec.body, chosen, spec.prop ?? null, rng(spec.seed ?? hashStr(spec.body + Object.keys(spec.wear).join())), spec.role ?? 'burgher', 'named', spec.gait, 1);
+    return this.assemble(spec.body, chosen, spec.prop ?? null, rng(spec.seed ?? hashStr(spec.body + Object.keys(spec.wear).join())), spec.role ?? 'burgher', 'named', spec.gait, 1, spec);
   }
 
-  private assemble(body: string, chosen: Map<string, string | null>, prop: string | null, r: () => number, role: Role, id: string, gait = 'walk', scale?: number): Folk {
+  private assemble(body: string, chosen: Map<string, string | null>, prop: string | null, r: () => number, role: Role, id: string, gait = 'walk', scale?: number, look?: { face?: Record<string, number>; skin?: number }): Folk {
     const B = this.m.bodies[body];
     // layering rules: a collar needs its doublet, a hat excludes a hood...
     for (let pass = 0; pass < 3; pass++)
@@ -241,20 +299,15 @@ export class TownsfolkKit {
     const hidden = new Set<number>();
     for (const piece of chosen.keys()) for (const h of this.m.pieces[piece].hides ?? []) if (this.m.regions[h] !== undefined) hidden.add(this.m.regions[h]);
 
-    // the face: every person gets their own (morph weights and skin tone), when the kit has them
+    // the face: every person gets their own (morph weights and skin tone), when the kit has them;
+    // a chosen face (the hero's) is given explicitly
     const face = new Map<string, number>();
-    const morphs = Object.entries(this.m.faceMorphs ?? {});
-    // three features carry the likeness (a big nose, a narrow jaw, hollow cheeks): those go to the
-    // ends of their range; the rest stay moderate, so people are distinct without being grotesque
-    const signature = new Set<number>();
-    while (morphs.length && signature.size < Math.min(3, morphs.length)) signature.add(Math.floor(r() * morphs.length));
-    morphs.forEach(([name, lim], i) => {
-      const mid = (lim.min + lim.max) / 2, half = (lim.max - lim.min) / 2;
-      const t = signature.has(i) ? (r() < 0.5 ? -1 : 1) * (0.7 + r() * 0.3) : (r() * 2 - 1) * 0.45;
-      face.set(name, mid + half * t);
-    });
+    const lims = this.m.faceMorphs ?? {};
+    if (look?.face) {
+      for (const [name, lim] of Object.entries(lims)) face.set(name, Math.min(lim.max, Math.max(lim.min, look.face[name] ?? 0)));
+    } else for (const [name, w] of Object.entries(this.randomFace(r))) face.set(name, w);
     const tones = this.m.skinTones ?? [];
-    const tone = tones.length ? tones[Math.floor(r() * tones.length)] : null;
+    const tone = !tones.length ? null : look?.skin !== undefined ? tones[Math.min(tones.length - 1, Math.max(0, Math.round(look.skin)))] : tones[Math.floor(r() * tones.length)];
 
     const root = SkeletonUtils.clone(this.templates.get(body)!);
     const drop: THREE.Object3D[] = [];
@@ -268,7 +321,10 @@ export class TownsfolkKit {
       if (!mesh.isMesh) return;
       mesh.frustumCulled = false;
       if (hidden.size) mesh.geometry = this.hide(mesh.geometry, hidden);
-      if (t?.kind === 'piece' && t.piece) mesh.material = this.dyed(mesh.material as THREE.MeshStandardMaterial, chosen.get(t.piece) ?? null);
+      if (t?.kind === 'piece' && t.piece) {
+        this.bases.set(mesh, mesh.material as THREE.MeshStandardMaterial);
+        mesh.material = this.dyed(mesh.material as THREE.MeshStandardMaterial, chosen.get(t.piece) ?? null);
+      }
       else if (t?.kind === 'body' && tone && mesh.geometry.getAttribute('color')) mesh.material = this.toned(mesh.material as THREE.MeshStandardMaterial, tone);
       // the same face on the body and on whatever frames it (coif, wimple, beard)
       const dict = mesh.morphTargetDictionary, inf = mesh.morphTargetInfluences;

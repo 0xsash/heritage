@@ -919,7 +919,7 @@ export class Combat {
     if (!e.aggro && target && dist < t.aggro * (e.elite ? 1.3 : 1) && (!targetFlying || t.ranged || dist < 12)) {
       e.aggro = true;
       if (t.body === 'hound') this.sound.howl();
-      if (t.body === 'human') this.floaters.add(['Daar! Pak hem!', 'Een ruiter!', 'Halt!', 'Voor de buit!'][Math.floor(Math.random() * 4)], e.pos.clone().setY(e.pos.y + 2.3), 'bark', 1.6, 0.3);
+      if (t.body === 'human') this.floaters.add(this.quests.fill(['Daar! Pak {hem|haar}!', 'Een {ruiter|ruiterin}!', 'Halt!', 'Voor de buit!'][Math.floor(Math.random() * 4)]), e.pos.clone().setY(e.pos.y + 2.3), 'bark', 1.6, 0.3);
       for (const o of e.camp.enemies) if (o.alive && o.pos.distanceToSquared(e.pos) < 625) o.aggro = true;
     }
     if (e.aggro && (!target || dist > 70)) {

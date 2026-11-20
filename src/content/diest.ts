@@ -492,7 +492,7 @@ export const diest: Content = {
         { text: 'Wat staat erin?', next: 'dross_letter_what' },
       ],
     },
-    dross_letter_what: { who: 'drossaard', text: 'Het is een verzegelde brief, ruiter. Dat is wat "verzegeld" betekent.', next: 'dross_letter' },
+    dross_letter_what: { who: 'drossaard', text: 'Het is een verzegelde brief, {ruiter|ruiterin}. Dat is wat "verzegeld" betekent.', next: 'dross_letter' },
     dross_letter_ok: { who: 'drossaard', text: 'Westwaarts, langs de weg naar Aarschot; u zult de koepel zien. Niet lezen. Ik zal het weten.' },
     dross_seals: { who: 'drossaard', text: 'Een vervalser van het stadszegel? Spreek.', next: 'dross_s2' },
     dross_s2: { who: 'you', text: 'Lijsbet Vranckx, de weduwe van een wever, in het huisje voorbij de Koepoort. Dit zijn haar zegels.', next: 'dross_s3' },
@@ -522,7 +522,7 @@ export const diest: Content = {
       ],
     },
     wouter_r_paid: { who: 'wouter', text: 'Gielis heeft betaald? Gielis? Jij hebt de Ton eerlijk gemaakt. De stad dankt je. Ik ook.', effects: [{ complete: 'side_toll', outcome: 'paid' }, { florins: 10 }, { renown: ['Diest', 8] }] },
-    wouter_r_lie: { who: 'wouter', text: 'Ontsnapt. Aan een draak. Hm. ...Je ruikt naar zijn brandewijn, vriend. Laat maar. Wat de drossaard niet weet, deert hem niet.', effects: [{ complete: 'side_toll', outcome: 'bribed' }, { renown: ['Diest', -3] }] },
+    wouter_r_lie: { who: 'wouter', text: 'Ontsnapt. Aan een draak. Hm. ...Je ruikt naar zijn brandewijn, {vriend|vriendin}. Laat maar. Wat de drossaard niet weet, deert hem niet.', effects: [{ complete: 'side_toll', outcome: 'bribed' }, { renown: ['Diest', -3] }] },
     wouter_r_seized: { who: 'wouter', text: 'Twee hele vaten! De drossaard zal voor één keer goedgezind zijn. Hier, jouw deel.', effects: [{ take: 'brandy' }, { complete: 'side_toll', outcome: 'seized' }, { florins: 18 }, { renown: ['Diest', 5] }] },
     wouter_wink: { who: 'wouter', text: '*tikt tegen zijn neus* Ruikt naar een gezellige avond, hé?' },
     wouter_idle: { who: 'wouter', text: 'Tol op wijn, zout, brandewijn, laken en alles op wielen. Over draken wordt nog vergaderd.' },
@@ -530,7 +530,7 @@ export const diest: Content = {
     // ================================================================ Gielis
     gielis_meet: { who: 'gielis', text: 'Hola! Gewoon een arme voerman die zijn paard laat rusten. Die vaten? Azijn. Om in te leggen. Heel veel inleggen.', next: 'gielis_2' },
     gielis_2: {
-      who: 'gielis', text: 'Een draak. Natuurlijk. Allee, vriend, de tol op brandewijn is diefstal. Neem een vaatje voor jezelf en vergeet mijn gezicht. Het is een gezicht dat je makkelijk vergeet.',
+      who: 'gielis', text: 'Een draak. Natuurlijk. Allee, {vriend|vriendin}, de tol op brandewijn is diefstal. Neem een vaatje voor jezelf en vergeet mijn gezicht. Het is een gezicht dat je makkelijk vergeet.',
       choices: [
         { text: 'Betaal de tol, Gielis, of de draak eet de kar op.', next: 'gielis_pay', effects: [{ set: 'toll_paid' }, { stage: ['side_toll', 'report'] }] },
         { text: 'Ik neem dat vaatje. En ik heb je nooit gezien.', next: 'gielis_bribe', effects: [{ set: 'toll_bribe' }, { give: 'brandy' }, { stage: ['side_toll', 'report'] }] },
@@ -543,7 +543,7 @@ export const diest: Content = {
     gielis_idle: { who: 'gielis', text: 'Azijn. Gewoon azijn.' },
 
     // ================================================================ Driesen
-    driesen_intro: { who: 'driesen', text: 'Een ruiter! Met een... Heer, sta ons bij. Ben je van de koning? Van de prins? Van niemand? Van niemand is het beste, dan kun je misschien helpen.', next: 'driesen_2' },
+    driesen_intro: { who: 'driesen', text: 'Een {ruiter|ruiterin}! Met een... Heer, sta ons bij. Ben je van de koning? Van de prins? Van niemand? Van niemand is het beste, dan kun je misschien helpen.', next: 'driesen_2' },
     driesen_2: {
       who: 'driesen', text: 'Roelof de Rode. Hij was kapitein in het leger, tot het leger hem niet meer betaalde. Nu betaalt hij zichzelf, met mijn varkens, mijn haver en mijn rust. Zijn kamp ligt op de Galgenberg, ten zuiden van hier.',
       choices: [

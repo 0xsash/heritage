@@ -24,6 +24,8 @@ export interface PrologueDeps {
   voice: Voice;
   name: string;
   dragon: string;
+  /** the hero's sex, for {man|woman} words in the lines */
+  sex?: 'm' | 'f';
   setSky(id: string): Promise<void>;
   bell(strong: boolean): void;
   howl(): void;
@@ -115,7 +117,7 @@ export class Prologue {
   }
 
   private fill(s: string) {
-    return s.replace('{name}', this.d.name).replace('{dragon}', this.d.dragon);
+    return s.replace('{name}', this.d.name).replace('{dragon}', this.d.dragon).replace(/\{([^{}|]*)\|([^{}|]*)\}/g, (_, m: string, w: string) => (this.d.sex === 'f' ? w : m));
   }
 
   /** Queue a line: narration (no speaker) or someone speaking. Said once. */

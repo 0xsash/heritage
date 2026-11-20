@@ -5,6 +5,15 @@ import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clamp, damp, lerp } from '../core/math';
 import { recolor, makeSword } from '../render/recolor';
+import type { Folk } from '../rpg/townsfolk';
+
+const ONE_SHOTS = ['jump', 'land', 'attack1', 'attack2', 'attack3', 'roll', 'hit', 'death', 'cast'];
+/** Every clip the hero plays, and what stands in for it when the model lacks it (nearest first). */
+const STAND_IN: Record<string, string[]> = {
+  idle: [], walk: [], run: ['walk'], sword_idle: ['idle'], attack1: [], attack2: ['attack1'], attack3: ['attack1', 'attack2'],
+  hit: [], death: [], cast: ['attack2', 'point'], roll: [], jump: ['idle'], fall: ['jump', 'idle'], land: [],
+  ride_idle: ['sit', 'idle'], sit: ['idle'], talk: ['idle'], walk_formal: ['walk'],
+};
 
 const M = (color: string, extra: Partial<THREE.MeshStandardMaterialParameters> = {}) =>
   new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true, ...extra });
@@ -36,6 +45,10 @@ export class Hero {
   sword?: THREE.Object3D;
   private armed = false;
   private lungeLean = 0;
+  /** re-dyes the cloak of a hero built from the townsfolk kit */
+  private recloak?: (color: string) => void;
+  /** clip name -> the clip that plays for it (a stand-in when the model lacks it) */
+  private alias = new Map<string, string>();
 
   constructor() {
     const cloakM = M('#2e4a3c');
@@ -123,11 +136,71 @@ export class Hero {
       const b = this.model.getObjectByName(n);
       if (b) this.cloak.push(b);
     }
+    this.resolveAliases();
     this.play(this.riding ? 'ride_idle' : 'idle', 0);
+  }
+
+  /**
+   * The hero as a person from the townsfolk kit (the look chosen at creation).
+   * `extra` are clips from elsewhere on the same skeleton (rider.glb) for those the kit lacks.
+   * `recloak` re-dyes the cloak on the live figure.
+   */
+  useFolk(folk: Folk, extra: THREE.AnimationClip[], recloak: (color: string) => void) {
+    this.hips.visible = false;
+    if (this.model) this.model.removeFromParent();
+    this.cloak = [];
+    this.actions.clear();
+    this.current = '';
+    this.model = folk.root;
+    this.root.add(this.model);
+    this.model.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.frustumCulled = false;
+    });
+    this.mixer = new THREE.AnimationMixer(this.model);
+    for (const name of Object.keys(STAND_IN)) {
+      const clip = folk.clip(name) ?? extra.find((c) => c.name === name) ?? null;
+      if (!clip) continue;
+      const a = this.mixer.clipAction(clip);
+      if (ONE_SHOTS.includes(name)) {
+        a.setLoop(THREE.LoopOnce, 1);
+        a.clampWhenFinished = true;
+      }
+      this.actions.set(name, a);
+    }
+    this.pelvis = this.model.getObjectByName('pelvis');
+    this.sword = this.model.getObjectByName('prop.sword') ?? undefined;
+    if (!this.sword) {
+      const hand = this.model.getObjectByName('hand_r');
+      if (hand) {
+        this.sword = makeSword();
+        hand.add(this.sword);
+      }
+    }
+    if (this.sword) this.sword.visible = false;
+    for (const n of ['cloak1', 'cloak2', 'cloak3', 'cloak4']) {
+      const b = this.model.getObjectByName(n);
+      if (b) this.cloak.push(b);
+    }
+    this.recloak = recloak;
+    this.resolveAliases();
+    this.play(this.riding ? 'ride_idle' : 'idle', 0);
+  }
+
+  private resolveAliases() {
+    this.alias.clear();
+    for (const [name, near] of Object.entries(STAND_IN)) {
+      const use = [name, ...near].find((n) => this.actions.has(n));
+      if (use) this.alias.set(name, use);
+    }
   }
 
   /** Recolour the cloak (the red of the painted texture). */
   setCloak(color: string) {
+    if (this.recloak) return this.recloak(color);
     this.model?.traverse((o) => {
       const m = o as THREE.Mesh;
       if (m.isMesh && /cloak/i.test(m.name)) m.material = recolor(m.material as THREE.MeshStandardMaterial, color);
@@ -139,13 +212,14 @@ export class Hero {
     if (this.sword) this.sword.visible = on && !this.riding;
   }
 
+  /** Is there a clip for this, its own or a stand-in? */
   has(name: string) {
-    return this.actions.has(name);
+    return this.alias.has(name) || this.actions.has(name);
   }
 
   /** Play a one-shot clip over the walk cycle; `dur` overrides the clip length. */
   act(name: string, dur?: number, speed = 1) {
-    const a = this.actions.get(name);
+    const a = this.actions.get(this.alias.get(name) ?? name);
     const len = dur ?? (a ? a.getClip().duration / speed : 0.5);
     this.shot = { name, t: 0, dur: len };
     if (a) {
@@ -167,6 +241,7 @@ export class Hero {
   }
 
   private play(name: string, fade = 0.22) {
+    name = this.alias.get(name) ?? name;
     if (this.current === name) return;
     const next = this.actions.get(name);
     if (!next) return;
@@ -228,19 +303,20 @@ export class Hero {
     }
     this.lungeLean = lerp(this.lungeLean, 0, damp(0.12, dt));
     if (this.model) this.model.rotation.x = this.lungeLean;
-    if (this.mixer && this.shot && this.actions.has(this.shot.name)) {
+    if (this.mixer && this.shot && this.has(this.shot.name)) {
       this.mixer.update(dt);
       this.blowCloak(dt, speed, 0.5);
       return;
     }
     if (this.mixer) {
       // pick the clip from how the rider is actually moving, and play it at the pace of the feet
-      let clip = this.armed && this.actions.has('sword_idle') ? 'sword_idle' : 'idle', rate = 1;
-      if (airborne) clip = 'fall';
+      let clip = this.armed && this.has('sword_idle') ? 'sword_idle' : 'idle', rate = 1;
+      if (airborne && this.has('fall')) clip = 'fall';
       else if (speed > 4.2) { clip = 'run'; rate = clamp(speed / 5.0, 0.7, 1.5); }
       else if (speed > 0.35) { clip = 'walk'; rate = clamp(speed / 1.5, 0.5, 2.6); }
       this.play(clip);
-      this.actions.get(clip)!.timeScale = rate;
+      const a = this.actions.get(this.alias.get(clip) ?? clip);
+      if (a) a.timeScale = rate;
       this.mixer.update(dt);
       this.blowCloak(dt, speed, 0.5);
       return;
