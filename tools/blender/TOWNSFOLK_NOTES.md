@@ -428,3 +428,104 @@ archetypes assemble and never appear in 400 crowd draws; all ten named outfits a
 * `pray` is standing only. `hair_bun` has a hard hairline when worn bare-headed (it is meant to sit under a coif).
 * A small dark flap can show at the corner of the huik's hood by the cheek; the hat band keeps a few small bumps.
 * The plume is a simple curved ribbon; the bandolier is fitted over the doublet only.
+
+## Phase D: the hero
+
+The player's hero is now assembled from the kit (character creation: sex, body, face, skin, hair, beard, class
+outfit, mantle). Nothing that existed was removed or renamed: node layout, extras tags, COLOR_0 dye / skin masks,
+`_REGION`, grips, face morphs, the 16 earlier clips, the archetypes and the pieces are as in phase C.
+
+Build as before (`TOWNSFOLK_FROM=bodies` reuses the cached bodies; garments, game meshes, atlas and bake are redone,
+about 25 min on 4 cores). Verification page and screenshots: `scratchpad/townsfolk/webD/testD.ts` (bundled with
+esbuild, `NODE_PATH` pointing at the repo's `node_modules`; Playwright from the global `node_modules`) →
+`scratchpad/townsfolk/previewD/phaseD_*.png` and `phaseD_report.json`.
+
+### Clips added (the hero's set; same shared set on `rig.man`, same retarget, 30 fps, in place)
+| clip | duration | loop | notes |
+|---|---|---|---|
+| `jump` | 0.500 s | no | rider `jump`: push-off to the tucked apex; hold the last frame or cross-fade to `fall` |
+| `fall` | 1.000 s | yes | rider `fall`: airborne loop, the mantle streams up |
+| `land` | 0.500 s | no | rider `land`: impact crouch and recovery |
+| `roll` | 1.000 s | no | rider `roll`: forward dive roll, in place |
+| `attack3` | 0.900 s | no | rider `attack3`: the slow-wind-up finisher |
+| `cast` | 0.500 s | no | rider `cast`: left arm thrust forward, palm out |
+| `ride_idle` | 4.000 s | yes | rider `ride_idle` (astride the dragon); the cloak chain is swung so the mantle runs down the back to the saddle and then lies back over the dragon (`anim.RIDE_CLOAK`) |
+
+These keep the rider's hip height (`anim.GROUND` = None: no re-grounding; airborne and seated poses must not be
+pulled down to the floor), scaled by pelvis height like every clip, and by `bodies[b].pelvisScale` at runtime. Every
+rider clip is now in the kit (23 clips in all).
+
+### Adventuring clothes for women
+`doublet`, `breeches`, `stockings`, `boots`, `buff_coat`, `belt`, `collar_band`, `hat_wide`, `plume`, `cap_flat`,
+`sash`, `bandolier` and `smock` now fit `woman`, `woman_stout` and `woman_old` as well (`bodies` in the manifest). They
+are the same pieces: the shell garments are cut from each body's MakeHuman tights / skirt helper with the cut decided
+on `man`, so the fit follows bust and hips by construction (the helper is the body's own clothing shell); layered
+pieces (collar, belt, sash, bandolier) are fitted over that body's own doublet / smock / buff coat. The face morphs
+move only the head, so the bust and hips cannot be pushed through by them. `hat_wide` and `plume` sit 3 cm higher on
+women's bodies (`garments.wide_hat_sink`), on the swept-back hair, instead of down at the brow.
+
+### The hero's mantle (`mantle`, slot `mantle`, all adults, dyeable)
+Three parts, all built at game resolution as single layers (the kit material is double-sided) and protected from
+decimation, so the cape keeps its clearance over a buff coat and sash:
+* **cape**: a shoulder cape (yoke) laid over whatever the body can wear (doublet, smock, buff coat, sash, bandolier,
+  bodice, kerchief, collar band, habit) with 17 mm clearance, open at the throat; weights from the tights helper;
+* **collar**: a small standing collar, higher at the nape, with two brass bosses as the clasp;
+* **fall**: a full panel from under the cape at the shoulder blades to mid-calf, round the back and sides *behind the
+  arms*, open in front. Its width and backward flare are a clean A-line that just clears the widest / most
+  protruding point below (seat, coat skirts, a woman's skirt), with the rider's large folds. Below the shoulder blades
+  it rides only on `cloak1..4` (the huik's scheme), so it swings with the clips' cloak motion.
+A woven border (darker band and a light thread) is painted along the cape's hem, the fall's hem and front edges and
+the collar; it stays dyeable. The mantle carries the face morphs (its collar is near the jaw). `excludes`:
+`pelerine`, `capuche`, `huik`. It is not in `hides` (nothing is deleted under it: it opens in front).
+
+### Hair
+* `hair_bun` rebuilt: the shell's rows now follow a smooth, higher hairline (`garments.hairline_w`) instead of a
+  stepped grid; centre parting, a little volume at the sides, soft ridges swept back; the border is drawn in to the
+  skin and protected from decimation. It still fits under coif, veil and huik.
+* `hair_braid` (women, girl): the same swept-back shell and one long plait from the nape down the back, with a leather
+  tie and a short tuft. The plait is fitted **over the mantle** (and every other outer layer of that body), so it lies on
+  the mantle when one is worn and hangs 2–3 cm off the back when not; below the shoulders it rides on the cloak chain.
+  Excludes `huik`, `beguine_veil`.
+* `hair_tail` (men): combed back, tied at the nape in a short tail with a leather thong (also laid over the mantle).
+  Excludes `capuche`.
+The three swept-back styles do not hide the `scalp` region (their natural hairline does not cover all of MakeHuman's
+scalp); all carry the face morphs.
+
+### Props added
+`dagger` (grip `sword_r`, like the sword) and `bellstaff` (grip `fist_r`: a quarterstaff with an iron cap and shoe and a
+small bronze bell on an arm below the head).
+
+### Manifest: `hero`
+`townsfolk.json` has a top-level `hero` section (`export.HERO`): the hero bodies by sex, the hair styles by sex, the
+beards (with `null` = clean-shaven), suggested hair dyes, the mantle piece and suggested mantle dyes, and the three
+class outfits (`wear`: piece → palette name or null, `prop`; `beiaardier` also lists `optional: ["cap_flat"]`). Every
+outfit assembles on all five hero bodies with nothing dropped by `requires` / `excludes`, with or without the mantle.
+The game adds the mantle itself; it is not part of any outfit.
+
+### Verified and sizes (phase D)
+Playwright + Chromium with the game's own `TownsfolkKit` (`webD/testD.ts`): all three outfits on all five hero bodies
+with the mantle (eight dyes), front and back, plus each outfit without it; walking / running / guard with the mantle;
+a four-frame contact sheet of every new clip on `man_young` and `woman`; `ride_idle` from behind and from the side over
+a stand-in for the dragon's back; twelve heads per sex with random face morphs and with every morph at its min and
+max, under the new hair, caps, hats and the mantle's collar; the crowd lineup (regression). All 23 clips bind every
+track on all nine bodies (207 checks); no outfit drops a piece on any hero body, with or without the mantle.
+
+| | |
+|---|---|
+| `townsfolk.glb` | **7.41 MB** (was 6.13 MB): 13 pieces fitted to three more bodies, the mantle (2.0 k triangles, not decimated), two hair styles, two props, seven clips |
+| `townsfolk.json` | 54 kB: 9 bodies, 41 pieces, 11 props, 23 clips, 18 archetypes, the `hero` section |
+| triangles per hero figure | 7.2 k – 8.7 k with the mantle |
+
+### Known limitations (phase D)
+* No cloth simulation: the mantle's fall is a rigid panel on the cloak chain. Arms swinging back and a long stride
+  can touch or pass into its sides; in `roll` it streams up while upside down (as the rider's cloak does); in the
+  sword lunges it swings wide.
+* `ride_idle`'s cloak directions are tuned against a stand-in, not the dragon model: the fall comes down the back to
+  the seat and lies back about 25° below horizontal. Retune `anim.RIDE_CLOAK` once the hero sits on the real dragon.
+* The cape can still show a few small specks of what is under it where it is tightest: the sash's strap at the back of
+  the right shoulder (schutter), and the sleeve at the cape's lower side edge when the arms hang straight down.
+* Long styles and the mantle: `hair_long` falls inside the mantle's collar and cape (tucked in); the plait and the tail
+  lie over it. Without a mantle the plait hangs 2–3 cm off the back.
+* Hair is still a painted shell: the swept-back hairline is a clean curve now, not a soft fade (no alpha).
+* Women wear the men's cut (doublet, breeches, buff coat) on their own bodies; there is no women's tailoring (no
+  waist shaping beyond the body's own, no skirts for the heroine's outfits).

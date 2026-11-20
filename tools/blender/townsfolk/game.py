@@ -26,7 +26,7 @@ ALWAYS_HIDDEN = ('chest', 'belly', 'hips', 'thigh', 'foot')   # every outfit in 
 NEVER_HIDE = {'face', 'neck'}
 # what the ray test cannot see on its own (pieces that cover a region together with another one)
 EXTRA_HIDES = {'stockings': ['shin'], 'hair_crop': ['scalp'], 'hair_long': ['scalp'], 'hair_child': ['scalp'],
-               'hair_bun': ['scalp'], 'coif': ['scalp']}                            # left to the garment's own edge (no holes at necklines)
+               'coif': ['scalp']}      # the swept-back styles (hair_bun, hair_braid, hair_tail) leave the scalp in: their high hairline does not cover all of it                            # left to the garment's own edge (no holes at necklines)
 
 # triangle budgets at game resolution
 TARGET = {'body': 3800, 'stockings': 260, 'breeches': 650, 'shoes': 420, 'clogs': 380, 'boots': 600, 'doublet': 1050,
@@ -34,14 +34,16 @@ TARGET = {'body': 3800, 'stockings': 260, 'breeches': 650, 'shoes': 420, 'clogs'
           'cap_flat': 9999, 'morion': 460, 'habit': 1100, 'collar_band': 9999, 'kerchief': 9999, 'bands': 9999, 'plume': 9999, 'skullcap': 9999, 'bandolier': 420, 'apron': 420,
           'belt': 160, 'rope_belt': 380, 'capuche': 520, 'pelerine': 480, 'buff_coat': 760, 'beguine_veil': 800,
           'huik': 980, 'sash': 260, 'hair_crop': 560, 'hair_long': 700, 'hair_thin': 360, 'hair_child': 560,
-          'hair_bun': 380, 'beard_pointed': 160, 'moustache': 100, 'beard_full': 260}
-PROP_TARGET = {'sword': 9999, 'musket': 9999, 'basket': 500, 'staff': 260, 'stick': 160, 'bread': 220, 'lantern': 240, 'rosary': 420, 'bundle': 240}
+          'hair_bun': 420, 'beard_pointed': 160, 'moustache': 100, 'beard_full': 260,
+          'mantle': 9999, 'hair_braid': 800, 'hair_tail': 560}
+PROP_TARGET = {'sword': 9999, 'musket': 9999, 'basket': 500, 'staff': 260, 'stick': 160, 'bread': 220, 'lantern': 240, 'rosary': 420, 'bundle': 240, 'dagger': 9999, 'bellstaff': 320}
 # phase-A ray distances per piece (metres) used to decide what a piece covers
 HIDE_DIST = {'skirt': 0.40, 'habit': 0.40, 'huik': 0.06, 'smock': 0.16, 'buff_coat': 0.12, 'breeches': 0.10,
              'coif': 0.05, 'beguine_veil': 0.06, 'kerchief': 0.05, 'collar_band': 0.02, 'capuche': 0.05,
              'pelerine': 0.05, 'boots': 0.05, 'shoes': 0.05, 'clogs': 0.06, 'stockings': 0.03, 'apron': 0.0}
 NO_HIDE_PIECES = {'skullcap', 'bands', 'plume', 'bandolier', 'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'beard_pointed', 'moustache', 'beard_full',
-                  'belt', 'rope_belt', 'sash', 'apron', 'hair_crop', 'hair_long', 'hair_thin', 'hair_child', 'hair_bun'}
+                  'belt', 'rope_belt', 'sash', 'apron', 'hair_crop', 'hair_long', 'hair_thin', 'hair_child', 'hair_bun',
+                  'mantle', 'hair_braid', 'hair_tail'}
 
 
 def lm_of(bid):
@@ -162,7 +164,8 @@ def hair_regions(obj, bid):
     from .garments import Ctx, head_centre
     hc = head_centre(Ctx(bid))
     k = rig_landmarks(rig)['top'] / 1.70
-    thr = hc.z + 0.004 * k
+    # the swept-back styles lie flat: a hat or cap covers them only from higher up (else a bald band shows under it)
+    thr = hc.z + (0.030 if obj.name.split('.')[0] in ('hair_bun', 'hair_braid', 'hair_tail') else 0.004) * k
     bm = get_bm(obj)
     bm.verts.ensure_lookup_table()
     out = np.full(len(bm.verts), REGIONS['hair_low'], dtype=np.int32)

@@ -12,11 +12,21 @@ from mathutils import Vector, Quaternion, Matrix
 from .common import log, RIDER_GLB, to_coll
 
 FPS = 30
-SRC = ['idle', 'walk', 'walk_formal', 'talk', 'sit', 'run', 'sword_idle', 'attack1', 'attack2', 'hit', 'death']
+SRC = ['idle', 'walk', 'walk_formal', 'talk', 'sit', 'run', 'sword_idle', 'attack1', 'attack2', 'hit', 'death',
+       # phase D: the hero's own clips
+       'jump', 'fall', 'land', 'roll', 'attack3', 'cast', 'ride_idle']
 LOOP = {'idle': True, 'walk': True, 'walk_formal': True, 'walk_old': True, 'talk': True, 'sit': True, 'run': True,
         'look_around': True, 'point': False, 'sword_idle': True, 'attack1': False, 'attack2': False, 'hit': False,
-        'death': False, 'aim': True, 'pray': True}
-GROUND = {'sit': None, 'attack1': None, 'attack2': None, 'hit': None, 'death': None}      # default: 'min' (the rider's one-shots are already grounded)
+        'death': False, 'aim': True, 'pray': True,
+        'jump': False, 'fall': True, 'land': False, 'roll': False, 'attack3': False, 'cast': False, 'ride_idle': True}
+# default: 'min'. The rider's one-shots and airborne / seated clips keep the rider's own (scaled) hip height.
+GROUND = {'sit': None, 'attack1': None, 'attack2': None, 'hit': None, 'death': None,
+          'jump': None, 'fall': None, 'land': None, 'roll': None, 'attack3': None, 'cast': None, 'ride_idle': None}
+# ride_idle: the mantle's fall would hang straight down into the dragon's back; swing the cloak chain back so it
+# runs down the rider's back to the saddle and then lies back over the dragon: each cloak bone is aimed at a fixed
+# direction (armature space, +Y = backwards), replacing the rider's own cloak motion in this clip; cloak3 starts at
+# about the seat
+RIDE_CLOAK = {'cloak1': (0.0, 0.30, -1.0), 'cloak2': (0.0, 0.45, -1.0), 'cloak3': (0.0, 1.0, -0.42), 'cloak4': (0.0, 1.0, -0.55)}
 RIDER_SPEED = {'walk': 1.5, 'walk_formal': 1.3, 'run': 5.0}       # RIDER_NOTES.md: planted-foot speeds
 LEGS = [f'{b}_{s}' for b in ('thigh', 'calf', 'foot', 'ball') for s in ('l', 'r')]
 ARMS = [f'{b}_{s}' for b in ('clavicle', 'upperarm', 'lowerarm', 'hand') for s in ('l', 'r')]
@@ -403,6 +413,12 @@ def stage_anim():
     clips['point'] = derive_point(rig, W_src['idle'])
     clips['aim'] = derive_aim(rig, W_src['idle'])
     clips['pray'] = derive_pray(rig, W_src['idle'])
+    nr = len(clips['ride_idle'])
+    for j, f in enumerate(clips['ride_idle']):
+        sway = math.sin(2 * math.pi * j / max(nr - 1, 1))
+        for b, d in RIDE_CLOAK.items():
+            if b in f['W']:
+                aim_subtree(rig, f['W'], b, Vector(d) + Vector((0.04 * sway, 0, 0.03 * sway if b in ('cloak3', 'cloak4') else 0)), 1.0)
     made = {}
     for name, frames in clips.items():
         dz = 0.0

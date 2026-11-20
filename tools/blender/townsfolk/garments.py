@@ -326,7 +326,7 @@ def leg_side_inner(co, n):
     return max(0.0, -math.copysign(1.0, co.x) * n.x)
 
 
-@garment('stockings', 'legs_under', MEN + KIDS, 'man', 'knitted wool stockings, knee to ankle')
+@garment('stockings', 'legs_under', MEN + KIDS + WOMEN, 'man', 'knitted wool stockings, knee to ankle')
 def g_stockings(ctx, ref):
     o = dup(ctx.T, 'stockings')
     rk, ra = ref.knee, ref.ank
@@ -336,7 +336,7 @@ def g_stockings(ctx, ref):
     return finish(o, ctx)
 
 
-@garment('breeches', 'legs', MEN + ['boy'], 'man', 'loose knee breeches gathered below the knee')
+@garment('breeches', 'legs', MEN + ['boy'] + WOMEN, 'man', 'loose knee breeches gathered below the knee')
 def g_breeches(ctx, ref):
     o = dup(ctx.T, 'breeches')
     rw, rk = ref.waist_z, ref.knee
@@ -420,7 +420,7 @@ def g_clogs(ctx, ref):
     return finish(o, ctx)
 
 
-@garment('boots', 'feet', MEN, 'man', 'tall soldier\'s boots with a turned-down cuff')
+@garment('boots', 'feet', MEN + WOMEN, 'man', 'tall soldier\'s boots with a turned-down cuff')
 def g_boots(ctx, ref):
     o = dup(ctx.T, 'boots')
     rk = ref.knee
@@ -529,7 +529,7 @@ def buttons(ctx, name, surf_objs, z0, z1, n, r, part='brass', x=0.0):
     return out
 
 
-@garment('doublet', 'torso', MEN + ['boy'], 'man', 'fitted doublet with tabbed skirt, sleeves, shirt cuffs and buttons')
+@garment('doublet', 'torso', MEN + ['boy'] + WOMEN, 'man', 'fitted doublet with tabbed skirt, sleeves, shirt cuffs and buttons')
 def g_doublet(ctx, ref):
     o = dup(ctx.T, 'doublet')
     cut_by_ref(o, ref.T, torso_cut(ref, neck_drop=0.005, bottom=ref.hip.z - 0.07, sleeve_to=0.035))
@@ -615,7 +615,7 @@ def drape_band(ctx, name, surf_objs, centre, normal, depth_fn, count=48, rows=6,
     return o
 
 
-@garment('collar_band', 'collar', MEN + ['boy'], 'man', 'plain white linen falling band collar', layer=1)
+@garment('collar_band', 'collar', MEN + ['boy'] + WOMEN, 'man', 'plain white linen falling band collar', layer=1)
 def g_collar_band(ctx, ref):
     d = bpy.data.objects[f'doublet.{ctx.bid}']
     c = Vector((0, ctx.neck.y + 0.004, ctx.neck.z - 0.004 * ctx.k))
@@ -629,7 +629,7 @@ def g_collar_band(ctx, ref):
     return finish(o, ctx)
 
 
-@garment('smock', 'torso', MEN + ['boy'], 'man', 'loose peasant smock to mid-thigh, long sleeves')
+@garment('smock', 'torso', MEN + ['boy'] + WOMEN, 'man', 'loose peasant smock to mid-thigh, long sleeves')
 def g_smock(ctx, ref):
     up = dup(ctx.T, 'smock_up')
     cut_by_ref(up, ref.T, torso_cut(ref, neck_drop=0.0, bottom=ref.waist_z - 0.06, sleeve_to=0.02))
@@ -763,7 +763,7 @@ def g_apron(ctx, ref):
     return join([o, band], 'apron')
 
 
-@garment('belt', 'belt', MEN + ['boy'], 'man', 'leather belt with a brass buckle (sits over the smock)', layer=1)
+@garment('belt', 'belt', MEN + ['boy'] + WOMEN, 'man', 'leather belt with a brass buckle (sits over the smock)', layer=1)
 def g_belt(ctx, ref):
     sm = bpy.data.objects[f'smock.{ctx.bid}']
     c = Vector((0, ctx.hip.y * 0.6, ctx.waist_z - 0.03 * ctx.k))
@@ -984,13 +984,18 @@ def hat_place(ctx, o, sink=0.0, tilt=-6.0, scale_xy=None):
     o.data.transform(Matrix.Translation(Vector((0, hc.y + 0.004, ctx.top - (0.060 + sink) * ctx.k ** 0.7))))
 
 
+def wide_hat_sink(ctx):
+    """The wide hat sits 3 cm higher on women (on the swept-back hair) than on men, where it comes down to the brow."""
+    return 0.022 - (0.030 if ctx.spec['sex'] == 'f' else 0.0)
+
+
 def lathe_ellipse(name, profile, nseg, part, squash_y=1.0):
     o = lathe_mesh(name, profile, nseg, part)
     o.data.transform(Matrix.Diagonal((1, squash_y, 1, 1)))
     return o
 
 
-@garment('hat_wide', 'head', MEN, 'man', 'wide-brimmed felt hat with a low crown and a band')
+@garment('hat_wide', 'head', MEN + WOMEN, 'man', 'wide-brimmed felt hat with a low crown and a band')
 def g_hat_wide(ctx, ref):
     r0 = 0.096
     prof = [(0.0, 0.112), (0.050, 0.111), (0.078, 0.106), (0.088, 0.092), (0.092, 0.056), (r0, 0.012), (r0 + 0.004, 0.002),
@@ -1006,7 +1011,7 @@ def g_hat_wide(ctx, ref):
     put_bm(bm, o)
     band = lathe_mesh('hatband', [(0.0915, 0.044), (0.0955, 0.040), (0.0985, 0.012), (0.0985, 0.006), (0.094, 0.004)], 40, 'cloth_b')
     hat = join([o, band], 'hat_wide')
-    hat_place(ctx, hat, sink=0.022, tilt=-7)
+    hat_place(ctx, hat, sink=wide_hat_sink(ctx), tilt=-7)
     rigid_weight(hat, 'head')
     return finish(hat, ctx, weights=None)
 
@@ -1061,7 +1066,7 @@ def scallop(name, size):
     return o
 
 
-@garment('cap_flat', 'head', MEN + ['boy'], 'man', 'soft floppy woollen bonnet that sits on the head and droops to one side')
+@garment('cap_flat', 'head', MEN + ['boy'] + WOMEN, 'man', 'soft floppy woollen bonnet that sits on the head and droops to one side')
 def g_cap_flat(ctx, ref):
     # a band resting on the hair (from the head's own radius field) carrying a soft, wide crown that
     # overhangs it and droops towards the character's left
@@ -1426,7 +1431,7 @@ def g_pelerine(ctx, ref):
     return finish(o, ctx, weights=None)
 
 
-@garment('buff_coat', 'coat', MEN, 'man', 'soldier\'s sleeveless buff-leather coat to mid-thigh, worn over the doublet', layer=1)
+@garment('buff_coat', 'coat', MEN + WOMEN, 'man', 'soldier\'s sleeveless buff-leather coat to mid-thigh, worn over the doublet', layer=1)
 def g_buff_coat(ctx, ref):
     up = dup(ctx.T, 'buff_up')
     cut_by_ref(up, ref.T, torso_cut(ref, neck_drop=0.012, bottom=ref.waist_z - 0.06, sleeve_to=None))
@@ -1454,7 +1459,7 @@ def g_buff_coat(ctx, ref):
     return join([up, lo], 'buff_coat')
 
 
-@garment('sash', 'sash', MEN, 'man', 'the Spanish army\'s red field sash, right shoulder to left hip, knotted', layer=2)
+@garment('sash', 'sash', MEN + WOMEN, 'man', 'the Spanish army\'s red field sash, right shoulder to left hip, knotted', layer=2)
 def g_sash(ctx, ref):
     bc = bpy.data.objects[f'buff_coat.{ctx.bid}']
     k = ctx.k
@@ -1605,8 +1610,8 @@ def hair_style(ctx, name, offset, hl, lock_rows, lock_len, lock_w, droop, seed, 
     bm = get_bm(o)
     bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
     put_bm(bm, o)
-    relax(o, 1, 0.3)
     hc = head_centre(ctx)
+    relax(o, 1, 0.3)
     # the hair thins out towards the hairline: pull the border (and the ring inside it) in to the skin
     bm = get_bm(o)
     border = {v for v in bm.verts if v.is_boundary and (v.co.z > ctx.neck.z + 0.05 * ctx.k or not drape)}
@@ -1703,10 +1708,156 @@ def g_hair_child(ctx, ref):
     return hair_finish(ctx, o)
 
 
-@garment('hair_bun', 'hair', WOMEN + ['girl'], 'woman', 'hair parted in the middle and pulled back into a bun', layer=0)
+def hairline_w(a_deg):
+    """Women's (and tied-back) hairline: a smooth high curve over the forehead, above the ears, down to the nape."""
+    return float(np.interp(abs(a_deg), [0, 25, 50, 75, 95, 115, 140, 180], [44, 41, 32, 21, 12, 0, -17, -36]))
+
+
+def swept_bulge(az, e):
+    """Hair pulled back from a centre parting: a little volume over the crown and the sides, a groove at the
+    parting, soft ridges running back from the hairline."""
+    a = math.atan2(math.sin(az), math.cos(az))
+    side = math.exp(-((abs(a) - 1.45) / 0.55) ** 2) * smoothstep(-0.2, 0.3, e)
+    part = math.exp(-(a / 0.09) ** 2) * smoothstep(0.35, 0.9, e)
+    ridge = math.sin(a * 22.0) * smoothstep(1.4, 0.4, e) * smoothstep(-0.4, 0.2, e)
+    return 0.004 * math.cos(e) + 0.004 * side - 0.0035 * part + 0.0012 * ridge
+
+
+def hair_cap(ctx, name, offset, hl, nrows=12, nu=40, bulge=None, top=86.0, part='hair'):
+    """A hair shell whose rows follow the hairline hl(az_deg) exactly (no grid stair-steps): every column runs from
+    the crown down to its own hairline elevation; the border is drawn in to the skin so the hair thins out there."""
+    hc = head_centre(ctx)
+    k = ctx.k
+    fine_deg = np.arange(top, -58.0, -2.0)
+    Rr = head_radius(ctx, nu, [deg(a) for a in fine_deg], smooth=3, ears=False)
+    asc = fine_deg[::-1]
+    rows = []
+    for j in range(nrows):
+        u = j / (nrows - 1)
+        u = 1.0 - (1.0 - u) ** 1.25                        # rows a little denser towards the hairline
+        row = []
+        for i in range(nu):
+            az = 2 * math.pi * i / nu
+            a = math.degrees(az)
+            a = a - 360 if a > 180 else a
+            e_deg = top - (top - hl(a)) * u
+            r = float(np.interp(e_deg, asc, Rr[::-1, i]))
+            e = deg(e_deg)
+            d = Vector((math.sin(az) * math.cos(e), -math.cos(az) * math.cos(e), math.sin(e)))
+            pull = 1.0 if j == nrows - 1 else (0.45 if j == nrows - 2 else 0.0)
+            rr = r + (offset + (bulge(az, e) if bulge else 0.0)) * k * (1.0 - 0.9 * pull)
+            row.append(hc + d * rr)
+        rows.append(row)
+    capv = hc + UP * (float(Rr[0].mean()) + offset * k + 0.004 * k)
+    verts = [p for r in rows for p in r] + [capv]
+    faces = []
+    for j in range(nrows - 1):
+        for i in range(nu):
+            i2 = (i + 1) % nu
+            faces.append((j * nu + i, j * nu + i2, (j + 1) * nu + i2, (j + 1) * nu + i))
+    ti = len(verts) - 1
+    for i in range(nu):
+        faces.append((ti, (i + 1) % nu, i))
+    o = new_mesh_obj(name, verts, faces, part)
+    fix_normals_out(o, lambda p: Vector((hc.x, hc.y, min(p.z, hc.z))))
+    set_aux(o, [(0.0, 0.5, 0.0)] * len(o.data.vertices))
+    keep_boundary(o, -9.0)
+    return o, rows
+
+
+def back_surface(objs):
+    """y of the outermost surface behind the body at (x, z) (Blender: the back is +Y)."""
+    bv = bvh_of(objs)
+
+    def f(x, z, default):
+        loc, _, _, _ = bv.ray_cast(Vector((x, 2.0, z)), Vector((0, -1, 0)), 4.0)
+        return loc.y if loc is not None else default
+    return f
+
+
+def hanging_tail(ctx, name, start, length, n, radius_fn, objs, gap, braid=0.0, tie_at=None, tuft=0.0):
+    """A braid / tied tail from start down the back, lying on the outermost surface below it (objs) but never
+    diving into hollows (it hangs). radius_fn(u) -> metres; braid > 0 gives the three-strand plait (lobes that
+    alternate from side to side). Returns the joined object (tube + leather tie + tuft)."""
+    k = ctx.k
+    by = back_surface(objs)
+    step = length / (n - 1)
+    pts = [start.copy()]
+    p = start.copy()
+    for i in range(1, n):
+        u = i / (n - 1)
+        z = p.z - step * 0.985
+        r = radius_fn(u)
+        want = by(p.x, z, p.y - 0.02) + r + gap * k
+        y = min(max(want, p.y - 0.35 * step), p.y + 0.45 * step)
+        p = Vector((0.004 * k * math.sin(5.0 * u), y, z))
+        pts.append(p.copy())
+    nseg = 6
+    verts, faces = [], []
+    lobes = 7.0
+    for i, c in enumerate(pts):
+        u = i / (n - 1)
+        t = (pts[min(i + 1, n - 1)] - pts[max(i - 1, 0)]).normalized()
+        side = Vector((1, 0, 0))
+        side = (side - t * side.dot(t)).normalized()
+        nrm = t.cross(side).normalized()
+        r = radius_fn(u)
+        ph = 2 * math.pi * lobes * u
+        cc = c + side * (braid * r * 0.35 * math.sin(ph))
+        sc = 1.0 + braid * 0.30 * abs(math.cos(ph)) - braid * 0.12
+        for s in range(nseg):
+            a = 2 * math.pi * s / nseg + braid * 0.6 * math.sin(ph)
+            verts.append(cc + (side * math.cos(a) * 1.15 + nrm * math.sin(a) * 0.85) * r * sc)
+    for i in range(n - 1):
+        for s in range(nseg):
+            faces.append((i * nseg + s, i * nseg + (s + 1) % nseg, (i + 1) * nseg + (s + 1) % nseg, (i + 1) * nseg + s))
+    verts.append(pts[0] - (pts[1] - pts[0]).normalized() * radius_fn(0.0) * 0.5)
+    for s in range(nseg):
+        faces.append((len(verts) - 1, (s + 1) % nseg, s))
+    tip = pts[-1] + (pts[-1] - pts[-2]).normalized() * (tuft * 0.5 + 0.004 * k)
+    verts.append(tip)
+    for s in range(nseg):
+        faces.append(((n - 1) * nseg + s, (n - 1) * nseg + (s + 1) % nseg, len(verts) - 1))
+    tube_o = new_mesh_obj(name, verts, faces, 'hair')
+    bm = get_bm(tube_o)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    put_bm(bm, tube_o)
+    set_aux(tube_o, [(0.3, 0.5, 0.0)] * len(tube_o.data.vertices))
+    parts = [tube_o]
+    if tie_at is not None:
+        i = int(round(tie_at * (n - 1)))
+        t = (pts[min(i + 1, n - 1)] - pts[max(i - 1, 0)]).normalized()
+        rr = radius_fn(tie_at) * (1.0 + 0.3 * braid)
+        tie = torus_mesh(name + '_tie', rr * 1.05, 0.0035 * k, 10, 4, 'leather')
+        z_ax = t
+        x_ax = Vector((1, 0, 0))
+        x_ax = (x_ax - z_ax * x_ax.dot(z_ax)).normalized()
+        place(tie, pts[i], x_ax, z_ax.cross(x_ax), z_ax)
+        set_keep(tie)
+        parts.append(tie)
+    return join(parts, name), pts
+
+
+def tail_weights(ctx, o, z_free):
+    """Head at the top, then the neck / shoulders, then the cloak chain below z_free (it lies on the mantle's fall
+    when one is worn, and swings like a plait when not)."""
+    transfer_weights(o, ctx.T, ctx.bones)
+    hem = ctx.knee.z
+    cloak_chain_weights(ctx, o, z_free, hem)
+    mix_weights(o, lambda co: smoothstep(ctx.neck.z + 0.01 * ctx.k, ctx.neck.z + 0.05 * ctx.k, co.z), lambda co: {'head': 1.0})
+
+
+def outer_layers(ctx, names):
+    return [o for o in (bpy.data.objects.get(f'{n}.{ctx.bid}') for n in names) if o is not None]
+
+
+TOPS = ('doublet', 'smock', 'buff_coat', 'bodice', 'habit', 'kerchief', 'collar_band', 'sash', 'bandolier', 'belt', 'skirt',
+        'rope_belt')
+
+
+@garment('hair_bun', 'hair', WOMEN + ['girl'], 'woman', 'hair parted in the middle and swept back into a bun; soft hairline, worn bare or under a coif', layer=0)
 def g_hair_bun(ctx, ref):
-    o = hair_style(ctx, 'hair_bun', 0.007, lambda a: hairline(a, 40, 28, 6, -34), [], 0, 0, 0, 15,
-                   bulge=lambda az, e: 0.004 * math.cos(e))
+    o, rows = hair_cap(ctx, 'hair_bun', 0.007, hairline_w, bulge=swept_bulge)
     hc = head_centre(ctx)
     bun = rounded_box('bun', (0.075 * ctx.k, 0.055 * ctx.k, 0.06 * ctx.k), 'hair', roundness=0.85, cuts=3)
     bun.data.transform(Matrix.Translation(hc + Vector((0, (ctx.hmax.y - hc.y) + 0.008 * ctx.k, -0.025 * ctx.k))))
@@ -1832,7 +1983,7 @@ def g_bands(ctx, ref):
     return finish(o, ctx)
 
 
-@garment('plume', 'plume', MEN, 'man', 'ostrich feather curling back from the band of the wide hat', layer=3)
+@garment('plume', 'plume', MEN + WOMEN, 'man', 'ostrich feather curling back from the band of the wide hat', layer=3)
 def g_plume(ctx, ref):
     # a ribbon with a raised spine, built in the hat's own frame and placed exactly like hat_wide
     n = 9
@@ -1858,12 +2009,12 @@ def g_plume(ctx, ref):
     o = new_mesh_obj('plume', verts, faces, 'sash')
     set_aux(o, aux)
     set_keep(o)
-    hat_place(ctx, o, sink=0.022, tilt=-7)
+    hat_place(ctx, o, sink=wide_hat_sink(ctx), tilt=-7)
     rigid_weight(o, 'head')
     return finish(o, ctx, weights=None)
 
 
-@garment('bandolier', 'bandolier', MEN, 'man', 'musketeer\'s leather bandolier, left shoulder to right hip, with wooden powder charges', layer=2)
+@garment('bandolier', 'bandolier', MEN + WOMEN, 'man', 'musketeer\'s leather bandolier, left shoulder to right hip, with wooden powder charges', layer=2)
 def g_bandolier(ctx, ref):
     db = bpy.data.objects[f'doublet.{ctx.bid}']
     k = ctx.k
@@ -1887,6 +2038,203 @@ def g_bandolier(ctx, ref):
         charges.append(ch)
     o = join([band] + charges, 'bandolier')
     transfer_weights(o, ctx.T, ctx.bones)
+    return finish(o, ctx, weights=None)
+
+
+# --------------------------------------------------------------------------
+# PHASE D: the hero's mantle, heroines' hair, tied-back hair for men
+# --------------------------------------------------------------------------
+ARMISH = ('upperarm', 'lowerarm', 'hand', 'thumb', 'index', 'middle', 'ring', 'pinky')
+
+
+def arm_mask(o):
+    names = {g.index: g.name for g in o.vertex_groups}
+    m = np.zeros(len(o.data.vertices), dtype=bool)
+    for v in o.data.vertices:
+        m[v.index] = sum(g.weight for g in v.groups if names[g.group].startswith(ARMISH)) > 0.45
+    return m
+
+
+def torso_surface(objs):
+    """BVH and vertex cloud of objs without their arms (sleeves, hands): what a cloak hangs behind."""
+    verts, polys = [], []
+    for o in objs:
+        am = arm_mask(o)
+        base = len(verts)
+        verts += [v.co.copy() for v in o.data.vertices]
+        for p in o.data.polygons:
+            if not any(am[i] for i in p.vertices):
+                polys.append([base + i for i in p.vertices])
+    used = sorted({i for p in polys for i in p})
+    cloud = np.array([verts[i][:] for i in used]) if used else np.zeros((0, 3))
+    return BVHTree.FromPolygons(verts, polys), cloud
+
+
+@garment('mantle', 'mantle', ADULTS, 'man', 'the hero\'s travelling mantle: shoulder cape, small standing collar with a brass clasp, '
+         'and a full fall down the back to the calves on the cloak chain; open in front', layer=2)
+def g_mantle(ctx, ref):
+    k = ctx.k
+    under = outer_layers(ctx, TOPS)
+    # ---- the shoulder cape (yoke) over whatever is worn
+    c = Vector((0, ctx.neck.y + 0.004, ctx.neck.z - 0.004 * k))
+
+    def depth(a):
+        aa = abs(math.atan2(math.sin(a), math.cos(a)))
+        return 0.19 + 0.07 * smoothstep(0.4, 1.5, aa) - 0.02 * smoothstep(1.9, 3.1, aa)
+    yoke = drape_band(ctx, 'mantle_yoke', under + [ctx.body], c, Vector((0, -0.28, 1)), depth, count=48, rows=8,
+                      gap=0.021 * k, slope=1.10, open_front=0.34, lift=0.010, part='wool')
+    # single layers at game resolution (the kit material is double-sided): not decimated, so the cape keeps its clearance
+    transfer_weights(yoke, ctx.T, ctx.bones)
+    # ---- small standing collar: rises from the cape round the neck, higher at the nape, open at the throat
+    bvb = ctx.bvh('body', [ctx.body])
+    na, nr = 40, 3
+    angs = [0.17 + (2 * math.pi - 0.34) * i / (na - 1) for i in range(na)]
+    cv, caux = [], []
+    for r in range(nr):
+        u = r / (nr - 1)
+        for a in angs:
+            back = 0.5 - 0.5 * math.cos(a)
+            z = ctx.neck.z + (-0.022 + 0.058 * u + 0.012 * back * u) * k
+            d = Vector((math.sin(a), -math.cos(a), 0.0))
+            o0 = Vector((0.0, ctx.neck.y + 0.006 * k, z))
+            hit, _, _, _ = bvb.ray_cast(o0, d, 0.3)
+            rad = (hit - o0).length if hit is not None else 0.06 * k
+            cv.append(o0 + d * (rad + (0.019 + 0.008 * u) * k))
+            caux.append((u, a / (2 * math.pi), 3.0))
+    cf = [(r * na + i, r * na + i + 1, (r + 1) * na + i + 1, (r + 1) * na + i) for r in range(nr - 1) for i in range(na - 1)]
+    collar = new_mesh_obj('mantle_collar', cv, cf, 'wool')
+    fix_normals_out(collar, lambda p: Vector((0, ctx.neck.y, p.z)))
+    set_aux(collar, caux)
+    set_keep(collar)
+    transfer_weights(collar, ctx.T, ctx.bones)
+    # ---- clasp: two brass bosses at the throat
+    clasps = []
+    for sx in (1, -1):
+        a = 0.17 * sx
+        d = Vector((math.sin(a), -math.cos(a), 0.0))
+        z = ctx.neck.z - 0.012 * k
+        o0 = Vector((0.0, ctx.neck.y + 0.006 * k, z))
+        hit, _, _, _ = bvb.ray_cast(o0, d, 0.3)
+        rad = (hit - o0).length if hit is not None else 0.06 * k
+        bm = bmesh.new()
+        bmesh.ops.create_uvsphere(bm, u_segments=6, v_segments=4, radius=0.010 * k)
+        for v in bm.verts:
+            v.co.y *= 0.5
+        me = bpy.data.meshes.new('mantle_clasp')
+        bm.to_mesh(me)
+        bm.free()
+        cl = bpy.data.objects.new('mantle_clasp', me)
+        bpy.context.scene.collection.objects.link(cl)
+        set_part(cl, 'brass')
+        cl.data.transform(Matrix.Translation(o0 + d * (rad + 0.030 * k)))
+        set_keep(cl)
+        transfer_weights(cl, ctx.T, ctx.bones)
+        clasps.append(cl)
+    # ---- the fall: hangs from under the cape at the shoulder blades to the calves, round the back and sides
+    surf, cloud = torso_surface(under + [ctx.body])
+
+    def by(x, z, default):
+        loc, _, _, _ = surf.ray_cast(Vector((x, 2.0, z)), Vector((0, -1, 0)), 4.0)
+        return loc.y if loc is not None else default
+
+    def width(z):
+        sel = cloud[np.abs(cloud[:, 2] - z) < 0.03 * k]
+        return float(np.abs(sel[:, 0]).max()) if len(sel) else 0.15 * k
+
+    z_top = ctx.neck.z - 0.075 * k
+    z_hem = 0.5 * (ctx.knee.z + ctx.ank.z) - 0.01 * k
+    zs = np.linspace(z_top - 0.30 * k, z_top, 12)
+    y_sb = max(by(0.0, z, ctx.hip.y) for z in zs)                 # shoulder blades / back of the coat
+    cols, rows = 29, 21
+    # a clean A-line: the width and the backward flare grow smoothly from the shoulder blades and just clear the
+    # widest / most protruding point below (hips, seat, coat skirts, a woman's skirt), instead of following them
+    ts = [j / (rows - 1) for j in range(rows)]
+    zz = [z_top + (z_hem - z_top) * t for t in ts]
+    h0 = max(0.15 * k, width(z_top) * 0.85)
+    need_w = [(width(z) * 1.10 + 0.03 * k - h0) / max(t, 0.05) ** 0.85 for z, t in zip(zz, ts) if t > 0.15]
+    bw = max([0.24 * k] + need_w)
+    need_y = [(by(0.0, z, ctx.hip.y) + 0.02 * k - y_sb) / t for z, t in zip(zz, ts) if t > 0.15]
+    byk = max([0.10 * k] + need_y)
+    yoke_bv = bvh_of([yoke])
+    fv, fa = [], []
+    for j in range(rows):
+        t = ts[j]
+        z = zz[j]
+        w = width(z)
+        half = h0 + bw * t ** 0.85
+        gap = (0.004 + 0.016 * smoothstep(0.0, 0.28, t)) * k
+        y_free = y_sb + 0.004 * k + byk * t                        # falls from the shoulder blades, flaring back
+        y_c = max(by(0.0, z, ctx.hip.y) + gap, y_free)
+        y_side = ctx.hip.y + 0.045 * k
+        y_side = (y_c - 0.05 * k) * (1 - smoothstep(0.0, 0.3, t)) + y_side * smoothstep(0.0, 0.3, t)
+        for i in range(cols):
+            s = -1.0 + 2.0 * i / (cols - 1)
+            x = half * s
+            y = y_side + (y_c - y_side) * (1.0 - abs(s) ** 2.4) ** 0.5
+            nrm = Vector((s * (y_c - y_side) / max(half, 1e-3) * 1.2, 1.0, 0.0)).normalized()
+            fold, amp, phase = (float(v) for v in R_cloak_fold(s, t))
+            p = Vector((x, y, z)) + nrm * (0.75 * k * amp * fold)
+            p.z += 0.015 * k * t * math.cos(phase + 0.9) - 0.025 * k * t * abs(s) ** 3
+            # never inside the torso (arms excluded: they swing in front of the fall)
+            if abs(p.x) < w * 1.05:
+                yb = by(p.x, p.z, -9.0)
+                if yb > -8.0 and p.y < yb + gap:
+                    p.y = yb + gap
+            # under the cape: stay inside it (its inner face is 6 mm in from the outer)
+            hit, _, _, _ = yoke_bv.ray_cast(Vector((p.x, 2.0, p.z)), Vector((0, -1, 0)), 4.0)
+            if hit is not None and p.y > hit.y - 0.010 * k:
+                p.y = hit.y - 0.010 * k
+            fv.append(p)
+            fa.append((s, t, 2.0))
+    ff = [(j * cols + i, j * cols + i + 1, (j + 1) * cols + i + 1, (j + 1) * cols + i) for j in range(rows - 1) for i in range(cols - 1)]
+    fall = new_mesh_obj('mantle_fall', fv, ff, 'wool')
+    relax(fall, 1, 0.25)
+    fix_normals_out(fall, lambda p: Vector((0.0, ctx.hip.y - 0.05, p.z)))
+    set_aux(fall, fa)
+    set_keep(fall)
+    transfer_weights(fall, ctx.T, ctx.bones)
+    cloak_chain_weights(ctx, fall, z_top - 0.04 * k, z_hem)
+    o = join([yoke, collar, fall] + clasps, 'mantle')
+    return finish(o, ctx, weights=None)
+
+
+def R_cloak_fold(s, t):
+    from .common import R
+    return R.cloak_fold(s, t)
+
+
+@garment('hair_braid', 'hair', WOMEN + ['girl'], 'woman', 'hair swept back from a centre parting into one long plait down the back '
+         '(lies over the mantle when one is worn)', layer=3)
+def g_hair_braid(ctx, ref):
+    k = ctx.k
+    o, rows = hair_cap(ctx, 'hair_braid', 0.007, hairline_w, bulge=swept_bulge)
+    hc = head_centre(ctx)
+    objs = [ctx.body, ctx.T] + outer_layers(ctx, TOPS + ('mantle', 'huik', 'pelerine', 'capuche'))
+    start = Vector((0.0, ctx.hmax.y - 0.012 * k, hc.z - 0.050 * k))
+    length = 0.44 * k * (0.8 if ctx.kid else 1.0)
+    br, pts = hanging_tail(ctx, 'hair_braid_plait', start, length, 34,
+                           lambda u: k * (0.019 * (1.0 - 0.45 * u) + 0.004 * math.exp(-(u / 0.08) ** 2)),
+                           objs, 0.006, braid=1.0, tie_at=0.90, tuft=0.03 * k)
+    o = join([o, br], 'hair_braid')
+    tail_weights(ctx, o, ctx.neck.z - 0.16 * k)
+    return finish(o, ctx, weights=None)
+
+
+@garment('hair_tail', 'hair', MEN, 'man', 'hair combed back and tied at the nape in a short tail with a leather thong', layer=3)
+def g_hair_tail(ctx, ref):
+    k = ctx.k
+
+    def hl(a):
+        return float(np.interp(abs(a), [0, 25, 50, 75, 95, 115, 140, 180], [41, 38, 30, 20, 12, 0, -18, -36]))
+    o, rows = hair_cap(ctx, 'hair_tail', 0.008, hl, bulge=lambda az, e: swept_bulge(az, e) * 0.8)
+    hc = head_centre(ctx)
+    objs = [ctx.body, ctx.T] + outer_layers(ctx, TOPS + ('mantle', 'huik', 'pelerine', 'capuche'))
+    start = Vector((0.0, ctx.hmax.y - 0.010 * k, hc.z - 0.055 * k))
+    tl, pts = hanging_tail(ctx, 'hair_tail_end', start, 0.16 * k, 12,
+                           lambda u: k * (0.015 + 0.008 * smoothstep(0.12, 0.45, u) - 0.005 * smoothstep(0.6, 1.0, u)),
+                           objs, 0.004, braid=0.0, tie_at=0.10, tuft=0.0)
+    o = join([o, tl], 'hair_tail')
+    tail_weights(ctx, o, ctx.neck.z - 0.16 * k)
     return finish(o, ctx, weights=None)
 
 

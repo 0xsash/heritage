@@ -13,7 +13,7 @@ ATLAS_MARGIN = 0.003
 # relative texel density by garment (small, close-up details get more)
 DENS = {'collar_band': 1.5, 'kerchief': 1.2, 'beard_pointed': 1.6, 'moustache': 1.8, 'beard_full': 1.4, 'skirt': 0.8,
         'habit': 0.75, 'huik': 0.75, 'shoes': 1.1, 'clogs': 1.0, 'morion': 1.2, 'hat_wide': 1.0, 'coif': 1.3,
-        'beguine_veil': 1.1, 'hair_crop': 0.9, 'hair_long': 0.9, 'hair_thin': 1.0, 'hair_child': 0.9, 'hair_bun': 1.0,
+        'beguine_veil': 1.1, 'hair_crop': 0.9, 'hair_long': 0.9, 'hair_thin': 1.0, 'hair_child': 0.9, 'hair_bun': 1.0, 'mantle': 0.6, 'hair_braid': 1.0, 'hair_tail': 0.9,
         'buttons': 2.0, 'rosary': 1.2}
 SKIN_TILES = 3
 
