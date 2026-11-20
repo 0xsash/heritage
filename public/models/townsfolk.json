@@ -736,7 +736,10 @@
     "man_stout",
     "man_old",
     "girl",
-    "boy"
+    "boy",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": true,
    "hides": [
@@ -756,7 +759,10 @@
     "man_young",
     "man_stout",
     "man_old",
-    "boy"
+    "boy",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": true,
    "hides": [
@@ -812,7 +818,10 @@
     "man",
     "man_young",
     "man_stout",
-    "man_old"
+    "man_old",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": false,
    "hides": [
@@ -829,7 +838,10 @@
     "man_young",
     "man_stout",
     "man_old",
-    "boy"
+    "boy",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": true,
    "hides": [
@@ -854,7 +866,10 @@
     "man_young",
     "man_stout",
     "man_old",
-    "boy"
+    "boy",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": false,
    "hides": [],
@@ -872,7 +887,10 @@
     "man_young",
     "man_stout",
     "man_old",
-    "boy"
+    "boy",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": true,
    "hides": [
@@ -963,7 +981,10 @@
     "man_young",
     "man_stout",
     "man_old",
-    "boy"
+    "boy",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": false,
    "hides": [],
@@ -999,7 +1020,10 @@
     "man",
     "man_young",
     "man_stout",
-    "man_old"
+    "man_old",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": true,
    "hides": [
@@ -1030,7 +1054,10 @@
     "man_young",
     "man_stout",
     "man_old",
-    "boy"
+    "boy",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": true,
    "hides": [
@@ -1212,7 +1239,10 @@
     "man",
     "man_young",
     "man_stout",
-    "man_old"
+    "man_old",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": false,
    "hides": [
@@ -1231,7 +1261,10 @@
     "man",
     "man_young",
     "man_stout",
-    "man_old"
+    "man_old",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": true,
    "hides": [],
@@ -1310,10 +1343,8 @@
     "girl"
    ],
    "dyeable": true,
-   "hides": [
-    "scalp"
-   ],
-   "desc": "hair parted in the middle and pulled back into a bun",
+   "hides": [],
+   "desc": "hair parted in the middle and swept back into a bun; soft hairline, worn bare or under a coif",
    "morphs": true
   },
   "beard_pointed": {
@@ -1409,7 +1440,10 @@
     "man",
     "man_young",
     "man_stout",
-    "man_old"
+    "man_old",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": true,
    "hides": [],
@@ -1425,7 +1459,10 @@
     "man",
     "man_young",
     "man_stout",
-    "man_old"
+    "man_old",
+    "woman",
+    "woman_stout",
+    "woman_old"
    ],
    "dyeable": false,
    "hides": [],
@@ -1438,11 +1475,72 @@
     "sash",
     "pelerine"
    ]
+  },
+  "mantle": {
+   "slot": "mantle",
+   "layer": 5,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old",
+    "woman",
+    "woman_stout",
+    "woman_old"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "the hero's travelling mantle: shoulder cape, small standing collar with a brass clasp, and a full fall down the back to the calves on the cloak chain; open in front",
+   "morphs": true,
+   "excludes": [
+    "pelerine",
+    "capuche",
+    "huik"
+   ]
+  },
+  "hair_braid": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_old",
+    "girl"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "hair swept back from a centre parting into one long plait down the back (lies over the mantle when one is worn)",
+   "morphs": true,
+   "excludes": [
+    "huik",
+    "beguine_veil"
+   ]
+  },
+  "hair_tail": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "hair combed back and tied at the nape in a short tail with a leather thong",
+   "morphs": true,
+   "excludes": [
+    "capuche"
+   ]
   }
  },
  "props": {
   "basket": {
    "grip": "hang_r",
+   "hand": "hand_r"
+  },
+  "bellstaff": {
+   "grip": "fist_r",
    "hand": "hand_r"
   },
   "bread": {
@@ -1451,6 +1549,10 @@
   },
   "bundle": {
    "grip": "hang_r",
+   "hand": "hand_r"
+  },
+  "dagger": {
+   "grip": "sword_r",
    "hand": "hand_r"
   },
   "lantern": {
@@ -1556,6 +1658,34 @@
   "death": {
    "loop": false,
    "duration": 1.6
+  },
+  "jump": {
+   "loop": false,
+   "duration": 0.5
+  },
+  "fall": {
+   "loop": true,
+   "duration": 1.0
+  },
+  "land": {
+   "loop": false,
+   "duration": 0.5
+  },
+  "roll": {
+   "loop": false,
+   "duration": 1.0
+  },
+  "attack3": {
+   "loop": false,
+   "duration": 0.9
+  },
+  "cast": {
+   "loop": false,
+   "duration": 0.5
+  },
+  "ride_idle": {
+   "loop": true,
+   "duration": 4.0
   },
   "walk_old": {
    "loop": true,
@@ -3557,5 +3687,96 @@
     ]
    ]
   }
- ]
+ ],
+ "hero": {
+  "bodies": {
+   "m": [
+    "man",
+    "man_young",
+    "man_stout"
+   ],
+   "f": [
+    "woman",
+    "woman_stout"
+   ]
+  },
+  "hair": {
+   "m": [
+    "hair_crop",
+    "hair_long",
+    "hair_tail"
+   ],
+   "f": [
+    "hair_bun",
+    "hair_braid"
+   ]
+  },
+  "beards": [
+   "beard_pointed",
+   "moustache",
+   "beard_full",
+   null
+  ],
+  "hairDyes": [
+   "h_dark",
+   "h_brown",
+   "h_chestnut",
+   "h_blond",
+   "h_black",
+   "h_red",
+   "h_grey"
+  ],
+  "mantle": {
+   "piece": "mantle",
+   "dyes": [
+    "madder",
+    "madder_dk",
+    "woad_dk",
+    "moss",
+    "green_dk",
+    "umber",
+    "black",
+    "grey",
+    "ochre"
+   ]
+  },
+  "outfits": {
+   "schutter": {
+    "wear": {
+     "doublet": "madder_dk",
+     "buff_coat": null,
+     "sash": "madder",
+     "breeches": "slate",
+     "stockings": "grey",
+     "boots": null
+    },
+    "prop": "sword"
+   },
+   "beiaardier": {
+    "wear": {
+     "cap_flat": "black",
+     "doublet": "woad_dk",
+     "collar_band": null,
+     "breeches": "umber",
+     "stockings": "linen",
+     "shoes": null
+    },
+    "prop": "bellstaff",
+    "optional": [
+     "cap_flat"
+    ]
+   },
+   "smokkelaar": {
+    "wear": {
+     "hat_wide": "black",
+     "doublet": "umber",
+     "bandolier": null,
+     "breeches": "black",
+     "stockings": "umber",
+     "boots": null
+    },
+    "prop": "dagger"
+   }
+  }
+ }
 }

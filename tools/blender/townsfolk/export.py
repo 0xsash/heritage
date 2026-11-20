@@ -161,12 +161,33 @@ EXCLUDES = {'bandolier': ['buff_coat', 'sash', 'pelerine'], 'bands': ['capuche',
             'beguine_veil': ['coif', 'huik', 'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion'],
             'capuche': ['pelerine', 'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'beguine_veil'],
             'pelerine': ['capuche', 'huik', 'buff_coat'], 'belt': ['habit', 'rope_belt'], 'smock': ['doublet', 'habit', 'bodice'],
-            'doublet': ['smock', 'habit', 'bodice'], 'habit': ['bodice', 'skirt', 'breeches', 'stockings']}
+            'doublet': ['smock', 'habit', 'bodice'], 'habit': ['bodice', 'skirt', 'breeches', 'stockings'],
+            'mantle': ['pelerine', 'capuche', 'huik'], 'hair_braid': ['huik', 'beguine_veil'],
+            'hair_tail': ['capuche']}
 HAT_HIDES = ['hair_crown']
 GRIP_KINDS = {'fist_r': ('hand_r', 'fist'), 'hang_r': ('hand_r', 'hang'), 'hang_l': ('hand_l', 'hang'),
               'sword_r': ('hand_r', 'sword'), 'along_r': ('hand_r', 'along')}
 PROP_GRIP = {'basket': 'hang_r', 'bread': 'hang_r', 'bundle': 'hang_r', 'lantern': 'hang_r', 'rosary': 'hang_r',
-             'staff': 'fist_r', 'stick': 'fist_r', 'sword': 'sword_r', 'musket': 'along_r'}
+             'staff': 'fist_r', 'stick': 'fist_r', 'sword': 'sword_r', 'musket': 'along_r', 'dagger': 'sword_r',
+             'bellstaff': 'fist_r'}
+
+# the player's character creation: which bodies, hair and beards it offers, and the three class outfits (every
+# outfit assembles on every listed body of both sexes; the game adds the `mantle` on top in any dye)
+HERO = {
+    'bodies': {'m': ['man', 'man_young', 'man_stout'], 'f': ['woman', 'woman_stout']},
+    'hair': {'m': ['hair_crop', 'hair_long', 'hair_tail'], 'f': ['hair_bun', 'hair_braid']},
+    'beards': ['beard_pointed', 'moustache', 'beard_full', None],
+    'hairDyes': ['h_dark', 'h_brown', 'h_chestnut', 'h_blond', 'h_black', 'h_red', 'h_grey'],
+    'mantle': {'piece': 'mantle', 'dyes': ['madder', 'madder_dk', 'woad_dk', 'moss', 'green_dk', 'umber', 'black', 'grey', 'ochre']},
+    'outfits': {
+        'schutter': {'wear': {'doublet': 'madder_dk', 'buff_coat': None, 'sash': 'madder', 'breeches': 'slate',
+                              'stockings': 'grey', 'boots': None}, 'prop': 'sword'},
+        'beiaardier': {'wear': {'cap_flat': 'black', 'doublet': 'woad_dk', 'collar_band': None, 'breeches': 'umber',
+                                'stockings': 'linen', 'shoes': None}, 'prop': 'bellstaff', 'optional': ['cap_flat']},
+        'smokkelaar': {'wear': {'hat_wide': 'black', 'doublet': 'umber', 'bandolier': None, 'breeches': 'black',
+                                'stockings': 'umber', 'boots': None}, 'prop': 'dagger'},
+    },
+}
 
 C = Matrix(((1, 0, 0), (0, 0, 1), (0, -1, 0)))          # Blender (Z up) -> glTF (Y up)
 
@@ -478,7 +499,8 @@ def stage_export():
                                     'marked morphs:true; drive them together with the same weights'),
                     skinTones=SKIN_TONES,
                     skinToneNotes='multiply into the base colour of body meshes where COLOR_0.r = 1 (skin; 0 on lips and eyes)',
-                    archetypes=[dict(a, crowd=a.get('crowd', True)) for a in ARCHETYPES])
+                    archetypes=[dict(a, crowd=a.get('crowd', True)) for a in ARCHETYPES],
+                    hero=HERO)
     with open(OUT_JSON, 'w') as f:
         json.dump(manifest, f, indent=1)
     log('wrote', OUT_JSON)

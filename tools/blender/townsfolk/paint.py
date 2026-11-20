@@ -293,6 +293,21 @@ def paint_garments(m, gnames):
         t = A[:, :, 0]
         gar = sstep(0.0, 0.04, t) * sstep(0.12, 0.08, t)
         p.col[M] = (p.col * (1 - 0.32 * gar[..., None]))[M]
+    # the hero's mantle: a woven border (a darker band and a light thread) along the cape's hem, the front edges and
+    # the hem of the fall, and along the top of the collar; it stays dyeable
+    M = G('mantle') & part('wool')
+    if M.any():
+        a0, a1, a2 = A[:, :, 0], A[:, :, 1], A[:, :, 2]
+        yoke = a2 < 1.0
+        fall = (a2 > 1.5) & (a2 < 2.5)
+        coll = a2 > 2.5
+        band = np.where(yoke, sstep(0.80, 0.84, a0) * sstep(0.97, 0.93, a0), 0.0)
+        band = band + np.where(fall, np.maximum(sstep(0.93, 0.95, a1), sstep(0.955, 0.975, np.abs(a0)) * sstep(0.2, 0.3, a1)), 0.0)
+        band = band + np.where(coll, sstep(0.70, 0.80, a0), 0.0)
+        band = np.clip(band, 0, 1)
+        thread = np.where(fall, np.exp(-((a1 - 0.915) / 0.004) ** 2), 0.0) + np.where(yoke, np.exp(-((a0 - 0.78) / 0.008) ** 2), 0.0)
+        p.col[M] = (p.col * (1 - 0.38 * band[..., None]))[M]
+        p.col[M] = mixc(p.col, rgb('#efe4cc'), np.clip(thread, 0, 1) * 0.45)[M]
 
     # painted light falls off towards the ground (the masters' darker hems and legs)
     for n in ('wool', 'wool2', 'linen_d', 'lining', 'sash', 'cloth_b', 'linen', 'leather', 'buff'):

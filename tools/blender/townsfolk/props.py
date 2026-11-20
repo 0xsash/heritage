@@ -196,6 +196,47 @@ def p_musket(_):
     return join([stock, barrel, lock, serp, trig, band], 'musket')
 
 
+@prop('dagger', 'hand_r', 'smuggler\'s long dagger: tapering double-edged blade, plain iron cross, leather grip', 'sword')
+def p_dagger(_):
+    # same frame as the sword: blade up +Z, edges along X, origin at the middle of the grip
+    def ring(z, w, t):
+        return [Vector((w, 0, z)), Vector((w * 0.3, t, z)), Vector((-w * 0.3, t, z)), Vector((-w, 0, z)),
+                Vector((-w * 0.3, -t, z)), Vector((w * 0.3, -t, z))]
+    rings = [ring(0.050, 0.017, 0.004), ring(0.17, 0.013, 0.0035), ring(0.30, 0.006, 0.002)]
+    verts = [p for r in rings for p in r] + [Vector((0, 0, 0.34))]
+    faces = []
+    for j in range(2):
+        for i in range(6):
+            faces.append((j * 6 + i, j * 6 + (i + 1) % 6, (j + 1) * 6 + (i + 1) % 6, (j + 1) * 6 + i))
+    for i in range(6):
+        faces.append((12 + i, 12 + (i + 1) % 6, 18))
+    blade = new_mesh_obj('dagger_blade', verts, faces, 'steel', smooth=False)
+    bm = get_bm(blade)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    put_bm(bm, blade)
+    guard = rounded_box('dagger_guard', (0.10, 0.018, 0.014), 'iron', roundness=0.4, cuts=1)
+    guard.data.transform(Matrix.Translation((0, 0, 0.046)))
+    grip = tube('dagger_grip', [Vector((0, 0, -0.045)), Vector((0, 0, 0.042))], 0.012, 6, 'leather')
+    pommel = sphere('dagger_pommel', 0.017, 'iron', seg=6, rings=4)
+    pommel.data.transform(Matrix.Translation((0, 0, -0.058)))
+    return join([blade, guard, grip, pommel], 'dagger')
+
+
+@prop('bellstaff', 'hand_r', 'bell-ringer\'s quarterstaff, iron-shod, with a small bronze hand-bell hung below the head', 'fist')
+def p_bellstaff(_):
+    pts = [Vector((0, 0, z)) for z in np.linspace(-0.98, 0.78, 12)]
+    st = tube('bellstaff', pts, 0.017, 8, 'wood', [0.015 + 0.004 * (i / 11) for i in range(12)])
+    cap = lathe_mesh('bellstaff_cap', [(0.0, 0.84), (0.016, 0.83), (0.022, 0.80), (0.021, 0.75), (0.0, 0.74)], 8, 'iron')
+    shoe = lathe_mesh('bellstaff_shoe', [(0.0, -1.0), (0.012, -0.995), (0.017, -0.95), (0.0, -0.94)], 8, 'iron')
+    bell = lathe_mesh('bell', [(0.0, 0.0), (0.012, -0.004), (0.022, -0.020), (0.028, -0.048), (0.036, -0.066),
+                               (0.033, -0.068), (0.0, -0.060)], 12, 'brass')
+    bell.data.transform(Matrix.Translation((0.055, 0, 0.70)))
+    clap = sphere('bell_clapper', 0.008, 'iron', seg=6, rings=4)
+    clap.data.transform(Matrix.Translation((0.055, 0, 0.632)))
+    arm = tube('bell_arm', [Vector((0.016, 0, 0.72)), Vector((0.040, 0, 0.725)), Vector((0.055, 0, 0.705))], 0.004, 5, 'iron')
+    return join([st, cap, shoe, bell, clap, arm], 'bellstaff')
+
+
 def build_props():
     out = {}
     for name, spec in PROPS.items():
