@@ -2,7 +2,8 @@
 // renown. Saved to this browser's local storage (a per-player convenience for
 // the prototype; accounts and cloud saves come later).
 
-import type { Gear, OriginId, Slot } from './character';
+import type { BackgroundId, Gear, OriginId, Slot } from './character';
+import type { FactionId } from './factions';
 import type { QuestStatus } from './types';
 
 export interface QuestState {
@@ -24,6 +25,26 @@ export interface HeroData {
   origin: OriginId;
   cloak: string;
   dragon: string;
+  // --- who you are (made in the creation screen; an older save gets the defaults: a man of his class)
+  sex: 'm' | 'f';
+  /** the kit body (see look.ts): man_young, man, man_stout, woman, woman_stout... */
+  build: string;
+  /** face morph weights, by name (explicit, so the face is the same every time) */
+  face: Record<string, number>;
+  /** index into the kit's skin tones */
+  skin: number;
+  /** hair piece (null: bare head) and its palette colour */
+  hair: string | null;
+  hairColor: string;
+  beard: string | null;
+  /** wear the class's hat */
+  hat: boolean;
+  /** herkomst: where you are from */
+  background: BackgroundId;
+  /** the party you chose as your first loyalty */
+  faction: FactionId;
+  /** the dragon's scale colour (see src/player/scales.ts) */
+  scales: string;
   level: number;
   xp: number;
   hp: number;
@@ -59,7 +80,11 @@ export function freshSave(): SaveData {
   return {
     v: 2,
     created: false,
-    hero: { name: 'Lieven', origin: 'schutter', cloak: '#8c2a1e', dragon: 'Gloed', level: 1, xp: 0, hp: 100, gear: {}, bag: [] },
+    hero: {
+      name: 'Lieven', origin: 'schutter', cloak: '#8c2a1e', dragon: 'Gloed', level: 1, xp: 0, hp: 100, gear: {}, bag: [],
+      sex: 'm', build: 'man_young', face: {}, skin: 1, hair: 'hair_long', hairColor: 'h_brown', beard: 'moustache', hat: true,
+      background: 'diest', faction: 'gilden', scales: 'demer',
+    },
     quests: {},
     flags: {},
     inv: { salve: 3 },

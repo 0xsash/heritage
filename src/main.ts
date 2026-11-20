@@ -21,7 +21,11 @@ import { Kroniek, READABLES, ENTRIES } from './rpg/kroniek';
 import { Readables } from './rpg/readables';
 import { QuestEngine } from './rpg/quests';
 import { freshSave, loadSave, writeSave } from './rpg/state';
-import { runFrontEnd } from './ui/creation';
+import { FIRST_LOYALTY, runFrontEnd } from './ui/creation';
+import { dressHero, kitStandIn } from './player/herokit';
+import { tintDragon } from './player/scales';
+import { HERO_CLIPS } from './rpg/look';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Banner, CharacterPanel, Guide, PlayerFrame, type SlotView } from './ui/gamehud';
 import { Hud } from './ui/hud';
 import { KroniekUI } from './ui/kroniekui';
@@ -84,9 +88,17 @@ async function boot() {
   };
   const peek = loadSave();
   const skipFront = params.has('autostart');
+  // the character kit first: the creation screen shows your hero built from it, and the hero is made of it.
+  // rider.glb (the old fixed hero) is fetched only when it is needed: no kit, or a kit without the hero's clips.
+  const kitP = loadTownsfolk();
+  let riderP: Promise<GLTF | null> | null = null;
+  const rider = () => (riderP ??= loadModel('models/rider.glb'));
+  void kitP.then((k) => {
+    if (!k || HERO_CLIPS.some((c) => !k.hasClip(c))) void rider();
+  });
   const front = skipFront
     ? Promise.resolve({ mode: 'continue' as const })
-    : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, origin: peek.hero.origin } : null, () => sound.start());
+    : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, origin: peek.hero.origin, sex: peek.hero.sex, background: peek.hero.background } : null, () => sound.start(), kitP);
 
   // --- load everything
   const [data, meta] = await Promise.all([
@@ -129,10 +141,8 @@ async function boot() {
   setLoading('De draak wordt gewekt…');
   const dragonModel = await loadModel('models/dragon.glb');
   if (dragonModel) player.dragon.useModel(dragonModel.scene);
-  const riderModel = await loadModel('models/rider.glb');
-  if (riderModel) player.hero.useModel(riderModel);
   setLoading('De stad komt tot leven…');
-  const townsfolk = await loadTownsfolk();
+  const townsfolk = await kitP;
   setLoading('Klaar. Je verhaal wacht.');
 
   // --- who are you?
@@ -146,6 +156,7 @@ async function boot() {
     const s = freshSave();
     s.created = true;
     s.hero = { ...s.hero, ...fe.hero, hp: 99999 };
+    s.standing[fe.hero.faction] = FIRST_LOYALTY; // your first loyalty: known to them from the start
     writeSave(s);
   } else if (!peek.created) {
     // straight in (debug / screenshot): a default character
@@ -153,6 +164,19 @@ async function boot() {
     s.created = true;
     writeSave(s);
   }
+
+  // --- the hero as made: from the character kit, or the old rider model when there is no kit
+  const heroData = loadSave().hero;
+  let riderModel: GLTF | null = null;
+  const dressed = townsfolk ? await dressHero(player.hero, townsfolk, heroData, rider) : null;
+  if (dressed) riderModel = dressed.rider;
+  else {
+    riderModel = await rider();
+    if (riderModel) player.hero.useModel(riderModel);
+  }
+  // what the rest of the game clones as "a person" when it has nothing better: the rider if fetched, else a plain man from the kit
+  const peopleModel = riderModel ?? (townsfolk ? kitStandIn(townsfolk) : null);
+  if (dragonModel) tintDragon(dragonModel.scene, heroData.scales);
 
   // --- quests, people, combat, HUD
   const toasts: string[] = [];
@@ -318,11 +342,11 @@ async function boot() {
     };
   }
 
-  const actors = (late.actors = new Actors(riderModel, quests, world.collision, townsfolk));
+  const actors = (late.actors = new Actors(peopleModel, quests, world.collision, townsfolk));
   actors.spawnNpcs(diest.npcs);
   actors.syncPickups();
   scene.add(actors.group);
-  const combat = new Combat(riderModel, world.collision, player, quests, sound, uiRoot, {
+  const combat = new Combat(peopleModel, world.collision, player, quests, sound, uiRoot, {
     trauma: (t) => rig.addTrauma(t),
     hurt: (f) => frame.hurt(f),
     died: () => respawn(),
@@ -332,7 +356,7 @@ async function boot() {
   combat.kit = townsfolk;
   combat.setCamps(diest.camps);
   scene.add(combat.group);
-  const crowd = riderModel ? new Crowd(riderModel, world, quests, (text, at) => combat.floaters.add(text, at, 'bark', 3.2, 0.35), townsfolk) : null;
+  const crowd = peopleModel ? new Crowd(peopleModel, world, quests, (text, at) => combat.floaters.add(text, at, 'bark', 3.2, 0.35), townsfolk) : null;
   if (crowd) scene.add(crowd.group);
   const guide = new Guide(uiRoot);
   scene.add(guide.group);
@@ -389,7 +413,7 @@ async function boot() {
     setTimeout(() => hud.announce('BRABANT · ANNO 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, 'Onder je ligt Diest. De klokken zwijgen.'), 2600);
   };
   const prologue = new Prologue({
-    scene, ui: uiRoot, player, kit: townsfolk, voice, name: quests.s.hero.name, dragon: quests.s.hero.dragon,
+    scene, ui: uiRoot, player, kit: townsfolk, voice, name: quests.s.hero.name, dragon: quests.s.hero.dragon, sex: quests.s.hero.sex,
     setSky: (id) => atmo.setPreset(id),
     bell: (strong) => sound.bell(strong ? 147 : 196, strong ? 0.5 : 0.42),
     howl: () => sound.howl(),
@@ -468,7 +492,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, shareCard, prologue, voice };
+  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, shareCard, prologue, voice, kit: townsfolk, dragonModel };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();

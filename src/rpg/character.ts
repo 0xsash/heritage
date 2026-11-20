@@ -36,6 +36,12 @@ export interface OriginDef {
   name: string;
   tagline: string;
   text: string;
+  /** a paragraph for the creation screen: who they are in 1650 */
+  lore: string;
+  /** how it plays, in a few words */
+  role: string;
+  /** 1 easy .. 3 hard */
+  difficulty: 1 | 2 | 3;
   base: Stats;
   growth: Stats;
   skill: SkillDef; // right mouse
@@ -49,6 +55,9 @@ export const ORIGINS: Record<OriginId, OriginDef> = {
     name: 'Schutter',
     tagline: 'Zwaard en staal',
     text: 'Gildebroeder van Sint-Joris. Slaat hard, staat stevig.',
+    lore: 'De Sint-Jorisgilde schiet al in de schuttershof sinds de tijd van de hertogen. Je eed kostte een jaar sparen. Je naam staat op het bord in de gildekamer. Onder die van de doden.',
+    role: 'van dichtbij, kan veel hebben',
+    difficulty: 1,
     base: { kracht: 8, klank: 3, list: 4, taaiheid: 7 },
     growth: { kracht: 3, klank: 1, list: 1, taaiheid: 2 },
     skill: { id: 'zware_slag', short: 'Houw', name: 'Zware slag', text: 'Een brede houw die alles voor je wegslaat.', cooldown: 4, cost: 0, level: 1 },
@@ -60,6 +69,9 @@ export const ORIGINS: Record<OriginId, OriginDef> = {
     name: 'Beiaardier',
     tagline: 'Klank als wapen',
     text: 'Kind van de toren. Hoort wat in het brons zit.',
+    lore: 'Je leerde het klavier in de toren, met vuisten en voeten, bij een meester die doof werd van zijn eigen klokken. Je hoort wat in het brons zit. In dit spel snijdt een zuivere toon. Sinds zondag hoor je niets.',
+    role: 'klank op afstand, kwetsbaar van dichtbij',
+    difficulty: 3,
     base: { kracht: 4, klank: 9, list: 4, taaiheid: 5 },
     growth: { kracht: 1, klank: 3, list: 1, taaiheid: 2 },
     skill: { id: 'klokslag', short: 'Klokslag', name: 'Klokslag', text: 'Een galm die alles om je heen verdooft en raakt.', cooldown: 5, cost: 25, level: 1 },
@@ -71,11 +83,74 @@ export const ORIGINS: Record<OriginId, OriginDef> = {
     name: 'Smokkelaar',
     tagline: 'Snel en vals',
     text: 'Kent elk pad langs de tol. Vecht niet eerlijk.',
+    lore: 'Aan elke brug van Brabant staat een tolhuis, en elk tolhuis wil zijn stuiver. Jij kent de karrensporen door de heide naar de Staatse grens. Je pistool kostte drie jaar zout. Het heeft zich al terugbetaald.',
+    role: 'snel en gemeen, leeft van voltreffers',
+    difficulty: 2,
     base: { kracht: 5, klank: 3, list: 9, taaiheid: 5 },
     growth: { kracht: 2, klank: 1, list: 3, taaiheid: 1 },
     skill: { id: 'pistoolschot', short: 'Schot', name: 'Pistoolschot', text: 'Een schot met je radslotpistool. Hard, ver en luid.', cooldown: 3, cost: 0, level: 1 },
     skill2: { id: 'rookbom', short: 'Rookbom', name: 'Rookbom', text: 'Verdwijn in de rook: vijanden zijn verblind en je volgende slagen zijn voltreffers.', cooldown: 16, cost: 35, level: 3 },
     start: 'ponjaard',
+  },
+};
+
+// ------------------------------------------------------------------ backgrounds
+// Herkomst: where you are from. Each gives one small passive and changes what
+// people say about you. All five are places and lives that existed in 1650.
+
+export type BackgroundId = 'diest' | 'kempen' | 'hageland' | 'luik' | 'tros';
+
+export interface BackgroundDef {
+  id: BackgroundId;
+  /** what you are called: a man, a woman */
+  name: [string, string];
+  /** the place, for lists */
+  place: string;
+  lore: string;
+  /** the passive, as the screen states it */
+  perk: string;
+  perkName: string;
+  /** what people say about where you are from */
+  said: string[];
+  /** added to the sheet */
+  bonus: Partial<Stats> & { hp?: number; armor?: number; crit?: number; power?: number };
+}
+
+export const BACKGROUNDS: Record<BackgroundId, BackgroundDef> = {
+  diest: {
+    id: 'diest', name: ['Diestenaar', 'Diestse'], place: 'Diest, binnen de muren',
+    lore: 'Je bent geboren binnen de muren, onder Sint-Sulpitius. Diest stuurde ooit laken tot in Keulen; nu brouwt het vooral bier. In het koor ligt een prins van Oranje begraven. De levende komen nooit.',
+    perkName: 'Klokkenkind', perk: '+5% kracht van klokkenmagie en drakenvuur.',
+    said: ['Van hier? Dan weet je hoe laat het is. Of wist.', 'Een Diestenaar met een draak. Mijn moeder gaat dat niet geloven.'],
+    bonus: { power: 0.05 },
+  },
+  kempen: {
+    id: 'kempen', name: ['Kempenaar', 'Kempense'], place: 'de Kempen, ten noorden van de Demer',
+    lore: 'Ten noorden van de Demer begint het zand. Je ouders hoedden schapen op heide die ooit bos was, en staken turf voor een heer die ze nooit zagen. In de Kempen klaagt niemand over het weer. Het weer luistert toch niet.',
+    perkName: 'Taai als heide', perk: '+15 levenskracht.',
+    said: ['Uit de Kempen? Daar eten ze zand en zeggen ze dank je.', 'Een Kempenaar loopt nog als het paard al ligt.'],
+    bonus: { hp: 15 },
+  },
+  hageland: {
+    id: 'hageland', name: ['Hagelander', 'Hagelandse'], place: 'het Hageland, ten zuiden van Diest',
+    lore: 'Ten zuiden van Diest liggen de heuvels van het Hageland, met wijngaarden op de zonkant. Uit de groeven komt de bruine ijzerzandsteen waarvan de kerken gebouwd zijn. Je droeg stenen voor je kon lezen. Je rug weet het nog.',
+    perkName: 'Steendragersarmen', perk: '+2 Kracht.',
+    said: ['Hagelanders. Zuur als hun wijn en hard als hun steen.', 'Van de heuvels? Breng de volgende keer wijn mee. Of liever niet.'],
+    bonus: { kracht: 2 },
+  },
+  luik: {
+    id: 'luik', name: ['Luikenaar', 'Luikse'], place: 'het prinsbisdom Luik',
+    lore: 'Luik is niet van Spanje en niet van Brabant, maar van een prins-bisschop. Het blijft neutraal en verkoopt aan elk leger. Je groeide op tussen aambeelden en musketlopen. Je weet wat een loop kost, en wie hem betaalt.',
+    perkName: 'Kent het staal', perk: '+5 pantser.',
+    said: ['Een Luikenaar. Tel je vingers na een handdruk.', 'Uit Luik? Kijk dan eens naar het slot van mijn deur.'],
+    bonus: { armor: 5 },
+  },
+  tros: {
+    id: 'tros', name: ['Troskind', 'Troskind'], place: 'de tros van het leger',
+    lore: 'Achter elk leger trekt een tweede: marketentsters, wasvrouwen, knechten, kinderen. Je werd geboren op een kar in Henegouwen. In 1648 kwam er vrede met de Hollanders. Met Frankrijk niet. De tros trekt nog.',
+    perkName: 'Vuil vechten', perk: '+5% kans op een voltreffer.',
+    said: ['Van de tros? Hou je handen waar ik ze kan zien.', 'Een soldatenkind. Sluit de kippen op.'],
+    bonus: { crit: 5 },
   },
 };
 
@@ -220,6 +295,10 @@ export class Sheet {
     return ORIGINS[this.h.origin];
   }
 
+  get background() {
+    return BACKGROUNDS[this.h.background] ?? BACKGROUNDS.diest;
+  }
+
   derived(): Derived {
     const o = this.origin;
     const L = this.h.level - 1;
@@ -229,7 +308,10 @@ export class Sheet {
       list: o.base.list + o.growth.list * L,
       taaiheid: o.base.taaiheid + o.growth.taaiheid * L,
     };
-    let hpMod = 0, critMod = 0, fireMod = 0, armor = 0;
+    // where you are from: one small passive
+    const bg = this.background.bonus;
+    for (const k of ['kracht', 'klank', 'list', 'taaiheid'] as Stat[]) st[k] += bg[k] ?? 0;
+    let hpMod = bg.hp ?? 0, critMod = bg.crit ?? 0, fireMod = 0, armor = bg.armor ?? 0;
     let dmg: [number, number] = [2, 4];
     for (const g of Object.values(this.h.gear)) {
       if (!g) continue;
@@ -248,7 +330,7 @@ export class Sheet {
       armor: Math.round(armor + st.taaiheid * 0.6),
       crit: Math.min(60, 5 + st.list * 0.6 + critMod),
       fire: fireMod,
-      power: 1 + st.klank * 0.035,
+      power: (1 + st.klank * 0.035) * (1 + (bg.power ?? 0)),
     };
   }
 

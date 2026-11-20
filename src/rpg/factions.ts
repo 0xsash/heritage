@@ -1,9 +1,12 @@
-// The four parties of Brabant in 1650, as the player meets them. You pick a
+// The five parties of Brabant in 1650, as the player meets them. You pick a
 // first loyalty when you make your character; what you do afterwards moves
 // your standing with each. Standing opens doors: prices, wares, work, and
 // how people greet you.
 
-export type FactionId = 'gilden' | 'kerk' | 'kroon' | 'vrije';
+export type FactionId = 'gilden' | 'kerk' | 'kroon' | 'oranje' | 'vrije';
+
+/** Helping one of these costs you a little with the other. */
+export const RIVALS: [FactionId, FactionId][] = [['kroon', 'oranje'], ['kerk', 'vrije']];
 
 export interface FactionDef {
   id: FactionId;
@@ -27,6 +30,10 @@ export const FACTIONS: Record<FactionId, FactionDef> = {
   kroon: {
     id: 'kroon', name: 'De Kroon', tagline: 'De koning, de landvoogd, het garnizoen', color: '#a8443a',
     text: 'Brabant hoort bij de koning van Spanje. Zijn landvoogd zit in Brussel, zijn soldaten liggen bij de burgers in huis. Ze willen orde, belasting en geen verrassingen. Een draak is een verrassing.',
+  },
+  oranje: {
+    id: 'oranje', name: 'Oranje', tagline: 'De baron, zijn drossaard, zijn mensen', color: '#d98a2b',
+    text: 'Diest is van de Prins van Oranje: een protestantse heer in het noorden over een katholieke stad onder een Spaanse koning. Zijn drossaard int de boetes en wacht op betere tijden. Wie Oranje dient, dient een afwezige. Afwezigen onthouden veel.',
   },
   vrije: {
     id: 'vrije', name: 'De Vrije Lieden', tagline: 'Marskramers, voerlui, smokkelaars', color: '#6f8a5a',

@@ -150,9 +150,10 @@ export class QuestEngine {
     this.dirty = true;
   }
 
-  /** Fill in the hero's and the dragon's names. */
+  /** Fill in the hero's and the dragon's names, and the words that depend on who you are: {jongen|meisje} (man|woman). */
   fill(text: string) {
-    return text.replace(/\{name\}/g, this.s.hero.name).replace(/\{dragon\}/g, this.s.hero.dragon);
+    const f = this.s.hero.sex === 'f';
+    return text.replace(/\{name\}/g, this.s.hero.name).replace(/\{dragon\}/g, this.s.hero.dragon).replace(/\{([^{}|]*)\|([^{}|]*)\}/g, (_, m: string, w: string) => (f ? w : m));
   }
 
   start(id: string) {

@@ -10,6 +10,7 @@ import { bookTabs } from './kroniekui';
 import * as THREE from 'three';
 import { type Gear, RARITY, STAT_HELP, STAT_NAMES, type Stat, gearLines, gearValue, rollGear, xpToNext } from '../rpg/character';
 import type { QuestEngine } from '../rpg/quests';
+import { FACTIONS } from '../rpg/factions';
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const div = (cls: string, html = '') => {
@@ -322,7 +323,7 @@ export class CharacterPanel {
           ${this.wares.map((g, i) => gearCard(g, `<div class="gb"><button data-buyg="${i}">KOOP · ${gearValue(g) * 4}</button></div>`)).join('')}
         </div>`
       : '';
-    this.el.innerHTML = `<header>${this.shop ? '' : bookTabs('character')}<h2>${esc(h.name)}</h2><span>${esc(o.name)} · niveau ${h.level} · ${this.q.s.florins} florijnen · ${this.q.s.inv.salve ?? 0} zalf</span></header>
+    this.el.innerHTML = `<header>${this.shop ? '' : bookTabs('character')}<h2>${esc(h.name)}</h2><span><b class="ch-who" title="${esc(`${this.q.sheet.background.perkName}: ${this.q.sheet.background.perk} Eerste trouw: ${FACTIONS[h.faction]?.name ?? ''}.`)}">${esc(this.q.sheet.background.name[h.sex === 'f' ? 1 : 0])} · ${esc(FACTIONS[h.faction]?.name ?? '')}</b> · ${esc(o.name)} · niveau ${h.level} · ${this.q.s.florins} florijnen · ${this.q.s.inv.salve ?? 0} zalf</span></header>
       <div class="cols">
         <div class="col stats"><h3>EIGENSCHAPPEN</h3>${(['kracht', 'klank', 'list', 'taaiheid'] as Stat[]).map(stat).join('')}
           <div class="st"><span>Levenskracht</span><b>${d.maxHp}</b></div>
