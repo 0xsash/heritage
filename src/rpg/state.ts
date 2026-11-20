@@ -49,6 +49,8 @@ export interface SaveData {
   kills: number;
   /** ids of the Kroniek entries the player has unlocked */
   kroniek: string[];
+  /** standing with each party (see factions.ts), in points */
+  standing: Record<string, number>;
 }
 
 const KEY = 'belfort-save-v2';
@@ -69,6 +71,7 @@ export function freshSave(): SaveData {
     counter: 0,
     kills: 0,
     kroniek: [],
+    standing: {},
   };
 }
 
