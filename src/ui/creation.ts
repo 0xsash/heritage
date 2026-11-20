@@ -31,7 +31,7 @@ const asset = (p: string) => new URL(p, document.baseURI).toString();
 // Two slides, about twenty seconds: the hook and you. The rest of the story is told in play.
 const SLIDES: [string, string, string][] = [
   ['kludde-river-remembers', 'Diest, anno 1650', 'Op een zondag zwijgen de klokken van Sint-Sulpitius. De klepels zijn weg uit een gesloten toren. Op de klokkenstoel ligt nat rivierwier, en staat de afdruk van klauwen.'],
-  ['root-oak-forbidden-pilgrimage', 'Jij', 'Jij hebt geen land, geen titel en geen meester. Je hebt een draak, die op een nacht uit het riet van de Demer kroop en jou koos. Niemand weet waarom.'],
+  ['root-oak-forbidden-pilgrimage', 'Jij', 'Je hebt geen land, geen titel en geen meester. Je had een zusje. Nu heb je een draak, die op een nacht uit het riet van de Demer kroop en jou koos.'],
 ];
 
 const pick = <T,>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)];

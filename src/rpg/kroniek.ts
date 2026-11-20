@@ -51,7 +51,7 @@ const places: Entry[] = Object.entries(LORE).map(([key, l]) => ({
 
 const tijd: Entry[] = [
   { id: 'tijd:klokken', cat: 'tijd', truth: 'geschiedenis', title: 'De klokken regeren', hint: 'Lees het klokkenreglement bij Sint-Sulpitius.',
-    text: 'Een stad leeft op haar klokken. De werkklok opent en sluit de dag, de poortklok de poorten, de banklok roept de burgers bijeen bij brand of onraad. Wie na de avondklok zonder lantaarn op straat loopt, betaalt boete.' },
+    text: 'Een stad leeft op haar klokken. De werkklok opent en sluit de dag, de poortklok de poorten, de banklok roept de burgers bijeen bij brand of onraad. Wie na de avondklok zonder lantaarn op straat loopt, betaalt boete. Een stad die haar klokken niet hoort, weet niet meer wanneer ze bang moet zijn.' },
   { id: 'tijd:laken', cat: 'tijd', truth: 'geschiedenis', title: 'Het lakenzegel', hint: 'Lees het bord aan de Lakenhalle.',
     text: 'Elk stuk laken wordt gemeten en gekeurd. Is het goed, dan knijpt de waardijn er een loden zegel aan met het wapen van de stad. Dat loodje is het woord van Diest: een koper in Keulen vertrouwt het zonder de wever ooit te zien.' },
   { id: 'tijd:kaak', cat: 'tijd', truth: 'geschiedenis', title: 'De kaak', hint: 'Bekijk de schandpaal op de Grote Markt.',
@@ -71,7 +71,7 @@ const tijd: Entry[] = [
   { id: 'tijd:bier', cat: 'tijd', truth: 'geschiedenis', title: 'Het bier van Diest', hint: 'Lees het uithangbord bij het brouwershuis, ten noorden van de markt.',
     text: 'Diest brouwt meer bier dan het zelf kan drinken, en dat wil wat zeggen. De vaten gaan over de Demer naar Mechelen en Antwerpen. De accijns op het bier betaalt de stadsmuren, zodat elke pint een daad van burgerzin is.' },
   { id: 'tijd:demer', cat: 'tijd', truth: 'geschiedenis', title: 'De Demer', hint: 'Lees de peilsteen bij de Demerpoort.',
-    text: 'De rivier is de weg, de molenaar en de riool van de stad. In natte jaren staat het broek blank tot aan de muren, en vertellen de mensen elkaar wat er dan uit het water komt.' },
+    text: 'De rivier is de weg, de molenaar en de riool van de stad. In natte jaren staat het broek blank tot aan de muren, en vertellen de mensen elkaar wat er dan uit het water komt. En wat er niet meer uit komt.' },
   { id: 'tijd:garnizoen', cat: 'tijd', truth: 'geschiedenis', title: 'Het garnizoen', hint: 'Lees het inkwartieringsbevel bij de Maastrichtse Poort.',
     text: 'De soldaten van de koning liggen ingekwartierd bij de burgers: een bed, vuur, licht en zout zijn ze verschuldigd. De soldij komt maanden te laat of nooit. Een soldaat zonder soldij wordt eerst een dief en dan een deserteur.' },
   { id: 'tijd:baron', cat: 'tijd', truth: 'geschiedenis', title: 'De baron in de wieg', hint: 'Lees het bericht aan de deur van het Hof van Nassau.',
@@ -88,13 +88,13 @@ const tijd: Entry[] = [
 
 const mensen: Entry[] = [
   { id: 'mens:neelke', cat: 'mens', truth: 'verzonnen', title: 'Neelke', hint: 'Je zusje.',
-    text: 'Je zusje. Ze telde alles: stappen, sterren, de slagen van de klok. In de nacht dat de klokken van Diest zwegen, nam het water haar mee. Wat het water neemt, geeft het soms terug.' },
+    text: 'Je zusje. Ze telde alles: stappen, sterren, de slagen van de klok, zodat de wereld niet kon weglopen. In de nacht dat de klokken van Diest zwegen, nam het water haar mee. Wat het water neemt, geeft het soms terug.' },
   { id: 'mens:pieter', cat: 'mens', truth: 'verzonnen', title: 'Pieter Vandenbempt', hint: 'Spreek met de koster van Sint-Sulpitius.',
     text: 'Koster van Sint-Sulpitius. Hij luidt de klokken, graaft de graven en weet van iedereen in Diest wanneer hij gedoopt is en wat hij nog schuldig is aan de kerkfabriek.' },
   { id: 'mens:marieke', cat: 'mens', truth: 'verzonnen', title: 'Marieke Smets', hint: 'Spreek met de marskraamster op de Grote Markt.',
     text: 'Marskraamster. Ze verkoopt alles wat in een mand past en koopt alles wat je kwijt wilt, voor de helft. Ze weet het nieuws een dag voor het gebeurt.' },
   { id: 'mens:joos', cat: 'mens', truth: 'verzonnen', title: 'Meester Joos Peeters', hint: 'Spreek met de deken van de wevers.',
-    text: 'Deken van het weversambacht. Hij waakt over het zegel van Diest alsof het zijn eigen eer was, wat het ook is.' },
+    text: 'Deken van het weversambacht. Hij waakt over het zegel van Diest alsof het zijn eigen eer was, wat het ook is. Zelf heeft hij in jaren geen draad meer geweven.' },
   { id: 'mens:aleydis', cat: 'mens', truth: 'verzonnen', title: 'Zuster Aleydis', hint: 'Spreek met de begijn in het Begijnhof.',
     text: 'Begijn en ziekenverzorgster. Ze kent elk kruid in de tuin en elk pelgrimsteken van Brabant. Ze heeft geen geloften afgelegd die haar beletten te zeggen wat ze denkt.' },
   { id: 'mens:drossaard', cat: 'mens', truth: 'verzonnen', title: 'Jonker Hendrik van Gorp', hint: 'Spreek met de drossaard.',
@@ -102,7 +102,7 @@ const mensen: Entry[] = [
   { id: 'mens:wouter', cat: 'mens', truth: 'verzonnen', title: 'Wouter Claes', hint: 'Spreek met de tollenaar aan de Leuvense Poort.',
     text: 'Tollenaar aan de Leuvense Poort. Hij telt vaten, karren en ossen, en hij telt ze graag in zijn eigen voordeel.' },
   { id: 'mens:lijsbet', cat: 'mens', truth: 'verzonnen', title: 'Lijsbet Vranckx', hint: 'Spreek met de weversweduwe.',
-    text: 'Weduwe van een wever. Een getouw, drie kinderen en een schuld bij het ambacht: zo ziet armoede eruit in een lakenstad.' },
+    text: 'Weduwe van een wever. Het ambacht nam het getouw van haar man; ze weeft op een oud, achter in het huis. Drie kinderen en een schuld: zo ziet armoede eruit in een lakenstad.' },
   { id: 'mens:gielis', cat: 'mens', truth: 'verzonnen', title: 'Gielis "de Ton"', hint: 'Spreek met de voerman buiten de westpoort.',
     text: 'Voerman, zegt hij. Zijn kar rijdt vooral \'s nachts en zijn vaten staan op geen enkele tollijst.' },
   { id: 'mens:driesen', cat: 'mens', truth: 'verzonnen', title: 'Boer Jan Driesen', hint: 'Spreek met de boer te Kaggevinne.',
@@ -115,17 +115,17 @@ const mensen: Entry[] = [
 
 const wezens: Entry[] = [
   { id: 'wezen:deserteur', cat: 'wezen', truth: 'geschiedenis', title: 'Deserteurs', hint: 'Versla er een.',
-    text: 'Soldaten zonder soldij en zonder vaandel. Ze leven van wat de boeren hebben en nemen het met het zwaard. Ze vallen aan met een brede uithaal: wacht op de rode gloed, rol opzij, en sla terug.' },
+    text: 'Soldaten zonder soldij en zonder vaandel. Ze leven van wat de boeren hebben, en nemen het met het zwaard waarmee ze die boeren moesten beschermen. Ze slaan breed uit: wacht op de rode gloed, rol opzij, en sla terug.' },
   { id: 'wezen:musketier', cat: 'wezen', truth: 'geschiedenis', title: 'Musketiers', hint: 'Versla er een.',
     text: 'Een musket laden duurt een halve minuut en vraagt twee handen en een brandende lont. Daarna schiet het door een harnas. Loop niet recht op hen af, en geef hen geen tijd om te herladen.' },
   { id: 'wezen:broekhond', cat: 'wezen', truth: 'verzonnen', title: 'Broekhonden', hint: 'Versla er een.',
-    text: 'De meute van de Kludde, zeggen ze: zwart, nat en mager, met ogen als lantaarns. Het volk kende de Kludde alleen. Zijn honden hebben wij hem gegeven. Ze zijn snel en zwak: hou ze voor je zwaard, niet in je rug.' },
+    text: 'Zwart, nat en mager, met ogen als lantaarns. De Kludde was een hond als hij dat wou, maar een meute heeft het volk hem nooit gegeven. Die komt van ons. Ze zijn snel en zwak: hou ze voor je zwaard, niet in je rug.' },
   { id: 'wezen:dwaallicht', cat: 'wezen', truth: 'volksverhaal', title: 'Dwaallichten', hint: 'Versla er een.',
     text: 'Blauwe vlammetjes boven het moeras. De mensen zeiden: de zielen van ongedoopte kinderen, die reizigers het broek in lokken. Wie er een volgde, kwam niet thuis. Ze werpen vuur van ver. Kom dichtbij.' },
   { id: 'wezen:kludde', cat: 'wezen', truth: 'volksverhaal', title: 'De Kludde', hint: 'Vind hem in het broek.',
-    text: 'Een watergeest die elke gedaante aanneemt, liefst die van een grote zwarte hond met rammelende kettingen en blauwe vlammen om zijn kop. Hij springt reizigers op de rug en wordt zwaarder bij elke stap. Heel Brabant en Vlaanderen kende hem. Niemand die hem gezien had, vertelde het nuchter na.' },
+    text: 'Brabant en Vlaanderen kenden hem, maar zijn verhalen zijn opgetekend in het Denderland: Merchtem, Dendermonde, Wetteren. Hij is wat hij wil, een uitgehongerd paard, een hond, een kat, een vleermuis, met twee blauwe vlammen als ogen. Hij kwelt reizigers en eindigt in het water. Dat hij in de Demer woont, is onze keuze.' },
   { id: 'wezen:roelof', cat: 'wezen', truth: 'verzonnen', title: 'Roelof de Rode', hint: 'Zoek hem op de Galgenberg.',
-    text: 'Vaandrig in het leger van de koning, tot de soldij uitbleef. Nu heft hij zijn eigen belasting op de weg naar Scherpenheuvel. Hem hebben wij verzonnen. Mannen als hij waren er genoeg.' },
+    text: 'Kapitein in het leger van de koning, zegt hij zelf. Vaandrig, zeggen zijn mannen. Toen de soldij uitbleef, begon hij zijn eigen belasting te heffen op de weg naar Scherpenheuvel. Hem hebben wij verzonnen. Mannen als hij waren er genoeg.' },
 ];
 
 export const ENTRIES: Entry[] = [...places, ...tijd, ...mensen, ...wezens];

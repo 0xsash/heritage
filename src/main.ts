@@ -660,7 +660,7 @@ async function boot() {
       if (ring && !bellsRang) {
         bellsRang = true;
         kroniek.unlock('tijd:klank');
-        banner.show('done', 'DIEST', 'De klokken luiden weer', ['Voor het eerst sinds zondag weet de stad hoe laat het is.']);
+        banner.show('done', 'DIEST', 'De klokken luiden weer', ['Voor het eerst sinds zondag weet de stad hoe laat het is. Bij elke slag sluit je draak zijn ogen.']);
         for (let i = 0; i < 3; i++) setTimeout(() => sound.chime(), i * 1400);
         rig.addTrauma(0.15);
       }

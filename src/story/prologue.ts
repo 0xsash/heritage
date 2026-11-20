@@ -40,23 +40,27 @@ export interface PrologueDeps {
 
 /** Every spoken line, by id: [speaker, text]. {name} and {dragon} are filled in. */
 export const PROLOGUE_LINES: Record<string, [string, string]> = {
-  pro_n1: ['', 'We waren te laat. Dat waren we altijd, Neelke en ik.'],
+  pro_n1: ['', 'Ze zeggen dat je de laatste gewone avond van je leven niet herkent. De mijne rook naar natte klaver, en mijn zusje liep te klagen.'],
   pro_s1: ['Neelke', 'Je loopt te rap. Mijn benen zijn korter dan de jouwe.'],
-  pro_n2: ['', 'Mijn zusje telde alles. Stappen. Sterren. De slagen van de klok.'],
-  pro_s2: ['Neelke', 'Als we voor de laatste slag binnen zijn, heeft moeder niets gezien.'],
-  pro_s3: ['Neelke', 'Zeven. Het is middernacht. Waar zijn de andere vijf?'],
-  pro_n3: ['', 'Niemand in Diest had de klokken ooit horen zwijgen. Niemand wist wat ze tegenhielden.'],
-  pro_s4: ['Neelke', 'Kijk. Lichtjes op het water.'],
-  pro_n4: ['', 'Ik riep haar. Ze hoorde me niet meer.'],
+  pro_n2: ['', 'Neelke telde alles. Stappen, sterren, de slagen van de klok. Ze zei dat de wereld dan niet kon weglopen.'],
+  pro_s2: ['Neelke', 'Twaalf slagen. Als we voor de laatste binnen zijn, heeft moeder niets gemerkt.'],
+  pro_s3: ['Neelke', 'Zeven. Het is middernacht. Waar blijven de andere vijf?'],
+  pro_n3: ['', 'Zolang er een Diest was, hadden de klokken elk uur geslagen. Door pest, door brand, door drie legers. Niemand wist nog waarom dat moest.'],
+  pro_s4: ['Neelke', 'Kijk. Er branden lichtjes op het water.'],
+  pro_n4: ['', 'Ik riep haar naam. Ze draaide zich niet om. Ze telde.'],
   pro_s5: ['Neelke', '{name}!'],
-  pro_n5: ['', 'Het water nam haar zonder geluid.'],
-  pro_n6: ['', 'De oude mensen noemden hem de Kludde. Ik had altijd gedacht dat het een verhaaltje was.'],
-  pro_n7: ['', 'De klokken hielden alles in slaap wat oud was. Het kwade. En het andere.'],
-  pro_n8: ['', 'Hij rook naar riet en naar smeulend hout. Hij keek me aan alsof hij me kende.'],
-  pro_n9: ['', 'Ik noemde hem {dragon}.'],
-  pro_n10: ['', 'Ze zeggen: als alle klokken van Brabant weer samen luiden, slaapt al het oude weer in. De Kludde. En hij.'],
-  pro_n11: ['', 'Maar eerst: Neelke. Wat het water neemt, geeft het soms terug.'],
+  pro_n5: ['', 'Het water nam haar zoals het alles neemt. Zonder haast. Zonder geluid.'],
+  pro_n6: ['', 'Grootmoeder had hem een naam gegeven, bij het vuur, om ons binnen te houden. De Kludde. Ik had erom gelachen.'],
+  pro_n7: ['', 'De klokken hadden alles in slaap gehouden wat ouder was dan de stad. Het ergste. En, zo bleek, niet alleen het ergste.'],
+  pro_n8: ['', 'Hij rook naar riet en naar een smidse. Hij keek me aan zoals je iemand aankijkt op wie je lang hebt gewacht.'],
+  pro_n9: ['', 'Ik heb hem {dragon} genoemd. Hij heeft het toegelaten.'],
+  pro_n10: ['', 'Later zou een oude vrouw het me zeggen: als alle klokken van Brabant weer samen luiden, gaat alles slapen wat wakker is geworden. De Kludde. En hij.'],
+  pro_n11: ['', 'Dat was later. Die ochtend wist ik maar één ding. Wat het water neemt, geeft het soms terug. Ik zou het gaan halen.'],
 };
+
+/** Alone on black, before the place card. */
+const EPIGRAPH = '<div class="pc-title pc-epi">Dit land is op het water veroverd.<br>Het water is dat niet vergeten.</div>';
+const PLACE = '<div class="pc-kick">DE DEMER, BIJ DIEST</div><div class="pc-title">De nacht van zaterdag op zondag</div><div class="pc-sub">anno 1650</div>';
 
 type Stage = 'card' | 'walk' | 'bells' | 'silence' | 'lure' | 'rise' | 'gone' | 'hunt' | 'down' | 'dragon' | 'meet' | 'mount' | 'dawn' | 'done';
 
@@ -143,7 +147,7 @@ export class Prologue {
     d.ui.classList.add('prologue');
     d.ui.append(this.fade, this.card, this.cine);
     this.fade.style.opacity = '1';
-    this.card.innerHTML = '<div class="pc-kick">DE DEMER, BIJ DIEST</div><div class="pc-title">De nacht van zaterdag op zondag</div><div class="pc-sub">anno 1650</div>';
+    this.card.innerHTML = EPIGRAPH;
     this.card.classList.add('show');
     d.scene.add(this.group);
     // the hero on foot on the river bank, facing home (west); the dragon does not exist yet
@@ -196,7 +200,17 @@ export class Prologue {
 
     switch (this.stage) {
       case 'card':
-        if (t > 3.6) {
+        // the epigraph for four seconds, then the place card
+        if (t > 4 && !this.said.has('epigraph')) {
+          this.said.add('epigraph');
+          this.card.classList.remove('show');
+        }
+        if (t > 5.4 && !this.said.has('place')) {
+          this.said.add('place');
+          this.card.innerHTML = PLACE;
+          this.card.classList.add('show');
+        }
+        if (t > 9) {
           this.card.classList.remove('show');
           this.setFade(0, 2.4);
           this.objective = 'Breng Neelke naar huis';
@@ -209,7 +223,8 @@ export class Prologue {
         if (t > 8) this.say('pro_s1');
         if (t > 13.5) this.say('pro_n2');
         if (t > 19.5) this.say('pro_s2');
-        if (t > 25) this.go('bells');
+        // the bells wait for the last line to be read
+        if (t > 25 && !this.queue.length && !this.speaking && this.subLeft < 0.3) this.go('bells');
         break;
       case 'bells':
         // midnight: twelve strokes are owed. Seven come.

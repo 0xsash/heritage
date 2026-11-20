@@ -16,60 +16,60 @@ export interface LoreEntry {
 export const LORE: Record<string, LoreEntry> = {
   Diest: {
     title: 'Diest',
-    text: 'Een ommuurde lakenstad aan de Demer, in het hertogdom Brabant, onder de koning van Spanje. Op papier is de Prins van Oranje haar baron, en die woont in de opstandige Republiek in het noorden. Sinds de vrede van 1648 mogen zijn baljuws terugkomen. Ze zijn niet geliefd.',
+    text: 'Een ommuurde lakenstad aan de Demer, in Brabant, onder de koning van Spanje. Haar baron is de Prins van Oranje, en die woont bij de opstandelingen in het noorden. Sinds de vrede van 1648 mogen zijn baljuws terugkomen. Ze zijn niet geliefd.',
     r: 700,
     major: true,
   },
   'Sint-Sulpitius en Dionysiuskerk': {
     title: 'Sint-Sulpitiuskerk',
-    text: 'De grote kerk van Diest, gebouwd van bruine ijzerzandsteen over twee mensenlevens en een eeuw geleden voltooid. Behalve de toren: de bouwmeesters ruzieden erover tot het geld op was, en hij staat er nog altijd plat en gedrongen bij.',
+    text: 'Gebouwd van bruine ijzerzandsteen, over twee mensenlevens, en al een eeuw af. Behalve de toren: men zegt dat de bouwmeesters ruzieden tot het geld op was. Hij staat er plat en gedrongen bij, als een man die op zijn beurt wacht.',
     r: 90,
     major: true,
   },
   Lakenhalle: {
     title: 'De Lakenhalle',
-    text: 'Hier brengen de wevers van Diest hun laken om het te laten meten, zegelen en verkopen. De handel is niet meer wat hij was in de tijd van hun grootvaders, en elk vals zegel maakt het erger.',
+    text: 'Hier werd het laken van Diest gemeten toen Diest nog iets betekende in Keulen. De ellenmaat hangt er nog. De kopers niet.',
     r: 45,
   },
   'Stadhuis Diest': {
     title: 'Het Stadhuis',
-    text: 'Hier zetelen de schepenen van Diest: ze beslechten geschillen, zetten de broodprijs vast en maken ruzie over de muren.',
+    text: 'Hier zetelen de schepenen van Diest. Ze beslechten geschillen, zetten de broodprijs vast en maken ruzie over wie de muren betaalt. Dat laatste duurt het langst.',
     r: 40,
   },
   'Ingang Begijnhof': {
     title: 'Het Begijnhof',
-    text: 'Een stad in de stad, gesticht in 1253. De begijnen leggen geen eeuwige geloften af: ze bidden, verzorgen de zieken en weven, en ze sluiten hun poort bij valavond.',
+    text: 'Een stad in de stad, gesticht in 1253. De begijnen leggen geen eeuwige geloften af: wie wil, mag gaan. Bijna niemand gaat. De poort sluit bij valavond.',
     r: 80,
     major: true,
   },
   'Sint-Catharinakerk': {
     title: 'Sint-Catharinakerk',
-    text: 'De eigen kerk van de begijnen. Haar klok luidt hun uren, die een beetje voorlopen op die van de stad.',
+    text: 'De eigen kerk van de begijnen. Haar klok luidt hun uren, die een beetje voorlopen op die van de stad. De begijnen vinden dat de stad achterloopt.',
     r: 45,
   },
   'Hof van Nassau': {
     title: 'Hof van Nassau',
-    text: 'Het huis van de Nassaus, heren van Diest sinds 1499. Tijdens de lange oorlog werd het in beslag genomen en in 1648 teruggegeven. Sindsdien heeft er niemand geslapen.',
+    text: 'Het huis van de Nassaus, heren van Diest sinds 1499. In de lange oorlog werd het in beslag genomen, in 1648 teruggegeven. Sindsdien heeft er niemand geslapen.',
     r: 40,
   },
   'Den Drossaerd': {
     title: 'Het Huis van de Drossaard',
-    text: 'Hier woont de drossaard, de baljuw van de baron, die de vrede bewaart als het moet en de boetes als het kan.',
+    text: 'Hier woont de drossaard, de baljuw van de baron. Hij bewaart de vrede als het moet en de boetes als het kan. Het tweede bewaart hij beter.',
     r: 35,
   },
   'Refugiehuis van Averbode': {
     title: 'Refugie van Averbode',
-    text: 'Het stadshuis van de abdij van Averbode. Als er soldaten door het land trekken, komen de kanunniken en hun kostbaarheden achter deze muren.',
+    text: 'Het stadshuis van de abdij van Averbode. Als er soldaten door het land trekken, komen de kanunniken achter deze muren, met alles wat van zilver is.',
     r: 35,
   },
   'Het Spijker - Refugiehuis van Tongerlo': {
     title: 'Refugie van Tongerlo',
-    text: 'De graanschuur en het toevluchtsoord van de abdij van Tongerlo. Het graan van de abdij ligt hier, en de abdij zelf ook, als er onrust is.',
+    text: 'De graanschuur van de abdij van Tongerlo. In goede jaren ligt hier haar graan. In slechte jaren ook de abdij zelf, boven op het koren.',
     r: 35,
   },
   'Onze-Lieve-Vrouwekerk': {
     title: 'Onze-Lieve-Vrouwekerk',
-    text: 'Een kerk van Onze-Lieve-Vrouw in het noorden van de stad, tussen tuinen en boomgaarden binnen de muur.',
+    text: 'Een kerk van Onze-Lieve-Vrouw in het noorden van de stad, tussen tuinen en boomgaarden binnen de muur. Hier is Diest stil, zelfs op marktdag.',
     r: 50,
   },
   'Stadspark De Warande': {
@@ -80,7 +80,7 @@ export const LORE: Record<string, LoreEntry> = {
   },
   'Ruïne Warandekasteel': {
     title: 'Het Kasteel van de Heren van Diest',
-    text: 'De oude zetel van de heren van Diest op de Warandeheuvel, uit de tijd voor de baronie aan Nassau kwam.',
+    text: 'De oude zetel van de heren van Diest op de Warandeheuvel, uit de tijd voor de baronie aan Nassau kwam. Van hier keken de heren over hun stad. De Nassaus kijken van verder.',
     r: 60,
   },
   Tafelrondmotte: {
@@ -100,7 +100,7 @@ export const LORE: Record<string, LoreEntry> = {
   },
   Schaffensepoort: {
     title: 'De Schaffense Poort',
-    text: 'De weg naar het noordoosten, naar Schaffen en de heide. De poort gaat dicht bij valavond, en late reizigers slapen in de gracht.',
+    text: 'De weg naar het noordoosten, naar Schaffen en de heide. De poort gaat dicht bij valavond. Wie te laat is, slaapt in de gracht en betaalt de volgende ochtend tol.',
     r: 60,
   },
   Koepoort: {
@@ -120,17 +120,17 @@ export const LORE: Record<string, LoreEntry> = {
   },
   Allerheiligenpoort: {
     title: 'De Allerheiligenpoort',
-    text: 'De westelijke poort, genoemd naar de kapel net buiten de muur. De weg loopt verder langs de Demer naar Aarschot.',
+    text: 'De westelijke poort, genoemd naar de kapel net buiten de muur. De weg volgt de Demer naar Aarschot. De Demer volgt niemand.',
     r: 60,
   },
   Demerpoort: {
     title: 'De Demerpoort',
-    text: 'Waar de Demer de stad binnenkomt. De rivier drijft de molens van de stad aan en voert weg wat de stad liever vergeet.',
+    text: 'Waar de Demer de stad binnenkomt. De rivier drijft de molens aan en voert weg wat de stad liever vergeet. Soms brengt ze het terug.',
     r: 60,
   },
   Webbekom: {
     title: 'Webbekom',
-    text: 'Een dorp ten zuiden van Diest, aan de rand van de Demermoerassen. De mensen snijden riet, hoeden vee en blijven na donker uit het moeras.',
+    text: 'Een dorp ten zuiden van Diest, aan de rand van de Demermoerassen. De mensen snijden riet en hoeden vee. Na donker tellen ze hun kinderen.',
     r: 320,
   },
   'Sint-Trudokerk': {
@@ -140,7 +140,7 @@ export const LORE: Record<string, LoreEntry> = {
   },
   Kaggevinne: {
     title: 'Kaggevinne',
-    text: 'Een gehucht aan de weg naar Scherpenheuvel. Een handvol hoeves, een heleboel ganzen.',
+    text: 'Een gehucht aan de weg naar Scherpenheuvel. Een handvol hoeves, een heleboel ganzen. De ganzen waren er eerst.',
     r: 250,
   },
   'Veldkapel Galgeberg': {
@@ -151,7 +151,7 @@ export const LORE: Record<string, LoreEntry> = {
   },
   Scherpenheuvel: {
     title: 'Scherpenheuvel',
-    text: 'De "scherpe heuvel". Veertig jaar geleden was het hier heide en één eik. Toen lieten de aartshertogen Albrecht en Isabella hier een heilige stad aanleggen, ommuurd in een zevenpuntige ster, en nu wandelt half Brabant hier elk jaar naartoe.',
+    text: 'De "scherpe heuvel". Veertig jaar geleden stond hier heide en één eik, met een Mariabeeldje in de takken. Toen lieten de aartshertogen Albrecht en Isabella er een heilige stad aanleggen, ommuurd in een zevenpuntige ster. Nu wandelt half Brabant hierheen.',
     r: 380,
     major: true,
   },

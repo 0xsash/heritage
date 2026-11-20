@@ -22,7 +22,7 @@ export const SERVICES: ServiceDef[] = [
     id: 'bakker', name: 'Jan Verhoeven', role: 'bakker', faction: 'gilden', at: [-51, 91], stall: 'bread', glyph: '⚖', label: 'Bakker', market: true,
     look: { body: 'man_stout', wear: { hair_crop: 'h_blond', smock: 'linen', belt: null, cap_flat: 'linen', breeches: 'brown', stockings: 'linen', clogs: null }, prop: 'bread' },
     shop: 'bakker',
-    greet: ['Brood! Vers van vanmorgen, of van gisteren als je wat minder wilt betalen.', 'Roggebrood voor de maag, krentenbrood voor het hart. En pastei voor wie gaat vechten.', 'Een soldaat met honger is een slechte soldaat. Een drakenrijder met honger is een gevaar voor mijn kraam.'],
+    greet: ['Brood. Vers van vanmorgen, of van gisteren als je wat minder wilt betalen.', 'Roggebrood voor de maag, krentenbrood voor het hart. En pastei voor wie gaat vechten.', 'Een soldaat met honger is een slechte soldaat. Een drakenrijder met honger is een gevaar voor mijn kraam.'],
     shopGreet: ['Wat je hier koopt, steek je in je tas. Als het spannend wordt in een gevecht, eet je het vanzelf op. Dat doet iedereen.', 'De schepenen zetten de broodprijs vast. Ik zet de korstjes vast.'],
   },
   {
@@ -56,7 +56,7 @@ export const SERVICES: ServiceDef[] = [
   {
     id: 'omroeper', name: 'Rombout Smolders', role: 'stadsomroeper', faction: 'gilden', at: [-39, 97], stall: 'crier', glyph: '♫', label: 'Omroeper', market: true, guide: 'crier',
     look: { body: 'man', wear: { hair_long: 'h_brown', beard_pointed: 'h_brown', hat_wide: 'madder', plume: 'white', doublet: 'madder', collar_band: null, breeches: 'madder_dk', stockings: 'white', shoes: null }, prop: 'staff' },
-    greet: ['Horen, zien en zwijgen! Nu ja, het eerste toch.', 'Ik roep wat de schepenen me laten roepen. En wat ik zelf hoor, voor wie het vraagt.', 'Nieuws uit Diest, nieuws uit Brabant, nieuws uit de wereld. In die volgorde, want zo betaalt de stad me.'],
+    greet: ['Horen, zien en zwijgen. Nu ja, het eerste toch.', 'Ik roep wat de schepenen me laten roepen. Wat ik zelf hoor, kost een pint.', 'Nieuws uit Diest, nieuws uit Brabant, nieuws uit de wereld. In die volgorde, want zo betaalt de stad me.'],
   },
   // ------------------------------------------------------------ around town
   {
@@ -67,7 +67,7 @@ export const SERVICES: ServiceDef[] = [
   {
     id: 'waard', name: 'Mattheus Ceulemans', role: 'waard van De Zwaan', faction: 'gilden', at: [-14, -112], stall: 'beer', glyph: '♣', label: 'Herberg De Zwaan', shop: 'waard', guide: 'inn',
     look: { body: 'man_stout', wear: { hair_thin: 'h_brown', moustache: 'h_brown', smock: 'linen', belt: null, breeches: 'russet', stockings: 'grey', clogs: null } },
-    greet: ['Welkom in De Zwaan. Bier, een bed, en een verteller die niet weet wanneer hij moet stoppen.', 'Het bier is van hier, het bed is van mij, en de dobbelstenen zijn eerlijk. Meestal.', 'Ga zitten. Iedereen die door die poort komt, heeft een verhaal. Het jouwe heeft een draak in. Dat is een goed begin.'],
+    greet: ['Welkom in De Zwaan. Bier, een bed, en een verteller die niet weet wanneer hij moet stoppen.', 'Het bier is van hier, het bed is van mij, en de dobbelstenen zijn eerlijk. Meestal.', 'Ga zitten. Iedereen die door die poort komt, heeft een verhaal. Het jouwe begint aan de rivier, zie ik aan je gezicht.'],
     shopGreet: ['Diests bier: je drinkt het hier, of je drinkt het in Antwerpen voor het dubbele.'],
   },
   {
@@ -86,24 +86,24 @@ export const SERVICES: ServiceDef[] = [
   {
     id: 'kastelein', name: 'Daneel Vander Borcht', role: 'kastelein van het Hof van Nassau', faction: 'oranje', at: [300, 128], stall: 'door', glyph: '♜', label: 'Hof van Nassau', shop: 'kastelein',
     look: { body: 'man_old', wear: { hair_thin: 'h_grey', beard_pointed: 'h_grey', hat_wide: 'umber', doublet: 'ochre', collar_band: null, breeches: 'brown', stockings: 'grey', shoes: null }, prop: 'lantern' },
-    greet: ['Ik hou het huis warm voor een heer die nooit komt. Zevenendertig jaar nu. De sleutels zijn zwaarder geworden.', 'Het Hof van Nassau. De koning had het, de prins kreeg het terug. De muizen hebben het al die tijd gehad.', 'Je komt voor de baron? Die ligt in Den Haag in de wieg. Ik geef hem door dat je er was.'],
+    greet: ['Ik hou het huis warm voor een heer die nooit komt. Zevenendertig jaar nu. De sleutels zijn zwaarder geworden.', 'Het Hof van Nassau. De koning had het, de prins kreeg het terug. De muizen hebben het al die tijd gehad.', 'Je komt voor de baron? Die ligt in Den Haag in de wieg. Ik zal hem zeggen dat je er was.'],
     shopGreet: ['Wat het Hof nog te verkopen heeft. Vraag de drossaard niet waar het geld heen gaat. Hij weet het zelf niet.'],
   },
   // ------------------------------------------------------------ gatekeepers
   {
     id: 'poort_antwerpen', name: 'Kaspar Jacobs', role: 'poortwachter, Antwerpse Poort', faction: 'kroon', at: [-62, -690], stall: 'door', glyph: '⚑', label: 'Poortwachter', guide: 'gate', gate: 'Antwerpsepoort',
     look: { body: 'man', wear: { hair_crop: 'h_dark', beard_full: 'h_dark', morion: null, doublet: 'woad_dk', bandolier: null, breeches: 'grey', stockings: 'grey', boots: null }, prop: 'lantern' },
-    greet: ['Antwerpse Poort. Noordwaarts naar de Kempen, en wie lang genoeg loopt, naar Antwerpen.', 'Halt. Nee, laat maar. Met een draak hou ik niemand tegen.', 'Bij valavond gaat de poort dicht. Wie te laat is, slaapt in de gracht.'],
+    greet: ['Antwerpse Poort. Noordwaarts naar de Kempen, en wie lang genoeg loopt, naar Antwerpen.', 'Halt. Nee, laat maar. Met een draak hou ik niemand tegen.', 'Bij valavond gaat de poort dicht. Sinds de klokken zwegen, wanneer ik het zeg.'],
   },
   {
     id: 'poort_schaffen', name: 'Wouter Peeters', role: 'poortwachter, Schaffense Poort', faction: 'kroon', at: [575, -622], stall: 'door', glyph: '⚑', label: 'Poortwachter', guide: 'gate', gate: 'Schaffensepoort',
     look: { body: 'man_young', wear: { hair_crop: 'h_blond', morion: null, doublet: 'moss', bandolier: null, breeches: 'brown', stockings: 'grey', boots: null } },
-    greet: ['Schaffense Poort. Daarbuiten: heide, schapen, en wat er nog meer op de heide woont.', 'Je komt van de markt? Breng de volgende keer iets mee. Hier gebeurt niets.', 'Ik tel wie er binnenkomt. Jij telt dubbel, met dat beest.'],
+    greet: ['Schaffense Poort. Daarbuiten: heide, schapen, en wat er nog meer op de heide woont.', 'Je komt van de markt? Breng de volgende keer iets mee. Hier gebeurt niets, en dat al jaren.', 'Ik tel wie er binnenkomt. Jij telt dubbel, met dat beest.'],
   },
   {
     id: 'poort_koe', name: 'Lenaert Vos', role: 'poortwachter, Koepoort', faction: 'kroon', at: [724, 80], stall: 'door', glyph: '⚑', label: 'Poortwachter', guide: 'gate', gate: 'Koepoort',
     look: { body: 'man_stout', wear: { hair_thin: 'h_grey', moustache: 'h_grey', hat_wide: 'umber', doublet: 'russet', breeches: 'umber', stockings: 'grey', boots: null }, prop: 'stick' },
-    greet: ['Koepoort. Hier gaan de koeien \'s morgens uit en \'s avonds in. Ik tel ze. Twee keer.', 'Het Broek ligt daarbuiten. Mooi bij dag. Bij nacht hoor je dingen.', 'Je ruikt naar draak. Dat is een nieuwe geur aan deze poort, en ik ken ze allemaal.'],
+    greet: ['Koepoort. Hier gaan de koeien \'s morgens uit en \'s avonds in. Ik tel ze. Twee keer.', 'Het Broek ligt daarbuiten. Mooi bij dag. Bij nacht telt het terug.', 'Je ruikt naar draak. Dat is een nieuwe geur aan deze poort, en ik ken ze allemaal.'],
   },
   {
     id: 'poort_maastricht', name: 'Andries Wouters', role: 'poortwachter, Maastrichtse Poort', faction: 'kroon', at: [338, 594], stall: 'door', glyph: '⚑', label: 'Poortwachter', guide: 'gate', gate: 'Maastrichtsepoort',
@@ -123,13 +123,13 @@ export const SERVICES: ServiceDef[] = [
   {
     id: 'poort_demer', name: 'Pauwel Geens', role: 'poortwachter, Demerpoort', faction: 'kroon', at: [-298, -56], stall: 'door', glyph: '⚑', label: 'Poortwachter', guide: 'gate', gate: 'Demerpoort',
     look: { body: 'man', wear: { hair_crop: 'h_red', beard_pointed: 'h_red', morion: null, doublet: 'slate', bandolier: null, breeches: 'grey', stockings: 'grey', boots: null } },
-    greet: ['Demerpoort. Hier komt de rivier de stad in. Wat de rivier meebrengt, komt mee.', 'Ik bewaak een poort waar je niet doorheen kunt lopen. Het is rustig werk.', 'Als het water stijgt, staat het Broek blank tot aan de muur. Dan wordt deze poort belangrijk.'],
+    greet: ['Demerpoort. Hier komt de rivier de stad in. Wat de rivier meebrengt, komt mee.', 'Ik bewaak een poort waar je niet doorheen kunt lopen. Het water wel.', 'Die nacht stond het water een el hoger dan het mocht. Geen regen. Niets.'],
   },
   // ------------------------------------------------------------ Scherpenheuvel
   {
     id: 'tekens', name: 'Lysken Mols', role: 'verkoopster van tinnen tekens', faction: 'kerk', at: [-5032, 568], stall: 'badges', glyph: '✪', label: 'Pelgrimstekens', shop: 'tekens',
     look: { body: 'woman', wear: { hair_bun: 'h_red', coif: null, bodice: 'woad', kerchief: null, pelerine: 'grey', skirt: 'russet', clogs: null }, prop: 'basket' },
-    greet: ['Tekens van Onze-Lieve-Vrouw! Tin, lood, en voor wie het kan betalen: zilver.', 'Truyken verkoopt beeldjes. Ik verkoop tekens. We zijn concurrenten. We zijn ook nichten.', 'Een teken op je hoed en iedereen weet waar je geweest bent. Een draak naast je en iedereen weet het al.'],
+    greet: ['Tekens van Onze-Lieve-Vrouw. Tin, lood, en voor wie het kan betalen: zilver.', 'Truyken verkoopt beeldjes. Ik verkoop tekens. We zijn concurrenten. We zijn ook nichten.', 'Een teken op je hoed en iedereen weet waar je geweest bent. Een draak naast je en iedereen weet het al.'],
     shopGreet: ['Draag het op je hart. Of op je hoed. Of in je zak, dat mag ook, maar dan ziet niemand het.'],
   },
   {
@@ -198,7 +198,7 @@ export const GOODS: Record<string, Good[]> = {
     { id: 'zalf3', name: 'Drie potjes zalf', text: 'Goedkoper per stuk.', price: 13, tier: 1, use: { salve: 3 } },
     { id: 'kamille', name: 'Kamillethee', text: 'Een halve minuut lang herstel. Gaat in je tas.', price: 2, use: { regen: 0.015, secs: 30 } },
     { id: 'alsem', name: 'Alsem in brandewijn', text: 'Bitter. Je voelt de klappen een paar minuten minder.', price: 6, tier: 1, use: { buff: 'moed', secs: 180 } },
-    { id: 'duivelsdrek', name: 'Duivelsdrek', text: 'Stinkt zo erg dat de Kludde je niet wil, zeggen de boeren. Je voelt je in elk geval dapperder.', price: 10, tier: 2, use: { buff: 'moed', secs: 420 } },
+    { id: 'duivelsdrek', name: 'Duivelsdrek', text: 'Stinkt zo erg dat de Kludde je niet wil, zeggen de boeren. In welke gedaante ook. Je voelt je in elk geval dapperder.', price: 10, tier: 2, use: { buff: 'moed', secs: 420 } },
   ],
   infirmerie: [
     { id: 'zalf', name: 'Begijnenzalf', text: 'Geneest de helft van je leven. Met Q.', price: 6, use: { salve: 1 } },
@@ -288,13 +288,13 @@ export const PAGES: Page[] = [
   { id: 'tijd:geld', cat: 'tijd', truth: 'geschiedenis', title: 'Geld', hint: 'Vraag naar het geld.',
     text: 'Men rekent in guldens van twintig stuivers, die het volk ook florijnen noemt. Maar in de beurs zitten munten van overal: Spaanse realen, Brabantse patakons, Hollandse daalders, en veel kopergeld. De wisselaar weegt ze en weet wat elk waard is. Een dagloner verdient een halve gulden per dag, als hij werk heeft.' },
   { id: 'tijd:bestuur', cat: 'tijd', truth: 'geschiedenis', title: 'Wie er de baas is', hint: 'Vraag naar de drossaard en de schepenen.',
-    text: 'Diest heeft een heer, de baron, en die is de prins van Oranje. Zijn drossaard bewaart de orde en int de boetes. De schepenen besturen de stad en spreken recht. Boven hen allen staat de hertog van Brabant, en dat is de koning van Spanje. Zijn Raad van Brabant in Brussel beslist als ze het oneens zijn. Dat zijn ze vaak.' },
+    text: 'Diest heeft een heer, de baron, en die is de prins van Oranje. Zijn drossaard bewaart de orde en int de boetes. De schepenen besturen de stad en spreken recht. Boven hen staat de hertog van Brabant, en dat is de koning van Spanje. Zijn Raad van Brabant in Brussel beslist als ze het oneens zijn. Dat zijn ze vaak.' },
   { id: 'tijd:almanak', cat: 'tijd', truth: 'geschiedenis', title: 'De almanak', hint: 'Koop een almanak bij de boekverkoper.',
     text: 'Elk jaar drukken de drukkers in Antwerpen en Leuven een almanak: de feestdagen, de jaarmarkten, de stand van de maan, het weer dat komt en de beste dagen om ader te laten. Het weer klopt zelden. Iedereen koopt hem toch, want waar staat anders wanneer de jaarmarkt is?' },
   { id: 'tijd:wereld', cat: 'tijd', truth: 'geschiedenis', title: 'Tijdingen uit de wereld', hint: 'Luister naar de omroeper of koop een nieuwsblad.',
     text: 'In Engeland hebben ze vorig jaar, in 1649, hun koning Karel onthoofd. In Frankrijk staan de edelen op tegen kardinaal Mazarin, en de prins van Condé zit sinds januari gevangen. Portugal vecht al tien jaar voor een eigen koning, los van Spanje. Het nieuws komt via Antwerpen, in gedrukte bladen, een week of drie te laat.' },
   { id: 'tijd:nassau', cat: 'tijd', truth: 'geschiedenis', title: 'De Nassaus en Diest', hint: 'Vraag naar de prins van Oranje.',
-    text: 'In 1499 kwam de baronie Diest aan het huis Nassau, en zo werd Willem van Oranje er later heer van. Zijn oudste zoon, Filips Willem, groeide op in Spanje en bleef katholiek. Hij stierf in 1618 en ligt begraven in de Sint-Sulpitiuskerk. Zijn broers in het noorden voerden tegelijk oorlog tegen de koning. Zo is Diest: een stad van twee heren.' },
+    text: 'In 1499 kwam de baronie Diest aan het huis Nassau, en zo werd Willem van Oranje er later heer van. Zijn oudste zoon, Filips Willem, groeide op in Spanje en bleef katholiek. Hij stierf in 1618 en ligt begraven in de Sint-Sulpitiuskerk. Zijn broers in het noorden voerden intussen oorlog tegen de koning. Zo is Diest: een stad van twee heren.' },
   { id: 'tijd:markt', cat: 'tijd', truth: 'geschiedenis', title: 'Marktdag', hint: 'Praat met de mensen op de Grote Markt.',
     text: 'Op marktdag komen de boeren met boter, eieren, kaas en groenten de poort door, en betalen er tol voor. De stad keurt de gewichten en zet de prijs van het brood vast. Wie vals weegt, staat aan de kaak. Wie niet van de stad is, mag pas verkopen als de poorters gekocht hebben.' },
   { id: 'tijd:huisnamen', cat: 'tijd', truth: 'geschiedenis', title: 'Huizen met een naam', hint: 'Bekijk een uithangbord in de straten.',
@@ -317,7 +317,7 @@ export const PAGES: Page[] = [
   { id: 'wezen:weerwolf', cat: 'wezen', truth: 'volksverhaal', title: 'De weerwolf', hint: 'Laat een oude man of vrouw een verhaal vertellen.',
     text: 'Een mens die \'s nachts een wolvenvel omdoet en als wolf over de velden gaat. Je herkent hem overdag aan een wonde op dezelfde plek waar je de wolf geslagen hebt. In heel Brabant vertelde men het, en in sommige streken werd er ook voor terechtgestaan.' },
   { id: 'wezen:oschaert', cat: 'wezen', truth: 'volksverhaal', title: 'De Oschaert', hint: 'Laat iemand in de herberg een verhaal vertellen.',
-    text: 'Een broer van de Kludde, zeggen ze in Vlaanderen: een geest met gloeiende ogen die op de rug van late reizigers springt en zwaarder wordt bij elke stap, tot ze bij de rand van het water neervallen. Hoe je van hem afkomt, verschilt per dorp.' },
+    text: 'Een broer van de Kludde, zeggen ze in Vlaanderen: een geest met gloeiende ogen die op de rug van late reizigers springt en zwaarder wordt bij elke stap, tot ze bij de rand van het water neervallen. Hoe je van hem afkomt, verschilt per dorp. Dat je van hem afkomt, niet.' },
 ];
 
 // ===================================================================== the notary's topics
@@ -341,7 +341,7 @@ export const TOPICS: Topic[] = [
   { id: 'bestuur', ask: 'De drossaard en de schepenen', page: 'tijd:bestuur', truth: 'geschiedenis',
     answer: 'De drossaard is de man van de baron. De schepenen zijn de mannen van de stad. Ze spreken samen recht, en ze zijn het zelden eens. Als het echt misloopt, gaat het naar de Raad van Brabant in Brussel. Daar verdien ik mijn brood.' },
   { id: 'demer', ask: 'De Demer', page: 'tijd:demer', truth: 'geschiedenis',
-    answer: 'De rivier drijft de molens, voert het bier naar Mechelen en neemt de vuilnis mee. In natte jaren staat het Broek blank tot aan de muur. Wat de mensen dan uit het water zien komen, schrijf ik niet op. Ik ben notaris.' },
+    answer: 'De rivier drijft de molens, voert het bier naar Mechelen en neemt de vuilnis mee. In natte jaren staat het Broek blank tot aan de muur. Wat de mensen dan uit het water zien komen, schrijf ik niet op. Wat erin verdwijnt wel. Ik ben notaris.' },
   { id: 'bedevaart', ask: 'Scherpenheuvel', page: 'tijd:bedevaart', truth: 'geschiedenis',
     answer: 'De aartshertogen lieten daar een kerk en een hele stad bouwen, rond de plek waar een eik met een Mariabeeldje stond. Nu komt half Brabant er te voet naartoe. Westwaarts, langs de weg naar Aarschot. Met een draak ben je er voor je "Weesgegroet" kunt zeggen.' },
   { id: 'berchmans', ask: 'Jan Berchmans', page: 'tijd:berchmans', truth: 'geschiedenis',
@@ -351,16 +351,16 @@ export const TOPICS: Topic[] = [
   { id: 'bier', ask: 'Het bier van Diest', page: 'tijd:bier', truth: 'geschiedenis',
     answer: 'Diest brouwt meer dan het drinkt, en het drinkt veel. Het bier gaat over de Demer naar Mechelen en Antwerpen. De accijns erop betaalt de muren. Elke pint is dus een daad van burgerzin. Dat zeg ik niet, dat zegt de waard. Maar hij heeft gelijk.' },
   { id: 'kludde', ask: 'De Kludde', page: 'wezen:kludde', truth: 'volksverhaal',
-    answer: 'Daar sta ik als notaris niet voor in. Maar mijn grootmoeder zei: een zwarte hond met kettingen, of een paard, of een vogel, die je op de rug springt en zwaarder wordt tot je in het water valt. Zo vertelden ze het. In heel Brabant.' },
+    answer: 'Daar sta ik als notaris niet voor in. Mijn grootmoeder zei: een uitgehongerd paard, of een hond, of een kat, met twee blauwe vlammen voor ogen. Hij kwelt wie \'s nachts onderweg is en eindigt in het water. Ze kwam uit Dendermonde. Daar vertellen ze het beter.' },
 ];
 
 /** The crier's news of 1650 (and of this game). */
 export const NEWS: { t: string; truth: 'geschiedenis' | 'verzonnen' }[] = [
-  { truth: 'geschiedenis', t: 'Uit Den Haag: prins Willem van Oranje, de tweede van die naam, is aan de pokken gestorven. Acht dagen later is zijn zoon geboren. De baron van Diest ligt in de wieg!' },
+  { truth: 'geschiedenis', t: 'Uit Den Haag: prins Willem van Oranje, de tweede van die naam, is aan de pokken gestorven. Acht dagen later is zijn zoon geboren. De baron van Diest ligt in de wieg.' },
   { truth: 'geschiedenis', t: 'Uit Frankrijk: de kardinaal heeft de prins van Condé laten opsluiten, en de edelen staan op. Ze noemen het de Fronde. Wij noemen het: goed nieuws voor de koning van Spanje.' },
   { truth: 'geschiedenis', t: 'Men zegt dat de Franse maarschalk Turenne nu aan de kant van Spanje vecht, tegen zijn eigen koning. Zo gaat dat met maarschalken.' },
   { truth: 'geschiedenis', t: 'De landvoogd, aartshertog Leopold Willem, voert de oorlog tegen Frankrijk verder. Wie soldaten ziet: groet beleefd en tel je kippen.' },
-  { truth: 'geschiedenis', t: 'Uit Engeland, nog altijd: ze hebben vorig jaar hun koning onthoofd. Een koning! Onthoofd! Diest heeft nog nooit iemand onthoofd die meer was dan een dief.' },
+  { truth: 'geschiedenis', t: 'Uit Engeland, nog altijd: ze hebben vorig jaar hun koning onthoofd. Een koning. Onthoofd. Diest heeft nog nooit iemand onthoofd die meer was dan een dief.' },
   { truth: 'geschiedenis', t: 'Twee jaar vrede met de Republiek, sinds Munster. De Schelde blijft dicht. Antwerpen huilt, Amsterdam lacht, en Diest verkoopt zijn bier aan wie betaalt.' },
   { truth: 'geschiedenis', t: 'Portugal vecht al tien jaar voor een eigen koning. De koning van Spanje vindt dat Portugal al een koning heeft: hem.' },
   { truth: 'geschiedenis', t: 'Op bevel van de schepenen: wie na de avondklok zonder licht op straat loopt, betaalt boete. Wie met een draak op straat loopt, wordt besproken.' },
@@ -369,6 +369,7 @@ export const NEWS: { t: string; truth: 'geschiedenis' | 'verzonnen' }[] = [
   { truth: 'verzonnen', t: 'Gezien boven de Demer: een draak met een ruiter. De schepenen laten weten dat er geen reden tot paniek is. Er is wel reden tot nieuwsgierigheid.' },
   { truth: 'verzonnen', t: 'Gevonden in de Lakenhalle: een loden zegel met te veel tanden. Wie meer weet, meldt zich bij meester Joos, deken van de wevers.' },
   { truth: 'verzonnen', t: 'Gezocht: koeriers, wachters en sterke armen. Zie het aanplakbord, naast mij. Ja, dat bord. Ik wijs ernaar.' },
+  { truth: 'verzonnen', t: 'Gevraagd door de veerman: nieuws van zijn jongen, weg sinds de nacht van de zeven slagen. Hij betaalt in vis.' },
   { truth: 'geschiedenis', t: 'Volgende maand jaarmarkt. Kooplieden van buiten betalen standgeld, de poorters niet. De poorters zijn blij. De kooplieden van buiten ook, want ze verhogen hun prijzen.' },
 ];
 
@@ -451,10 +452,10 @@ export const INN_TALES: { t: string; camp: string | null; page?: string }[] = [
   { camp: 'broek', t: 'Mijn neef hoedde koeien in het Broek, voorbij de Koepoort. Op een avond telde hij er één te veel: een zwarte, met ogen als lantaarns. De volgende ochtend was er één te weinig. Daar zwerven ze nog, die honden. Volksverhaal, zeg jij. Vraag het aan de koe.' },
   { camp: 'broek2', t: 'Verder in het moeras, richting Webbekom, wordt het water zwart en de honden groter. De rietsnijders gaan er alleen bij dag naartoe, en altijd met z\'n drieën. Twee om te snijden, één om te tellen of ze er nog allemaal zijn.' },
   { camp: 'eikenbos', t: 'In het eikenbos ten oosten van Scherpenheuvel zie je lichtjes dansen, net kaarsen in een processie. Pelgrims volgen ze. Pelgrims komen niet terug. Dwaallichten, zeggen de ouden: zielen die de weg kwijt zijn en gezelschap zoeken.' },
-  { camp: 'kaggevinne', t: 'Bij Kaggevinne, aan de weg naar Scherpenheuvel, liggen mannen in de struiken. Soldaten, ooit. Nu nemen ze de schoenen van de pelgrims, en soms de voeten erbij. Ga er niet alleen heen. Of ga wel, met dat beest van jou.' },
+  { camp: 'kaggevinne', t: 'Bij Kaggevinne, aan de weg naar Scherpenheuvel, liggen mannen in de struiken. Soldaten, ooit. Nu nemen ze de schoenen van de pelgrims, en soms de voeten erbij. Ga er niet alleen heen. Of ga wel, met dat beest van jou, en breng me een paar schoenen mee.' },
   { camp: 'schaffen', t: 'Op de heide bij Schaffen kampeert een handvol deserteurs. Ze hebben hun vaandel verkocht voor brandewijn en hun eer voor minder. Arme duivels. Gevaarlijke duivels.' },
   { camp: 'galgeberg', t: 'Op de Galgenberg hangt de stad haar dieven op. Nu zitten er dieven die niemand ophangt: Roelof de Rode en zijn mannen. Ze zeggen dat de galg kraakt als hij voorbijkomt. Van ongeduld.' },
-  { camp: null, page: 'wezen:oschaert', t: 'In Vlaanderen hebben ze de Oschaert: die springt je op de rug en wordt zwaarder bij elke stap. Hier hebben we de Kludde, die hetzelfde doet. Het verschil? De Kludde rammelt met kettingen. Je hoort hem tenminste komen.' },
+  { camp: null, page: 'wezen:oschaert', t: 'In Vlaanderen hebben ze de Oschaert: die springt je op de rug en wordt zwaarder bij elke stap. Rond Dendermonde hebben ze de Kludde, en sinds die nacht wij ook. Het verschil? De Kludde rammelt met kettingen. Je hoort hem tenminste komen.' },
   { camp: null, page: 'wezen:nekker', t: 'Kinderen, blijf weg van de Demer, zei mijn moeder, of de Nekker trekt je erin. Ik ben nooit in de Demer gevallen. Mijn broer wel. Hij kwam er weer uit, maar hij is nooit meer helemaal dezelfde geweest. Hij werd advocaat.' },
   { camp: null, page: 'wezen:alvermannekes', t: 'Op de Tafelronde, die groene heuvel in de stad, wonen alvermannekes. Als je \'s avonds een kom pap neerzet, is \'s morgens je werk gedaan. Ik heb het geprobeerd. De pap was op. Het werk niet. Het waren de katten, denk ik.' },
   { camp: null, page: 'wezen:weerwolf', t: 'Een smid in Zichem sloeg op een nacht een wolf met een hamer op de poot. De volgende ochtend liep zijn buurman mank. Zo gaat dat met weerwolven: overdag ziet je het aan de wonden. Of aan de buren.' },
@@ -464,7 +465,7 @@ export const INN_TALES: { t: string; camp: string | null; page?: string }[] = [
 export const DICE = {
   ask: ['Een spelletje? Drie dobbelstenen, hoogste worp wint. Een florijn inzet.', 'Je hebt het gezicht van iemand die wil verliezen. Een worp?'],
   win: ['Hm. Geluk. Of een draak die je influistert. Hier, je florijn.', 'Jij wint. De tafel zwijgt. Dat is het geluid van verliezers.', 'Weer jij. Ik ga de stenen eens goed bekijken.'],
-  lose: ['Ha! Te weinig ogen. Dank je voor de florijn.', 'Niet je dag. Wel de mijne.', 'De stenen zijn eerlijk. Ik ben het ook. Vandaag toch.'],
+  lose: ['Te weinig ogen. Dank je voor de florijn.', 'Niet je dag. Wel de mijne.', 'De stenen zijn eerlijk. Ik ben het ook. Vandaag toch.'],
   tie: ['Gelijk. Niemand wint, de waard ook niet. Dat is het ergste.'],
   sign: 'Op het bord boven de tafel staat dat dobbelen om geld verboden is.',
 };
@@ -475,7 +476,7 @@ export const JOBS: JobTemplate[] = [
     id: 'premie_kamp', kind: 'bounty', title: 'Premie: {campName}',
     notice: 'PREMIE. Wie bij {where} {n} van {campName} verdrijft, krijgt een beloning van {client}. Bewijs gevraagd: een terugkeer.',
     journal: ['Op het aanplakbord hing een premie: {campName} bij {where}. {client} betaalt wie ze verdrijft.', 'Het is gedaan. Nu {client} nog laten weten dat de weg weer veilig is.'],
-    thanks: 'Gedaan? Dan slaapt er vannacht iemand beter. Hier is je premie.',
+    thanks: 'Gedaan? Dan slaapt er vannacht iemand beter. Jij misschien niet. Hier is je premie.',
     clients: ['sergeant', 'poort_allerheiligen', 'poort_koe', 'omroeper'],
   },
   {
@@ -505,7 +506,7 @@ export const JOBS: JobTemplate[] = [
     id: 'haal', kind: 'fetch', title: 'Verloren: {what}',
     notice: 'VERLOREN {where}: {what}. Wie het terugbrengt bij {client}, krijgt een beloning. Geen vragen.',
     journal: ['{client} is {what} kwijtgeraakt, ergens {where}. Het moet nog te vinden zijn. Van boven zie ik het misschien sneller.', 'Gevonden. Terug naar {client}.'],
-    thanks: 'Mijn spullen! Ik dacht dat de Kludde ze had. Hier, en dank je.',
+    thanks: 'Mijn spullen. Ik dacht dat de Kludde ze had; die neemt alles, tegenwoordig. Hier, en dank je.',
     clients: ['waard', 'kleermaker', 'smid', 'bakker', 'drukker'],
   },
 ];
@@ -567,6 +568,7 @@ export const DOOR_LINES = [
   'De deur is niet op slot en gaat vanzelf open. Een kat kijkt je aan alsof jij hier niet hoort. Je doet de deur weer dicht.',
   'Een brouwersknecht: "Bier? Niet hier. Dit is het huis van mijn moeder. Zij drinkt water. Arme vrouw."',
   'Een vrouw met een bezem: "De stoep is net geveegd." Ze kijkt naar je laarzen. Ze kijkt naar de stoep.',
+  'Een vrouw doet open, kijkt je lang aan en zegt: "Nee. Ik dacht dat je mijn zoon was."',
 ];
 
 /** A shrine in a wall or on a post: what you see when you stop to pray. */
@@ -580,20 +582,20 @@ export const SHRINE_LINES = [
   'Sint-Sulpitius, de patroon van de stad, met een bisschopsstaf. Hij kijkt een beetje streng.',
   'Een nisje met een Maria en een briefje: "Voor mijn zoon in het leger." Geen naam.',
   'Sint-Barbara, voor wie in de buurt van buskruit werkt. Er liggen twee kogels aan haar voeten.',
-  'Een kapelletje met een kaars die nog brandt. Iemand is je net voorgegaan.',
+  'Een kapelletje met een kaars die nog brandt. Iemand is je net voorgegaan. Ze heeft een kinderschoentje achtergelaten.',
   'Sint-Christoffel, die het kind over het water draagt. Voor reizigers. Voor jou, dus.',
   'Een oud, scheefgezakt beeldje. Het gezicht is weggesleten door de handen die het aanraakten.',
 ];
 
 export const WELL_LINES = [
-  'Fris water uit de put. Je voelt je meteen beter.',
+  'Fris water uit de put, met een smaak van roest. Je voelt je beter.',
   'Het water smaakt naar ijzer en naar steen. Het doet deugd.',
   'Een emmer aan een ketting, en water zo koud dat je tanden zeer doen. Heerlijk.',
   'Iemand heeft een houten nap bij de put gelegd. Je drinkt, en je legt hem terug.',
   'Een vrouw die water komt halen, wacht beleefd tot je gedronken hebt. Dan wacht ze nog wat langer, omdat je een draak hebt.',
   'Het water is helder. De put is goed onderhouden: de buren betalen er samen voor.',
   'Je drinkt. Een kind kijkt toe en vraagt of draken ook water drinken. Je weet het eigenlijk niet.',
-  'De pomp piept, het water komt. Je drinkt zoveel als je kunt.',
+  'De pomp piept, het water komt. Je drinkt, en je denkt aan de rivier. Je drinkt toch.',
   'Er drijft een blad in de emmer. Je drinkt eromheen.',
   'Water. Geen bier, geen wijn, gewoon water. Soms is dat het beste.',
   'Je wast het stof van je gezicht en drinkt. De stad ruikt even minder naar de stad.',

@@ -69,7 +69,7 @@ export const ORIGINS: Record<OriginId, OriginDef> = {
     name: 'Beiaardier',
     tagline: 'Klank als wapen',
     text: 'Kind van de toren. Hoort wat in het brons zit.',
-    lore: 'Je leerde het klavier in de toren, met vuisten en voeten, bij een meester die doof werd van zijn eigen klokken. Je hoort wat in het brons zit. In dit spel snijdt een zuivere toon. Sinds zondag hoor je niets.',
+    lore: 'Je leerde het klavier in de toren, met vuisten en voeten, bij een meester die doof werd van zijn eigen klokken. Je hoort wat in het brons zit. In jouw handen snijdt een zuivere toon. Sinds zondag hoor je niets.',
     role: 'klank op afstand, kwetsbaar van dichtbij',
     difficulty: 3,
     base: { kracht: 4, klank: 9, list: 4, taaiheid: 5 },

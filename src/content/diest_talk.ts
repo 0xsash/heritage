@@ -116,7 +116,7 @@ export const PLACE_LINES: Record<string, string[]> = {
   'Sint-Trudokerk': ['De kerk van Webbekom. Het klokkentouw is altijd vochtig, zeggen ze. Niemand weet waarom.', 'Sint-Truiden, in Webbekom. Klein kerkje, grote angst.'],
   Kaggevinne: ['Kaggevinne. Een paar hoeves en veel ganzen. En sinds kort: wegrovers.', 'Hier woont boer Driesen. Hij heeft drie varkens. Had.'],
   'Veldkapel Galgeberg': ['De Galgenberg. Daar hangt de stad haar dieven op, zodat de reizigers het zien. Het werkt niet.', 'Kijk niet te lang naar de galg. Ze zeggen dat hij terugkijkt.'],
-  Scherpenheuvel: ['Scherpenheuvel! Heel Brabant komt hier bidden. En kopen, en eten, en drinken.', 'De heilige heuvel. Veertig jaar geleden was het hier heide. Nu staat er een stad als een ster.'],
+  Scherpenheuvel: ['Scherpenheuvel. Heel Brabant komt hier bidden. En kopen, en eten, en drinken.', 'De heilige heuvel. Veertig jaar geleden was het hier heide. Nu staat er een stad als een ster.'],
   'Basiliek van Onze-Lieve-Vrouw van Scherpenheuvel': ['De basiliek. Zeven zijden, een koepel vol gouden sterren. Ik heb nog nooit iets mooiers gezien.', 'Hier staat het altaar op de plek van de eik. Ga binnen, en kijk naar boven.'],
   'De Heilige Eik': ['Daar stond de eik. Ze hebben hem omgehakt en er beeldjes van gesneden. De wortels zitten er nog.', 'De wortels van de eik, onder het altaar. Sommigen zeggen dat ze nog groeien.'],
 };
@@ -235,7 +235,7 @@ export const GOSSIP: Record<Role, string[]> = {
     'Mijn moeder zegt dat de Kludde stoute kinderen meeneemt. Ik ben braaf. Bijna altijd.', 'Weet je wat de schutters doen als ze niet schieten? Drinken. Mijn vader is schutter.',
     'Ik kan tot honderd tellen. Wil je het horen? Een, twee, drie...', 'Op de Tafelronde wonen alvermannekes. Als je \'s nachts gaat kijken, zie je ze. Ik mag \'s nachts niet buiten.',
     'De tollenaar heeft een wrat op zijn neus. Als je ernaar kijkt, betaal je dubbel.', 'Mag ik je draak aaien? Nee? Mag ik er dan naar kijken? Ik kijk al.',
-    'Toen de klokken zwegen, wist niemand wanneer we moesten slapen. Het was het beste week van mijn leven.',
+    'Toen de klokken zwegen, wist niemand wanneer we moesten slapen. Het was de beste week van mijn leven.',
     'Ik heb een kogel gevonden in de gracht. Van de oorlog, zegt mijn vader. Ik ruil hem voor jouw draak.',
     'Mijn zus telt de duiven. Ik tel de soldaten. Er zijn meer duiven.',
   ],
@@ -265,26 +265,28 @@ export const GOSSIP: Record<Role, string[]> = {
 
 /** Lines anyone may say, that react to what the player has done (see src/life/talk.ts for the conditions). */
 export const REACTIVE: { t: string; if: string }[] = [
-  { if: 'bells_silent', t: 'Sinds de klokken zwijgen, weet niemand meer hoe laat het is. De bakker bakt wanneer hij wakker wordt.' },
-  { if: 'bells_silent', t: 'Ze zeggen dat er nat wier op de klokkenstoel lag. Wier! Veertig el boven de grond!' },
-  { if: 'bells_silent', t: 'Zonder klokken gaan de poorten dicht wanneer de wachter er zin in heeft. Gisteren was dat om drie uur.' },
+  { if: 'bells_silent', t: 'Sinds de klokken zwijgen, bakt de bakker wanneer hij wakker wordt. Hij wordt laat wakker.' },
+  { if: 'bells_silent', t: 'Nat wier op de klokkenstoel, zeggen ze. Veertig el boven de grond. Wie draagt er wier naar boven?' },
+  { if: 'bells_silent', t: 'Mijn buurvrouw zette die nacht een kaars voor het raam, voor haar jongen. Ze brandt nog.' },
+  { if: 'bells_silent', t: 'Zonder klokken gaan de poorten dicht wanneer de wachter er zin in heeft. Gisteren om drie uur.' },
   { if: 'bells_ring', t: 'Hoor je de klokken? Elk uur weer. Ik heb nooit gedacht dat ik dat geluid zou missen. Ik heb het gemist.' },
-  { if: 'bells_ring', t: 'Ze zeggen dat jij de klepels uit het Broek hebt gehaald. Uit het nest van de Kludde! Ik geloof het. Bijna.' },
+  { if: 'bells_ring', t: 'Ze zeggen dat jij de klepels uit het nest van de Kludde hebt gehaald. Ik geloof het. Bijna.' },
+  { if: 'bells_ring', t: 'Bij de eerste slag ging je draak liggen, zag ik. Als een hond bij het vuur.' },
   { if: 'bells_ring', t: 'De klokken luiden weer, en de bakker staat weer op tijd op. Het brood is er niet beter van geworden.' },
-  { if: 'seals_reported', t: 'Die weduwe van Vranckx is verbannen. Hard, maar de wet is de wet. Zegt de gilde.' },
+  { if: 'seals_reported', t: 'Die weduwe van Vranckx is verbannen. Haar kinderen eten nu bij de buren. De wet is de wet, zegt de gilde.' },
   { if: 'seals_begijnhof', t: 'Lijsbet Vranckx weeft nu bij de begijnen. Beter zo, zeg ik. De gilde zegt iets anders, maar zachtjes.' },
   { if: 'seals_warned', t: 'Die weduwe van de valse zegels is gevlucht, zeggen ze. Iemand heeft haar gewaarschuwd. Niemand weet wie. Iedereen kijkt naar jou.' },
   { if: 'toll_bribe', t: 'Er gaat een vaatje brandewijn rond dat nooit tol heeft betaald. Je ruikt er een beetje naar, eerlijk gezegd.' },
   { if: 'toll_seized', t: 'Gielis de Ton is zijn brandewijn kwijt. Hij vloekt in drie talen. In alle drie slecht.' },
-  { if: 'toll_paid', t: 'Gielis de Ton heeft tol betaald! Voor het eerst in twintig jaar. Wouter de tollenaar heeft er een kaars voor aangestoken.' },
-  { if: 'roelof_done', t: 'Roelof de Rode is dood. De boeren van Kaggevinne slapen weer. Ze zeggen dat jij het was.' },
-  { if: 'kludde_done', t: 'De Kludde! Jij hebt de Kludde verjaagd! Mijn grootmoeder zal het niet geloven. Ze heeft hem zelf eens gezien, zegt ze.' },
-  { if: 'wisps_done', t: 'In het eikenbos dansen geen lichtjes meer. De pelgrims vinden de weg weer. Dankzij jou, zeggen ze in Scherpenheuvel.' },
+  { if: 'toll_paid', t: 'Gielis de Ton heeft tol betaald. Voor het eerst in twintig jaar. Wouter de tollenaar heeft er een kaars voor aangestoken.' },
+  { if: 'roelof_done', t: 'Roelof de Rode is dood, en in Kaggevinne gaan de deuren weer gewoon dicht. Ze zeggen dat jij het was.' },
+  { if: 'kludde_done', t: 'Jij hebt de Kludde verjaagd, zeggen ze. Mijn grootmoeder vraagt: in welke gedaante? En: verjaagd is niet dood.' },
+  { if: 'wisps_done', t: 'In het eikenbos dansen geen lichtjes meer. De pelgrims vinden de weg weer. Twee niet, maar die zoekt niemand meer.' },
   { if: 'herbs_done', t: 'Zuster Aleydis heeft weer wondkruid. De koorts in de infirmerie zakt. Ze zegt dat het jouw kruid is. Ze zegt het niet graag.' },
   { if: 'letter_done', t: 'Jij bracht de brief van de drossaard naar Scherpenheuvel? Op een draak? Dan weet de proost het eerder dan de drossaard het geschreven had.' },
   { if: 'walk_done', t: 'Je hebt de hele stad rondgewandeld, hoor ik. Dan ken je ze beter dan de meeste poorters. Die kennen alleen de weg naar de herberg.' },
   { if: 'many_jobs', t: 'Jij doet al het werk van het aanplakbord, zeggen ze. De omroeper moet er nieuwe briefjes voor schrijven.' },
-  { if: 'famous', t: 'Daar is {name}! Die van de draak! Iedereen praat over je.' },
+  { if: 'famous', t: 'Daar is {name}, die van de draak. Iedereen praat over je. Niet altijd goed.' },
   { if: 'famous', t: '{name}, mijn zoon wil later ook een draak. Ik heb gezegd: eerst je bord leegeten.' },
   { if: 'high_level', t: 'Dat is een stevig zwaard, {name}. Daar zou ik niet tegenover willen staan. Ik sta er tegenover. Ik ga even opzij.' },
   { if: 'gilden_high', t: 'De dekens van de gilden spreken goed over je. Dat doen ze over bijna niemand. Ze spreken zelfs slecht over elkaar.' },
@@ -293,7 +295,7 @@ export const REACTIVE: { t: string; if: string }[] = [
   { if: 'vrije_high', t: 'Ze zeggen dat je de paden van de smokkelaars kent. Ik zeg niets. Ik ken ze ook.' },
   { if: 'kroon_low_vrije_high', t: 'De drossaard heeft je naam laten opschrijven, hoor ik. In het boek van wie in de gaten gehouden wordt. Het is een dik boek.' },
   { if: 'blessed', t: 'Je ziet er gezegend uit. Ik weet niet hoe dat eruitziet, maar zo, ongeveer.' },
-  { if: 'night', t: 'Het wordt donker. Ga niet naar het Broek. Echt niet.' },
+  { if: 'night', t: 'Het wordt donker. Ga niet naar het Broek. Mijn vader ging, om een kalf te zoeken. Het kalf kwam terug.' },
   { if: 'poor', t: 'Je beurs ziet er licht uit. Op het aanplakbord zoeken ze altijd volk, hoor.' },
 ];
 
@@ -364,7 +366,7 @@ export const DARES = {
 /** Old folks' tales: what people told each other (volksverhaal), or what we made up in that spirit (verzonnen). */
 export const TALES: { t: string; truth: 'volksverhaal' | 'verzonnen' }[] = [
   { truth: 'verzonnen', t: 'Lang geleden woonde er een reus in de Demer, die de schippers tol liet betalen. Een vrouw van Diest kookte hem pap met spijkers erin. Hij at het en zonk. Zo vertelt men het. Ik zeg: met spijkers kun je niet koken.' },
-  { truth: 'volksverhaal', t: 'De Kludde, kind. Een zwarte hond met kettingen. Of een paard. Of een kat. Hij springt je op de rug en wordt zwaarder bij elke stap, tot je in het water valt. Je hoort hem komen aan de kettingen. Als je ze hoort: niet omkijken, bidden.' },
+  { truth: 'volksverhaal', t: 'De Kludde, kind. Hij is wat hij wil: een mager paard, een hond, een kat, een vleermuis. Twee blauwe vlammetjes, dat zijn zijn ogen. Hij springt je op de rug en wordt zwaarder bij elke stap, tot aan het water. Hoor je kettingen: niet omkijken, bidden.' },
   { truth: 'volksverhaal', t: 'In de Demer woont de Nekker. Hij trekt kinderen die aan de rand spelen het water in. Mijn moeder vertelde het me elke dag. Ik ben nooit in het water gevallen. Het werkt dus.' },
   { truth: 'volksverhaal', t: 'Op de Tafelronde, die ronde heuvel, wonen alvermannekes. Als je een kom pap buiten zet, maken ze \'s nachts je werk af. Maar als je ze bespiedt, maken ze alles kapot. Mijn grootvader bespiedde ze. Hij had daarna nooit meer een heel bord.' },
   { truth: 'volksverhaal', t: 'Een smid in een dorp hier vlakbij sloeg op een nacht een wolf met zijn hamer. De volgende morgen liep zijn buurman met een verbonden arm. Weerwolf, zei het dorp. De buurman verhuisde. Wat moest hij anders?' },
@@ -390,7 +392,7 @@ export const TOWN_VIEW: { t: string; if?: string }[] = [
   { t: 'De weefgetouwen staan stiller dan vroeger. De brouwerijen niet. Diest gaat van laken naar bier. Het had erger gekund.' },
   { t: 'Sinds de vrede met de Republiek is het rustiger. Sinds de oorlog met Frankrijk is het onrustiger. Gemiddeld: hetzelfde.' },
   { t: 'Te veel soldaten, te weinig werk, te veel praatjes. Zoals altijd, eigenlijk.' },
-  { if: 'bells_silent', t: 'Zonder klokken is het een stad zonder hart. De mensen komen te laat, de poorten gaan dicht wanneer het uitkomt. Iemand moet die klepels terugvinden.' },
+  { if: 'bells_silent', t: 'Zonder klokken is het een stad zonder hart. De mensen komen te laat, de poorten gaan dicht wanneer het uitkomt, en \'s nachts staan er kaarsen voor de ramen.' },
   { if: 'bells_ring', t: 'De klokken luiden weer. Je merkt het overal: de mensen lopen rechter. Belachelijk, maar waar.' },
   { if: 'gilden_low', t: 'De gilden kennen je nog niet. Doe zaken op de markt, help eens iemand, en ze leren je kennen. Zo gaat dat hier.' },
   { if: 'gilden_mid', t: 'De gilden beginnen je te kennen. Je krijgt al betere prijzen, heb ik gemerkt. Dat is het begin van burgerschap.' },
@@ -419,7 +421,7 @@ export const REP_DEEDS: { t: string; if: string }[] = [
 ];
 
 export const WORK = [
-  'Werk? Op het aanplakbord op de markt hangt altijd iets. {what}', 'Ik zou zeggen: het aanplakbord. Of de mensen met een gouden uitroepteken boven hun hoofd. {what}',
+  'Werk? Op het aanplakbord op de markt hangt altijd iets. {what}', 'Ik zou zeggen: het aanplakbord. Of kijk wie er met een zorgelijk gezicht staat te wachten. {what}',
   'Iemand zoekt altijd hulp, als je goed kijkt. {what}', 'Werk voor een sterke arm? {what}', 'Ik heb geen werk, ik heb zelf geen werk. Maar {what}',
   'De omroeper weet waar volk gezocht wordt. En het aanplakbord. {what}', 'Hm. {what} Ga eens kijken.',
   'Voor wie wil werken, is er werk. Voor wie wil betaald worden, is het moeilijker. {what}', 'Mijn neef zocht werk en vond een vrouw. Jij vindt misschien werk. {what}',
