@@ -507,3 +507,35 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 /* nothing of the game's furniture during the prologue */
 #ui.prologue .pframe, #ui.prologue .compass, #ui.prologue .tracker, #ui.prologue .loc, #ui.prologue .waypoint .wp-text, #ui.prologue .dv, #ui.prologue .help, #ui.prologue .toast { display: none !important; }
 #ui.prologue .prompt { bottom: calc(9vh + 110px); z-index: 7; }
+
+/* ---------- everyday life: notes in the street, buffs, standing, merchants (src/life) ---------- */
+.lifenote { position: absolute; left: 50%; bottom: 206px; transform: translate(-50%, 6px); width: max-content; max-width: min(560px, calc(100% - 32px)); padding: 10px 18px 12px; background: var(--shade); border: 1px solid rgba(214, 173, 87, 0.35); text-align: center; opacity: 0; transition: opacity var(--t-3, 260ms) var(--ease-out, ease-out), transform var(--t-3, 260ms) var(--ease-out, ease-out); pointer-events: none; }
+.lifenote.show { opacity: 1; transform: translate(-50%, 0); }
+.lifenote .ln-k { font-family: var(--display); font-size: 13px; letter-spacing: 0.24em; color: var(--gold); }
+.lifenote .ln-t { font-size: 17px; line-height: 1.45; margin-top: 4px; }
+#ui.ui-open .lifenote, #ui.prologue .lifenote, #ui.prologue .lifebuffs { display: none; }
+.lifebuffs { position: absolute; left: 22px; bottom: 76px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+.lifebuffs span { font-family: var(--display); font-size: 13px; letter-spacing: 0.12em; color: #e8dcc0; background: rgba(16, 13, 10, 0.55); border-left: 2px solid var(--gold); padding: 3px 10px; text-shadow: 0 1px 3px #000; white-space: nowrap; }
+.lifebuffs span b { color: #ffe0a0; font-weight: 600; margin-left: 6px; font-variant-numeric: tabular-nums; }
+.lifebuffs .lb-zegen { border-left-color: #d8d2c0; }
+.lifebuffs .lb-moed { border-left-color: #c8402a; }
+.lifebuffs .lb-uitgerust, .lifebuffs .lb-eten { border-left-color: #7aa860; }
+.charpanel .standing { margin: 6px 0 10px; }
+.charpanel .standing .sd-top { display: flex; justify-content: space-between; gap: 8px; font-size: 16px; }
+.charpanel .standing .sd-top b { color: #ffe0a0; font-weight: 600; white-space: nowrap; }
+.charpanel .standing .sd-bar { height: 6px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(214, 173, 87, 0.25); margin-top: 3px; }
+.charpanel .standing .sd-bar i { display: block; height: 100%; }
+.charpanel .standing .sd-sub { font-size: 13px; color: var(--ink-dim); margin-top: 2px; }
+.charpanel .vshop .vgreet { font-style: italic; color: #e8dcc0; font-size: 16px; margin: 0 0 6px; }
+.charpanel .vshop .vnote { font-size: 13px; letter-spacing: 0.04em; color: var(--ink-dim); margin: 0 0 10px; border-bottom: 1px dotted rgba(214, 173, 87, 0.25); padding-bottom: 6px; }
+.charpanel .vware { align-items: flex-start; background: rgba(0, 0, 0, 0.25); padding: 6px 8px; border: 1px solid rgba(255, 255, 255, 0.06); }
+.charpanel .vware > span { flex: 1; display: flex; flex-direction: column; }
+.charpanel .vware b { font-weight: 600; color: #f3ead6; }
+.charpanel .vware em { font-style: normal; font-size: 13px; color: #9fd88a; }
+.charpanel .vware small { font-size: 14px; color: var(--ink-dim); line-height: 1.35; margin-top: 2px; }
+.charpanel .vware .swatch { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 3px; border: 1px solid rgba(255, 255, 255, 0.35); }
+.charpanel .vware.locked { opacity: 0.6; }
+.charpanel .vlock { font-size: 13px; color: #c8b48a; font-style: italic; text-align: right; max-width: 150px; flex-shrink: 0; }
+.charpanel button.poor { opacity: 0.45; }
+.map .legend .mapzoom { color: var(--ink-dim); letter-spacing: 0.1em; font-family: var(--serif); text-transform: none; }
+.map.show ~ .lifenote, .map.show ~ .lifebuffs { display: none; }

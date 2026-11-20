@@ -162,6 +162,8 @@ export class Combat {
   kit: TownsfolkKit | null = null;
   /** story scenes: no camps spawn */
   quiet = false;
+  /** blessings and the like (src/life): damage the player takes is multiplied by this */
+  dmgTakenMul = 1;
   inCombat = false;
   /** things the player has done (the tutorial watches these) */
   tally = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0 };
@@ -1073,7 +1075,7 @@ export class Combat {
       this.floaters.add('ontweken', at.setY(at.y + 2.2), 'note', 0.8, 0.6);
       return;
     }
-    const dmg = Math.max(1, Math.round(raw * (100 / (100 + d.armor * 2.2))));
+    const dmg = Math.max(1, Math.round(raw * this.dmgTakenMul * (100 / (100 + d.armor * 2.2))));
     this.sheet.h.hp -= dmg;
     this.lastFight = this.time;
     this.floaters.add(`-${dmg}`, at.clone().setY(at.y + 2.1), 'hurt', 0.9, 1.0);

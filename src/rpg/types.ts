@@ -27,7 +27,8 @@ export type Effect =
   | { toast: string }
   | { xp: number }
   | { gear: string } // a named piece of gear from the catalogue (character.ts)
-  | { open: 'shop' | 'character' }; // open a panel
+  | { open: 'shop' | 'character' } // open a panel
+  | { call: string }; // hand over to code outside the quest engine (src/life: shops, services, talk)
 
 export type QuestStatus = 'active' | 'done' | 'failed';
 

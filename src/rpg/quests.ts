@@ -13,6 +13,12 @@ export interface QuestEvents {
   xp(amount: number, levels: number): void;
   gear(g: Gear): void;
   open(panel: 'shop' | 'character'): void;
+  /** a `{call}` effect (src/life) */
+  call?(id: string): void;
+  /** renown with a place changed (standing follows it, src/life/standing.ts) */
+  renown?(town: string, n: number): void;
+  /** a quest was finished (standing, jobs) */
+  completed?(id: string, outcome?: string): void;
 }
 
 export interface Target {
@@ -44,6 +50,15 @@ export class QuestEngine {
     return this.quests.get(id);
   }
 
+  /** Quests and items made while playing (notice-board jobs, the town walk: src/life). */
+  addQuest(q: QuestDef) {
+    this.quests.set(q.id, q);
+  }
+
+  addItem(i: ItemDef) {
+    this.items.set(i.id, i);
+  }
+
   item(id: string) {
     return this.items.get(id);
   }
@@ -52,7 +67,8 @@ export class QuestEngine {
     return [...this.quests.values()];
   }
 
-  stageOf(q: QuestDef): Stage | undefined {
+  stageOf(q: QuestDef | undefined): Stage | undefined {
+    if (!q) return undefined; // a saved job whose definition is gone
     const st = this.s.quests[q.id];
     return st ? q.stages.find((s) => s.id === st.stage) : undefined;
   }
@@ -122,8 +138,10 @@ export class QuestEngine {
       const [town, n] = e.renown;
       this.s.renown[town] = (this.s.renown[town] ?? 0) + n;
       this.ev.toast('RENOWN', `${town} ${n >= 0 ? '+' : ''}${n}`);
+      this.ev.renown?.(town, n);
       return;
     }
+    if ('call' in e) return this.ev.call?.(e.call);
     if ('note' in e) {
       this.s.quests[e.note[0]]?.log.push(e.note[1]);
       return;
@@ -207,10 +225,14 @@ export class QuestEngine {
     }
     this.ev.banner('done', q.title, lines);
     if (r?.florins) this.s.florins += r.florins;
-    for (const [town, n] of r?.renown ?? []) this.s.renown[town] = (this.s.renown[town] ?? 0) + n;
+    for (const [town, n] of r?.renown ?? []) {
+      this.s.renown[town] = (this.s.renown[town] ?? 0) + n;
+      this.ev.renown?.(town, n);
+    }
     for (const [item, n] of r?.items ?? []) this.applyOne({ give: item, n });
     for (const id of r?.gear ?? []) this.applyOne({ gear: id });
     if (r?.xp) this.addXp(r.xp);
+    this.ev.completed?.(id, outcome);
     if (this.s.tracked === id) {
       const next = Object.entries(this.s.quests).filter(([, v]) => v.status === 'active').sort((a, b) => b[1].started - a[1].started)[0];
       this.s.tracked = next?.[0] ?? null;
@@ -341,7 +363,8 @@ export class QuestEngine {
     const out: { quest: QuestDef; objectives: Objective[]; tracked: boolean; started: number }[] = [];
     for (const [id, st] of Object.entries(this.s.quests)) {
       if (st.status !== 'active') continue;
-      const q = this.quests.get(id)!;
+      const q = this.quests.get(id);
+      if (!q) continue;
       const stage = this.stageOf(q);
       out.push({ quest: q, objectives: (stage?.objectives ?? []).filter((o) => !st.done.includes(o.id)), tracked: this.s.tracked === id, started: st.started });
     }

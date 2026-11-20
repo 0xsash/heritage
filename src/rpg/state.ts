@@ -51,6 +51,41 @@ export interface SaveData {
   kroniek: string[];
   /** standing with each party (see factions.ts), in points */
   standing: Record<string, number>;
+  /** everyday life in town (src/life): visits, buffs, jobs, collections */
+  life: LifeSave;
+}
+
+/** What src/life remembers. Every field has a default, so older saves load as they are. */
+export interface LifeSave {
+  /** services and guides spoken to at least once (by id) */
+  met: string[];
+  /** small things in the streets used at least once (sign, door, well, shrine keys) */
+  spots: string[];
+  /** spot key -> day key of the last use, for once-a-day things */
+  spotDay: Record<string, string>;
+  /** guide topics asked about */
+  topics: string[];
+  /** active buffs: id -> seconds left */
+  buffs: Record<string, number>;
+  /** the day the notice board was last read, and the jobs taken from it that day */
+  boardDay: string;
+  boardTaken: string[];
+  /** readables read (or re-read) while a "read the notices" job runs */
+  reads: string[];
+  /** florins spent per party, not yet turned into standing */
+  spent: Record<string, number>;
+  /** renown already carried over into standing (old saves) */
+  migrated: boolean;
+  /** stops of the town walk reached */
+  walk: number;
+  /** wins at dice, and games played */
+  dice: [number, number];
+  /** golden weathercocks taken */
+  cocks: string[];
+}
+
+export function freshLife(): LifeSave {
+  return { met: [], spots: [], spotDay: {}, topics: [], buffs: {}, boardDay: '', boardTaken: [], reads: [], spent: {}, migrated: false, walk: 0, dice: [0, 0], cocks: [] };
 }
 
 const KEY = 'belfort-save-v2';
@@ -72,6 +107,7 @@ export function freshSave(): SaveData {
     kills: 0,
     kroniek: [],
     standing: {},
+    life: freshLife(),
   };
 }
 
@@ -91,7 +127,7 @@ export function loadSave(): SaveData {
     const d = JSON.parse(raw) as SaveData;
     if (d.v !== 2) return freshSave();
     const f = freshSave();
-    return { ...f, ...d, hero: { ...f.hero, ...d.hero } };
+    return { ...f, ...d, hero: { ...f.hero, ...d.hero }, life: { ...freshLife(), ...(d.life ?? {}) } };
   } catch {
     return freshSave();
   }
