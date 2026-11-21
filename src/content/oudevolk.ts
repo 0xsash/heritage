@@ -2,7 +2,7 @@
 // een rietsnijder, een schaapherder en zijn kleinzoon) die nog doen wat hun
 // grootouders deden, en die zich de eik van Scherpenheuvel herinneren. Ze
 // willen als enigen niet dat de klokken weer luiden. Wat waar is (de eik,
-// het kappen ervan, de basiliek, de heksenvervolging), staat als
+// het kappen ervan, de kerk die er kwam, de heksenvervolging), staat als
 // geschiedenis; het Oude Volk zelf en alles wat het weet, is verzonnen, en
 // de Kroniek zegt dat.
 //
@@ -126,12 +126,12 @@ export const OV_QUESTS: QuestDef[] = [
       {
         id: 'eik',
         journal: 'Aert gaf me een eikel van de oude eik, zwart van ouderdom. Ik moet hem op de heuvel van Scherpenheuvel leggen, bij de kerk die ze daar gebouwd hebben.',
-        objectives: [{ id: 'eik', kind: 'reach', text: 'Leg de eikel bij de basiliek van Scherpenheuvel', at: [-5062, 518], r: 42, onFoot: true }],
-        onDone: [{ take: 'ov_eikel' }, { toast: 'Een priester zag je knielen bij de muur van de basiliek' }, { stage: ['ov_eik', 'terug'] }],
+        objectives: [{ id: 'eik', kind: 'reach', text: 'Leg de eikel bij de kerk van Scherpenheuvel', at: [-5062, 518], r: 42, onFoot: true }],
+        onDone: [{ take: 'ov_eikel' }, { toast: 'Een pater zag je knielen bij de muur van de kerk' }, { stage: ['ov_eik', 'terug'] }],
       },
       {
         id: 'terug',
-        journal: 'Ik heb de eikel tussen de stenen aan de voet van de muur geduwd. Een priester zag me knielen en zei niets. Dat is erger dan iets zeggen.',
+        journal: 'Ik heb de eikel tussen de stenen aan de voet van de muur geduwd. Een pater zag me knielen en zei niets. Dat is erger dan iets zeggen.',
         objectives: [{ id: 'heyl', kind: 'talk', text: 'Vertel het aan Heylwich in Diest', npc: 'heylwich' }],
       },
     ],
@@ -328,7 +328,7 @@ export const OV_DIALOGUE: Record<string, Line> = {
   goor_idle: {
     who: 'gooris', text: 'Het riet staat hoog dit jaar. Dat is goed voor de daken, en slecht voor wie verdwaalt.',
     choices: [
-      { text: 'Zuster Aleydis zegt: pluk het wondkruid bij daglicht.', if: { any: [{ quest: 'side_herbs', state: 'active' }, { quest: 'side_herbs', state: 'done' }] }, next: 'goor_herbs' },
+      { text: 'Zuster Margriet zegt: pluk het wondkruid bij daglicht.', if: { any: [{ quest: 'side_herbs', state: 'active' }, { quest: 'side_herbs', state: 'done' }] }, next: 'goor_herbs' },
       { text: 'Tot ziens, Gooris.' },
     ],
   },
@@ -365,7 +365,7 @@ export const OV_DIALOGUE: Record<string, Line> = {
   peeterken_2: { who: 'peeterken', text: '*Hij legt nog een steen, en nog een. Dan wijst hij naar de Demer, en dan naar jou.*' },
   peeterken_after: { who: 'peeterken', text: '*Vijf steentjes, een gat, en weer vijf. Als je naast hem gaat zitten, schuift hij een steen naar je toe.*' },
 
-  // ---------------------------------------------------------------- what De Kerk says (Aleydis, Pieter, the provost)
+  // ---------------------------------------------------------------- what De Kerk says (Margriet, whose id is aleydis; Pieter; the overste, id provost)
   aleydis_ov: { who: 'aleydis', text: 'Je bent bij Heylwich Coninckx geweest. Dat ruik ik: vlier en Demerwater.', next: 'aleydis_ov2' },
   aleydis_ov2: { who: 'aleydis', text: 'Ze heeft meer kinderen gehaald dan ik er verzorgd heb, en ik bid voor haar. Maar het water dat zij bedankt, nam vorig jaar drie kinderen langs de Demer.', next: 'aleydis_ov3' },
   aleydis_ov3: {
