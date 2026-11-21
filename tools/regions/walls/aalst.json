@@ -1,0 +1,105 @@
+{
+ "note": "Aalst: wall of c. 1200 on both banks of the Dender, given bastions in the late 16th and 17th c.; still standing in 1650 and razed after Turenne took the town in 1667. Traced from the tree-lined rampart line (Wallenring) on the Ferraris map (1777). Gate names not verified.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Aalst' (https://id.erfgoed.net/erfgoedobjecten/140017)",
+ "ring": [
+  [
+   225,
+   -270
+  ],
+  [
+   345,
+   -150
+  ],
+  [
+   275,
+   -45
+  ],
+  [
+   275,
+   75
+  ],
+  [
+   375,
+   195
+  ],
+  [
+   345,
+   345
+  ],
+  [
+   165,
+   390
+  ],
+  [
+   15,
+   405
+  ],
+  [
+   -105,
+   375
+  ],
+  [
+   -180,
+   270
+  ],
+  [
+   -315,
+   165
+  ],
+  [
+   -435,
+   45
+  ],
+  [
+   -488,
+   -135
+  ],
+  [
+   -435,
+   -255
+  ],
+  [
+   -285,
+   -315
+  ],
+  [
+   -45,
+   -330
+  ]
+ ],
+ "gates": {
+  "Gentse Poort": [
+   -285,
+   -315
+  ],
+  "Brusselse Poort": [
+   275,
+   5
+  ],
+  "Geraardsbergse Poort": [
+   -180,
+   270
+  ],
+  "Oudenaardse Poort": [
+   -435,
+   45
+  ]
+ },
+ "gateSources": {
+  "Brusselse Poort": "inventory 140017 (Dender crossing at the later Brusselse poort)",
+  "Gentse Poort": "direction of the road to Gent on Ferraris; name uncertain",
+  "Geraardsbergse Poort": "road south-west on Ferraris; name uncertain",
+  "Oudenaardse Poort": "road west on Ferraris; name uncertain"
+ },
+ "gatesUncertain": [
+  "Gentse Poort",
+  "Geraardsbergse Poort",
+  "Oudenaardse Poort"
+ ],
+ "moat": [
+  [
+   0,
+   15
+  ]
+ ]
+}

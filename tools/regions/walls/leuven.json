@@ -171,34 +171,31 @@
    -159.7,
    1128.8
   ],
-  "Kapucijnenpoort": [
-   -710,
-   763
-  ],
-  "Tervuursepoort": [
+  "Oude Brusselsepoort": [
    -1255.8,
    234.6
   ],
-  "Brusselsepoort": [
+  "Wijngaardpoort": [
    -1227,
    -469
   ]
  },
  "gateSources": {
-  "Mechelsepoort": "Ferraris 'Pte de Malines'",
-  "Aarschotsepoort": "Ferraris 'Pte d'Aerschot ou ...' (second name illegible)",
-  "Diestsepoort": "Ferraris 'Pte de Diest'",
-  "Tiensepoort": "Ferraris 'Pte de Tirlemont'",
-  "Parkpoort": "Ferraris 'Pte de Parc'",
-  "Naamsepoort": "Ferraris 'Pte de Namur ou Heverl\u00e9'",
-  "Kapucijnenpoort": "inferred: unlabelled gate at the end of the Kapucijnenvoer",
-  "Tervuursepoort": "Ferraris 'Vieille Pte de Bruxelles ou du Ch\u00e2teau' (the road to the ducal castle at Tervuren)",
-  "Brusselsepoort": "Ferraris 'Pte de Bruxelles ou des Vignes'"
+  "Mechelsepoort": "Ferraris 'Pte de Malines'; name confirmed by inventory 140040 (Historische stadskern van Leuven)",
+  "Aarschotsepoort": "Ferraris 'Pte d'Aerschot ou ...' (second name illegible); name confirmed by inventory 140040 (Historische stadskern van Leuven)",
+  "Diestsepoort": "Ferraris 'Pte de Diest'; name confirmed by inventory 140040 (Historische stadskern van Leuven)",
+  "Tiensepoort": "Ferraris 'Pte de Tirlemont'; name confirmed by inventory 140040 (Historische stadskern van Leuven)",
+  "Parkpoort": "Ferraris 'Pte de Parc'; name confirmed by inventory 140040 (Historische stadskern van Leuven)",
+  "Naamsepoort": "Ferraris 'Pte de Namur ou Heverlé'; name confirmed by inventory 140040 (Historische stadskern van Leuven)",
+  "Oude Brusselsepoort": "inventory 140040 lists the 8 gates of the second wall incl. the 'Oude Brusselsepoort'; Ferraris 'Vieille Pte de Bruxelles ou du Chateau' (was 'Tervuursepoort' in the first version, a later name)",
+  "Wijngaardpoort": "inventory 140040 ('Wijngaardpoort'); Ferraris 'Pte de Bruxelles ou des Vignes' (was 'Brusselsepoort', the 18th-c. name)"
  },
  "moat": [
   [
    22,
    28
   ]
- ]
+ ],
+ "gatesUncertain": [],
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Leuven' (https://id.erfgoed.net/erfgoedobjecten/140040)"
 }

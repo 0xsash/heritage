@@ -1,0 +1,80 @@
+{
+ "note": "Beringen: earthen wall with wet moat and three gates, traced from the Ferraris map (1777). Burnt by Lorraine troops in 1654 (after 1650).",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Beringen' (https://id.erfgoed.net/erfgoedobjecten/140193)",
+ "ring": [
+  [
+   -204,
+   -228
+  ],
+  [
+   -96,
+   -252
+  ],
+  [
+   72,
+   -228
+  ],
+  [
+   216,
+   -156
+  ],
+  [
+   264,
+   -72
+  ],
+  [
+   240,
+   72
+  ],
+  [
+   168,
+   168
+  ],
+  [
+   24,
+   216
+  ],
+  [
+   -120,
+   180
+  ],
+  [
+   -204,
+   96
+  ],
+  [
+   -228,
+   -48
+  ],
+  [
+   -228,
+   -168
+  ]
+ ],
+ "gates": {
+  "Hasseltse Poort": [
+   168,
+   168
+  ],
+  "Koerselse Poort": [
+   240,
+   -108
+  ],
+  "Diesterse Poort": [
+   -204,
+   96
+  ]
+ },
+ "gateSources": {
+  "Hasseltse Poort": "inventory 140193 ('Hasseltse poort (Verloren toren)')",
+  "Koerselse Poort": "inventory 140193 ('Koerselse poort (Kempische poort)')",
+  "Diesterse Poort": "inventory 140193 ('Onze-Lieve-Vrouwe poort (Diesterse poort)')"
+ },
+ "gatesUncertain": [],
+ "moat": [
+  [
+   0,
+   11
+  ]
+ ]
+}

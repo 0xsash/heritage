@@ -1,0 +1,110 @@
+{
+ "note": "Zoutleeuw third wall (from 1552, taking in the second wall of c. 1300) with five gates, repaired and given half-moons and hornworks from 1642; traced from the Ferraris map (1777). The citadel south of the town dates from 1670-79 and is NOT included.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Zoutleeuw' (https://id.erfgoed.net/erfgoedobjecten/140044)",
+ "ring": [
+  [
+   16,
+   -517
+  ],
+  [
+   133,
+   -433
+  ],
+  [
+   200,
+   -283
+  ],
+  [
+   225,
+   -67
+  ],
+  [
+   200,
+   67
+  ],
+  [
+   325,
+   167
+  ],
+  [
+   366,
+   267
+  ],
+  [
+   100,
+   367
+  ],
+  [
+   -100,
+   350
+  ],
+  [
+   -309,
+   317
+  ],
+  [
+   -384,
+   200
+  ],
+  [
+   -417,
+   150
+  ],
+  [
+   -334,
+   33
+  ],
+  [
+   -234,
+   -300
+  ],
+  [
+   -134,
+   -367
+  ],
+  [
+   -34,
+   -483
+  ]
+ ],
+ "gates": {
+  "Diestsepoort": [
+   16,
+   -517
+  ],
+  "Sint-Truidensepoort": [
+   325,
+   167
+  ],
+  "Koepoort": [
+   -309,
+   317
+  ],
+  "Westpoort": [
+   -417,
+   150
+  ],
+  "Uithempoort": [
+   -234,
+   -300
+  ]
+ },
+ "gateSources": {
+  "Diestsepoort": "Ferraris 'Porte de Diest'",
+  "Sint-Truidensepoort": "inventory 140044 (barbican from 1642); Ferraris 'Porte de St Tron'",
+  "Koepoort": "Ferraris 'Porte des Vaches'",
+  "Uithempoort": "inventory 140044 ('Uithempoort (of Tiensepoort)'); Ferraris 'Porte de Tirlemont'",
+  "Westpoort": "unlabelled/illegible Ferraris gate on the west side; name is a placeholder"
+ },
+ "gatesUncertain": [
+  "Diestsepoort",
+  "Koepoort",
+  "Westpoort"
+ ],
+ "moat": [
+  [
+   0,
+   15
+  ]
+ ]
+}

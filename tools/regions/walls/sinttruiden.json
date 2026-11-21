@@ -1,0 +1,113 @@
+{
+ "note": "Sint-Truiden stone town wall (from 1129) with five gates, standing in 1650 and blown up by Louis XIV's troops in 1675; its line survives as the tree-lined vesten. Traced from the octagonal moat on the Ferraris map (1777). Gate names other than the Brustempoort are not verified for 1650.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Sint-Truiden' (https://id.erfgoed.net/erfgoedobjecten/140054)",
+ "ring": [
+  [
+   -115,
+   -469
+  ],
+  [
+   108,
+   -385
+  ],
+  [
+   338,
+   -277
+  ],
+  [
+   362,
+   -138
+  ],
+  [
+   400,
+   -62
+  ],
+  [
+   385,
+   77
+  ],
+  [
+   338,
+   200
+  ],
+  [
+   215,
+   362
+  ],
+  [
+   138,
+   438
+  ],
+  [
+   -60,
+   420
+  ],
+  [
+   -323,
+   338
+  ],
+  [
+   -408,
+   77
+  ],
+  [
+   -392,
+   -138
+  ],
+  [
+   -308,
+   -246
+  ],
+  [
+   -215,
+   -354
+  ]
+ ],
+ "gates": {
+  "Brustempoort": [
+   138,
+   438
+  ],
+  "Stapelpoort": [
+   338,
+   -277
+  ],
+  "Clockempoort": [
+   400,
+   -62
+  ],
+  "Kortenbospoort": [
+   -115,
+   -469
+  ],
+  "Tiensepoort": [
+   -408,
+   77
+  ],
+  "Naamsepoort": [
+   -323,
+   338
+  ]
+ },
+ "gateSources": {
+  "Brustempoort": "Onroerend Erfgoed protection decision 2025 (Luikerstraat / Naamsevest): the only surviving remains",
+  "Clockempoort": "inventory 140054 mentions the Clockempoort at the Sluisberg; position by the road east (uncertain)",
+  "Stapelpoort": "name from the Stapelstraat; position uncertain",
+  "Kortenbospoort": "name from the road to Kortenbos; uncertain",
+  "Tiensepoort": "road to Tienen on Ferraris; name uncertain",
+  "Naamsepoort": "road south (Naamsevest); name uncertain"
+ },
+ "gatesUncertain": [
+  "Stapelpoort",
+  "Clockempoort",
+  "Kortenbospoort",
+  "Tiensepoort",
+  "Naamsepoort"
+ ],
+ "moat": [
+  [
+   0,
+   14
+  ]
+ ]
+}

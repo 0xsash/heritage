@@ -1,5 +1,5 @@
 {
- "note": "Diest town wall, unchanged between c.1560 and 1650; copied from tools/history/walls_1560.json (traced from the Ferraris map, 1777). Local metres around the Grote Markt (x east, z south). Gate names from the Ferraris/Villaret labels, given in Dutch.",
+ "note": "Diest town wall, unchanged between c.1560 and 1650; copied from tools/history/walls_1560.json (traced from the Ferraris map, 1777). Local metres around the Grote Markt (x east, z south). Gate names of the 14th-c. enceinte (Inventaris Onroerend Erfgoed 140037), replacing the Ferraris (1770s) names used earlier; see docs/research/history-check.md F63.",
  "ring": [
   [
    -68.0,
@@ -155,7 +155,7 @@
   ]
  ],
  "gates": {
-  "Antwerpsepoort": [
+  "Schaluinpoort": [
    -68.0,
    -701.1
   ],
@@ -167,11 +167,11 @@
    737.0,
    77.4
   ],
-  "Maastrichtsepoort": [
+  "Beverenpoort": [
    345.0,
    609.5
   ],
-  "Leuvensepoort": [
+  "Putterstraatpoort": [
    -117.0,
    379.9
   ],
@@ -184,5 +184,18 @@
    -59.8
   ]
  },
- "moat": []
+ "moat": [],
+ "gateSources": {
+  "Schaluinpoort": "inventory 140037 (S2 in docs/research/history-check.md): Schaluinpoort, towards Antwerp and the Kempen; 'Antwerpsepoort' is the Ferraris (1770s) name",
+  "Beverenpoort": "inventory 140037: Beverenpoort, towards Hasselt and Maastricht; 'Maastrichtsepoort' is the Ferraris (1770s) name",
+  "Putterstraatpoort": "inventory 140037: Putterstraatpoort, towards Leuven and Aarschot; 'Leuvensepoort' is the Ferraris (1770s) name",
+  "Allerheiligenpoort": "inventory 140037 (towards Zichem)",
+  "Schaffensepoort": "inventory 140037",
+  "Koepoort": "inventory 140037: one of five small gates walled up after 1508 - NOT a working gate in 1650",
+  "Demerpoort": "not in the inventory list; the Demer's passage through the wall, name unverified"
+ },
+ "gatesUncertain": [
+  "Koepoort",
+  "Demerpoort"
+ ]
 }

@@ -1,6 +1,6 @@
-# Brabant c. 1650: the compressed overworld
+# Flanders, Brabant and Loon c. 1650: the compressed overworld
 
-The overworld holds seven towns of the Duchy of Brabant (Spanish Netherlands) as they stood around **1650**: Diest, Scherpenheuvel, Aarschot, Leuven, Mechelen, Lier and Antwerp. Each town is at true 1:1 scale. The countryside between them is compressed six-fold, so dragon flights stay short.
+The overworld holds 29 towns as they stood around **1650**, from the Maas at Maaseik to the coast at Oostende: the first seven of the Duchy of Brabant (Diest, Scherpenheuvel, Aarschot, Leuven, Mechelen, Lier, Antwerp), the land of Loon and the road to it (Hasselt, Sint-Truiden, Tongeren, Maaseik, Halen, Herk-de-Stad, Zoutleeuw, Tienen, Bilzen, Borgloon, Beringen), the Scheldt towns (Gent, Dendermonde, Aalst), Brussel, the west (Brugge, Kortrijk, Oudenaarde, Ieper, Oostende) and the Kempen (Herentals, Turnhout). Each town is at true 1:1 scale. The countryside between them is compressed six-fold (one map, one K), so dragon flights stay short. The second round of towns, the landmark register, the polities and the README with the commands are described in `tools/regions/README.md`; the town table and the per-town notes below cover the first seven.
 
 Data lives in `public/world/regions/`. The pipeline is in `tools/regions/`. It generalises the Diest 1560 method (`docs/history/diest-1560.md`).
 
@@ -117,9 +117,9 @@ All rings are traced by hand from Ferraris and checked by overlay, to about ±20
   - Gates from Ferraris labels: Slijkpoort ("Slyk Porte"), Rodepoort ("Porte Rouge"), Kipdorppoort, Sint-Jorispoort ("Porte de St George").
   - Not added: the Rubens Waterpoort (1624). It stood on the Scheldt front at the Vlasmarkt and has since been moved to the Gillisplaats, so its OSM position is wrong. Ferraris labels the riverside "Porte de Fer" but its exact position is unclear. The Begijnhof is a POI only.
 - **Leuven.**
-  - Ring: the second wall (1357–63), with a moat on the Dijle side (Kapucijnen to Tervuursepoort).
-  - Gates from Ferraris: Mechelsepoort, Aarschotsepoort (label "Pte d'Aerschot ou …", second name illegible), Diestsepoort, Tiensepoort ("Tirlemont"), Parkpoort, Naamsepoort ("de Namur ou Heverlé"), Tervuursepoort ("Vieille Pte de Bruxelles ou du Château"), Brusselsepoort ("de Bruxelles ou des Vignes").
-  - **Inferred**: Kapucijnenpoort (unlabelled gate at the Kapucijnenvoer).
+  - Ring: the second wall (1357–63), with a moat on the Dijle side (Kapucijnen to the Oude Brusselsepoort).
+  - Gates: the eight gates the heritage inventory lists for the second wall (Inventaris Onroerend Erfgoed 140040): Mechelsepoort, Aarschotsepoort, Diestsepoort, Tiensepoort, Parkpoort, Naamsepoort, Oude Brusselsepoort (Ferraris "Vieille Pte de Bruxelles ou du Château"; called Tervuursepoort in the first version) and Wijngaardpoort (Ferraris "de Bruxelles ou des Vignes"; called Brusselsepoort in the first version).
+  - The inferred Kapucijnenpoort of the first version is removed: it is not among the eight gates.
   - The Lakenhalle (Universiteitshal) is identified by OSM way id 27289013 (Naamsestraat 22).
 - **Mechelen.**
   - Ring: the outer medieval wall with moat.
@@ -135,7 +135,7 @@ All rings are traced by hand from Ferraris and checked by overlay, to about ±20
   - Ring: Cobergher's seven-sided enceinte with moat around the basilica.
   - Gates from Ferraris: Zichemsepoort, Leuvensepoort, Diestsepoort.
   - The basilica (consecrated 1627) and the star-shaped town are kept. This differs from the 1560 Diest world, which removes them.
-- **Diest.** The 1560 trace is unchanged (`tools/history/walls_1560.json`). The wall did not change by 1650.
+- **Diest.** The 1560 trace is unchanged (`tools/history/walls_1560.json`). The wall did not change by 1650. Gates now carry their 14th-c. names (inventory 140037, history-check F63): Schaluinpoort, Beverenpoort, Putterstraatpoort, Allerheiligenpoort, Schaffensepoort; the Koepoort (walled up after 1508) and the Demerpoort (unverified) are kept but listed in `gatesUncertain`.
 
 ## Compression and warp
 

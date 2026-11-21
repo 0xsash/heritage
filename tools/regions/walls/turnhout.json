@@ -1,0 +1,70 @@
+{
+ "note": "Turnhout had NO town wall: an open town grown round the castle of the dukes of Brabant and the church, with gates (barriers) between the houses giving onto the fields (inventory 300598). The ring here is only the edge of the built-up town on the Ferraris map; the 'gates' are the road exits, named by destination, not historical gates.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Turnhout' (https://id.erfgoed.net/erfgoedobjecten/300598)",
+ "ring": [
+  [
+   -450,
+   -500
+  ],
+  [
+   100,
+   -650
+  ],
+  [
+   600,
+   -450
+  ],
+  [
+   750,
+   -50
+  ],
+  [
+   550,
+   350
+  ],
+  [
+   100,
+   450
+  ],
+  [
+   -350,
+   300
+  ],
+  [
+   -550,
+   -100
+  ]
+ ],
+ "gates": {
+  "Weg naar Herentals": [
+   -550,
+   -100
+  ],
+  "Weg naar Breda": [
+   100,
+   -650
+  ],
+  "Weg naar Gierle": [
+   100,
+   450
+  ],
+  "Weg naar Arendonk": [
+   750,
+   -50
+  ]
+ },
+ "gateSources": {
+  "Weg naar Herentals": "road exit on Ferraris; Turnhout was unwalled",
+  "Weg naar Breda": "road exit on Ferraris; Turnhout was unwalled",
+  "Weg naar Gierle": "road exit on Ferraris; Turnhout was unwalled",
+  "Weg naar Arendonk": "road exit on Ferraris; Turnhout was unwalled"
+ },
+ "gatesUncertain": [
+  "Weg naar Herentals",
+  "Weg naar Breda",
+  "Weg naar Gierle",
+  "Weg naar Arendonk"
+ ],
+ "moat": [],
+ "walled": false
+}

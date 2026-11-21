@@ -1,24 +1,550 @@
 {
-  "note": "Town list for the 1650 overworld. centre = Grote Markt (or the basilica for Scherpenheuvel), WGS84. bbox = local metres [x0,z0,x1,z1] around the centre (x east, z south) covering the c.1650 enceinte plus ~600 m. Each town's local frame is an equirectangular projection around its own centre, exactly as tools/osm/build-world.mjs does.",
-  "year": 1650,
-  "K": 6,
-  "ref": { "name": "Mechelen", "lat": 51.0280, "lon": 4.4780 },
-  "region": { "south": 50.78, "west": 4.22, "north": 51.32, "east": 5.20 },
-  "overworldMargin": 1200,
-  "suburbMargin": 250,
-  "gap": 600,
-  "towns": [
-    { "id": "diest",          "name": "Diest",          "lat": 50.98505, "lon": 5.05095, "bbox": [-950, -1400, 1500, 1250] },
-    { "id": "scherpenheuvel", "name": "Scherpenheuvel", "lat": 50.98060, "lon": 4.97780, "bbox": [-1000, -1000, 1000, 1000] },
-    { "id": "aarschot",       "name": "Aarschot",       "lat": 50.98414, "lon": 4.83656, "bbox": [-1500, -1500, 1500, 1500] },
-    { "id": "leuven",         "name": "Leuven",         "lat": 50.87893, "lon": 4.70095, "bbox": [-2400, -2400, 2400, 2400] },
-    { "id": "mechelen",       "name": "Mechelen",       "lat": 51.02788, "lon": 4.48003, "bbox": [-1900, -1900, 1900, 1900] },
-    { "id": "lier",           "name": "Lier",           "lat": 51.13108, "lon": 4.57025, "bbox": [-1500, -1500, 1500, 1500] },
-    { "id": "antwerpen",      "name": "Antwerpen",      "lat": 51.22128, "lon": 4.39970, "bbox": [-1800, -2600, 2200, 2900] }
+ "note": "Town list for the 1650 overworld. centre = Grote Markt (or the basilica for Scherpenheuvel), WGS84. bbox = local metres [x0,z0,x1,z1] around the centre (x east, z south) covering the c.1650 enceinte plus ~600 m. Each town's local frame is an equirectangular projection around its own centre, exactly as tools/osm/build-world.mjs does. Towns added in the second round (Limburg, the Scheldt, Flanders) were recentred on their market square after tracing; 'margin' overrides suburbMargin for one town. 'region' is the overworld's extent for the regional data (rivers, roads, villages, land cover).",
+ "year": 1650,
+ "K": 6,
+ "ref": {
+  "name": "Mechelen",
+  "lat": 51.028,
+  "lon": 4.478
+ },
+ "region": {
+  "south": 50.68,
+  "west": 2.5,
+  "north": 51.45,
+  "east": 5.95
+ },
+ "overworldMargin": 1200,
+ "suburbMargin": 250,
+ "gap": 600,
+ "towns": [
+  {
+   "id": "diest",
+   "name": "Diest",
+   "lat": 50.98505,
+   "lon": 5.05095,
+   "bbox": [
+    -950,
+    -1400,
+    1500,
+    1250
+   ]
+  },
+  {
+   "id": "scherpenheuvel",
+   "name": "Scherpenheuvel",
+   "lat": 50.9806,
+   "lon": 4.9778,
+   "bbox": [
+    -1000,
+    -1000,
+    1000,
+    1000
+   ]
+  },
+  {
+   "id": "aarschot",
+   "name": "Aarschot",
+   "lat": 50.98414,
+   "lon": 4.83656,
+   "bbox": [
+    -1500,
+    -1500,
+    1500,
+    1500
+   ]
+  },
+  {
+   "id": "leuven",
+   "name": "Leuven",
+   "lat": 50.87893,
+   "lon": 4.70095,
+   "bbox": [
+    -2400,
+    -2400,
+    2400,
+    2400
+   ]
+  },
+  {
+   "id": "mechelen",
+   "name": "Mechelen",
+   "lat": 51.02788,
+   "lon": 4.48003,
+   "bbox": [
+    -1900,
+    -1900,
+    1900,
+    1900
+   ]
+  },
+  {
+   "id": "lier",
+   "name": "Lier",
+   "lat": 51.13108,
+   "lon": 4.57025,
+   "bbox": [
+    -1500,
+    -1500,
+    1500,
+    1500
+   ]
+  },
+  {
+   "id": "antwerpen",
+   "name": "Antwerpen",
+   "lat": 51.22128,
+   "lon": 4.3997,
+   "bbox": [
+    -1800,
+    -2600,
+    2200,
+    2900
+   ]
+  },
+  {
+   "id": "hasselt",
+   "name": "Hasselt",
+   "lat": 50.9307,
+   "lon": 5.3378,
+   "bbox": [
+    -1400,
+    -1400,
+    1400,
+    1400
+   ]
+  },
+  {
+   "id": "sinttruiden",
+   "name": "Sint-Truiden",
+   "lat": 50.8166,
+   "lon": 5.1863,
+   "bbox": [
+    -1500,
+    -1500,
+    1500,
+    1500
+   ],
+   "margin": 350
+  },
+  {
+   "id": "tongeren",
+   "name": "Tongeren",
+   "lat": 50.7806,
+   "lon": 5.4648,
+   "bbox": [
+    -1700,
+    -1700,
+    1700,
+    1700
+   ]
+  },
+  {
+   "id": "maaseik",
+   "name": "Maaseik",
+   "lat": 51.094785,
+   "lon": 5.792461,
+   "bbox": [
+    -1100,
+    -1100,
+    1100,
+    1100
+   ]
+  },
+  {
+   "id": "halen",
+   "name": "Halen",
+   "lat": 50.948281,
+   "lon": 5.114052,
+   "bbox": [
+    -900,
+    -900,
+    900,
+    900
+   ]
+  },
+  {
+   "id": "herkdestad",
+   "name": "Herk-de-Stad",
+   "lat": 50.940721,
+   "lon": 5.166617,
+   "bbox": [
+    -900,
+    -900,
+    900,
+    900
+   ]
+  },
+  {
+   "id": "zoutleeuw",
+   "name": "Zoutleeuw",
+   "lat": 50.8333,
+   "lon": 5.103131,
+   "bbox": [
+    -1100,
+    -1100,
+    1100,
+    1100
+   ]
+  },
+  {
+   "id": "tienen",
+   "name": "Tienen",
+   "lat": 50.807988,
+   "lon": 4.937089,
+   "bbox": [
+    -1500,
+    -1500,
+    1500,
+    1500
+   ]
+  },
+  {
+   "id": "bilzen",
+   "name": "Bilzen",
+   "lat": 50.870702,
+   "lon": 5.517535,
+   "bbox": [
+    -900,
+    -900,
+    900,
+    900
+   ]
+  },
+  {
+   "id": "borgloon",
+   "name": "Borgloon",
+   "lat": 50.801987,
+   "lon": 5.344295,
+   "bbox": [
+    -1000,
+    -1000,
+    1000,
+    1000
+   ]
+  },
+  {
+   "id": "beringen",
+   "name": "Beringen",
+   "lat": 51.048449,
+   "lon": 5.223442,
+   "bbox": [
+    -900,
+    -900,
+    900,
+    900
+   ]
+  },
+  {
+   "id": "brussel",
+   "name": "Brussel",
+   "lat": 50.8467,
+   "lon": 4.3525,
+   "bbox": [
+    -2500,
+    -2500,
+    2500,
+    2500
+   ]
+  },
+  {
+   "id": "gent",
+   "name": "Gent",
+   "lat": 51.0536,
+   "lon": 3.7247,
+   "bbox": [
+    -3000,
+    -3000,
+    3000,
+    3000
+   ]
+  },
+  {
+   "id": "dendermonde",
+   "name": "Dendermonde",
+   "lat": 51.03078,
+   "lon": 4.098043,
+   "bbox": [
+    -1400,
+    -1400,
+    1400,
+    1400
+   ]
+  },
+  {
+   "id": "aalst",
+   "name": "Aalst",
+   "lat": 50.938207,
+   "lon": 4.040086,
+   "bbox": [
+    -1300,
+    -1300,
+    1300,
+    1300
+   ]
+  },
+  {
+   "id": "brugge",
+   "name": "Brugge",
+   "lat": 51.2089,
+   "lon": 3.2242,
+   "bbox": [
+    -2300,
+    -2300,
+    2300,
+    2300
+   ]
+  },
+  {
+   "id": "kortrijk",
+   "name": "Kortrijk",
+   "lat": 50.8277,
+   "lon": 3.265,
+   "bbox": [
+    -1400,
+    -1400,
+    1400,
+    1400
+   ]
+  },
+  {
+   "id": "oudenaarde",
+   "name": "Oudenaarde",
+   "lat": 50.843773,
+   "lon": 3.603846,
+   "bbox": [
+    -1300,
+    -1300,
+    1300,
+    1300
+   ]
+  },
+  {
+   "id": "ieper",
+   "name": "Ieper",
+   "lat": 50.8513,
+   "lon": 2.8857,
+   "bbox": [
+    -1500,
+    -1500,
+    1500,
+    1500
+   ]
+  },
+  {
+   "id": "oostende",
+   "name": "Oostende",
+   "lat": 51.2297,
+   "lon": 2.9196,
+   "bbox": [
+    -1400,
+    -1400,
+    1400,
+    1400
+   ]
+  },
+  {
+   "id": "herentals",
+   "name": "Herentals",
+   "lat": 51.1772,
+   "lon": 4.8357,
+   "bbox": [
+    -1200,
+    -1200,
+    1200,
+    1200
+   ]
+  },
+  {
+   "id": "turnhout",
+   "name": "Turnhout",
+   "lat": 51.3226,
+   "lon": 4.9446,
+   "bbox": [
+    -1200,
+    -1200,
+    1200,
+    1200
+   ]
+  }
+ ],
+ "links": [
+  [
+   "diest",
+   "scherpenheuvel"
   ],
-  "links": [
-    ["diest", "scherpenheuvel"], ["scherpenheuvel", "aarschot", {"toGate": "Waterpoort"}], ["aarschot", "leuven"], ["diest", "leuven"],
-    ["aarschot", "lier", {"fromGate": "Mechelsepoort"}], ["aarschot", "mechelen"], ["leuven", "mechelen"], ["mechelen", "lier"],
-    ["mechelen", "antwerpen"], ["lier", "antwerpen"]
+  [
+   "scherpenheuvel",
+   "aarschot",
+   {
+    "toGate": "Waterpoort"
+   }
+  ],
+  [
+   "aarschot",
+   "leuven"
+  ],
+  [
+   "diest",
+   "leuven"
+  ],
+  [
+   "aarschot",
+   "lier",
+   {
+    "fromGate": "Mechelsepoort"
+   }
+  ],
+  [
+   "aarschot",
+   "mechelen"
+  ],
+  [
+   "leuven",
+   "mechelen"
+  ],
+  [
+   "mechelen",
+   "lier"
+  ],
+  [
+   "mechelen",
+   "antwerpen"
+  ],
+  [
+   "lier",
+   "antwerpen"
+  ],
+  [
+   "diest",
+   "halen"
+  ],
+  [
+   "halen",
+   "herkdestad"
+  ],
+  [
+   "herkdestad",
+   "hasselt"
+  ],
+  [
+   "diest",
+   "beringen"
+  ],
+  [
+   "beringen",
+   "hasselt"
+  ],
+  [
+   "hasselt",
+   "bilzen"
+  ],
+  [
+   "bilzen",
+   "tongeren"
+  ],
+  [
+   "hasselt",
+   "sinttruiden"
+  ],
+  [
+   "sinttruiden",
+   "borgloon"
+  ],
+  [
+   "borgloon",
+   "tongeren"
+  ],
+  [
+   "hasselt",
+   "maaseik"
+  ],
+  [
+   "diest",
+   "zoutleeuw"
+  ],
+  [
+   "sinttruiden",
+   "zoutleeuw"
+  ],
+  [
+   "zoutleeuw",
+   "tienen"
+  ],
+  [
+   "tienen",
+   "leuven"
+  ],
+  [
+   "leuven",
+   "brussel"
+  ],
+  [
+   "mechelen",
+   "brussel"
+  ],
+  [
+   "brussel",
+   "aalst"
+  ],
+  [
+   "aalst",
+   "gent"
+  ],
+  [
+   "aalst",
+   "dendermonde"
+  ],
+  [
+   "dendermonde",
+   "gent"
+  ],
+  [
+   "dendermonde",
+   "mechelen"
+  ],
+  [
+   "antwerpen",
+   "gent"
+  ],
+  [
+   "gent",
+   "brugge"
+  ],
+  [
+   "brugge",
+   "oostende"
+  ],
+  [
+   "gent",
+   "oudenaarde"
+  ],
+  [
+   "oudenaarde",
+   "kortrijk"
+  ],
+  [
+   "kortrijk",
+   "ieper"
+  ],
+  [
+   "ieper",
+   "brugge"
+  ],
+  [
+   "kortrijk",
+   "gent"
+  ],
+  [
+   "lier",
+   "herentals"
+  ],
+  [
+   "herentals",
+   "turnhout"
+  ],
+  [
+   "diest",
+   "herentals"
   ]
+ ]
 }

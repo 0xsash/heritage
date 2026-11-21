@@ -1,0 +1,133 @@
+{
+ "note": "Tienen 'grote omheining' (earthen ramparts, 14th c.) as drawn on the Ferraris map (1777), with its six gates; it stood until 1781. A smaller inner wall (1537-38, 1596) also existed in 1650 and is not traced. Tienen was largely burnt by the French and Dutch in 1635 and rebuilt round the Grote Markt.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tienen' (https://id.erfgoed.net/erfgoedobjecten/140041)",
+ "ring": [
+  [
+   -592,
+   -446
+  ],
+  [
+   -353,
+   -540
+  ],
+  [
+   -125,
+   -592
+  ],
+  [
+   145,
+   -581
+  ],
+  [
+   395,
+   -529
+  ],
+  [
+   581,
+   -415
+  ],
+  [
+   789,
+   -166
+  ],
+  [
+   685,
+   353
+  ],
+  [
+   851,
+   582
+  ],
+  [
+   1173,
+   737
+  ],
+  [
+   1101,
+   852
+  ],
+  [
+   727,
+   955
+  ],
+  [
+   353,
+   1059
+  ],
+  [
+   -21,
+   1153
+  ],
+  [
+   -478,
+   997
+  ],
+  [
+   -665,
+   831
+  ],
+  [
+   -748,
+   769
+  ],
+  [
+   -872,
+   457
+  ],
+  [
+   -935,
+   0
+  ],
+  [
+   -872,
+   -311
+  ],
+  [
+   -748,
+   -415
+  ]
+ ],
+ "gates": {
+  "Leuvensepoort": [
+   -592,
+   -446
+  ],
+  "Diestsepoort": [
+   -125,
+   -592
+  ],
+  "Sint-Truidensepoort": [
+   395,
+   -529
+  ],
+  "Maastrichtsepoort": [
+   1173,
+   737
+  ],
+  "Naamsepoort": [
+   -21,
+   1153
+  ],
+  "Hoegaardsepoort": [
+   -748,
+   769
+  ]
+ },
+ "gateSources": {
+  "Leuvensepoort": "Ferraris label ('Porte de Louvain')",
+  "Diestsepoort": "Ferraris label ('Porte de Diest')",
+  "Sint-Truidensepoort": "Ferraris label ('Porte de St Trond')",
+  "Maastrichtsepoort": "Ferraris label ('Porte de Maestricht')",
+  "Naamsepoort": "Ferraris label ('Porte de Namur')",
+  "Hoegaardsepoort": "Ferraris label ('Porte de Hougarde')"
+ },
+ "gatesUncertain": [
+  "Leuvensepoort",
+  "Diestsepoort",
+  "Sint-Truidensepoort",
+  "Maastrichtsepoort",
+  "Naamsepoort",
+  "Hoegaardsepoort"
+ ],
+ "moat": []
+}

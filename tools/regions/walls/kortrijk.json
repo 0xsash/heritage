@@ -1,0 +1,134 @@
+{
+ "note": "Kortrijk: Burgundian wall (1354-1454, 5 gates, 26 towers) including Overleie north of the Leie, bastioned between 1577 and 1648 (completed by the French in 1646-48, who also built a pentagonal citadel on the east flank of Overbeke, 1647-84; the town was Spanish again from 1648). Traced from the Ferraris map (1777) along the main rampart; the citadel is a landmark point only (not on Ferraris).",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Kortrijk' (https://id.erfgoed.net/erfgoedobjecten/140006)",
+ "ring": [
+  [
+   -875,
+   -617
+  ],
+  [
+   -691,
+   -746
+  ],
+  [
+   -395,
+   -912
+  ],
+  [
+   -266,
+   -875
+  ],
+  [
+   -8,
+   -746
+  ],
+  [
+   269,
+   -691
+  ],
+  [
+   325,
+   -488
+  ],
+  [
+   546,
+   -414
+  ],
+  [
+   767,
+   -340
+  ],
+  [
+   805,
+   -118
+  ],
+  [
+   749,
+   103
+  ],
+  [
+   509,
+   177
+  ],
+  [
+   472,
+   306
+  ],
+  [
+   361,
+   362
+  ],
+  [
+   214,
+   380
+  ],
+  [
+   29,
+   306
+  ],
+  [
+   -100,
+   214
+  ],
+  [
+   -303,
+   103
+  ],
+  [
+   -432,
+   -45
+  ],
+  [
+   -414,
+   -192
+  ],
+  [
+   -525,
+   -488
+  ],
+  [
+   -746,
+   -525
+  ]
+ ],
+ "gates": {
+  "Brugsepoort": [
+   -395,
+   -912
+  ],
+  "Bissegemsepoort": [
+   -875,
+   -617
+  ],
+  "Gentsepoort": [
+   325,
+   -488
+  ],
+  "Doorniksepoort": [
+   214,
+   380
+  ],
+  "Rijselpoort": [
+   -303,
+   103
+  ]
+ },
+ "gateSources": {
+  "Brugsepoort": "inventory 140006 (built 1411-54)",
+  "Bissegemsepoort": "inventory 140006 ('(Nieuwe) Bissegemsepoort' on the NW bastion of Overleie)",
+  "Gentsepoort": "road to Gent on Ferraris; name uncertain",
+  "Doorniksepoort": "road to Doornik on Ferraris; name uncertain",
+  "Rijselpoort": "road to Rijsel/Menen; name uncertain"
+ },
+ "gatesUncertain": [
+  "Gentsepoort",
+  "Doorniksepoort",
+  "Rijselpoort"
+ ],
+ "moat": [
+  [
+   0,
+   21
+  ]
+ ]
+}

@@ -1,0 +1,97 @@
+{
+ "note": "Bilzen wall with gates on its main roads (rebuilt 1506; plundered 1636 by Jan van Weert, 1654 by Lorraine troops; partly razed by the French 1675). Traced from the Ferraris map (1777).",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Bilzen' (https://id.erfgoed.net/erfgoedobjecten/140045)",
+ "ring": [
+  [
+   -228,
+   -168
+  ],
+  [
+   -120,
+   -300
+  ],
+  [
+   -12,
+   -336
+  ],
+  [
+   132,
+   -336
+  ],
+  [
+   216,
+   -228
+  ],
+  [
+   252,
+   -108
+  ],
+  [
+   240,
+   12
+  ],
+  [
+   180,
+   108
+  ],
+  [
+   72,
+   216
+  ],
+  [
+   24,
+   264
+  ],
+  [
+   -156,
+   192
+  ],
+  [
+   -276,
+   84
+  ],
+  [
+   -324,
+   -24
+  ],
+  [
+   -300,
+   -132
+  ]
+ ],
+ "gates": {
+  "Hasseltsepoort": [
+   -258,
+   -168
+  ],
+  "Maastrichterpoort": [
+   18,
+   264
+  ],
+  "Brugpoort": [
+   192,
+   -252
+  ],
+  "Pijpenpoort": [
+   96,
+   -336
+  ],
+  "Nutspoort": [
+   204,
+   60
+  ]
+ },
+ "gateSources": {
+  "Hasseltsepoort": "inventory 140045; Ferraris 'Porte de Hasselt'",
+  "Maastrichterpoort": "inventory 140045; Ferraris 'Porte de Maestricht'",
+  "Brugpoort": "inventory 140045 (demolished 1822); position uncertain",
+  "Pijpenpoort": "inventory 140045 (demolished 1820); position uncertain",
+  "Nutspoort": "inventory 140045 (demolished 1822); position uncertain"
+ },
+ "gatesUncertain": [
+  "Brugpoort",
+  "Pijpenpoort",
+  "Nutspoort"
+ ],
+ "moat": []
+}

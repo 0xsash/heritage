@@ -1,0 +1,81 @@
+{
+ "note": "Maaseik late-medieval wall (rebuilt 1477, repaired 16th c.) with four gates, traced from the Ferraris map (1777). The bastions on the Ferraris sheet's outskirts are 1670s French work and are not traced. Moat all round (marshy ground).",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Maaseik' (https://id.erfgoed.net/erfgoedobjecten/140051)",
+ "ring": [
+  [
+   -393,
+   -287
+  ],
+  [
+   107,
+   -293
+  ],
+  [
+   293,
+   -160
+  ],
+  [
+   373,
+   -80
+  ],
+  [
+   387,
+   120
+  ],
+  [
+   360,
+   187
+  ],
+  [
+   13,
+   200
+  ],
+  [
+   -173,
+   120
+  ],
+  [
+   -333,
+   93
+  ],
+  [
+   -360,
+   13
+  ],
+  [
+   -400,
+   -160
+  ]
+ ],
+ "gates": {
+  "Bospoort": [
+   -400,
+   -153
+  ],
+  "Eikerpoort": [
+   113,
+   -287
+  ],
+  "Bleumerpoort": [
+   367,
+   180
+  ],
+  "Heppenerpoort": [
+   13,
+   200
+  ]
+ },
+ "gateSources": {
+  "Bospoort": "inventory 140051: four gates, Bospoort (Kempen), Eikerpoort (Aldeneik), Bleumerpoort (Maas), Heppenerpoort (Heppeneert); position from Ferraris roads",
+  "Eikerpoort": "inventory 140051: four gates, Bospoort (Kempen), Eikerpoort (Aldeneik), Bleumerpoort (Maas), Heppenerpoort (Heppeneert); position from Ferraris roads",
+  "Bleumerpoort": "inventory 140051: four gates, Bospoort (Kempen), Eikerpoort (Aldeneik), Bleumerpoort (Maas), Heppenerpoort (Heppeneert); position from Ferraris roads",
+  "Heppenerpoort": "inventory 140051: four gates, Bospoort (Kempen), Eikerpoort (Aldeneik), Bleumerpoort (Maas), Heppenerpoort (Heppeneert); position from Ferraris roads"
+ },
+ "gatesUncertain": [],
+ "moat": [
+  [
+   0,
+   10
+  ]
+ ]
+}

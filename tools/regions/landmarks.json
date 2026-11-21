@@ -133,6 +133,57 @@
      "x": 800,
      "z": -180
     }
+   ],
+   "landmarks": [
+    {
+     "n": "Onze-Lieve-Vrouwekathedraal",
+     "k": "church",
+     "y1650": "Cathedral (since 1559); the north tower, finished in 1518, about 123 m, was the highest in the Low Countries; the south tower stops at a third of its height.",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouwekathedraal (Antwerpen)'",
+     "match": "Onze-Lieve-Vrouwekathedraal",
+     "h": 123,
+     "special": "main bell tower; unfinished south tower"
+    },
+    {
+     "n": "Citadel (Zuidkasteel)",
+     "k": "castle",
+     "y1650": "Pentagonal citadel begun in 1567 by Alva south of the town (Paciotto); held by a Spanish garrison.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Antwerpen' (id.erfgoed.net/erfgoedobjecten/140031); nl.wikipedia 'Zuidkasteel'",
+     "x": -500,
+     "z": 1457,
+     "special": "citadel",
+     "footprintNote": "position: centroid of the traced fort in walls/antwerpen.json"
+    },
+    {
+     "n": "Het Steen",
+     "k": "castle",
+     "y1650": "The old castle (burcht) on the Scheldt, prison in 1650.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Antwerpen' (id.erfgoed.net/erfgoedobjecten/140031)",
+     "match": "Het Steen"
+    },
+    {
+     "n": "Scheldekaaien en de Werf",
+     "k": "water",
+     "y1650": "The irregular medieval Scheldt front with the Werf jutting out north of Het Steen and quays and water gates (straightened only in 1877-85).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Antwerpen' (id.erfgoed.net/erfgoedobjecten/140031)",
+     "x": -520,
+     "z": -150,
+     "uncertain": true
+    },
+    {
+     "n": "Stadhuis",
+     "k": "townhall",
+     "y1650": "Renaissance town hall of 1561-65 by Cornelis Floris.",
+     "src": "nl.wikipedia 'Stadhuis van Antwerpen'",
+     "match": "Stadhuis Antwerpen"
+    },
+    {
+     "n": "Vleeshuis",
+     "k": "hall",
+     "y1650": "Butchers' guild hall of 1501-04.",
+     "src": "nl.wikipedia 'Vleeshuis (Antwerpen)'",
+     "match": "Vleeshuis"
+    }
    ]
   },
   "mechelen": {
@@ -216,6 +267,52 @@
      "k": "beguinage",
      "x": -390,
      "z": -430
+    }
+   ],
+   "landmarks": [
+    {
+     "n": "Sint-Romboutstoren",
+     "k": "church",
+     "y1650": "West tower of Sint-Rombouts, built 1452-1520 to a design for a spire of about 167 m and left unfinished at about 97 m, as it still stands; the main bell tower of Mechelen.",
+     "src": "nl.wikipedia 'Sint-Romboutskathedraal'",
+     "match": "Sint-Romboutskathedraal",
+     "h": 97,
+     "special": "unfinished tower"
+    },
+    {
+     "n": "Lakenhalle en Paleis van de Grote Raad",
+     "k": "clothhall",
+     "y1650": "The 14th-c. cloth hall on the Grote Markt, and the palace begun in 1526 by Rombout Keldermans for the Great Council, left unfinished (completed only in 1900-11).",
+     "src": "nl.wikipedia 'Stadhuis van Mechelen'",
+     "match": "Stadhuis Mechelen"
+    },
+    {
+     "n": "Schepenhuis",
+     "k": "townhall",
+     "y1650": "Aldermen's house (from 1288), seat of the Great Council of the Netherlands until it moved to the Hof van Savoye in 1618.",
+     "src": "nl.wikipedia 'Schepenhuis (Mechelen)'",
+     "match": "Schepenhuis"
+    },
+    {
+     "n": "Hof van Savoye",
+     "k": "castle",
+     "y1650": "Palace of Margaret of Austria (d. 1530); from 1618 seat of the Great Council.",
+     "src": "nl.wikipedia 'Hof van Savoye'",
+     "match": "Hof van Savoye"
+    },
+    {
+     "n": "Groot Begijnhof",
+     "k": "beguinage",
+     "y1650": "The great beguinage moved inside the walls after its destruction in 1578; its church was built 1629-47.",
+     "src": "nl.wikipedia 'Groot Begijnhof (Mechelen)'",
+     "match": "Begijnhofkerk Sint-Alexius en Catharina"
+    },
+    {
+     "n": "Brusselpoort",
+     "k": "gate",
+     "y1650": "Gate of c. 1300, the only one of twelve to survive.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Mechelen' (id.erfgoed.net/erfgoedobjecten/140035)",
+     "match": "Brusselpoort"
     }
    ]
   },
@@ -360,6 +457,47 @@
      "x": -110,
      "z": -690
     }
+   ],
+   "landmarks": [
+    {
+     "n": "Sint-Pieterskerk",
+     "k": "church",
+     "y1650": "Gothic collegiate church. A fire in 1458 destroyed the old tower front; Joost Metsys became master of the new west towers about 1505 (stone model 1524-30), a three-tower front meant to be among the highest in Christendom, never finished: in 1650 the stumps stood. Whether the soft ground was the reason is NOT verified here.",
+     "src": "nl.wikipedia 'Sint-Pieterskerk (Leuven)'; Leuven visitor guide 'Tussen Hemel en Aarde' (M Leuven); finestresullarte.info",
+     "match": "Sint-Pieterskerk",
+     "special": "unfinished towers"
+    },
+    {
+     "n": "Stadhuis",
+     "k": "townhall",
+     "y1650": "Late-Gothic town hall of 1448-69 (Mathijs de Layens).",
+     "src": "nl.wikipedia 'Stadhuis van Leuven'",
+     "match": "Stadhuis van Leuven"
+    },
+    {
+     "n": "Universiteitshal (Lakenhalle)",
+     "k": "clothhall",
+     "y1650": "The 14th-c. cloth hall, given to the university in 1432; the baroque upper storey is of 1676-80 (after 1650).",
+     "src": "nl.wikipedia 'Universiteitshal'",
+     "id": 27289013,
+     "special": "university hall"
+    },
+    {
+     "n": "Groot Begijnhof",
+     "k": "beguinage",
+     "y1650": "Great beguinage on both arms of the Dijle, with the church of Sint-Jan-de-Doper.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Leuven' (id.erfgoed.net/erfgoedobjecten/140040)",
+     "match": "Sint-Jan de Doperkerk"
+    },
+    {
+     "n": "Dijle door de stad",
+     "k": "water",
+     "y1650": "The Dijle crosses the town in several arms, entering at the Grote Spuie (water gate) and leaving at the Kleine Spuie; mills along it.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Leuven' (id.erfgoed.net/erfgoedobjecten/140040)",
+     "x": -200,
+     "z": -300,
+     "uncertain": true
+    }
    ]
   },
   "lier": {
@@ -427,6 +565,38 @@
      "k": "beguinage",
      "x": -190,
      "z": 300
+    }
+   ],
+   "landmarks": [
+    {
+     "n": "Sint-Gummaruskerk",
+     "k": "church",
+     "y1650": "Brabant-Gothic collegiate church, main bell tower of Lier.",
+     "src": "nl.wikipedia 'Sint-Gummaruskerk'",
+     "match": "Sint-Gummaruskerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Belfort en lakenhalle",
+     "k": "belfry",
+     "y1650": "Belfry of 1369 on the market (the cloth hall beside it was replaced by the town hall in 1740).",
+     "src": "nl.wikipedia 'Belfort van Lier'",
+     "match": "Stadhuis Lier",
+     "special": "belfry"
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Beguinage on the Nete.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Lier' (id.erfgoed.net/erfgoedobjecten/140034)",
+     "match": "Sint-Margaritakerk"
+    },
+    {
+     "n": "Zimmertoren (Corneliustoren)",
+     "k": "tower",
+     "y1650": "Tower of the first wall.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Lier' (id.erfgoed.net/erfgoedobjecten/140034)",
+     "match": "Zimmertoren"
     }
    ]
   },
@@ -502,6 +672,44 @@
      "x": 700,
      "z": -330
     }
+   ],
+   "landmarks": [
+    {
+     "n": "Sint-Sulpitiuskerk",
+     "k": "church",
+     "y1650": "Main church with the unfinished west tower; the crossing tower ('de Mosterdpot') got its carillon only in 1671.",
+     "src": "docs/research/history-check.md (S3, S4)",
+     "match": "Sint-Sulpitius en Dionysiuskerk",
+     "special": "unfinished tower; no carillon until 1671"
+    },
+    {
+     "n": "Lakenhalle",
+     "k": "clothhall",
+     "y1650": "Cloth hall of 1346.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Diest' (id.erfgoed.net/erfgoedobjecten/140037)",
+     "match": "Lakenhalle"
+    },
+    {
+     "n": "Schepenhuis",
+     "k": "townhall",
+     "y1650": "The medieval schepenhuis (1337); the present town hall dates from the 1720s.",
+     "src": "docs/research/history-check.md (S14)",
+     "match": "Stadhuis Diest"
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Beguinage recorded from 1245.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Diest' (id.erfgoed.net/erfgoedobjecten/140037)",
+     "match": "Sint-Catharinakerk"
+    },
+    {
+     "n": "Hof van Nassau",
+     "k": "castle",
+     "y1650": "Residence of the Nassau lords of Diest from 1499.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Diest' (id.erfgoed.net/erfgoedobjecten/140037)",
+     "match": "Hof van Nassau"
+    }
    ]
   },
   "scherpenheuvel": {
@@ -518,7 +726,16 @@
     "Brandweerpost",
     "Wijkdienst"
    ],
-   "pois": []
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Basiliek van Onze-Lieve-Vrouw",
+     "k": "church",
+     "y1650": "Baroque pilgrimage church by Wenceslas Cobergher, consecrated 1627, in the centre of the seven-sided town of 1603-09; served by the Oratorians from 1624.",
+     "src": "docs/research/history-check.md (S12)",
+     "match": "Basiliek van Onze-Lieve-Vrouw van Scherpenheuvel"
+    }
+   ]
   },
   "aarschot": {
    "keep": [
@@ -561,7 +778,1126 @@
     "Museum",
     "Bibliotheek"
    ],
-   "pois": []
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Onze-Lieve-Vrouwekerk",
+     "k": "church",
+     "y1650": "Gothic church of Our Lady (14th-15th c.), main bell tower of Aarschot.",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouwekerk (Aarschot)'",
+     "match": "Onze-Lieve-Vrouwekerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Beguinage on the Demer.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Aarschot' (id.erfgoed.net/erfgoedobjecten/140036)",
+     "match": "Begijnhof"
+    },
+    {
+     "n": "Aurelianustoren",
+     "k": "tower",
+     "y1650": "Tower of the town wall on the hill (the 'Orleanustoren' of the inventory).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Aarschot' (id.erfgoed.net/erfgoedobjecten/140036)",
+     "match": "Aurelianustoren"
+    }
+   ]
+  },
+  "hasselt": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Quintinuskerk",
+     "k": "church",
+     "y1650": "Main parish church of Hasselt (13th-15th c.) with its west tower, the town's main bell tower; not yet a cathedral (bishopric 1967).",
+     "src": "nl.wikipedia 'Sint-Quintinuskathedraal (Hasselt)'",
+     "match": "Sint-Quintinuskathedraal",
+     "h": 60,
+     "footprintNote": "tower height today incl. 18th-c. spire; 1650 height not verified",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Onze-Lieve-Vrouwekapel (Virga Jesse)",
+     "k": "church",
+     "y1650": "Chapel of Our Lady with the Virga Jesse statue (14th c.), goal of the septennial Virga Jesse procession; the present baroque church dates from 1728-42, so in 1650 a smaller Gothic chapel stood here.",
+     "src": "nl.wikipedia 'Virga-Jessebasiliek'",
+     "match": "Virga-Jessebasiliek",
+     "uncertain": true
+    },
+    {
+     "n": "Halle (Vleeshuis, raadhuis)",
+     "k": "townhall",
+     "y1650": "Hall built c. 1400, used as meat hall, later cloth hall and council house (inventory 140049); position on the Grote Markt not verified.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Hasselt' (id.erfgoed.net/erfgoedobjecten/140049)",
+     "x": 0,
+     "z": 0,
+     "uncertain": true
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Second beguinage, inside the walls on the Nieuwe Demer from 1571 (the present buildings are of 1707 onward).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Hasselt' (id.erfgoed.net/erfgoedobjecten/140049)",
+     "match": "Begijnhof"
+    },
+    {
+     "n": "Refugiehuis van Herkenrode",
+     "k": "abbey",
+     "y1650": "Town refuge of the Cistercian abbey of Herkenrode, built 1542-44.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Hasselt' (id.erfgoed.net/erfgoedobjecten/140049)",
+     "match": "Refugiehuis Herkenrode"
+    },
+    {
+     "n": "Maastrichterpoort",
+     "k": "gate",
+     "y1650": "Massive gatehouse with ravelin, drawn in 1687.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Hasselt' (id.erfgoed.net/erfgoedobjecten/140049)",
+     "x": 437,
+     "z": 90,
+     "special": "gate"
+    }
+   ]
+  },
+  "sinttruiden": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Trudoabdij",
+     "k": "abbey",
+     "y1650": "Benedictine abbey founded 7th c., lord of half the town; its Romanesque abbey church and tower (11th c.) stood until the abbey was sold after 1794; the tower survives.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Sint-Truiden' (id.erfgoed.net/erfgoedobjecten/140054)",
+     "match": "Abdij Sint-Truiden",
+     "special": "abbey tower"
+    },
+    {
+     "n": "Onze-Lieve-Vrouwekerk",
+     "k": "church",
+     "y1650": "Main parish church on the Grote Markt; its tower collapsed in 1668 (after 1650), so in 1650 the old tower stood (height not verified).",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouwekerk (Sint-Truiden)'",
+     "match": "Onze-Lieve-Vrouwekerk",
+     "uncertain": true
+    },
+    {
+     "n": "Halle met belfort",
+     "k": "belfry",
+     "y1650": "Cloth hall of the 14th c. on the market; the belfry tower was rebuilt in 1606 on the old base and is on the UNESCO list of belfries. The present town hall front is 18th c.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Sint-Truiden' (id.erfgoed.net/erfgoedobjecten/140054); UNESCO 'Belfries of Belgium and France'",
+     "match": "Stadhuis Sint-Truiden",
+     "h": 37,
+     "special": "belfry"
+    },
+    {
+     "n": "Sint-Agnesbegijnhof",
+     "k": "beguinage",
+     "y1650": "13th-c. beguinage on abbey land, outside the walls to the north-east; church of 1265 with medieval murals.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Sint-Truiden' (id.erfgoed.net/erfgoedobjecten/140054)",
+     "match": "Begijnhofkerk"
+    },
+    {
+     "n": "Minderbroederskerk",
+     "k": "church",
+     "y1650": "Franciscan church and friary (13th c.); part of the town wall survives in its garden.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Sint-Truiden' (id.erfgoed.net/erfgoedobjecten/140054)",
+     "match": "Minderbroederskerk"
+    },
+    {
+     "n": "Sint-Gangulfuskerk",
+     "k": "church",
+     "y1650": "Romanesque church (11th c.).",
+     "src": "nl.wikipedia 'Sint-Gangulfuskerk (Sint-Truiden)'",
+     "match": "Sint-Gangulfuskerk"
+    },
+    {
+     "n": "Brustempoort",
+     "k": "gate",
+     "y1650": "Gate towards Brustem and Liège; blown up in 1675, its underground remains are the oldest surviving town-wall fabric in Flanders.",
+     "src": "Onroerend Erfgoed protection decision (Luikerstraat/Naamsevest), 2025",
+     "x": 138,
+     "z": 438,
+     "special": "gate"
+    }
+   ]
+  },
+  "tongeren": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Onze-Lieve-Vrouwebasiliek",
+     "k": "church",
+     "y1650": "Collegiate church of Our Lady (Gothic, 13th-16th c.) with its 64 m west tower finished in 1541, the main bell tower of Tongeren; with cloister.",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouwebasiliek (Tongeren)'",
+     "match": "Onze-Lieve-Vrouwebasiliek",
+     "h": 64,
+     "special": "main bell tower"
+    },
+    {
+     "n": "Moerenpoort",
+     "k": "gate",
+     "y1650": "Gate of 1379 on the Jeker side, the only surviving gate (also called Visépoort).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tongeren' (id.erfgoed.net/erfgoedobjecten/140056); id.erfgoed.net 37296",
+     "match": "Moerenpoort",
+     "special": "gate"
+    },
+    {
+     "n": "Romeinse muur (2de eeuw)",
+     "k": "wall",
+     "y1650": "Remains of the 2nd-c. Roman town wall (4.5 km), far outside the medieval wall on the south and west; partly standing as ruin in 1650. Position: the Ferraris map labels it 'Remparts Romains'.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tongeren' (id.erfgoed.net/erfgoedobjecten/140056)",
+     "x": -700,
+     "z": 250,
+     "special": "Roman wall",
+     "uncertain": true
+    },
+    {
+     "n": "Sint-Catharinabegijnhof",
+     "k": "beguinage",
+     "y1650": "Beguinage moved inside the walls in 1257 (early Gothic church).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tongeren' (id.erfgoed.net/erfgoedobjecten/140056)",
+     "x": 330,
+     "z": 170
+    },
+    {
+     "n": "Lakenhal",
+     "k": "clothhall",
+     "y1650": "Cloth hall mentioned in 1250; position not verified (the present town hall is of 1737-53).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tongeren' (id.erfgoed.net/erfgoedobjecten/140056)",
+     "x": -43,
+     "z": 23,
+     "uncertain": true
+    },
+    {
+     "n": "Lakenmakerstoren",
+     "k": "tower",
+     "y1650": "Tower of the medieval wall.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tongeren' (id.erfgoed.net/erfgoedobjecten/140056)",
+     "match": "Lakenmakerstoren"
+    },
+    {
+     "n": "Velinxtoren",
+     "k": "tower",
+     "y1650": "Tower of the medieval wall.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tongeren' (id.erfgoed.net/erfgoedobjecten/140056)",
+     "match": "Velinxtoren"
+    }
+   ]
+  },
+  "maaseik": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Catharinakerk (oude kerk)",
+     "k": "church",
+     "y1650": "The parish church of 1650 stood on the Markt and was demolished in the 1840s; the present church (1840-45) stands nearby. Position approximate.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Maaseik' (id.erfgoed.net/erfgoedobjecten/140051)",
+     "x": -30,
+     "z": -30,
+     "uncertain": true,
+     "special": "main bell tower"
+    },
+    {
+     "n": "Raadshuis / lakenhal",
+     "k": "townhall",
+     "y1650": "Building on the Markt that served as council house, cloth hall and guild house (inventory 140051); the present town hall is later.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Maaseik' (id.erfgoed.net/erfgoedobjecten/140051)",
+     "x": -23,
+     "z": -39,
+     "uncertain": true
+    },
+    {
+     "n": "Agnetenklooster (Groot Klooster)",
+     "k": "abbey",
+     "y1650": "Convent of Saint Agnes inside the walls from 1485.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Maaseik' (id.erfgoed.net/erfgoedobjecten/140051)",
+     "x": -150,
+     "z": 60,
+     "uncertain": true
+    },
+    {
+     "n": "Kruisherenklooster",
+     "k": "abbey",
+     "y1650": "Crosier friary with a stretch of town wall in its garden.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Maaseik' (id.erfgoed.net/erfgoedobjecten/140051)",
+     "match": "Kruisherenkerk"
+    },
+    {
+     "n": "Minderbroedersklooster",
+     "k": "abbey",
+     "y1650": "Franciscan friary (church of 1637).",
+     "src": "nl.wikipedia 'Minderbroederskerk (Maaseik)'",
+     "match": "Minderbroederskerk"
+    },
+    {
+     "n": "Abdij van Aldeneik",
+     "k": "abbey",
+     "y1650": "Women's abbey founded in the 8th c. at Aldeneik, 1.5 km east; the Romanesque church of Sint-Anna survives.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Maaseik' (id.erfgoed.net/erfgoedobjecten/140051)",
+     "lat": 51.097,
+     "lon": 5.8079,
+     "uncertain": true,
+     "special": "Van Eyck country: the brothers Van Eyck are traditionally said to come from Maaseik"
+    }
+   ]
+  },
+  "halen": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Pieters-in-de-Bandenkerk",
+     "k": "church",
+     "y1650": "Parish church on the market; main bell tower of Halen.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Halen' (id.erfgoed.net/erfgoedobjecten/140194)",
+     "match": "Sint-Pieters-in-de-Bandenkerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Lakenhal",
+     "k": "clothhall",
+     "y1650": "The medieval cloth hall stood where the present town hall stands; whether the hall of 1650 is the present building of 1616 is not verified.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Halen' (id.erfgoed.net/erfgoedobjecten/140194)",
+     "match": "Stadhuis Halen",
+     "uncertain": true
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Small beguinage behind the church on the Velpe.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Halen' (id.erfgoed.net/erfgoedobjecten/140194)",
+     "x": 40,
+     "z": -110,
+     "uncertain": true
+    }
+   ]
+  },
+  "herkdestad": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Martinuskerk",
+     "k": "church",
+     "y1650": "Parish church on the market (main bell tower).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Herk-de-Stad' (id.erfgoed.net/erfgoedobjecten/140050)",
+     "match": "Sint-Martinuskerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Stadhuis en lakenhal",
+     "k": "townhall",
+     "y1650": "Town hall, cloth hall, meat hall and corn house stood on the market beside the church; exact positions not verified.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Herk-de-Stad' (id.erfgoed.net/erfgoedobjecten/140050)",
+     "x": -40,
+     "z": 30,
+     "uncertain": true
+    }
+   ]
+  },
+  "zoutleeuw": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Leonarduskerk",
+     "k": "church",
+     "y1650": "Gothic collegiate church, its interior untouched by the iconoclasm of 1566 (the only one in the Low Countries), with the stone sacrament tower of Cornelis Floris (1550-52). The great west tower was never built.",
+     "src": "nl.wikipedia 'Sint-Leonarduskerk (Zoutleeuw)'",
+     "match": "Sint-Leonarduskerk",
+     "special": "unfinished tower; untouched medieval interior"
+    },
+    {
+     "n": "Stadhuis",
+     "k": "townhall",
+     "y1650": "Town hall of 1538-39 by Rombout Keldermans.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Zoutleeuw' (id.erfgoed.net/erfgoedobjecten/140044)",
+     "match": "Stadhuis Zoutleeuw"
+    },
+    {
+     "n": "Lakenhalle",
+     "k": "clothhall",
+     "y1650": "Cloth hall of 1316, built on the wall of the first enceinte; tower of the old Sint-Truidensepoort beside it.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Zoutleeuw' (id.erfgoed.net/erfgoedobjecten/140044)",
+     "x": 70,
+     "z": 40,
+     "uncertain": true
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Beguinage moved to its present site after 1578.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Zoutleeuw' (id.erfgoed.net/erfgoedobjecten/140044)",
+     "x": 250,
+     "z": -120,
+     "uncertain": true
+    }
+   ]
+  },
+  "tienen": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Germanuskerk",
+     "k": "church",
+     "y1650": "Collegiate church with its Romanesque westwork, main bell tower of Tienen; badly burnt in 1635.",
+     "src": "nl.wikipedia 'Sint-Germanuskerk (Tienen)'",
+     "match": "Sint-Germanuskerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Onze-Lieve-Vrouw-ten-Poelkerk",
+     "k": "church",
+     "y1650": "Gothic church whose nave was never built: only choir, transept and an unfinished west front stood (14th-15th c.).",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouw-ten-Poelkerk'",
+     "match": "Onze-Lieve-Vrouw-ten-Poelkerk",
+     "special": "unfinished church"
+    },
+    {
+     "n": "Groot Begijnhof",
+     "k": "beguinage",
+     "y1650": "Beguinage (c. 1240), burnt in 1635 and rebuilt at once.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tienen' (id.erfgoed.net/erfgoedobjecten/140041)",
+     "x": 250,
+     "z": 650,
+     "uncertain": true
+    },
+    {
+     "n": "Grote Markt (Dries)",
+     "k": "square",
+     "y1650": "After the town hall on the Veemarkt burnt in 1635 the centre moved to the Dries, the present Grote Markt, one of the largest squares in Belgium; the present town hall is of 1836.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tienen' (id.erfgoed.net/erfgoedobjecten/306600)",
+     "x": 0,
+     "z": 0
+    }
+   ]
+  },
+  "bilzen": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Mauritiuskerk",
+     "k": "church",
+     "y1650": "Parish church (main bell tower), plundered 1576; rebuilt after the fire of 1636.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Bilzen' (id.erfgoed.net/erfgoedobjecten/140045)",
+     "match": "Sint-Mauritiuskerk",
+     "special": "main bell tower",
+     "uncertain": true
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Beguinage founded 1256 in the south-east of the town, with a hospital.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Bilzen' (id.erfgoed.net/erfgoedobjecten/140045)",
+     "match": "Begijnenhuis",
+     "uncertain": true
+    }
+   ]
+  },
+  "borgloon": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Odulphuskerk",
+     "k": "church",
+     "y1650": "Romanesque collegiate church on the Speelhof (chapter of canons), main bell tower; Borgloon was the old seat of the counts of Loon.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Borgloon' (id.erfgoed.net/erfgoedobjecten/140046)",
+     "match": "Sint-Odulphuskerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "'s Grevenhuys",
+     "k": "townhall",
+     "y1650": "Council house on the Markt ('sgrevenhuys'); the present Renaissance town hall dates from 1680 (after 1650).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Borgloon' (id.erfgoed.net/erfgoedobjecten/140046)",
+     "match": "Stadhuis Borgloon",
+     "uncertain": true
+    },
+    {
+     "n": "Graethemkapel en begijnhof",
+     "k": "beguinage",
+     "y1650": "Hospital chapel of the Knights of St John at the Graethempoort, round which the beguinage grew (burnt by Lorraine troops in 1654).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Borgloon' (id.erfgoed.net/erfgoedobjecten/140046)",
+     "match": "Graethemkapel"
+    }
+   ]
+  },
+  "beringen": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Pietersbandenkerk",
+     "k": "church",
+     "y1650": "Parish church, destroyed in the 16th-c. wars and rebuilt; burnt again in 1654 (after 1650).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Beringen' (id.erfgoed.net/erfgoedobjecten/140193)",
+     "match": "Sint-Pietersbandenkerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Halle / stadhuis",
+     "k": "townhall",
+     "y1650": "A hall or town hall with lantern and flagpole stood in the middle of the market (sketch c. 1510).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Beringen' (id.erfgoed.net/erfgoedobjecten/140193)",
+     "x": 80,
+     "z": -30,
+     "uncertain": true
+    }
+   ]
+  },
+  "gent": {
+   "keep": [],
+   "drop": [
+    "Gent-Sint-Pieters",
+    "Seinhuis",
+    "Rabotkerk",
+    "Muziekcentrum",
+    "Begijnhofkerk Sint-Elisabeth",
+    "NH Gent",
+    "Buurtwerk",
+    "Sint-Pieters-Buitenkerk",
+    "Boekentoren",
+    "Opera",
+    "Vooruit",
+    "Handelsbeurs",
+    "Kouter"
+   ],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Belfort met Klokke Roeland en de draak",
+     "k": "belfry",
+     "y1650": "Belfry begun before 1313, four of six storeys done by 1323; a provisional wooden crown of 1377-80 carried the gilded copper dragon weathervane made in 1377 (replaced only in 1853). Klokke Roeland, cast 1314, still hung in it in 1650: Pieter Hemony melted it down in 1659 for the new carillon. Sanderus says the dragon was made to spit fire at feasts. The town charters were kept in the 'secreet' inside.",
+     "src": "nl.wikipedia 'Belfort van Gent'",
+     "match": "Belfort",
+     "h": 91,
+     "footprintNote": "91 m is today's height with the 1913 spire; the 1650 wooden crown was lower (not verified)",
+     "special": "gilded dragon (1377); Klokke Roeland (1314)"
+    },
+    {
+     "n": "Lakenhalle",
+     "k": "clothhall",
+     "y1650": "Cloth hall built 1425-45 against the belfry, left unfinished; used by the fencers' guild of Sint-Michiel since 1613.",
+     "src": "nl.wikipedia 'Belfort van Gent'",
+     "match": "Lakenhalle"
+    },
+    {
+     "n": "Sint-Baafskathedraal",
+     "k": "church",
+     "y1650": "Cathedral since 1559 (formerly Sint-Jans); west tower finished 1534 (89 m), holds the Ghent Altarpiece of the Van Eycks.",
+     "src": "nl.wikipedia 'Sint-Baafskathedraal'",
+     "match": "Sint-Baafskathedraal",
+     "h": 89,
+     "special": "Ghent Altarpiece"
+    },
+    {
+     "n": "Sint-Niklaaskerk",
+     "k": "church",
+     "y1650": "Scheldt-Gothic church of the merchants on the Korenmarkt; its crossing tower served as the town's first belfry.",
+     "src": "nl.wikipedia 'Sint-Niklaaskerk (Gent)'",
+     "match": "Sint-Niklaaskerk",
+     "h": 76
+    },
+    {
+     "n": "Dulle Griet",
+     "k": "cannon",
+     "y1650": "Wrought-iron 15th-c. bombard of about 12,500 kg, on the Groentenmarkt by the Lieve since 1578.",
+     "src": "nl.wikipedia 'Dulle Griet (kanon)'",
+     "x": -41,
+     "z": -410,
+     "special": "Dulle Griet cannon"
+    },
+    {
+     "n": "Gravensteen",
+     "k": "castle",
+     "y1650": "Castle of the counts of Flanders (1180); in 1650 used as court of the Council of Flanders, prison and mint, built over with houses.",
+     "src": "nl.wikipedia 'Gravensteen (Gent)'",
+     "match": "Gravensteen"
+    },
+    {
+     "n": "Spanjaardenkasteel",
+     "k": "castle",
+     "y1650": "Citadel built 1540-45 for Charles V on the site of the Sint-Baafsabdij, garrison of c. 2500; Egmont and Horne were held here 1567-68.",
+     "src": "nl.wikipedia 'Spanjaardenkasteel'",
+     "x": 980,
+     "z": -150,
+     "special": "citadel"
+    },
+    {
+     "n": "Stadhuis",
+     "k": "townhall",
+     "y1650": "Town hall: late-Gothic wing of 1518-60 (unfinished) and Renaissance wing of 1595-1618.",
+     "src": "nl.wikipedia 'Stadhuis van Gent'",
+     "match": "Stadhuis Gent"
+    },
+    {
+     "n": "Sint-Michielskerk",
+     "k": "church",
+     "y1650": "Gothic church whose great tower was never finished.",
+     "src": "nl.wikipedia 'Sint-Michielskerk (Gent)'",
+     "match": "Sint-Michielskerk",
+     "special": "unfinished tower"
+    },
+    {
+     "n": "Klein Begijnhof Ter Hooie",
+     "k": "beguinage",
+     "y1650": "Beguinage of Our Lady ter Hooie (founded 1234), on its present site.",
+     "src": "nl.wikipedia 'Klein Begijnhof (Gent)'",
+     "lat": 51.0459,
+     "lon": 3.7341
+    },
+    {
+     "n": "Groot Begijnhof Sint-Elisabeth",
+     "k": "beguinage",
+     "y1650": "The great beguinage then stood west of the Gravensteen at Sint-Elisabeth (moved to Sint-Amandsberg in 1874); its church survives.",
+     "src": "nl.wikipedia 'Oud Begijnhof Sint-Elisabeth'",
+     "lat": 51.0567,
+     "lon": 3.7146,
+     "uncertain": true
+    },
+    {
+     "n": "Groot Vleeshuis",
+     "k": "hall",
+     "y1650": "Meat hall of 1406-10 on the Groentenmarkt.",
+     "src": "nl.wikipedia 'Groot Vleeshuis'",
+     "match": "Groot Vleeshuis"
+    },
+    {
+     "n": "Rabot",
+     "k": "gate",
+     "y1650": "Fortified sluice gate on the Lieve, 1489.",
+     "src": "nl.wikipedia 'Gentse stadspoorten'",
+     "match": "Rabot"
+    },
+    {
+     "n": "Sint-Pietersabdij",
+     "k": "abbey",
+     "y1650": "Benedictine abbey on the Blandijnberg, rebuilt after the iconoclasm (abbey church 1629-1720 under construction in 1650).",
+     "src": "nl.wikipedia 'Sint-Pietersabdij (Gent)'",
+     "match": "Sint-Pietersabdij",
+     "uncertain": true
+    }
+   ]
+  },
+  "dendermonde": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Lakenhalle met belfort",
+     "k": "belfry",
+     "y1650": "Cloth hall (14th c.) with belfry on the Grote Markt, together with the meat hall; on the UNESCO list of belfries. The Grote Markt was the forecourt of the counts' castle.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Dendermonde' (id.erfgoed.net/erfgoedobjecten/140019); UNESCO 'Belfries of Belgium and France'",
+     "match": "Stadhuis Dendermonde",
+     "h": 40,
+     "special": "belfry",
+     "footprintNote": "belfry height not verified"
+    },
+    {
+     "n": "Vleeshuis",
+     "k": "hall",
+     "y1650": "Meat hall on the Grote Markt.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Dendermonde' (id.erfgoed.net/erfgoedobjecten/140019)",
+     "match": "Vleeshuismuseum"
+    },
+    {
+     "n": "Onze-Lieve-Vrouwekerk",
+     "k": "church",
+     "y1650": "Collegiate church of Our Lady, main bell tower.",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouwekerk (Dendermonde)'",
+     "match": "Onze-Lieve-Vrouwekerk"
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Walled beguinage from 1288 on the right Dender bank.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Dendermonde' (id.erfgoed.net/erfgoedobjecten/140019)",
+     "match": "Begijnhofkerk"
+    },
+    {
+     "n": "Samenvloeiing van Dender en Schelde",
+     "k": "water",
+     "y1650": "The Dender joins the Schelde on the north side of the town, at the Waaslandpoort; the town's whole history follows from this confluence.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Dendermonde' (id.erfgoed.net/erfgoedobjecten/140019)",
+     "x": 200,
+     "z": -330,
+     "special": "confluence",
+     "uncertain": true
+    },
+    {
+     "n": "Sint-Gillis-Binnenkerk",
+     "k": "church",
+     "y1650": "Parish church of Sint-Gillis within the walls.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Dendermonde' (id.erfgoed.net/erfgoedobjecten/140019)",
+     "match": "Sint-Gillis-Binnenkerk"
+    }
+   ]
+  },
+  "aalst": {
+   "keep": [],
+   "drop": [
+    "Sint-Jozefkerk",
+    "Bijstandkerk"
+   ],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Schepenhuis met belfort",
+     "k": "belfry",
+     "y1650": "Aldermen's house of c. 1225, oldest in the Low Countries, with its belfry tower of 1460; on the UNESCO list of belfries.",
+     "src": "nl.wikipedia 'Schepenhuis (Aalst)'; UNESCO 'Belfries of Belgium and France'",
+     "match": "Belfort",
+     "special": "belfry"
+    },
+    {
+     "n": "Landhuis van het Land van Aalst",
+     "k": "townhall",
+     "y1650": "Seat of the States of the Land van Aalst on the Grote Markt (present front partly later).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Aalst' (id.erfgoed.net/erfgoedobjecten/140017)",
+     "match": "Stadhuis & Landhuis Aalst",
+     "uncertain": true
+    },
+    {
+     "n": "Sint-Martinuskerk",
+     "k": "church",
+     "y1650": "Collegiate church begun c. 1480 to a vast plan and never finished: no nave or tower beyond the transept (Rubens's altarpiece of St Roch hangs here from 1623-26).",
+     "src": "nl.wikipedia 'Sint-Martinuskerk (Aalst)'",
+     "match": "Sint-Martinuskerk",
+     "special": "unfinished church; Rubens altarpiece"
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Beguinage founded 1261.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Aalst' (id.erfgoed.net/erfgoedobjecten/140017)",
+     "x": -300,
+     "z": 200,
+     "uncertain": true
+    },
+    {
+     "n": "Huis van Dirk Martens",
+     "k": "house",
+     "y1650": "Printer Dirk Martens (d. 1534) printed the first book in the Low Countries here in 1473; a statue is 19th c.",
+     "src": "nl.wikipedia 'Dirk Martens'",
+     "x": -60,
+     "z": -30,
+     "uncertain": true
+    }
+   ]
+  },
+  "brussel": {
+   "keep": [],
+   "drop": [
+    "Palais Royal",
+    "Koninklijk Paleis",
+    "Bourse",
+    "Beurs",
+    "Palais de Justice",
+    "Justitiepaleis",
+    "Galeries",
+    "Théâtre",
+    "Monnaie",
+    "Munt",
+    "Archives",
+    "Kathedraal van de Heilige Aartsengelen",
+    "Haute École",
+    "Hôtel de ville Saint-Gilles"
+   ],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Stadhuis",
+     "k": "townhall",
+     "y1650": "Gothic town hall (1401-55) on the Grote Markt; its 96 m tower by Jan van Ruysbroeck carries the gilded Saint Michael slaying the dragon (1455). The Grote Markt's guild houses of 1650 were destroyed in the French bombardment of 1695.",
+     "src": "nl.wikipedia 'Stadhuis van Brussel'",
+     "lat": 50.8466,
+     "lon": 4.3519,
+     "h": 96,
+     "special": "Saint Michael and the dragon; main bell tower"
+    },
+    {
+     "n": "Broodhuis",
+     "k": "hall",
+     "y1650": "Ducal bread hall, rebuilt 1504-36 (Keldermans); the present building is a reconstruction of 1873-95 on the same plot.",
+     "src": "nl.wikipedia 'Broodhuis'",
+     "match": "Maison du Roi - Broodhuis"
+    },
+    {
+     "n": "Sint-Goedelekerk",
+     "k": "church",
+     "y1650": "Collegiate church of Saints Michael and Gudula (Gothic, towers finished 1485); a cathedral only since 1962.",
+     "src": "nl.wikipedia 'Sint-Michiels- en Sint-Goedelekathedraal'",
+     "match": "Cathédrale Saints-Michel-et-Gudule - Sint-Michiels-en-Goedelekathedraal",
+     "h": 64
+    },
+    {
+     "n": "Coudenbergpaleis",
+     "k": "castle",
+     "y1650": "Palace of the dukes of Brabant on the Coudenberg, court of the governor Leopold Wilhelm in 1650; burnt in 1731 (site under today's Koningsplein).",
+     "src": "nl.wikipedia 'Paleis op de Koudenberg'",
+     "lat": 50.8427,
+     "lon": 4.36,
+     "special": "court of the governor",
+     "uncertain": true
+    },
+    {
+     "n": "Onze-Lieve-Vrouw-ter-Kapellekerk",
+     "k": "church",
+     "y1650": "Romanesque-Gothic church of the Marollen; Pieter Bruegel the Elder is buried here (1569).",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouw-ter-Kapellekerk'",
+     "match": "Église Notre-Dame de la Chapelle - Onze-Lieve-Vrouw-ter-Kapellekerk"
+    },
+    {
+     "n": "Onze-Lieve-Vrouw-ter-Zavelkerk",
+     "k": "church",
+     "y1650": "Late-Gothic church of the crossbowmen's guild on the Zavel.",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouw-ter-Zavelkerk'",
+     "match": "Église Notre-Dame des Victoires au Sablon - Onze-Lieve-Vrouw-ter-Zavelkerk"
+    },
+    {
+     "n": "Groot Begijnhof",
+     "k": "beguinage",
+     "y1650": "Great beguinage in the north-west of the town; its present baroque church dates from 1657-76, so in 1650 the older church stood.",
+     "src": "nl.wikipedia 'Sint-Jan-Baptist-ten-Begijnhofkerk'",
+     "match": "Église Saint-Jean-Baptiste-au-Béguinage - Sint-Jan Baptist ten Begijnhofkerk",
+     "uncertain": true
+    },
+    {
+     "n": "Manneken Pis",
+     "k": "statue",
+     "y1650": "Bronze fountain figure by Jérôme Duquesnoy the Elder, 1619.",
+     "src": "nl.wikipedia 'Manneken Pis'",
+     "x": -176,
+     "z": 190,
+     "special": "Manneken Pis"
+    },
+    {
+     "n": "Hallepoort",
+     "k": "gate",
+     "y1650": "Gate of the second wall (1381), used as a prison; the only surviving gate.",
+     "src": "nl.wikipedia 'Hallepoort'",
+     "match": "Porte de Hal - Hallepoort",
+     "special": "gate"
+    },
+    {
+     "n": "Zwarte Toren",
+     "k": "tower",
+     "y1650": "Tower of the first wall (13th c.).",
+     "src": "nl.wikipedia 'Zwarte Toren (Brussel)'",
+     "match": "Tour Noire - Zwarte Toren"
+    },
+    {
+     "n": "Anneessenstoren",
+     "k": "tower",
+     "y1650": "Tower of the first wall.",
+     "src": "nl.wikipedia 'Anneessenstoren'",
+     "match": "Tour Anneessens - Anneessenstoren"
+    }
+   ]
+  },
+  "brugge": {
+   "keep": [],
+   "drop": [
+    "Stadsschouwburg",
+    "Residentie",
+    "Delhaize",
+    "Politie"
+   ],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Halle en Belfort",
+     "k": "belfry",
+     "y1650": "Cloth hall with the belfry on the Markt; the octagonal top dates from 1482-86 and carried a wooden spire until the fire of 1741, so in 1650 the tower was taller than today's 83 m (spire height not verified).",
+     "src": "nl.wikipedia 'Belfort van Brugge'",
+     "match": "Stadshallen",
+     "h": 83,
+     "special": "belfry; main bell tower"
+    },
+    {
+     "n": "Stadhuis",
+     "k": "townhall",
+     "y1650": "Gothic town hall on the Burg, 1376-1420.",
+     "src": "nl.wikipedia 'Stadhuis van Brugge'",
+     "match": "Stadhuis Brugge"
+    },
+    {
+     "n": "Sint-Donaaskathedraal",
+     "k": "church",
+     "y1650": "The cathedral of Bruges (bishopric 1559) stood on the Burg opposite the town hall; demolished from 1799. Position approximate.",
+     "src": "nl.wikipedia 'Sint-Donaaskathedraal'",
+     "lat": 51.2088,
+     "lon": 3.2272,
+     "uncertain": true,
+     "special": "vanished cathedral"
+    },
+    {
+     "n": "Heilig-Bloedkapel",
+     "k": "church",
+     "y1650": "Double chapel on the Burg holding the relic of the Holy Blood (procession since the 13th c.).",
+     "src": "nl.wikipedia 'Heilig-Bloedbasiliek'",
+     "match": "Basiliek van het Heilig Bloed"
+    },
+    {
+     "n": "Onze-Lieve-Vrouwekerk",
+     "k": "church",
+     "y1650": "Church with the brick tower of about 115 m; Michelangelo's Madonna (1504) inside.",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouwekerk (Brugge)'",
+     "match": "Onze-Lieve-Vrouwekerk",
+     "h": 115
+    },
+    {
+     "n": "Sint-Salvatorskerk",
+     "k": "church",
+     "y1650": "Collegiate church of Sint-Salvator (cathedral only from 1834).",
+     "src": "nl.wikipedia 'Sint-Salvatorskathedraal'",
+     "match": "Sint-Salvatorskathedraal"
+    },
+    {
+     "n": "Begijnhof Ten Wijngaarde",
+     "k": "beguinage",
+     "y1650": "Princely beguinage of 1245 by the Minnewater; church rebuilt 1605.",
+     "src": "nl.wikipedia 'Begijnhof (Brugge)'",
+     "match": "Begijnhofkerk Sint-Elisabeth"
+    },
+    {
+     "n": "Gruuthusehof",
+     "k": "house",
+     "y1650": "Town palace of the lords of Gruuthuse.",
+     "src": "nl.wikipedia 'Gruuthusemuseum'",
+     "match": "Gruuthusemuseum"
+    },
+    {
+     "n": "Sint-Janshospitaal",
+     "k": "hall",
+     "y1650": "Medieval hospital (12th c.).",
+     "src": "nl.wikipedia 'Sint-Janshospitaal (Brugge)'",
+     "match": "Sint-Janshospitaal"
+    }
+   ]
+  },
+  "kortrijk": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Belfort",
+     "k": "belfry",
+     "y1650": "Belfry on the Grote Markt (14th c.), once part of the cloth hall; on the UNESCO list.",
+     "src": "nl.wikipedia 'Belfort van Kortrijk'",
+     "match": "Belfort",
+     "special": "belfry"
+    },
+    {
+     "n": "Sint-Maartenskerk",
+     "k": "church",
+     "y1650": "Main parish church, its tower the town's main bell tower.",
+     "src": "nl.wikipedia 'Sint-Maartenskerk (Kortrijk)'",
+     "match": "Sint-Maartenskerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Onze-Lieve-Vrouwekerk",
+     "k": "church",
+     "y1650": "Collegiate church by the counts' castle; Van Dyck's Raising of the Cross (1631) hangs here. The golden spurs of 1302 hung here until the French took them in 1382.",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouwekerk (Kortrijk)'",
+     "match": "Onze-Lieve-Vrouwkerk"
+    },
+    {
+     "n": "Broeltorens",
+     "k": "tower",
+     "y1650": "Two towers guarding the Leie bridge (1385 and 1411-13).",
+     "src": "nl.wikipedia 'Broeltorens'",
+     "match": "Broeltorens"
+    },
+    {
+     "n": "Franse citadel",
+     "k": "castle",
+     "y1650": "Pentagonal citadel built by the French in 1646-48 on the east flank of Overbeke, held by Spain from 1648, razed 1684; position approximate.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Kortrijk' (id.erfgoed.net/erfgoedobjecten/140006)",
+     "x": 850,
+     "z": -150,
+     "uncertain": true,
+     "special": "citadel"
+    }
+   ]
+  },
+  "oudenaarde": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Stadhuis",
+     "k": "townhall",
+     "y1650": "Late-Gothic town hall of 1526-37 by Hendrik van Pede, with the gilded figure 'Hanske de Krijger' on its tower; the 13th-c. cloth hall stands behind it.",
+     "src": "nl.wikipedia 'Stadhuis van Oudenaarde'",
+     "match": "Stadhuis Oudenaarde",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Sint-Walburgakerk",
+     "k": "church",
+     "y1650": "Gothic church of Sint-Walburga with its tall west tower.",
+     "src": "nl.wikipedia 'Sint-Walburgakerk (Oudenaarde)'",
+     "match": "Sint-Walburgakerk"
+    },
+    {
+     "n": "Onze-Lieve-Vrouwekerk van Pamele",
+     "k": "church",
+     "y1650": "Scheldt-Gothic church across the river (1234).",
+     "src": "nl.wikipedia 'Onze-Lieve-Vrouw-van-Pamelekerk'",
+     "match": "Onze-Lieve-Vrouwekerk van Pamele"
+    }
+   ]
+  },
+  "ieper": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Lakenhalle en Belfort",
+     "k": "belfry",
+     "y1650": "Cloth hall of c. 1200-1304, one of the largest secular Gothic buildings of Europe, with its belfry; intact in 1650 (destroyed in 1914-18 and rebuilt). The Kattenstoet - cats thrown from the belfry - is an old Lent custom here (start and 1650 practice not verified).",
+     "src": "nl.wikipedia 'Lakenhalle (Ieper)'",
+     "match": "Lakenhalle",
+     "h": 70,
+     "special": "belfry; Kattenstoet",
+     "footprintNote": "belfry height approximate"
+    },
+    {
+     "n": "Sint-Maartenskerk",
+     "k": "church",
+     "y1650": "Cathedral of the bishopric of Ypres (1559-1801); Bishop Cornelius Jansenius (d. 1638) is buried here.",
+     "src": "nl.wikipedia 'Sint-Maartenskathedraal (Ieper)'",
+     "match": "Sint-Maartenskerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Sint-Pieterskerk",
+     "k": "church",
+     "y1650": "Parish church in the south of the town.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Ieper' (id.erfgoed.net/erfgoedobjecten/140005)",
+     "match": "Sint-Pieterskerk"
+    },
+    {
+     "n": "Rijselpoort",
+     "k": "gate",
+     "y1650": "The oldest surviving gate.",
+     "src": "nl.wikipedia 'Rijselpoort'",
+     "match": "Rijselpoort"
+    }
+   ]
+  },
+  "oostende": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Sint-Pieterstoren (Peperbusse)",
+     "k": "church",
+     "y1650": "Tower of the parish church of Sint-Pieter, whose base of 1478 is the only building older than the siege of 1601-04.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Oostende' (id.erfgoed.net/erfgoedobjecten/140010)",
+     "match": "Sint-Pieterstoren",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Wapenplein",
+     "k": "square",
+     "y1650": "Market square of the town rebuilt after the siege.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Oostende' (id.erfgoed.net/erfgoedobjecten/140010)",
+     "x": -120,
+     "z": -220,
+     "uncertain": true
+    }
+   ]
+  },
+  "herentals": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Lakenhal met belfort",
+     "k": "belfry",
+     "y1650": "Cloth hall rebuilt after the fire of 1512 with a belfry added in 1534, used as town hall.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Herentals' (id.erfgoed.net/erfgoedobjecten/140033)",
+     "match": "Lakenhal",
+     "special": "belfry"
+    },
+    {
+     "n": "Sint-Waldetrudiskerk",
+     "k": "church",
+     "y1650": "Brabant-Gothic parish church.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Herentals' (id.erfgoed.net/erfgoedobjecten/140033)",
+     "match": "Sint-Waldetrudiskerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Zandpoort",
+     "k": "gate",
+     "y1650": "Gate towards Antwerp (repairs after 1643).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Herentals' (id.erfgoed.net/erfgoedobjecten/140033)",
+     "match": "Zandpoort"
+    },
+    {
+     "n": "Bovenpoort",
+     "k": "gate",
+     "y1650": "Gate towards Diest.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Herentals' (id.erfgoed.net/erfgoedobjecten/140033)",
+     "match": "Bovenpoort"
+    }
+   ]
+  },
+  "turnhout": {
+   "keep": [],
+   "drop": [],
+   "pois": [],
+   "landmarks": [
+    {
+     "n": "Kasteel van de Hertogen van Brabant",
+     "k": "castle",
+     "y1650": "Ducal castle (12th c., in stone under Mary of Brabant 1363-99); from 1648 Amalia van Solms was lady of Turnhout and renovated it.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Turnhout' (id.erfgoed.net/erfgoedobjecten/300598)",
+     "match": "Kasteel van de Hertogen van Brabant",
+     "special": "castle"
+    },
+    {
+     "n": "Sint-Pieterskerk",
+     "k": "church",
+     "y1650": "Parish church on the sand ridge beside the castle, main bell tower.",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Turnhout' (id.erfgoed.net/erfgoedobjecten/300598)",
+     "match": "Sint-Pieterskerk",
+     "special": "main bell tower"
+    },
+    {
+     "n": "Begijnhof",
+     "k": "beguinage",
+     "y1650": "Beguinage (UNESCO).",
+     "src": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Turnhout' (id.erfgoed.net/erfgoedobjecten/300598)",
+     "match": "Begijnhofmuseum"
+    }
+   ]
   }
  }
 }

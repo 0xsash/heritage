@@ -1,0 +1,117 @@
+{
+ "note": "Hasselt town wall (13th c., four gates; rebuilt several times, replaced by an earthen rampart only in 1705), traced from the Ferraris map (1777), whose wall line follows the medieval one. Wet moat all round. Local metres around the Grote Markt (x east, z south).",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Hasselt' (https://id.erfgoed.net/erfgoedobjecten/140049)",
+ "ring": [
+  [
+   125,
+   -360
+  ],
+  [
+   -41,
+   -374
+  ],
+  [
+   -180,
+   -318
+  ],
+  [
+   -291,
+   -180
+  ],
+  [
+   -346,
+   -41
+  ],
+  [
+   -381,
+   21
+  ],
+  [
+   -374,
+   153
+  ],
+  [
+   -318,
+   250
+  ],
+  [
+   -207,
+   319
+  ],
+  [
+   -117,
+   360
+  ],
+  [
+   70,
+   367
+  ],
+  [
+   208,
+   333
+  ],
+  [
+   305,
+   250
+  ],
+  [
+   388,
+   153
+  ],
+  [
+   437,
+   90
+  ],
+  [
+   430,
+   -14
+  ],
+  [
+   388,
+   -124
+  ],
+  [
+   347,
+   -207
+  ],
+  [
+   284,
+   -270
+  ],
+  [
+   208,
+   -311
+  ]
+ ],
+ "gates": {
+  "Kempische Poort": [
+   125,
+   -360
+  ],
+  "Kuringerpoort": [
+   -381,
+   21
+  ],
+  "Nieuwpoort": [
+   -117,
+   360
+  ],
+  "Maastrichterpoort": [
+   437,
+   90
+  ]
+ },
+ "gateSources": {
+  "Kempische Poort": "inventory 140049 and nl.wikipedia 'Stadsomwalling van Hasselt'; Ferraris 'Porte de Campine'",
+  "Kuringerpoort": "inventory 140049 ('Kuringerpoort of Diestsepoort'); Ferraris 'Porte de Diest'",
+  "Nieuwpoort": "nl.wikipedia 'Stadsomwalling van Hasselt' (to Sint-Truiden and Liège); inventory 140049 calls it Sint-Truiderpoort; Ferraris 'Porte de Liège'",
+  "Maastrichterpoort": "inventory 140049 (pen drawing of 1687); Ferraris 'Porte de Maestricht'"
+ },
+ "gatesUncertain": [],
+ "moat": [
+  [
+   0,
+   19
+  ]
+ ]
+}

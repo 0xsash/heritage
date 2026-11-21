@@ -62,8 +62,21 @@ if w.get("walls"):
         cv2.putText(c, name, (q[0] + 7, q[1] + 4), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 2)
         cv2.putText(c, name, (q[0] + 7, q[1] + 4), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 255), 1)
 for b in w["buildings"]:
-    if b.get("lm") and b.get("n"):
+    if b.get("lm") and b.get("n") and not w.get("landmarks"):
         q = P(b["p"]).mean(0).astype(int)
         cv2.putText(c, b["n"][:28], (int(q[0]), int(q[1])), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (80, 0, 80), 1)
+for L in w.get("landmarks", []):
+    q = tuple(P([L["x"], L["z"]])[0])
+    col = (0, 120, 255) if L.get("uncertain") else (200, 0, 200)
+    cv2.drawMarker(c, q, col, cv2.MARKER_STAR, 16, 2)
+    cv2.putText(c, L["n"][:30], (q[0] + 8, q[1] - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (255, 255, 255), 3)
+    cv2.putText(c, L["n"][:30], (q[0] + 8, q[1] - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.42, col, 1)
+if w.get("walls"):
+    for name in w["walls"].get("gatesUncertain", []):
+        if name in w["walls"]["gates"]:
+            q = tuple(P(w["walls"]["gates"][name])[0])
+            cv2.putText(c, "?", (q[0] - 4, q[1] - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+cv2.putText(c, w.get("name", ""), (12, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 4)
+cv2.putText(c, w.get("name", ""), (12, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (40, 0, 0), 2)
 cv2.imwrite(out, c)
 print(out, c.shape[1], c.shape[0])

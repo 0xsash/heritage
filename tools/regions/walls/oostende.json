@@ -1,0 +1,95 @@
+{
+ "note": "Ostend: the town rebuilt after the siege of 1601-04, an earthen bastioned enceinte; the three gates are those named for the later 17th c. (inventory 140010). Traced from the Ferraris map (1777) along the main rampart; the outworks and the eastern harbour forts are not traced.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Oostende' (https://id.erfgoed.net/erfgoedobjecten/140010)",
+ "ring": [
+  [
+   -180,
+   -597
+  ],
+  [
+   -33,
+   -573
+  ],
+  [
+   98,
+   -556
+  ],
+  [
+   164,
+   -409
+  ],
+  [
+   229,
+   -213
+  ],
+  [
+   303,
+   -147
+  ],
+  [
+   213,
+   17
+  ],
+  [
+   196,
+   82
+  ],
+  [
+   17,
+   164
+  ],
+  [
+   -213,
+   147
+  ],
+  [
+   -311,
+   82
+  ],
+  [
+   -409,
+   -82
+  ],
+  [
+   -491,
+   -360
+  ],
+  [
+   -360,
+   -409
+  ],
+  [
+   -311,
+   -491
+  ]
+ ],
+ "gates": {
+  "Hulppoort": [
+   17,
+   -600
+  ],
+  "Westpoort": [
+   -450,
+   -200
+  ],
+  "Kaaipoort": [
+   17,
+   164
+  ]
+ },
+ "gateSources": {
+  "Hulppoort": "inventory 140010 ('3 toegangspoorten (West-, Kaai en Hulppoort)'); positions from Ferraris ('Porte du Secours', 'Porte de Nieuport')",
+  "Westpoort": "inventory 140010 ('3 toegangspoorten (West-, Kaai en Hulppoort)'); positions from Ferraris ('Porte du Secours', 'Porte de Nieuport')",
+  "Kaaipoort": "inventory 140010 ('3 toegangspoorten (West-, Kaai en Hulppoort)'); positions from Ferraris ('Porte du Secours', 'Porte de Nieuport')"
+ },
+ "gatesUncertain": [
+  "Westpoort",
+  "Kaaipoort"
+ ],
+ "moat": [
+  [
+   0,
+   14
+  ]
+ ]
+}
