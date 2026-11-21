@@ -15,6 +15,7 @@ import type { Input } from '../core/input';
 import { angleDelta, clamp } from '../core/math';
 import type { Player } from '../player/player';
 import { type Gear, RARITY, gearLines, rollGear } from '../rpg/character';
+import { stuivers } from '../rpg/money';
 import type { QuestEngine } from '../rpg/quests';
 import type { CampDef } from '../rpg/types';
 import type { WorldCollision } from '../world/collision';
@@ -827,7 +828,7 @@ export class Combat {
   private pickUp(l: Loot) {
     if (l.kind === 'coin') {
       this.quests.s.florins += l.amount;
-      this.floaters.add(`+${l.amount} florijnen`, this.headPos(), 'coin', 1.1, 0.8);
+      this.floaters.add(`+${stuivers(l.amount)}`, this.headPos(), 'coin', 1.1, 0.8);
       this.sound.coins();
     } else if (l.kind === 'salve') {
       this.quests.s.inv.salve = (this.quests.s.inv.salve ?? 0) + 1;

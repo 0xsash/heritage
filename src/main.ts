@@ -15,6 +15,7 @@ import { loadModel } from './render/models';
 import { loadMaterialSet, type MaterialInfo } from './render/textures';
 import { Actors } from './rpg/actors';
 import { RARITY, type Gear, rollGear, uniqueGear } from './rpg/character';
+import { stuivers } from './rpg/money';
 import { Crowd } from './rpg/crowd';
 import { loadTownsfolk } from './rpg/townsfolk';
 import { Kroniek, READABLES, ENTRIES } from './rpg/kroniek';
@@ -146,7 +147,7 @@ async function boot() {
   if (dragonModel) player.dragon.useModel(dragonModel.scene);
   setLoading('De stad komt tot leven…');
   const townsfolk = await kitP;
-  setLoading('Klaar. Je verhaal wacht.');
+  setLoading('Alles staat klaar. Je kunt beginnen.');
 
   // --- who are you?
   const fe = await front;
@@ -198,7 +199,7 @@ async function boot() {
       late.actors?.syncPickups();
     },
     banner: (kind, title, lines) => {
-      late.banner?.show(kind, kind === 'start' ? 'NIEUWE OPDRACHT' : kind === 'done' ? 'OPDRACHT VOLBRACHT' : 'MISLUKT', title, lines);
+      late.banner?.show(kind, kind === 'start' ? 'NIEUWE OPDRACHT' : kind === 'done' ? 'OPDRACHT VOLBRACHT' : 'OPDRACHT MISLUKT', title, lines);
       if (kind === 'done') sound.questDone();
     },
     xp: (_n, levels) => {
@@ -206,7 +207,7 @@ async function boot() {
       const L = quests.s.hero.level;
       const o = quests.sheet.origin;
       late.banner?.show('level', 'NIEUW NIVEAU', `Niveau ${L}`, [
-        'Je kracht groeit. Levenskracht hersteld.',
+        'Je wordt sterker. Je levenskracht is weer vol.',
         L === o.skill2.level ? `Nieuwe vaardigheid: ${o.skill2.name} (R)` : '',
       ]);
       sound.levelUp();
@@ -243,7 +244,7 @@ async function boot() {
       const g = rollGear(quests.s.hero.level + 1, n >= 30 ? 2 : 1);
       quests.s.florins += 20;
       quests.giveGear(g);
-      late.banner?.show('done', 'KRONIEK', `${n} van ${total} bladzijden`, ['Marieke betaalt goed voor nieuws: 20 florijnen', `En een geschenk: ${g.name}`]);
+      late.banner?.show('done', 'KRONIEK', `${n} van ${total} bladzijden`, ['Marieke betaalt goed voor nieuws: 20 stuivers', `Je krijgt er een geschenk bij: ${g.name}`]);
       sound.questDone();
     },
   }, () => quests.save());
@@ -279,7 +280,7 @@ async function boot() {
       pass: (i, n) => {
         if (i === 1) {
           sound.chime(false);
-          toasts.push('KLOKKENRONDE · zeven klokken, de tijd loopt');
+          toasts.push('KLOKKENRONDE · luid de zeven klokken, de tijd loopt');
         } else {
           // each bell answers: on time, late, or far too late
           const late = rings.time / today.par[i - 1];
@@ -317,11 +318,11 @@ async function boot() {
         setTimeout(() => {
           shareCard.show({
             kicker: `KLOKKENRONDE ${dayNumber()} · ${date.toUpperCase()}`,
-            title: first ? (medal ? `${medal[0].toUpperCase()}${medal.slice(1)}` : 'Rond') : 'Oefenronde',
+            title: first ? (medal ? `${medal[0].toUpperCase()}${medal.slice(1)}` : 'Ronde gehaald') : 'Oefenronde',
             big: clockText(secs),
             lines: [
-              first ? `${onTime} van 7 klokken op tijd · beloond met florijnen en ervaring` : `Je ronde van vandaag: ${clockText(time)} · beste oefentijd ${clockText(best)}`,
-              `Goud onder ${clockText(today.gold)} · zilver onder ${clockText(today.silver)} · morgen een nieuwe ronde`,
+              first ? `${onTime} van 7 klokken op tijd · je krijgt stuivers en ervaring` : `Je ronde van vandaag: ${clockText(time)} · beste oefentijd ${clockText(best)}`,
+              `Goud onder ${clockText(today.gold)} · zilver onder ${clockText(today.silver)} · morgen is er een nieuwe ronde`,
             ],
             text,
           });
@@ -490,7 +491,7 @@ async function boot() {
     // "last time": the last line of the journal, so the thread is picked up at once
     const tq = quests.s.tracked ? quests.s.quests[quests.s.tracked] : null;
     const last = tq?.log.length ? quests.fill(tq.log[tq.log.length - 1]) : '';
-    banner.show('start', 'VORIGE KEER', quests.s.hero.name, [last.length > 150 ? last.slice(0, last.lastIndexOf(' ', 150)) + '…' : last || `Niveau ${quests.s.hero.level} · ${quests.s.florins} florijnen`]);
+    banner.show('start', 'VORIGE KEER', quests.s.hero.name, [last.length > 150 ? last.slice(0, last.lastIndexOf(' ', 150)) + '…' : last || `Niveau ${quests.s.hero.level} · ${stuivers(quests.s.florins)}`]);
   }
 
   canvas.addEventListener('click', () => {
@@ -859,7 +860,7 @@ async function boot() {
     player.hero.revive();
     combat.reset();
     quests.save();
-    banner.show('failed', 'GESNEUVELD', `Je komt bij in ${name}`, [fee ? `De chirurgijn rekende ${fee} florijnen aan.` : 'De chirurgijn wilde niets aannemen.']);
+    banner.show('failed', 'VERSLAGEN', `Je komt bij in ${name}`, [fee ? `De chirurgijn rekende ${stuivers(fee)} aan.` : 'De chirurgijn wilde niets aannemen.']);
   }
 
   /** The nearest named place, and where it lies (inside the walls, before a gate, out in the fields). */
@@ -891,9 +892,9 @@ async function boot() {
   function pace(speed: number, boosting: boolean, alt: number) {
     if (boosting) return 'Op volle snelheid';
     if (speed < 2.5) return alt < 3 ? 'Landend' : 'Zwevend';
-    if (speed < 10) return 'Drijvend';
+    if (speed < 10) return 'Traag vliegend';
     if (speed < 24) return 'Glijdend';
-    if (speed < 42) return 'Hard vliegend';
+    if (speed < 42) return 'Snel vliegend';
     return 'Sneller dan de wind';
   }
 

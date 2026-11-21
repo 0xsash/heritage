@@ -3,6 +3,7 @@
 
 import { bookTabs } from './kroniekui';
 import { gloss } from '../rpg/kroniek';
+import { stuivers } from '../rpg/money';
 import type { QuestEngine } from '../rpg/quests';
 import type { Line } from '../rpg/types';
 
@@ -160,19 +161,19 @@ export class JournalUI {
           : `<div class="obj ok">${st.status === 'done' ? 'Voltooid' : 'Mislukt'}</div>`;
       const r = cur.reward;
       const reward = r
-        ? [r.xp ? `${r.xp} ervaring` : '', r.florins ? `${r.florins} florijnen` : '', ...(r.renown ?? []).map(([t, n]) => `${t} +${n} aanzien`), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`), ...(r.gear?.length ? ['een uniek voorwerp'] : [])].filter(Boolean).join(' · ')
+        ? [r.xp ? `${r.xp} ervaring` : '', r.florins ? stuivers(r.florins) : '', ...(r.renown ?? []).map(([t, n]) => `${t} +${n} aanzien`), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`), ...(r.gear?.length ? ['een uniek voorwerp'] : [])].filter(Boolean).join(' · ')
         : '';
       detail = `<h1>${esc(cur.title)}</h1>
         <div class="meta">${cur.kind === 'main' ? 'Hoofdverhaal' : cur.kind === 'contract' ? 'Opdracht' : 'Zijverhaal'} · ${esc(cur.town)}${cur.level ? ' · niveau ' + cur.level : ''}${giver ? ' · van ' + esc(giver) : ''}</div>
         ${objs}
         ${reward ? `<div class="reward">Beloning: ${esc(reward)}</div>` : ''}
-        ${st.status === 'active' ? `<div class="actions"><button data-track="${cur.id}">${s.tracked === cur.id ? 'NIET MEER VOLGEN' : 'VOLG DEZE OPDRACHT'}</button></div>` : ''}
+        ${st.status === 'active' ? `<div class="actions"><button data-track="${cur.id}">${s.tracked === cur.id ? 'NIET MEER VOLGEN' : 'DEZE OPDRACHT VOLGEN'}</button></div>` : ''}
         <div class="entries">${[...st.log].reverse().map((p) => `<p>${gloss(esc(this.q.fill(p)))}</p>`).join('')}</div>`;
     }
     const inv = Object.entries(s.inv).filter(([, n]) => n > 0).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`).join(' · ');
     const fame = Object.entries(s.renown).map(([t, n]) => `${t} ${n}`).join(' · ');
-    this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${s.florins} florijnen${fame ? ' · Aanzien: ' + esc(fame) : ''}</span></header>
-      <div class="list">${list || '<div class="empty">Nog niets.</div>'}</div>
+    this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${stuivers(s.florins)}${fame ? ' · Aanzien: ' + esc(fame) : ''}</span></header>
+      <div class="list">${list || '<div class="empty">Je hebt nog geen opdrachten.</div>'}</div>
       <div class="detail">${detail}</div>
       <div class="inv">Op zak: ${inv ? esc(inv) : 'niets bijzonders'}</div>`;
     this.el.querySelectorAll<HTMLButtonElement>('button[data-q]').forEach((b) =>

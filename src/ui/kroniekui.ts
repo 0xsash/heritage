@@ -101,7 +101,7 @@ export class KroniekUI {
     this.el.innerHTML = `<header>${bookTabs('kroniek')}<div class="kr-prog"><i style="width:${pct}%"></i></div><span class="purse">${k.count} van ${k.total} bladzijden</span></header>
       <div class="list"><div class="kr-tabs">${tabs}</div>${items}</div>
       <div class="detail">${detail}</div>
-      <div class="inv">Wat hier staat is echt, tenzij er iets anders bij staat: <span class="truth t-geschiedenis">Geschiedenis</span> <span class="truth t-volksverhaal">Volksverhaal</span> <span class="truth t-verzonnen">Verzonnen</span></div>`;
+      <div class="inv">Bij elke bladzijde staat wat voor verhaal het is: <span class="truth t-geschiedenis">Geschiedenis</span> <span class="truth t-volksverhaal">Volksverhaal</span> <span class="truth t-verzonnen">Verzonnen</span></div>`;
     this.el.querySelectorAll<HTMLButtonElement>('button[data-cat]').forEach((b) =>
       b.addEventListener('click', () => {
         this.cat = b.dataset.cat as Cat;

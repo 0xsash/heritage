@@ -64,10 +64,10 @@ export class ShareCard {
       ${res.lines.map((l) => `<div class="sc-line">${esc(l)}</div>`).join('')}
       <pre class="sc-text">${esc(res.text)}</pre>
       <div class="sc-acts">
-        <button data-act="copy">KOPIEER</button>
-        ${canShare ? '<button data-act="share">DEEL</button>' : ''}
-        ${res.image ? '<button data-act="save">BEWAAR</button>' : ''}
-        <button data-act="close">VERDER</button>
+        <button data-act="copy">KOPIËREN</button>
+        ${canShare ? '<button data-act="share">DELEN</button>' : ''}
+        ${res.image ? '<button data-act="save">OPSLAAN</button>' : ''}
+        <button data-act="close">SLUITEN</button>
       </div>
     </div>`;
     this.el.hidden = false;
@@ -101,7 +101,7 @@ export class ShareCard {
         ok = document.execCommand?.('copy') ?? false;
       }
     }
-    btn.textContent = ok ? 'GEKOPIEERD' : 'DRUK CTRL+C';
+    btn.textContent = ok ? 'GEKOPIEERD' : 'DRUK OP CTRL+C';
   }
 
   private async share() {

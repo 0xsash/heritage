@@ -15,6 +15,7 @@ import type { Combat } from '../combat/combat';
 import { FACTIONS, type FactionId } from '../rpg/factions';
 import type { Role } from '../rpg/folk';
 import { addEntries, READABLES, TRUTH, type Kroniek } from '../rpg/kroniek';
+import { stuivers } from '../rpg/money';
 import type { QuestEngine } from '../rpg/quests';
 import type { Crowd, Walker } from '../rpg/crowd';
 import type { TownsfolkKit } from '../rpg/townsfolk';
@@ -948,7 +949,7 @@ export class Life {
         who: 'life_walker', text: this.pick.pick(TEND.offer),
         choices: [
           {
-            text: 'Hier, twee florijnen.',
+            text: 'Hier, twee stuivers.',
             reply: () => {
               if (q.s.florins < 2) return this.after(this.healBy(0.6, TEND.poor));
               q.s.florins -= 2;
@@ -1220,8 +1221,8 @@ export class Life {
     return {
       who, text: `${this.pick.pick(DICE.ask)} (${DICE.sign})`,
       choices: [
-        { text: 'Eén florijn.', reply: play(1) },
-        ...(this.standing.level('vrije') >= 1 || q.s.florins >= 20 ? [{ text: 'Vijf florijnen.', reply: play(5) }] : []),
+        { text: 'Eén stuiver.', reply: play(1) },
+        ...(this.standing.level('vrije') >= 1 || q.s.florins >= 20 ? [{ text: 'Vijf stuivers.', reply: play(5) }] : []),
         { text: 'Nee, laat maar.', reply: () => this.menuBack() },
       ],
     };
@@ -1236,12 +1237,12 @@ export class Life {
       const choices: Ch[] = jobs.map((j) => {
         const taken = this.board.taken(j.id);
         const st = q.s.quests[j.id]?.status;
-        const tag = st === 'done' ? ' (gedaan)' : taken ? ' (aangenomen)' : ` · ${j.def.reward?.florins ?? 0} florijnen`;
+        const tag = st === 'done' ? ' (gedaan)' : taken ? ' (aangenomen)' : ` · ${stuivers(j.def.reward?.florins ?? 0)}`;
         return {
           text: `${j.def.title}${tag}`,
           reply: (): Spec => ({
             who: BOARD.id,
-            text: `${j.notice} (Niveau ${j.def.level}. Beloning: ${j.def.reward?.florins} florijnen, ${j.def.reward?.xp} ervaring, en aanzien bij ${FACTIONS[this.factionOf(j.client) ?? 'gilden'].name}.)`,
+            text: `${j.notice} (Niveau ${j.def.level}. Beloning: ${stuivers(j.def.reward?.florins ?? 0)}, ${j.def.reward?.xp} ervaring, en aanzien bij ${FACTIONS[this.factionOf(j.client) ?? 'gilden'].name}.)`,
             choices: [
               ...(taken ? [] : [{ text: 'Ik neem het aan.', reply: (): Spec => {
                 this.board.pinLevel(j.id);
@@ -1359,7 +1360,7 @@ export class Life {
         this.d.kroniek.unlock('tijd:huisnamen');
         if (count % 10 === 0) {
           q.s.florins += 5;
-          this.d.toast(`${count} UITHANGBORDEN · de gilde van Sint-Lucas geeft je 5 florijnen`);
+          this.d.toast(`${count} UITHANGBORDEN · de gilde van Sint-Lucas geeft je 5 stuivers`);
           this.standing.add('gilden', 2, 'oog voor de stad');
         }
       }

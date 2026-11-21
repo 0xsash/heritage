@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { type Gear, RARITY, STAT_HELP, STAT_NAMES, type Stat, gearLines, gearValue, rollGear, xpToNext } from '../rpg/character';
 import type { QuestEngine } from '../rpg/quests';
 import { FACTIONS } from '../rpg/factions';
+import { stuivers } from '../rpg/money';
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const div = (cls: string, html = '') => {
@@ -216,7 +217,7 @@ export class PlayerFrame {
     const need = xpToNext(h.level);
     this.xp.style.width = `${(100 * h.xp) / need}%`;
     this.xpText.textContent = `Niveau ${h.level} · ${h.xp} / ${need} ervaring`;
-    const who = `${esc(h.name)} <span>${esc(q.sheet.origin.name)} · niveau ${h.level}</span><b>${q.s.florins} florijnen</b>`;
+    const who = `${esc(h.name)} <span>${esc(q.sheet.origin.name)} · niveau ${h.level}</span><b>${stuivers(q.s.florins)}</b>`;
     if (this.who.innerHTML !== who) this.who.innerHTML = who;
     const sig = slots.map((s) => `${s.key}${s.name}${s.count ?? ''}${s.locked ?? ''}`).join('|');
     if (sig !== this.lastSig) {
@@ -351,26 +352,26 @@ export class CharacterPanel {
       .join('');
     const bag = h.bag.length
       ? h.bag
-          .map((g) => gearCard(g, `<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ beter</span>' : ''}<button data-eq="${g.uid}">DRAAG</button>${this.shop ? `<button data-sell="${g.uid}">VERKOOP · ${Math.max(1, Math.round(gearValue(g) * (this.vendor?.sellRate ?? 1)))}</button>` : ''}</div>`))
+          .map((g) => gearCard(g, `<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ beter</span>' : ''}<button data-eq="${g.uid}">DRAGEN</button>${this.shop ? `<button data-sell="${g.uid}">VERKOPEN · ${Math.max(1, Math.round(gearValue(g) * (this.vendor?.sellRate ?? 1)))}</button>` : ''}</div>`))
           .join('')
       : '<div class="empty">Je zak is leeg. Verslagen vijanden laten soms iets vallen.</div>';
     const v = this.vendor;
     const shopHtml = this.shop && v
       ? `<div class="shop vshop"><h3>${esc(v.title)}</h3>${v.greet ? `<p class="vgreet">${esc(v.greet)}</p>` : ''}${v.note ? `<p class="vnote">${esc(v.note)}</p>` : ''}
           ${v.wares.map((w) => {
-            const btn = w.locked ? `<span class="vlock">${esc(w.locked)}</span>` : `<button data-vbuy="${esc(w.key)}"${this.q.s.florins < w.price ? ' class="poor"' : ''}>KOOP · ${w.price}</button>`;
+            const btn = w.locked ? `<span class="vlock">${esc(w.locked)}</span>` : `<button data-vbuy="${esc(w.key)}"${this.q.s.florins < w.price ? ' class="poor"' : ''}>KOPEN · ${w.price}</button>`;
             if (w.gear) return gearCard(w.gear, `<div class="gb">${w.tag ? `<span class="up">${esc(w.tag)}</span>` : ''}${btn}</div>`);
             return `<div class="ware vware${w.locked ? ' locked' : ''}">${w.swatch ? `<i class="swatch" style="background:${esc(w.swatch)}"></i>` : ''}<span><b>${esc(w.name)}</b>${w.tag ? ` <em>${esc(w.tag)}</em>` : ''}${w.text ? `<small>${esc(w.text)}</small>` : ''}</span>${btn}</div>`;
           }).join('')}
         </div>`
       : this.shop
       ? `<div class="shop"><h3>MARIEKES WAREN</h3>
-          <div class="ware"><span>Begijnenzalf (geneest de helft van je leven)</span><button data-buy="salve">KOOP · 6</button></div>
-          ${this.wares.map((g, i) => gearCard(g, `<div class="gb"><button data-buyg="${i}">KOOP · ${gearValue(g) * 4}</button></div>`)).join('')}
+          <div class="ware"><span>Begijnenzalf (herstelt de helft van je levenskracht)</span><button data-buy="salve">KOPEN · 6</button></div>
+          ${this.wares.map((g, i) => gearCard(g, `<div class="gb"><button data-buyg="${i}">KOPEN · ${gearValue(g) * 4}</button></div>`)).join('')}
         </div>`
       : '';
     const sellRate = v?.sellRate ?? 1;
-    this.el.innerHTML = `<header>${this.shop ? '' : bookTabs('character')}<h2>${esc(h.name)}</h2><span><b class="ch-who" title="${esc(`${this.q.sheet.background.perkName}: ${this.q.sheet.background.perk} Eerste trouw: ${FACTIONS[h.faction]?.name ?? ''}.`)}">${esc(this.q.sheet.background.name[h.sex === 'f' ? 1 : 0])} · ${esc(FACTIONS[h.faction]?.name ?? '')}</b> · ${esc(o.name)} · niveau ${h.level} · ${this.q.s.florins} florijnen · ${this.q.s.inv.salve ?? 0} zalf</span></header>
+    this.el.innerHTML = `<header>${this.shop ? '' : bookTabs('character')}<h2>${esc(h.name)}</h2><span><b class="ch-who" title="${esc(`${this.q.sheet.background.perkName}: ${this.q.sheet.background.perk} Van huis uit trouw aan: ${FACTIONS[h.faction]?.name ?? ''}.`)}">${esc(this.q.sheet.background.name[h.sex === 'f' ? 1 : 0])} · ${esc(FACTIONS[h.faction]?.name ?? '')}</b> · ${esc(o.name)} · niveau ${h.level} · ${stuivers(this.q.s.florins)} · ${this.q.s.inv.salve ?? 0} zalf</span></header>
       <div class="cols">
         <div class="col stats"${v ? " hidden" : ""}><h3>EIGENSCHAPPEN</h3>${(['kracht', 'klank', 'list', 'taaiheid'] as Stat[]).map(stat).join('')}
           <div class="st"><span>Levenskracht</span><b>${d.maxHp}</b></div>
@@ -380,10 +381,10 @@ export class CharacterPanel {
           <h3>VAARDIGHEDEN</h3>
           <div class="sk"><b>Rechtermuis · ${esc(o.skill.name)}</b><p>${esc(o.skill.text)}</p></div>
           <div class="sk${h.level < o.skill2.level ? ' locked' : ''}"><b>R · ${esc(o.skill2.name)}${h.level < o.skill2.level ? ` (niveau ${o.skill2.level})` : ''}</b><p>${esc(o.skill2.text)}</p></div>
-          <div class="sk"><b>Linkermuis in de lucht · Drakenvuur</b><p>${esc(h.dragon)} spuwt vuur waar je kijkt.</p></div>
+          <div class="sk"><b>Linkermuis in de lucht · Drakenvuur</b><p>${esc(h.dragon)} spuwt vuur naar de plek waar je kijkt.</p></div>
         </div>
-        <div class="col"><h3>GEDRAGEN</h3>${worn}${this.extra && !v ? this.extra() : ""}</div>
-        <div class="col"><h3>ZAK</h3><div class="bag">${bag}</div></div>
+        <div class="col"><h3>WAT JE DRAAGT</h3>${worn}${this.extra && !v ? this.extra() : ""}</div>
+        <div class="col"><h3>IN JE ZAK</h3><div class="bag">${bag}</div></div>
         ${shopHtml ? `<div class="col">${shopHtml}</div>` : ''}
       </div>`;
     this.el.querySelectorAll<HTMLButtonElement>('button[data-eq]').forEach((b) =>
