@@ -2,7 +2,8 @@
 // to do within a few steps. It puts merchants and guides at stalls and doors,
 // fills the streets with small things (house signs, doors to knock on, wells,
 // shrines), lets you talk to anyone in the crowd, keeps the notice board, the
-// town walk, standing with the four parties, buffs from food and blessings,
+// town walk, standing with the parties (five you know, and Het Oude Volk once
+// you have found them: src/life/oudevolk.ts), buffs from food and blessings,
 // and the inn (rest, tales, dice).
 //
 // It plugs into main.ts at a few points: init(), update(), nearest() /
@@ -39,6 +40,7 @@ import { board as boardProp, clutter, door as doorProp, PropKit, shrine as shrin
 import { Shops, talismanGear } from './shop';
 import { FACTION_IDS, Standing } from './standing';
 import { Talk, type Ch, type Spec } from './talk';
+import { OudeVolk } from './oudevolk';
 import type { Good, ServiceDef, SpotKind, StallKind } from './types';
 
 addEntries(PAGES);
@@ -138,6 +140,8 @@ export class Life {
   group = new THREE.Group();
   standing: Standing;
   board: Board;
+  /** the hidden party: signs, discovery, what they teach (src/life/oudevolk.ts) */
+  ov: OudeVolk;
   pointer: Pointer | null = null;
   private people: People;
   private shops: Shops;
@@ -172,6 +176,7 @@ export class Life {
   constructor(private d: LifeDeps) {
     const q = d.quests;
     this.standing = new Standing(q.s, (t) => d.toast(t));
+    this.ov = new OudeVolk(d, this.standing, { note: (k, t) => this.showNote(k, t), point: (x, z, l, secs) => this.point(x, z, l, secs) });
     this.talk = new Talk(q, d.dialogue, () => {
       this.talkingTo = null;
       if (this.walker) {
@@ -275,6 +280,8 @@ export class Life {
     }
     this.placeMarket(k);
     this.placeSpots(k);
+    // some of the wells and shrines now carry a sign of Het Oude Volk
+    this.ov.init(k, this.spots);
     const mesh = k.build();
     if (mesh) this.group.add(mesh);
     // weathercocks on the towers
@@ -539,6 +546,7 @@ export class Life {
       for (const p of this.people.list) this.marks.set(p.def.id, this.markFor(p.def.id));
     }
     this.people.update(dt, px, pz, this.talkingTo, this.markOf);
+    this.ov.update(dt);
     // market-day sellers call out to whoever passes close by (now and then, never over each other)
     for (const h of this.hawkers) {
       const d = Math.hypot(h.x - px, h.z - pz);
@@ -671,6 +679,7 @@ export class Life {
   /** A `{call}` effect from the dialogue box (ours) or a quest (the town walk). */
   call(id: string) {
     if (this.talk.call(id)) return;
+    if (this.ov.call(id)) return;
     const m = /^walk:(\d+)$/.exec(id);
     if (m) {
       const i = Number(m[1]);
@@ -728,6 +737,7 @@ export class Life {
     if (this.d.hud.mapScale >= 2) out.push({ x: this.boardPos.x, z: this.boardPos.z, kind: 'svc', label: 'Aanplakbord', glyph: BOARD.glyph });
     const m = this.d.quests.npcPos.get(MARIEKE.id);
     if (m) out.push({ x: m[0], z: m[1], kind: 'svc', label: MARIEKE.label, glyph: MARIEKE.glyph });
+    out.push(...this.ov.mapMarks());
     if (this.pointer) out.push({ x: this.pointer.x, z: this.pointer.z, kind: 'pin', label: this.pointer.label });
     return out;
   }
@@ -881,6 +891,8 @@ export class Life {
   private cond(c: string): boolean {
     const q = this.d.quests, f = q.s.flags, st = this.standing;
     const done = (id: string) => q.s.quests[id]?.status === 'done';
+    const ov = this.ov.cond(c);
+    if (ov !== undefined) return ov;
     switch (c) {
       case 'bells_silent': return !f.bells_ring;
       case 'bells_ring': return !!f.bells_ring;
@@ -906,7 +918,7 @@ export class Life {
   }
 
   private gossip(role: Role): string {
-    const pool: Pool = [...GOSSIP[role], ...REACTIVE.map((r) => ({ t: r.t, when: () => this.cond(r.if), w: 2 }))];
+    const pool: Pool = [...GOSSIP[role], ...REACTIVE.filter((r) => !r.roles || r.roles.includes(role)).map((r) => ({ t: r.t, when: () => this.cond(r.if), w: 2 }))];
     return this.d.quests.fill(this.pick.pick(pool));
   }
 
@@ -941,7 +953,7 @@ export class Life {
       return this.after(this.pick.pick(pool));
     }
     if (sp === 'rep') {
-      const tiers = FACTION_IDS.map((f) => ({ f, t: this.standing.level(f) })).sort((a, b) => b.t - a.t);
+      const tiers = this.standing.ids().map((f) => ({ f, t: this.standing.level(f) })).sort((a, b) => b.t - a.t);
       const deeds = REP_DEEDS.filter((r) => this.cond(r.if)).map((r) => r.t);
       const last = tiers[tiers.length - 1];
       const parts = [REP[tiers[0].f]?.[tiers[0].t], REP[last.f]?.[last.t]].filter(Boolean);
@@ -1129,6 +1141,7 @@ export class Life {
       out.push({ text: 'Zullen we een spelletje dobbelen?', reply: () => this.dice(def.id) });
     }
     if (!def.guide || def.guide === 'gate') out.push({ text: 'Wat hoor je zoal?', reply: () => this.after(this.serviceGossip(def.faction), def.id) });
+    out.push(...this.ov.serviceChoices(def.id, (t) => this.after(t, def.id)));
     out.push({ text: this.pick.pick(BYE), close: () => {} });
     return out.slice(0, 6);
   }
@@ -1260,6 +1273,8 @@ export class Life {
           }),
         };
       });
+      const notice = this.ov.notice();
+      if (notice) choices.push({ text: 'Het plakkaat van het kapittel lezen.', reply: (): Spec => ({ who: BOARD.id, text: notice, choices: [{ text: 'Iets anders bekijken.', reply: list }, { text: 'Weggaan.', close: () => {} }] }) });
       choices.push({ text: 'Weggaan.', close: () => {} });
       const open = this.board.open();
       return { who: BOARD.id, text: open ? `Er hangen briefjes, plakkaten en een premie met een rode lakzegel. ${open === 1 ? 'Eén opdracht is' : `${open} opdrachten zijn`} nog niet genomen. Morgen hangen er nieuwe.` : 'Alles van vandaag is genomen. Morgen hangen er nieuwe briefjes.', choices };
@@ -1272,6 +1287,7 @@ export class Life {
   /** The shop panel for this seller (also Marieke's, from her own conversation). */
   shopFor(id: string) {
     if (id === MARIEKE.id) return this.shops.view(id, 'vrije', 'MARIEKES WAREN', GOODS.marieke, 'Alles is eerlijk verkregen. Bijna alles toch.');
+    if (id === 'heylwich' && this.ov.found) return this.shops.view(id, 'oudevolk', 'HEYLWICHS MAND', this.ov.goods(), 'Wat ik pluk, pluk ik waar het groeit. Wat ik zeg, zeg ik maar één keer.');
     const s = this.byId.get(id);
     if (!s) return null;
     return this.shops.view(id, s.def.faction, `${s.def.name.toUpperCase()} · ${s.def.label.toUpperCase()}`, GOODS[s.def.shop ?? ''] ?? [], s.def.shopGreet ? this.pick.pick(s.def.shopGreet) : undefined);
@@ -1383,6 +1399,8 @@ export class Life {
     } else if (s.kind === 'well') {
       q.s.hero.hp = Math.min(max, q.s.hero.hp + max * 0.3);
       this.showNote('WATERPUT', this.pick.pick(WELL_LINES));
+      const sign = this.ov.spot(s.key);
+      if (sign) this.showNote(sign.kicker, sign.text);
       if (first) {
         this.d.kroniek.unlock('tijd:putten');
         q.addXp(4);
@@ -1390,10 +1408,14 @@ export class Life {
     } else {
       if (L.spotDay[s.key] === day) {
         this.showNote('KAPELLETJE', `${SHRINE_LINES[hash(s.key) % SHRINE_LINES.length]} Je hebt hier vandaag al gebeden.`);
+        const sign = this.ov.spot(s.key);
+        if (sign) this.showNote(sign.kicker, sign.text);
       } else {
         L.spotDay[s.key] = day;
         this.showNote('JE BIDT', `${SHRINE_LINES[hash(s.key) % SHRINE_LINES.length]} Je voelt je beschermd.`);
         this.addBuff('zegen', 120);
+        const sign = this.ov.spot(s.key);
+        if (sign) this.showNote(sign.kicker, sign.text);
         if (first) {
           q.addXp(6 + q.s.hero.level);
           this.d.kroniek.unlock('tijd:kapelletjes');

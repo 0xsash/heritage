@@ -4,11 +4,16 @@
 // buying, helping, quests and jobs; a few acts cost points with a rival.
 
 import * as F from '../rpg/factions';
-import { FACTIONS, RENOWN_TO_FACTION, TIERS, type FactionId, tierOf } from '../rpg/factions';
+import { FACTIONS, HIDDEN_FACTIONS, RENOWN_TO_FACTION, TIERS, type FactionId, tierOf } from '../rpg/factions';
 import type { SaveData } from '../rpg/state';
 
-/** Every party there is (four or five: iterate, never assume). */
+/** The public parties (iterate, never assume how many). The hidden one is added by Standing.ids() once found. */
 export const FACTION_IDS = Object.keys(FACTIONS) as FactionId[];
+
+/** Has the player found this party? (the public ones always; Het Oude Volk once the flag `ov_found` is set) */
+export function isKnown(s: SaveData, f: FactionId) {
+  return !HIDDEN_FACTIONS.includes(f) || !!s.flags.ov_found;
+}
 
 /** Pairs where helping one costs a little with the other (factions.ts RIVALS, when it exists). */
 const RIVAL_PAIRS: [FactionId, FactionId][] = ((F as unknown as { RIVALS?: [FactionId, FactionId][] }).RIVALS ?? []);
@@ -20,6 +25,9 @@ const PRICE = [1, 0.95, 0.9, 0.85, 0.8];
 export const PLACE_FACTION: Record<string, FactionId> = { ...RENOWN_TO_FACTION, Kaggevinne: 'vrije' };
 
 export class Standing {
+  /** a party's tier may have moved (src/life/oudevolk.ts listens: a new tier there means something to learn) */
+  onChange?: (f: FactionId, before: number, after: number) => void;
+
   constructor(private s: SaveData, private toast: (text: string) => void) {
     // older saves kept renown per place: carry it over once (a value already set, e.g. by the
     // character-creation screen, is kept and added to)
@@ -30,6 +38,15 @@ export class Standing {
       }
       s.life.migrated = true;
     }
+  }
+
+  /** Every party the player knows of: the five, and the hidden one once found. */
+  ids(): FactionId[] {
+    return [...FACTION_IDS, ...HIDDEN_FACTIONS.filter((f) => isKnown(this.s, f))];
+  }
+
+  known(f: FactionId) {
+    return isKnown(this.s, f);
   }
 
   points(f: FactionId) {
@@ -63,7 +80,10 @@ export class Standing {
     if (rival && n >= 3) for (const [a, b] of RIVAL_PAIRS) if (a === f || b === f) this.add(a === f ? b : a, -Math.max(1, Math.round(n / 4)), '', false);
     const before = this.level(f);
     this.s.standing[f] = Math.max(0, (this.s.standing[f] ?? 0) + n);
+    // a party you have not found yet moves without a word
+    if (!this.known(f)) return;
     const after = this.tier(f);
+    this.onChange?.(f, before, after.index);
     if (after.index !== before) this.toast(`${FACTIONS[f].name.toUpperCase()} · ${after.index > before ? 'nu' : 'nog maar'} ${after.name}`);
     else this.toast(`${FACTIONS[f].name.toUpperCase()} ${n > 0 ? '+' : ''}${n}${why ? ' · ' + why : ''}`);
   }
@@ -87,7 +107,7 @@ export class Standing {
 
   /** Bars with the tier name, for the character panel. */
   html() {
-    const rows = FACTION_IDS.map((f) => {
+    const rows = this.ids().map((f) => {
       const p = this.points(f);
       const t = tierOf(p);
       const lo = TIERS[t.index].at, hi = t.next ?? lo + 40;

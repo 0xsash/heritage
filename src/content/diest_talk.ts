@@ -8,6 +8,7 @@
 
 import type { Role } from '../rpg/folk';
 import type { FactionId } from '../rpg/factions';
+import { OV_GREET, OV_REACTIVE, OV_REP, OV_REP_DEEDS, OV_TOWN_VIEW } from './oudevolk';
 
 export type Special = 'work' | 'food' | 'town' | 'rep' | 'tend' | 'camps' | 'bless' | 'pilgrim' | 'dare' | 'tale';
 
@@ -71,6 +72,8 @@ export const TIER_GREET: Partial<Record<FactionId, string[][]>> = {
     ['{name}. Voor jou weet ik altijd een sluipweg.', 'Hé, {name}. Als je iets zoekt dat niet te koop is, vraag het dan aan mij.', '{name}, vriend. Zeg het maar.'],
     ['{name}. Elke voerman tussen hier en Antwerpen kent je naam.', 'Voor jou, {name}, gaan de achterdeuren open.', '{name}. Jij en ik, wij betalen nooit tol.'],
   ],
+  // the hidden party (src/content/oudevolk.ts): only their own people greet you this way
+  oudevolk: OV_GREET,
 };
 
 // ===================================================================== "Waar ben ik?"
@@ -263,8 +266,8 @@ export const GOSSIP: Record<Role, string[]> = {
   ],
 };
 
-/** Lines anyone may say, that react to what the player has done (see src/life/talk.ts for the conditions). */
-export const REACTIVE: { t: string; if: string }[] = [
+/** Lines anyone may say (or only `roles`), that react to what the player has done (conditions: cond() in src/life/life.ts). */
+export const REACTIVE: { t: string; if: string; roles?: string[] }[] = [
   { if: 'bells_silent', t: 'Sinds de klokken zwijgen, bakt de bakker wanneer hij wakker wordt. Hij wordt laat wakker.' },
   { if: 'bells_silent', t: 'Er lag nat wier op de klokkenstoel, zeggen ze, veertig el boven de grond. Wie draagt er wier naar boven?' },
   { if: 'bells_silent', t: 'Mijn buurvrouw zette die nacht een kaars voor het raam, voor haar jongen. Die kaars brandt nog.' },
@@ -297,6 +300,8 @@ export const REACTIVE: { t: string; if: string }[] = [
   { if: 'blessed', t: 'Je ziet er gezegend uit. Ik weet niet hoe dat eruitziet, maar het zal ongeveer zo zijn.' },
   { if: 'night', t: 'Het wordt donker. Ga niet naar het Broek. Mijn vader ging, om een kalf te zoeken. Het kalf kwam terug.' },
   { if: 'poor', t: 'Je beurs ziet er licht uit. Op het aanplakbord zoeken ze altijd volk.' },
+  // Het Oude Volk: rumours before you find them, talk after, and what De Kerk's people say
+  ...OV_REACTIVE,
 ];
 
 // ===================================================================== role specials
@@ -400,6 +405,7 @@ export const TOWN_VIEW: { t: string; if?: string }[] = [
   { if: 'kroon_high', t: 'Het garnizoen is tevreden over je. De drossaard ook. Dat is goed voor jou, en voor de stad. Voor de smokkelaars minder.' },
   { if: 'vrije_high', t: 'Ze zeggen dat je goed staat bij de voerlui en de marskramers. Dat is handig, maar zeg het niet te luid bij de tollenaar.' },
   { if: 'kerk_high', t: 'De Kerk is blij met je, en de begijnen nog meer. Als je ziek wordt, ben je in goede handen.' },
+  ...OV_TOWN_VIEW,
 ];
 
 /** What people say about you, per party and tier (src/life/talk.ts). */
@@ -408,6 +414,7 @@ export const REP: Partial<Record<FactionId, string[]>> = {
   gilden: ['De gilden kennen je niet.', 'De gilden hebben je naam al eens gehoord.', 'De gilden zeggen dat je goed volk bent.', 'De dekens van de gilden spreken met respect over je.', 'De gilden noemen je een vriend van de stad. Dat zeggen ze over bijna niemand.'],
   kerk: ['De Kerk weet niet wie je bent.', 'De begijnen hebben over je gehoord.', 'De begijnen bidden voor je, af en toe.', 'De Kerk spreekt goed over je, van de koster tot de deken.', 'Ze zeggen in de kerk dat je door God gestuurd bent. Of door de draak. Ze zijn er nog niet uit.'],
   kroon: ['Het garnizoen kent je niet. Dat is misschien maar goed ook.', 'De drossaard heeft je naam laten opschrijven, zonder er iets bij te zetten.', 'De soldaten zeggen dat je te vertrouwen bent.', 'De Kroon is je dankbaar. De sergeant groet je zelfs.', 'Ze zeggen dat de landvoogd zelf van je gehoord heeft.'],
+  oudevolk: OV_REP,
   vrije: ['De voerlui en de marskramers weten niet wie je bent.', 'De voerlui hebben je zien vliegen. Ze vragen zich af wat je vervoert.', 'De marskramers zeggen dat je een van hen bent, half en half.', 'De smokkelaars noemen je een vriend. Zeg het niet tegen de tollenaar.', 'Elke voerman tussen hier en Antwerpen kent je naam, en houdt zijn mond.'],
 };
 export const REP_DEEDS: { t: string; if: string }[] = [
@@ -418,6 +425,7 @@ export const REP_DEEDS: { t: string; if: string }[] = [
   { if: 'toll_bribe', t: 'En van de brandewijn weet iedereen, echt iedereen.' },
   { if: 'roelof_done', t: 'In Kaggevinne noemen ze je naam aan tafel, sinds dat met Lambrecht de Rode.' },
   { if: 'kludde_done', t: 'En dat van de Kludde, dat vertellen ze aan de kinderen.' },
+  ...OV_REP_DEEDS,
 ];
 
 export const WORK = [

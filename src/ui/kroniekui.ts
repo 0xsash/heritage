@@ -119,4 +119,4 @@ export class KroniekUI {
 }
 
 /** How many entries exist (for the title screen and share cards). */
-export const KRONIEK_TOTAL = ENTRIES.length;
+export const KRONIEK_TOTAL = ENTRIES.filter((e) => !e.secret).length;

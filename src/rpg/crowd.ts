@@ -12,6 +12,7 @@ import { dress, pickRole, type Role } from './folk';
 import type { TownsfolkKit } from './townsfolk';
 import type { World } from '../world/world';
 import type { QuestEngine } from './quests';
+import { OV_BARKS } from '../content/oudevolk';
 
 const POOL = 36;
 const NEAR = 9, FAR = 70, DROP = 95;
@@ -484,6 +485,10 @@ export class Crowd {
     if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push('Lambrecht de Rode dood? Dat geloof ik pas als ik zijn laarzen zie.', 'In Kaggevinne slapen ze weer met de deur dicht, maar niet meer op slot.');
     if (q.test({ quest: 'main_kludde', state: 'done' })) pool.push('Jij hebt de Kludde verjaagd. Grootmoeder zegt: verjaagd is niet dood.', 'Hoor je de klokken? Mijn man weende bij de eerste slag.', 'Ze luiden weer. Je draak slaapt er staand bij, zie ik.');
     if (s.hero.level >= 5) pool.push('Dat is een stevig zwaard, {name}. Hou het in de schede.');
+    // Het Oude Volk (src/content/oudevolk.ts): a rumour now and then before you find them, talk after
+    const f = s.flags;
+    const ov: Record<string, boolean> = { ov_rumour: !f.ov_found && Math.random() < 0.3, ov_found: !!f.ov_found, ov_choice_volk: f.ov_choice === 'volk', ov_named: !!f.ov_named };
+    for (const b of OV_BARKS) if (ov[b.if]) pool.push(b.t);
     return pool[Math.floor(Math.random() * pool.length)];
   }
 }

@@ -30,10 +30,15 @@ export interface TutorialCtx {
   inCombat: boolean;
   hpFrac: number;
   salves: number;
-  tally: { hits: number; rolls: number; skills: number; potions: number; breaths: number; telegraphs: number };
+  tally: { hits: number; rolls: number; skills: number; potions: number; breaths: number; telegraphs: number; spares?: number; dskills?: number };
   dragon: string;
   skill: string;
   uiOpen: boolean;
+  /** a beaten creature you could let go (Het Oude Volk taught it) */
+  spare?: boolean;
+  /** the dragon has learned skills for flight / the call on foot */
+  dragonFly?: boolean;
+  dragonCall?: boolean;
 }
 
 interface Step {
@@ -65,6 +70,10 @@ const STEPS: Step[] = [
   { id: 'salve', keys: (p) => (p ? ['▼'] : ['Q']), text: 'Begijnenzalf geneest je', when: (c) => c.hpFrac < 0.5 && c.salves > 0, done: (c, t) => c.tally.potions > t.base.potions, stall: 1 },
   { id: 'skill', keys: () => ['RMB'], text: '{skill}', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.skills > t.base.skills, stall: 5 },
   { id: 'breath', keys: () => ['LMB'], text: '{dragon} spuwt vuur', when: (c) => c.mode === 'fly' && c.inCombat, done: (c) => c.tally.breaths > 0, stall: 2 },
+  // what Het Oude Volk teaches (only ever seen by someone who found them)
+  { id: 'spare', keys: (p) => (p ? ['Y'] : ['E']), text: 'Laat het beest gaan', when: (c) => c.mode === 'walk' && !!c.spare, done: (c, t) => (c.tally.spares ?? 0) > (t.base.spares ?? 0), stall: 0.3, patience: 8 },
+  { id: 'dskill', keys: () => ['RMB', 'R'], text: 'De gaven van {dragon}', when: (c) => c.mode === 'fly' && !!c.dragonFly && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
+  { id: 'dcall', keys: () => ['G'], text: 'Roep {dragon} te hulp', when: (c) => c.mode === 'walk' && !!c.dragonCall && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
   { id: 'mount', keys: (p) => (p ? ['Y'] : ['E']), text: 'Is het ver? Roep {dragon} en vlieg', when: (c) => c.mode === 'walk' && c.toGoal > 300 && c.toGoal < 1e8 && !c.inCombat, done: (c) => c.mode === 'fly', stall: 6 },
   // the second flight: now speed matters
   // (or at once, when the dragon hangs in the air and the rider does not know how to send him on)
@@ -77,7 +86,7 @@ export class Tutorial {
   /** per-step accumulators */
   acc: Record<string, number> = { speed: 0, climb: 0 };
   /** tallies when the current step began */
-  base = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0 };
+  base: TutorialCtx['tally'] = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0, spares: 0, dskills: 0 };
   dt = 0;
   enabled = true;
   /** the step whose situation holds now (shown or still waiting out its stall) */

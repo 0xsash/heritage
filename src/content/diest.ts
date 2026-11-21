@@ -8,6 +8,7 @@
 // Positions are local metres from the Grote Markt (x east, z south).
 
 import type { Content } from '../rpg/types';
+import { OV_DIALOGUE, OV_ITEMS, OV_NPCS, OV_QUESTS } from './oudevolk';
 
 const ARRIVE = 'main_arrive';
 const BELLS = 'main_bells';
@@ -26,6 +27,8 @@ export const diest: Content = {
     { id: 'brandy', name: 'Vaatje brandewijn', text: 'Voor dit vaatje heeft niemand tol betaald, en dat was ook de bedoeling.' },
     { id: 'klepel', name: 'Klepel van Sint-Sulpitius', text: 'Een ijzeren klepel, nat en vol modder. Hij is zwaarder dan hij eruitziet.', quest: true },
     { id: 'pass', name: 'Vrijgeleide naar Leuven', text: 'Een reisbrief van de drossaard, met zegel en al.', quest: true },
+    // Het Oude Volk, the hidden party (src/content/oudevolk.ts)
+    ...OV_ITEMS,
   ],
 
   camps: [
@@ -54,6 +57,9 @@ export const diest: Content = {
         { if: { quest: BELLS, state: 'active', stage: 'report' }, start: 'pieter_report' },
         { if: { quest: KLUDDE, state: 'active', stage: 'return' }, start: 'pieter_bells' },
         { if: { quest: KLUDDE, state: 'active' }, start: 'pieter_kludde' },
+        // Het Oude Volk: a warning about the small bell, or what he found on its clapper
+        { if: { quest: 'ov_dof', state: 'active', stage: 'nee' }, start: 'pieter_ov' },
+        { if: { all: [{ flag: 'ov_choice', is: 'volk' }, { not: { flag: 'ov_pieter_dof' } }] }, start: 'pieter_dof' },
         { if: { quest: KLUDDE, state: 'done' }, start: 'pieter_after' },
         { start: 'pieter_busy' },
       ],
@@ -81,6 +87,8 @@ export const diest: Content = {
       talk: [
         { if: { quest: BELLS, state: 'active', stage: 'badge' }, start: 'aleydis_badge' },
         { if: { quest: 'side_seals', state: 'active', stage: 'shelter' }, start: 'aleydis_lijsbet' },
+        // once you have met Heylwich, what the begijnhof thinks of her (once)
+        { if: { all: [{ flag: 'ov_found' }, { not: { flag: 'ov_aleydis' } }] }, start: 'aleydis_ov' },
         { if: { quest: 'side_herbs', state: 'none' }, start: 'aleydis_intro' },
         { if: { quest: 'side_herbs', state: 'active', stage: 'return' }, start: 'aleydis_herbs_back' },
         { start: 'aleydis_idle' },
@@ -149,11 +157,14 @@ export const diest: Content = {
       offers: ['side_wisps'],
       talk: [
         { if: { quest: 'contract_letter', state: 'active', stage: 'deliver' }, start: 'provost_letter' },
+        { if: { all: [{ quest: 'ov_eik', state: 'active' }, { not: { flag: 'ov_provost' } }] }, start: 'provost_ov' },
         { if: { quest: 'side_wisps', state: 'none' }, start: 'provost_wisps' },
         { if: { quest: 'side_wisps', state: 'active', stage: 'return' }, start: 'provost_wisps_back' },
         { start: 'provost_idle' },
       ],
     },
+    // Het Oude Volk: Heylwich the midwife, Gooris the reed cutter, Aert the shepherd and his grandson
+    ...OV_NPCS,
   ],
 
   quests: [
@@ -376,6 +387,9 @@ export const diest: Content = {
         },
       ],
     },
+
+    // ================================================================ Het Oude Volk (hidden until found)
+    ...OV_QUESTS,
   ],
 
   dialogue: {
@@ -416,6 +430,7 @@ export const diest: Content = {
       choices: [
         { text: 'Dan ga ik naar de drossaard.', effects: [{ start: LEUVEN }] },
         { text: 'Wat doen de klokken met mijn draak?', next: 'pieter_b5' },
+        { text: 'De vroedvrouw zegt dat de klokken hem in slaap houden.', if: { flag: 'ov_found' }, next: 'pieter_b_ov' },
       ],
     },
     pieter_b5: { who: 'pieter', text: 'Ik ben koster, geen profeet. Ik weet alleen dat hij sliep zolang de klokken luidden, honderden jaren lang. Misschien vond hij dat niet erg.', next: 'pieter_b4' },
@@ -591,5 +606,8 @@ export const diest: Content = {
     provost_w3: { who: 'provost', text: 'De twee die niet terugkwamen dachten dat ook.', next: 'provost_wisps' },
     provost_wisps_back: { who: 'provost', text: 'Is het bos weer donker? Goddank. Neemt u deze mantel; hij is gezegend aan het altaar, op de plek van de eik. Hij zal u beter beschermen dan uw eigen mantel.', effects: [{ complete: 'side_wisps' }] },
     provost_idle: { who: 'provost', text: 'De kerk heeft zeven zijden, de stad zeven hoeken, en de koepel hangt vol gouden sterren. De aartshertogen hebben goed gebouwd.' },
+
+    // ================================================================ Het Oude Volk
+    ...OV_DIALOGUE,
   },
 };

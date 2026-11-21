@@ -638,6 +638,7 @@ async function boot() {
         quests: Object.keys(quests.s.quests).length, inCombat: combat.inCombat,
         hpFrac: quests.s.hero.hp / quests.sheet.derived().maxHp, salves: quests.s.inv.salve ?? 0,
         tally: combat.tally, dragon: quests.s.hero.dragon, skill: quests.sheet.origin.skill.name, uiOpen: uiOpen() || mapOpen,
+        spare: !!combat.spareHint, dragonFly: combat.dragonSlots(true).length > 0, dragonCall: combat.dragonSlots(false).length > 0,
       });
       crowd?.update(sdt, px, pz, player.onFoot ? 0 : player.altitude(), rig.camera, {
         x: px, z: pz, onFoot: player.onFoot, dragonX: player.pos.x, dragonZ: player.pos.z, dragonDown: player.mode === 'walk' || player.mode === 'calling',
@@ -730,6 +731,7 @@ async function boot() {
     const dragon = quests.s.hero.dragon;
     if (prologue.active) hud.setPrompt(prologue.prompt);
     else if (uiOpen() || player.dead) hud.setPrompt(null);
+    else if (combat.spareHint && player.mode === 'walk') hud.setPrompt(`<kbd>${key}</kbd>Laat gaan: ${combat.spareHint}`);
     else if (near?.npc) hud.setPrompt(`<kbd>${key}</kbd>Spreek met ${near.npc.name}${near.npc.shop ? ' · winkel' : ''}`);
     else if (near?.loot) hud.setPrompt(`<kbd>${key}</kbd>Raap op: <span style="color:${RARITY[near.loot.rarity].color}">${near.loot.name}</span>`);
     else if (near?.read) hud.setPrompt(`<kbd>${key}</kbd>${near.read.read ? 'Herlees' : 'Lees'} ${near.read.def.label}`);
@@ -745,6 +747,7 @@ async function boot() {
     const slots: SlotView[] = flying
       ? [
           { key: 'LMB', name: 'Vuur', icon: 'fire', cd: combat.fire < 18 ? 1 - combat.fire / 18 : 0, ready: combat.fire >= 18 },
+          ...combat.dragonSlots(true), // what Het Oude Volk taught the dragon (src/player/dragonskills.ts)
           { key: 'Q', name: 'Zalf', icon: 'salve', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
         ]
       : [
@@ -752,6 +755,7 @@ async function boot() {
           { key: 'RMB', name: o.skill.short, icon: o.skill.id, cd: combat.cds.skill / o.skill.cooldown, ready: combat.cds.skill <= 0 && combat.resonance >= o.skill.cost },
           { key: 'R', name: o.skill2.short, icon: o.skill2.id, cd: combat.cds.skill2 / o.skill2.cooldown, ready: combat.cds.skill2 <= 0 && combat.resonance >= o.skill2.cost, locked: quests.s.hero.level < o.skill2.level ? `niveau ${o.skill2.level}` : undefined },
           { key: 'SPATIE', name: 'Rol', icon: 'roll', cd: 0, ready: combat.inCombat },
+          ...combat.dragonSlots(false),
           { key: 'Q', name: 'Zalf', icon: 'salve', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
         ];
     frame.update(quests, combat.resonance, flying ? 'Vuur' : 'Resonantie', slots, flying ? combat.fire : null);
