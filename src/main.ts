@@ -32,6 +32,9 @@ import { Hud } from './ui/hud';
 import { KroniekUI } from './ui/kroniekui';
 import { Tutorial } from './ui/tutorial';
 import { Prologue } from './story/prologue';
+import { Cine } from './story/cine';
+import { makeIntro, INTRO_FACTIONS } from './story/intro';
+import { STORY_LINES } from './story/script';
 import { Voice } from './audio/voice';
 import { ShareCard, publicUrl } from './ui/share';
 import { paintPicture } from './ui/painting';
@@ -441,8 +444,29 @@ async function boot() {
     quests.start('main_arrive');
     setTimeout(() => hud.announce('BRABANT · ANNO 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, 'Onder je ligt Diest. De klokken zwijgen.'), 2600);
   };
+  // the cinematic player: the faction intro after creation, and the prologue's directed beats
+  const cine = new Cine({
+    ui: uiRoot, scene, camera: rig.camera, voice, sound, kit: townsfolk,
+    ground: (x, z) => world.collision.heightAt(x, z),
+    setSky: (id) => atmo.setPreset(id),
+    look: () => atmo.look,
+    grade: (exposure, night) => {
+      post.setLook({ ...atmo.look, exposure });
+      world.uniforms.uNight.value = night;
+    },
+    fog: () => scene.fog as THREE.FogExp2,
+    sun: () => atmo.sun,
+    fill: (t) => t.replace('{name}', quests.s.hero.name).replace('{dragon}', quests.s.hero.dragon),
+    warm: () => {
+      // the dragon has not been drawn yet in a new game: compile it now, under the black, with the film's lights in place
+      const was = player.dragon.root.visible;
+      player.dragon.root.visible = true;
+      renderer.compile(scene, rig.camera);
+      player.dragon.root.visible = was;
+    },
+  });
   const prologue = new Prologue({
-    scene, ui: uiRoot, player, kit: townsfolk, voice, name: quests.s.hero.name, dragon: quests.s.hero.dragon, sex: quests.s.hero.sex,
+    scene, ui: uiRoot, player, kit: townsfolk, voice, cine, sound, camera: rig.camera, name: quests.s.hero.name, dragon: quests.s.hero.dragon, sex: quests.s.hero.sex,
     setSky: (id) => atmo.setPreset(id),
     bell: (strong) => sound.bell(strong ? 147 : 196, strong ? 0.5 : 0.42),
     howl: () => sound.howl(),
@@ -481,11 +505,39 @@ async function boot() {
       quests.save();
     },
   });
-  if (runPrologue) {
-    combat.quiet = true;
-    tutorial.enabled = false;
-    void prologue.start().then(() => (rig.yaw = -Math.PI / 2));
-  } else if (isNew) beginChapter();
+  // the faction's intro film: after BEGIN on the creation screen, before the prologue. Never for an old
+  // save, never with ?nointro or ?autostart; ?intro=<faction> plays one directly (for review)
+  const askIntro = params.get('intro');
+  const introFaction = askIntro && INTRO_FACTIONS.includes(askIntro as never) ? askIntro : fe.mode === 'new' && runPrologue && !params.has('nointro') && !quests.s.flags.intro_seen ? quests.s.hero.faction : null;
+  const startStory = async () => {
+    if (introFaction) {
+      combat.quiet = true;
+      tutorial.enabled = false;
+      // the rider and dragon are not in the world during the film unless a shot puts them there
+      player.dragon.root.visible = false;
+      const film = makeIntro(introFaction as (typeof INTRO_FACTIONS)[number], { player, kit: townsfolk, hero: quests.s.hero, world });
+      await cine.play(film);
+      quests.s.flags.intro_seen = true;
+      quests.save();
+      combat.quiet = runPrologue;
+      tutorial.enabled = !runPrologue;
+      if (!runPrologue) {
+        // straight back into the game as it was (review of a single intro on an existing save)
+        await atmo.setPreset(params.get('sky') ?? 'golden');
+        if (player.mode === 'fly') player.debugPlaceFlying(player.pos.x, player.pos.y, player.pos.z, player.yaw);
+        player.dragon.root.visible = true;
+        rig.snap();
+      }
+    }
+    if (runPrologue) {
+      combat.quiet = true;
+      tutorial.enabled = false;
+      // a skip key still held from the film must not skip the prologue as well
+      await prologue.start(cine.skipKeyDown);
+      rig.yaw = -Math.PI / 2;
+    } else if (isNew && !introFaction) beginChapter();
+  };
+  void startStory();
   if (!isNew && !runPrologue) {
     // "last time": the last line of the journal, so the thread is picked up at once
     const tq = quests.s.tracked ? quests.s.quests[quests.s.tracked] : null;
@@ -533,7 +585,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, courses: { dayCourse, FIRST_FLIGHT }, shareCard, prologue, voice, kit: townsfolk, dragonModel, life, hud, guide };
+  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, courses: { dayCourse, FIRST_FLIGHT }, shareCard, prologue, cine, makeIntro, script: STORY_LINES, voice, kit: townsfolk, dragonModel, life, hud, guide };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -550,6 +602,11 @@ async function boot() {
     input.poll();
     let sdt = dt;
     if (running && !paused) {
+      if (cine.active) {
+        // the film has the screen: no keys reach the game, no panels open
+        for (const a of ['interact', 'jump', 'attack', 'skill', 'skill2', 'potion', 'time', 'map', 'journal', 'kroniek', 'paint', 'character', 'help'] as const) input.consume(a);
+        if (!cine.manual) cine.update(dt);
+      }
       if (input.consume('help')) hud.toggleHelp();
       if (input.consume('time')) {
         atmo.advance();
@@ -577,13 +634,16 @@ async function boot() {
       if (input.consume('journal')) book('journal');
       if (input.consume('kroniek')) book('kroniek');
       if (input.consume('character')) book('character');
-      const blocked = uiOpen() || mapOpen;
+      const filming = cine.active;
+      const blocked = uiOpen() || mapOpen || filming;
       combat.update(blocked ? 0 : dt, input, rig.yaw, rig.camera, !blocked && !prologue.active && performance.now() - uiClosedAt > 250);
       sdt = blocked ? 0 : dt * combat.timeScale;
       if (uiOpen()) {
         // the world waits while you read; keys belong to the open panel
         input.consume('interact');
         input.consume('jump');
+      } else if (filming) {
+        // the people and things of the film move by its own clock (see src/story/cine.ts)
       } else if (!mapOpen) {
         prologue.update(dt, input);
         if (!prologue.active && player.mode === 'walk' && !player.dead && performance.now() - uiClosedAt > 250 && talkOrPickUp()) {
@@ -594,8 +654,11 @@ async function boot() {
     } else {
       rig.update(0.0001, input, player);
     }
+    // a film, or a beat of the prologue, holds the camera
+    cine.apply(rig.camera, dt);
 
-    player.focus(focus);
+    if (cine.active) focus.copy(cine.focus).setY(2);
+    else player.focus(focus);
     atmo.update(rig.camera.position, focus, Math.max(0, rig.camera.position.y));
     world.cull(rig.camera.position);
     world.uniforms.uTime.value += dt;
@@ -604,15 +667,29 @@ async function boot() {
       for (const m of world.oak.children) m.position.y += Math.sin(world.uniforms.uTime.value * 0.8 + m.userData.float) * 0.012;
     }
 
-    const px = player.onFoot ? player.heroPos.x : player.pos.x;
-    const pz = player.onFoot ? player.heroPos.z : player.pos.z;
-    const py = player.onFoot ? player.heroPos.y : player.pos.y;
+    const filming = cine.active;
+    // during a film the world is awake where the film looks, not where the player is
+    const px = filming ? cine.focus.x : player.onFoot ? player.heroPos.x : player.pos.x;
+    const pz = filming ? cine.focus.z : player.onFoot ? player.heroPos.z : player.pos.z;
+    const py = filming ? 0 : player.onFoot ? player.heroPos.y : player.pos.y;
     uiRoot.classList.toggle('ui-open', uiOpen());
     // the HUD shows what the moment needs: little in the air, everything in a fight
     uiRoot.classList.toggle('st-fly', !player.onFoot);
     uiRoot.classList.toggle('st-combat', combat.inCombat);
     uiRoot.classList.toggle('st-hurt', quests.s.hero.hp < quests.sheet.derived().maxHp * 0.999);
-    if (running && !paused) {
+    if (running && !paused && filming) {
+      // only the life of the town runs during a film: named people, the crowd and the market where the shot is
+      const alive = !!cine.shot?.crowd;
+      actors.update(dt, px, pz, null);
+      if (crowd) {
+        crowd.enabled = alive;
+        crowd.update(dt, px, pz, 0, rig.camera, { x: px + 5000, z: pz + 5000, onFoot: true, dragonX: px + 5000, dragonZ: pz + 5000, dragonDown: false });
+      }
+      life.update(dt, 0, px, pz, 9999, false, !alive);
+      guide.target = null;
+      hud.questTarget = null;
+    } else if (running && !paused) {
+      if (crowd) crowd.enabled = true;
       quests.update(px, py, pz, player.mode === 'walk');
       actors.update(sdt, px, pz, dialogue.npcId);
       readables.update(sdt, px, pz);
@@ -727,7 +804,8 @@ async function boot() {
     const key = input.device === 'pad' ? 'Y' : 'E';
     const near = player.mode === 'walk' && !uiOpen() && !player.dead ? nearby() : null;
     const dragon = quests.s.hero.dragon;
-    if (prologue.active) hud.setPrompt(prologue.prompt);
+    if (filming) hud.setPrompt(null);
+    else if (prologue.active) hud.setPrompt(prologue.prompt);
     else if (uiOpen() || player.dead) hud.setPrompt(null);
     else if (near?.npc) hud.setPrompt(`<kbd>${key}</kbd>Spreek met ${near.npc.name}${near.npc.shop ? ' · winkel' : ''}`);
     else if (near?.loot) hud.setPrompt(`<kbd>${key}</kbd>Raap op: <span style="color:${RARITY[near.loot.rarity].color}">${near.loot.name}</span>`);
@@ -758,9 +836,17 @@ async function boot() {
     hud.hold = banner.active;
     guide.hush = banner.active;
     guide.update(dt, rig.camera, px, pz, (x, z) => world.collision.heightAt(x, z));
-    sound.wind(player.onFoot ? 0 : player.speed, player.boostTime > 0);
+    sound.wind(filming || player.onFoot ? 0 : player.speed, player.boostTime > 0);
     hud.update(dt, rig.yaw, px, pz);
-    post.render(dt);
+    if (filming) {
+      // no signs of the game in a film: beacons, rings, markers, street icons
+      const signs = [guide.group, rings.group, ...readables.signs(), ...actors.npcs.map((n) => n.marker), ...life.signs()];
+      const was = signs.map((o) => o.visible);
+      for (const o of signs) o.visible = false;
+      post.render(dt);
+      cine.afterRender(canvas);
+      signs.forEach((o, i) => (o.visible = was[i]));
+    } else post.render(dt);
     input.endFrame();
 
     if (adaptive && running && !paused) {
