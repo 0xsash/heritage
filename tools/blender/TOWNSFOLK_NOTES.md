@@ -540,8 +540,8 @@ pieces now also fit the new body). New builders are in `townsfolk/garments_e.py`
 they register into the same table and follow the same fitting rules.
 
 Build: `TOWNSFOLK_FROM=bodies` with the same command as before (`TOWNSFOLK_SHOTS=none` skips the Blender previews;
-the approval pictures are now taken in the game, see below). The bake is the slow part: about 45 min on 4 cores for
-85 garment references and their occluder bodies; a full run from `bodies` is about 70 min.
+the approval pictures are now taken in the game, see below). The bake is the slow part: about 70 min on 4 cores for
+85 garment references and their occluder bodies; a full run from `bodies` is about 100 min.
 
 ### A third woman's build: `woman_lean`
 1.66 m, ~25 y, lean and long-limbed (MakeHuman: muscle 0.62, weight 0.36, proportions 0.75). It **borrows the `woman`
@@ -630,3 +630,34 @@ men. Two pieces are shared by design and were left so: `habit` (the beguine's bl
 one are the same cut, as both were long plain robes) and `pelerine` (the pilgrim's shoulder cape, worn by men and
 women pilgrims alike). The phase D men's pieces that were refitted to women (`doublet`, `breeches`, `buff_coat`...)
 still fit those bodies so nothing breaks, but no outfit, archetype or hero option uses them on a woman any more.
+
+### Silhouette pass on existing pieces (phase E, at the art director's request)
+Exaggerated a little, in the existing style: `hat_wide` brim 0.212 → 0.244 m and a taller crown, `hat_tall` and
+`hat_f` taller; `boots` have a true bucket top (the cuff flares to 1.7× the boot and sits higher); `collar_band` is
+deeper and broader; `doublet` sleeves fuller at the upper arm; the red field `sash` wider with a bigger knot; `skirt`,
+`apron`, `rok`, `onderrok` and `schort` fuller; the rok's hem has a thicker turned edge. The mantle's fall is capped
+at 0.36 m of flare per side so a coat or a wide skirt does not blow it into a bell (it is pushed behind them instead).
+
+### Sizes and budget (phase E)
+| | |
+|---|---|
+| `townsfolk.glb` | **10.92 MB** (was 7.41): 10 bodies, 74 pieces, 11 props, 23 clips. The base-colour atlases are re-encoded at JPEG q74 (kit) / q80 (skin) in the export (`export.requantise`); before that the kit was 12.0 MB |
+| `townsfolk.json` | 75 kB: 22 archetypes, the `hero` section with headwear, mantles and marks |
+| hair | 760–950 triangles per style after decimation (`game.HAIR_E`, `TARGET`) |
+| build | about 100 min from `bodies` on 4 cores (the garment bake is ~70 min: 85 references with occluder bodies); `TOWNSFOLK_FROM=assemble` re-exports in ~10 min |
+
+### Verified (phase E)
+In the game itself (Playwright + Chromium, `vite preview`), scripts in the session scratchpad `kit2/`: `lineup.cjs`
+(heroes built with the game's own `heroSpec` in the market square, front / back / side, and `sil.py` for black
+silhouettes), `rnd.cjs` (12 + 12 "Willekeurig" heroes), `hairs.cjs`, `cc2.cjs` (creation fit audit on every tab),
+`ingame.cjs` (walking, running, a sword stroke, riding), `ng.cjs` (new game per sex and class, and an old save).
+
+### Known limitations (phase E)
+* Hair is still opaque geometry: locks laid on a shell, no alpha cards; up close the backs read as overlapping
+  shingles. The faces of the women's bodies are still on the boyish side (the paint and the MakeHuman base).
+* The women's pieces are fitted on `woman_old` for the street archetypes but the heroine's riding pieces
+  (`waist_sash`, `boots_f`) and the new hair only on the three hero bodies.
+* No cloth simulation: the rok and onderrok follow MakeHuman's skirt weights; astride the dragon they stretch between
+  the thighs as the habit does.
+* Dragon horns at run time are extra horns grown on the head bone (ram's horns, a crown of spikes, two long spears);
+  the painted horns stay.

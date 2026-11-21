@@ -281,6 +281,21 @@ def half_image(img, name):
     return c
 
 
+def requantise(img, name, quality=74):
+    """The base colour atlas re-encoded as a smaller JPEG (phase E: the kit grew; the painted look survives q74)."""
+    sc = bpy.context.scene
+    st = sc.render.image_settings
+    old = (st.file_format, st.quality, st.color_mode)
+    st.file_format, st.quality, st.color_mode = 'JPEG', quality, 'RGB'
+    path = os.path.join(WORK, name + '.jpg')
+    img.save_render(path, scene=sc)
+    st.file_format, st.quality, st.color_mode = old
+    out = bpy.data.images.load(path)
+    out.name = name
+    out.colorspace_settings.name = img.colorspace_settings.name
+    return out
+
+
 def clear_props(idb):
     for k in list(idb.keys()):
         del idb[k]
@@ -415,6 +430,8 @@ def stage_export():
                                 grips=grips_for(rig, idle))
     # ---- materials (ORM and normal at half size)
     imgs = {n: bpy.data.images[n] for n in ('kit_basecolor', 'kit_orm', 'kit_normal', 'kit_skin_basecolor', 'kit_skin_orm', 'kit_skin_normal')}
+    imgs['kit_basecolor'] = requantise(imgs['kit_basecolor'], 'kit_basecolor_q')
+    imgs['kit_skin_basecolor'] = requantise(imgs['kit_skin_basecolor'], 'kit_skin_basecolor_q', 80)
     kit = simple_material('kit', imgs['kit_basecolor'], half_image(imgs['kit_orm'], 'kit_orm_1k'), half_image(imgs['kit_normal'], 'kit_normal_1k'), 0.8)
     skin = simple_material('skin', imgs['kit_skin_basecolor'], half_image(imgs['kit_skin_orm'], 'skin_orm_1k'), half_image(imgs['kit_skin_normal'], 'skin_normal_1k'), 0.5)
     # ---- objects
