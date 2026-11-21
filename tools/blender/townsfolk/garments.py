@@ -2160,7 +2160,8 @@ def mantle_core(ctx, name, hem=None, hood=None):
     zz = [z_top + (z_hem - z_top) * t for t in ts]
     h0 = max(0.15 * k, width(z_top) * 0.85)
     need_w = [(width(z) * 1.10 + 0.03 * k - h0) / max(t, 0.05) ** 0.85 for z, t in zip(zz, ts) if t > 0.15]
-    bw = max([0.24 * k] + need_w)
+    # phase E: capped, so a coat or a wide skirt below does not blow the fall up into a bell (it hangs behind them)
+    bw = min(max([0.24 * k] + need_w), 0.36 * k)
     need_y = [(by(0.0, z, ctx.hip.y) + 0.02 * k - y_sb) / t for z, t in zip(zz, ts) if t > 0.15]
     byk = max([0.10 * k] + need_y)
     yoke_bv = bvh_of([yoke])

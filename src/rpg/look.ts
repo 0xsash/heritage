@@ -17,8 +17,8 @@ export const CLOAK_PIECES = ['mantle', 'mantle_short', 'mantle_hood', 'pelerine'
 export const HERO_CLIPS = ['jump', 'fall', 'land', 'roll', 'attack3', 'cast', 'ride_idle'];
 
 const BUILD_NAMES: Record<string, string> = {
-  man_young: 'Slank', man: 'Gemiddeld', man_stout: 'Fors', man_old: 'Oud',
-  woman_lean: 'Slank', woman: 'Gemiddeld', woman_stout: 'Fors', woman_old: 'Oud',
+  man_young: 'Slank', man: 'Gewoon', man_stout: 'Fors', man_old: 'Oud',
+  woman_lean: 'Slank', woman: 'Gewoon', woman_stout: 'Fors', woman_old: 'Oud',
 };
 /** Body order on screen: slim, average, heavy. */
 const BUILD_ORDER = ['man_young', 'man', 'man_stout', 'woman_lean', 'woman', 'woman_stout'];
@@ -34,7 +34,7 @@ const BEARD_NAMES: Record<string, string> = {
   beard_goatee: 'Sik en snorretje', moustache_wide: 'Brede krulsnor',
 };
 const HEADWEAR_NAMES: Record<string, string> = {
-  hat_wide: 'Brede vilthoed', hat_tall: 'Hoge hoed', cap_flat: 'Platte muts', cap_knit: 'Gebreide muts', morion: 'Stormhoed',
+  hat_wide: 'Brede hoed', hat_tall: 'Hoge hoed', cap_flat: 'Platte muts', cap_knit: 'Gebreide muts', morion: 'Stormhoed',
   hat_pilgrim: 'Pelgrimshoed', coif: 'Witte kap', hat_f: 'Rijhoed', hat_straw: 'Strohoed', bontmuts: 'Bontmuts',
   muts_f: 'Wollen muts',
 };
@@ -137,8 +137,8 @@ export const OUTFITS: Record<OriginId, Record<Sex, Outfit[]>> = {
       O('Ruiterskazak', { doublet: 'accent', collar_band: null, casaque: 'main', breeches: 'black', stockings: 'grey', boots: null }, 'madder_dk', 'black', 'hat_tall', 'sword'),
     ],
     f: [
-      O('Rijjak', { jak: 'main', kraag_f: null, waist_sash: 'madder', onderrok: 'accent', rok: 'main', boots_f: null }, 'madder_dk', 'black', 'hat_f', 'sword'),
-      O('Lijfje en sjerp', { bodice: 'main', kraag_f: null, waist_sash: 'madder', onderrok: 'accent', rok: 'main', boots_f: null }, 'woad_dk', 'ochre', null, 'sword'),
+      O('Rijjak', { jak: 'main', kraag_f: null, waist_sash: 'madder', onderrok: 'madder', rok: 'accent', boots_f: null }, 'woad_dk', 'black', 'hat_f', 'sword'),
+      O('Lijfje en sjerp', { bodice: 'main', kraag_f: null, waist_sash: 'madder', onderrok: 'accent', rok: 'slate', boots_f: null }, 'black', 'ochre', null, 'sword'),
       O('Jak en lange rok', { jak: 'main', kraag_f: null, waist_sash: 'madder', skirt: 'accent', shoes: null }, 'black', 'madder_dk', 'hat_f', 'sword'),
     ],
   },
@@ -161,7 +161,7 @@ export const OUTFITS: Record<OriginId, Record<Sex, Outfit[]>> = {
       O('Donkere kazak', { doublet: 'accent', casaque: 'main', breeches: 'black', stockings: 'umber', boots: null }, 'green_dk', 'umber', 'hat_wide', 'dagger'),
     ],
     f: [
-      O('Reisjak', { jak: 'main', onderrok: 'accent', rok: 'main', boots_f: null }, 'umber', 'green_dk', 'hat_f', 'dagger'),
+      O('Reisjak', { jak: 'main', onderrok: 'accent', rok: 'umber', boots_f: null }, 'green_dk', 'ochre', 'hat_f', 'dagger'),
       O('Lijfje en laarzen', { bodice: 'main', kerchief: null, onderrok: 'accent', rok: 'grey', schort: 'grey', boots_f: null }, 'brown', 'madder_dk', 'muts_f', 'dagger'),
       O('Donkere jak', { jak: 'main', kraag_f: null, skirt: 'accent', boots_f: null }, 'black', 'green_dk', 'bontmuts', 'dagger'),
     ],
@@ -235,6 +235,7 @@ export function headwearOf(kit: TownsfolkKit | null, h: Pick<HeroData, 'origin' 
 
 /** Hair that would poke through a close cap: hide what lies above the hat band, as under a hat. */
 const CAPS = new Set(['coif', 'muts_f', 'bontmuts', 'cap_flat', 'cap_knit']);
+const FLAT_HAIR = new Set(['hair_bun', 'hair_braid', 'hair_tail', 'hair_f_crown', 'hair_f_low', 'hair_f_tail', 'hair_f_twin', 'hair_f_fringe']);
 
 /** The kit spec of a saved hero. */
 export function heroSpec(kit: TownsfolkKit, h: HeroData): FolkSpec {
@@ -252,6 +253,8 @@ export function heroSpec(kit: TownsfolkKit, h: HeroData): FolkSpec {
     wear[hat] = hat === 'coif' ? null : hat === 'hat_straw' ? 'linen' : accentFor(hat, main);
     if (CAPS.has(hat)) hide.push('hair_crown');
   }
+  // hair that lies flat (drawn back into a bun, a plait or a tail) stays whole under a hat: nothing of it pokes out
+  const flat = h.hair && FLAT_HAIR.has(h.hair) && hat && !CAPS.has(hat);
   // the mantle: the hero's signature, in the chosen style and colour
   const mantle = [h.mantle, kit.m.hero?.mantle?.piece, 'mantle'].find((p) => p && kit.fits(p, body)) ?? null;
   if (mantle) wear[mantle] = h.cloak;
@@ -262,7 +265,7 @@ export function heroSpec(kit: TownsfolkKit, h: HeroData): FolkSpec {
   const scale = Math.max(0.92, Math.min(1.08, h.height ?? 1));
   return {
     body, wear, prop: outfit.prop, role: 'burgher', face: h.face, skin: h.skin, accent,
-    eyes: h.eyes ?? null, mark: h.mark && h.mark !== 'eyepatch' ? h.mark : null, scale, hide,
+    eyes: h.eyes ?? null, mark: h.mark && h.mark !== 'eyepatch' ? h.mark : null, scale, hide, unhide: flat ? ['hair_crown'] : undefined,
   };
 }
 

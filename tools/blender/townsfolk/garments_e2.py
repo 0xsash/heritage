@@ -414,8 +414,8 @@ def g_hair_m_curly(ctx, ref):
     def extras(ctx, rows, hc, hang):
         out = []
         rng = np.random.RandomState(31)
-        for i in range(22):
-            a = (55 + 125 * (i // 2) / 10.0) * (1 if i % 2 == 0 else -1)
+        for i in range(16):
+            a = (55 + 125 * (i // 2) / 7.0) * (1 if i % 2 == 0 else -1)
             ar = math.radians(a)
             e = math.radians(-6 - 14 * rng.rand())
             d = Vector((math.sin(ar) * math.cos(e), -math.cos(ar) * math.cos(e), math.sin(e)))
@@ -630,7 +630,7 @@ def g_cap_knit(ctx, ref):
 # --------------------------------------------------------------------------
 # MANTLES (the hero): short, and long with a hood lying on the back
 # --------------------------------------------------------------------------
-@garment('mantle_short', 'mantle', ADULTS_E, 'man', 'the hero\'s short riding mantle: shoulder cape, standing collar and a fall to the hips', layer=2)
+@garment('mantle_short', 'mantle', HERO_M + HERO_F, 'man', 'the hero\'s short riding mantle: shoulder cape, standing collar and a fall to the hips', layer=2)
 def g_mantle_short(ctx, ref):
     return GM.mantle_core(ctx, 'mantle_short', hem='hip')
 
@@ -672,7 +672,7 @@ def lying_hood(ctx, yoke, fall):
     return hood
 
 
-@garment('mantle_hood', 'mantle', ADULTS_E, 'man', 'the hero\'s long mantle with a hood lying down on the back', layer=2)
+@garment('mantle_hood', 'mantle', HERO_M + HERO_F, 'man', 'the hero\'s long mantle with a hood lying down on the back', layer=2)
 def g_mantle_hood(ctx, ref):
     return GM.mantle_core(ctx, 'mantle_hood', hood=lying_hood)
 

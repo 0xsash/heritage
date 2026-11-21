@@ -28,8 +28,7 @@ HERO_M = ['man', 'man_young', 'man_stout']
 ADULTS_E = ADULTS + ['woman_lean']
 
 # the existing pieces that any adult woman can wear fit the new body too
-for _g in ('shoes', 'clogs', 'bodice', 'kerchief', 'skirt', 'apron', 'coif', 'mantle', 'hair_bun', 'hair_braid',
-           'huik', 'pelerine'):
+for _g in ('shoes', 'clogs', 'bodice', 'kerchief', 'skirt', 'apron', 'coif', 'mantle', 'hair_bun', 'hair_braid'):
     if _g in G and 'woman_lean' not in G[_g]['bodies']:
         G[_g]['bodies'].append('woman_lean')
 
@@ -231,7 +230,7 @@ def g_kraag_f(ctx, ref):
     return finish(o, ctx)
 
 
-@garment('waist_sash', 'sash', WOMEN_E, 'woman', 'a silk sash round the waist, knotted at the left hip with two hanging ends', layer=2)
+@garment('waist_sash', 'sash', HERO_F, 'woman', 'a silk sash round the waist, knotted at the left hip with two hanging ends', layer=2)
 def g_waist_sash(ctx, ref):
     k = ctx.k
     under = outer_layers(ctx, ('jak', 'bodice', 'rok', 'onderrok', 'skirt'))
@@ -267,7 +266,7 @@ def g_waist_sash(ctx, ref):
     return finish(o, ctx, weights=None)
 
 
-@garment('boots_f', 'feet', WOMEN_E, 'woman', 'a woman\'s soft riding boots to the calf, laced at the front, no turned-down cuff', layer=0)
+@garment('boots_f', 'feet', HERO_F, 'woman', 'a woman\'s soft riding boots to the calf, laced at the front, no turned-down cuff', layer=0)
 def g_boots_f(ctx, ref):
     o = dup(ctx.T, 'boots_f')
     rk = ref.knee

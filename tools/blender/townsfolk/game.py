@@ -40,11 +40,11 @@ TARGET = {'body': 3800, 'stockings': 260, 'breeches': 650, 'shoes': 420, 'clogs'
 HAIR_E = ['hair_f_curls', 'hair_f_loose', 'hair_f_twin', 'hair_f_crown', 'hair_f_low', 'hair_f_fringe', 'hair_f_tail',
           'hair_m_curly', 'hair_m_lovelock', 'hair_m_shag', 'hair_m_swept', 'hair_m_fringe']
 TARGET.update({'onderrok': 700, 'rok': 760, 'schort': 320, 'jak': 1150, 'kraag_f': 9999, 'waist_sash': 320, 'boots_f': 520,
-               'casaque': 1150, 'jerkin': 640, 'moustache_wide': 120, 'beard_goatee': 140, 'beard_short': 9999,
+               'casaque': 1150, 'jerkin': 640, 'moustache_wide': 120, 'beard_goatee': 140, 'beard_short': 520,
                'hat_f': 420, 'hat_tall': 420, 'hat_straw': 440, 'bontmuts': 420, 'muts_f': 300, 'cap_knit': 340,
-               'mantle_short': 9999, 'mantle_hood': 9999, 'eyepatch': 9999})
-TARGET.update({h: 1150 for h in HAIR_E})
-TARGET.update({'hair_f_loose': 1400, 'hair_m_curly': 1300, 'hair_f_twin': 1300, 'hair_f_crown': 1300})
+               'mantle_short': 9999, 'mantle_hood': 9999, 'eyepatch': 320})
+TARGET.update({h: 760 for h in HAIR_E})
+TARGET.update({'hair_f_loose': 950, 'hair_m_curly': 900, 'hair_f_twin': 900, 'hair_f_crown': 880, 'hair_f_curls': 880})
 PROP_TARGET = {'sword': 9999, 'musket': 9999, 'basket': 500, 'staff': 260, 'stick': 160, 'bread': 220, 'lantern': 240, 'rosary': 420, 'bundle': 240, 'dagger': 9999, 'bellstaff': 320}
 # phase-A ray distances per piece (metres) used to decide what a piece covers
 HIDE_DIST = {'skirt': 0.40, 'habit': 0.40, 'huik': 0.06, 'smock': 0.16, 'buff_coat': 0.12, 'breeches': 0.10,

@@ -214,10 +214,10 @@ PROP_GRIP = {'basket': 'hang_r', 'bread': 'hang_r', 'bundle': 'hang_r', 'lantern
 # outfit assembles on every listed body of both sexes; the game adds the `mantle` on top in any dye)
 HERO = {
     'bodies': {'m': ['man', 'man_young', 'man_stout'], 'f': ['woman', 'woman_stout', 'woman_lean']},
-    'hair': {'m': ['hair_crop', 'hair_long', 'hair_tail', 'hair_m_curly', 'hair_m_lovelock', 'hair_m_shag', 'hair_m_swept',
-                   'hair_m_fringe', 'hair_thin'],
-             'f': ['hair_bun', 'hair_braid', 'hair_f_curls', 'hair_f_loose', 'hair_f_twin', 'hair_f_crown', 'hair_f_low',
-                   'hair_f_fringe', 'hair_f_tail']},
+    'hair': {'m': ['hair_long', 'hair_m_curly', 'hair_m_lovelock', 'hair_m_swept', 'hair_m_shag', 'hair_m_fringe', 'hair_tail',
+                   'hair_crop', 'hair_thin'],
+             'f': ['hair_f_curls', 'hair_f_low', 'hair_f_loose', 'hair_f_twin', 'hair_f_crown', 'hair_f_fringe', 'hair_f_tail',
+                   'hair_braid', 'hair_bun']},
     'beards': ['beard_pointed', 'moustache', 'beard_full', 'beard_short', 'beard_goatee', 'moustache_wide', None],
     # phase E: headwear by sex, the three mantles, the mark; the class outfits (main / accent dye roles) are in
     # src/rpg/look.ts, which also keeps the phase D `outfits` below working for older code
@@ -401,7 +401,8 @@ def stage_export():
     # pieces that frame the face follow the face morphs; body garments never need to
     meta_ = json.loads(sc['garments'])
     morph_pieces = {g for g in json.loads(sc.get('morph_pieces', '[]'))
-                    if meta_.get(g, {}).get('slot') in ('head', 'hair', 'beard', 'mantle', 'collar', 'mark')}
+                    if meta_.get(g, {}).get('slot') in ('head', 'hair', 'beard', 'mantle', 'collar', 'mark')
+                    and g not in ('mantle_short', 'mantle_hood')}      # their collar stands clear of the jaw: no morphs needed
     man = bpy.data.objects['rig.man']
     idle = bpy.data.actions['idle']
     pel_man = man.data.bones['pelvis'].head_local.z
@@ -501,7 +502,7 @@ def stage_export():
     bpy.ops.export_scene.gltf(
         filepath=raw, export_format='GLB', use_selection=True, export_yup=True, export_apply=False,
         export_skins=True, export_all_influences=False, export_def_bones=False, export_materials='EXPORT',
-        export_image_format='JPEG', export_jpeg_quality=86, export_tangents=False, export_normals=True,
+        export_image_format='JPEG', export_jpeg_quality=80, export_tangents=False, export_normals=True,
         export_texcoords=True, export_attributes=True, export_vertex_color='ACTIVE', export_extras=True,
         export_draco_mesh_compression_enable=False, export_cameras=False, export_lights=False,
         export_animations=True, export_animation_mode='ACTIONS', export_force_sampling=True, export_frame_step=1,

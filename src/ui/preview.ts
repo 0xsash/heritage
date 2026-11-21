@@ -13,7 +13,7 @@ import { cloakPiece } from '../rpg/look';
 import { darkenLeather } from '../player/herokit';
 import { tintDragon, type DragonLook } from '../player/scales';
 
-export type Focus = 'body' | 'face' | 'dragon';
+export type Focus = 'body' | 'face' | 'head' | 'dragon';
 
 export class HeroPreview {
   readonly canvas = document.createElement('canvas');
@@ -122,7 +122,7 @@ export class HeroPreview {
   /** Where the camera looks: the whole figure, the face, or the dragon behind. */
   setFocus(f: Focus) {
     this.focus = f;
-    if (f === 'face') this.spin += -this.yaw * 0.85; // turn the face toward us
+    if (f === 'face' || f === 'head') this.spin += -this.yaw * 0.85; // turn the face toward us
     if (this.dragon) this.dragon.visible = f === 'dragon';
   }
 
@@ -211,13 +211,14 @@ export class HeroPreview {
       const free = h - covered;
       const fov = this.camera.fov * (Math.PI / 180);
       const fitH = (H: number, Wd: number) => Math.max(H / 2 / Math.tan(fov / 2), Wd / 2 / Math.tan(fov / 2) / this.camera.aspect) * (h / free);
-      const H = Math.max(1.3, this.height) * 1.1;
+      const H = Math.max(1.3, this.height) * 1.2;
       const body = { pos: new THREE.Vector3(0, H * 0.5, fitH(H, H * 0.62)), look: new THREE.Vector3(0, H * 0.47, 0) };
-      const fh = 0.42;
-      const face = { pos: new THREE.Vector3(0, this.headY, fitH(fh, fh * 0.9)), look: new THREE.Vector3(0, this.headY - 0.02, 0) };
+      const fh = this.focus === 'head' ? 0.78 : 0.5;
+      const hy = this.headY + (this.focus === 'head' ? 0.04 : 0);
+      const face = { pos: new THREE.Vector3(0, hy, fitH(fh, fh * 0.9)), look: new THREE.Vector3(0, hy - 0.02, 0) };
       let target = body;
       if (this.debugView) target = this.debugView;
-      else if (this.focus === 'face') target = face;
+      else if (this.focus === 'face' || this.focus === 'head') target = face;
       else if (this.focus === 'dragon' && this.dragon) {
         const b = this.dragonBox;
         const c = b.getCenter(new THREE.Vector3());

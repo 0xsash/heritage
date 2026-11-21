@@ -93,6 +93,8 @@ export interface FolkSpec {
   scale?: number;
   /** more regions to hide (the hero's hair under a coif) */
   hide?: string[];
+  /** regions to keep although a piece hides them (flat hair under a hat) */
+  unhide?: string[];
 }
 
 export interface Folk {
@@ -309,7 +311,7 @@ export class TownsfolkKit {
     return this.assemble(spec.body, chosen, spec.prop ?? null, rng(spec.seed ?? hashStr(spec.body + Object.keys(spec.wear).join())), spec.role ?? 'burgher', 'named', spec.gait, spec.scale ?? 1, spec);
   }
 
-  private assemble(body: string, chosen: Map<string, string | null>, prop: string | null, r: () => number, role: Role, id: string, gait = 'walk', scale?: number, look?: Pick<FolkSpec, 'face' | 'skin' | 'accent' | 'eyes' | 'mark' | 'hide'>): Folk {
+  private assemble(body: string, chosen: Map<string, string | null>, prop: string | null, r: () => number, role: Role, id: string, gait = 'walk', scale?: number, look?: Pick<FolkSpec, 'face' | 'skin' | 'accent' | 'eyes' | 'mark' | 'hide' | 'unhide'>): Folk {
     const B = this.m.bodies[body];
     // layering rules: a collar needs its doublet, a hat excludes a hood...
     for (let pass = 0; pass < 3; pass++)
@@ -321,6 +323,7 @@ export class TownsfolkKit {
     const hidden = new Set<number>();
     for (const piece of chosen.keys()) for (const h of this.m.pieces[piece].hides ?? []) if (this.m.regions[h] !== undefined) hidden.add(this.m.regions[h]);
     for (const h of look?.hide ?? []) if (this.m.regions[h] !== undefined) hidden.add(this.m.regions[h]);
+    for (const h of look?.unhide ?? []) if (this.m.regions[h] !== undefined) hidden.delete(this.m.regions[h]);
     const accent = this.dye(look?.accent ?? undefined);
 
     // the face: every person gets their own (morph weights and skin tone), when the kit has them;

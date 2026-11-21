@@ -42,6 +42,8 @@ const DIFF = ['', 'eenvoudig', 'gemiddeld', 'lastig'];
 const dots = (n: number) => '●'.repeat(n) + '○'.repeat(3 - n);
 /** approximate painted skin, for the swatch next to the tone */
 const SKIN_BASE = [0.88, 0.69, 0.56];
+/** a first hair style that shows what the kit can do: long hair for him, the 1640s ringlets for her */
+const defaultHair = (o: { hair: Record<'m' | 'f', (string | null)[]> }, sex: 'm' | 'f') => (['hair_long', 'hair_f_curls'].find((x) => o.hair[sex].includes(x)) ?? o.hair[sex][0]);
 
 type Tab = 'body' | 'face' | 'hair' | 'clothes' | 'dragon';
 const TABS: [Tab, string][] = [['body', 'Lichaam'], ['face', 'Gezicht'], ['hair', 'Haar'], ['clothes', 'Kleding'], ['dragon', 'Draak']];
@@ -460,7 +462,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-tab]');
         if (!b) return;
         tab = b.dataset.tab as Tab;
-        preview?.setFocus(tab === 'face' || tab === 'hair' ? 'face' : tab === 'dragon' ? 'dragon' : 'body');
+        preview?.setFocus(tab === 'face' ? 'face' : tab === 'hair' ? 'head' : tab === 'dragon' ? 'dragon' : 'body');
         pin(`tab:${tab}`);
         renderRows();
       });
@@ -468,7 +470,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         if (h.sex === sex) return;
         h.sex = sex;
         h.build = opts.bodies[sex][Math.min(1, opts.bodies[sex].length - 1)];
-        h.hair = opts.hair[sex][0];
+        h.hair = defaultHair(opts, sex);
         h.beard = sex === 'f' ? null : 'moustache';
         h.face = { ...FACES[0][1] };
         h.outfit = 0;
@@ -610,7 +612,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         flat(kitState === 'none' || !preview.ok);
         opts = heroOptions(k);
         if (!opts.bodies[h.sex].includes(h.build)) h.build = opts.bodies[h.sex][Math.min(1, opts.bodies[h.sex].length - 1)];
-        if (!opts.hair[h.sex].includes(h.hair)) h.hair = opts.hair[h.sex][0];
+        if (!opts.hair[h.sex].includes(h.hair)) h.hair = defaultHair(opts, h.sex);
         if (!opts.beards.includes(h.beard)) h.beard = opts.beards.find((b) => b) ?? null;
         if (!opts.mantles.includes(h.mantle ?? 'mantle')) h.mantle = opts.mantles[0];
         preview.setKit(k);

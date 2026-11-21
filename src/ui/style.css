@@ -588,6 +588,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .cc-tabs button:hover { color: #fff3d6; }
 .cc-rows { flex: 0 0 auto; }
 .cc-left .cc-row { grid-template-columns: 98px minmax(0, 1fr); }
+.cc-left .cc-seg button { font-size: 14px; padding: 2px 1px; }
 .cc-left .cc-row.cc-row-wide { grid-template-columns: minmax(0, 1fr); padding: 1px 0 3px; min-height: 0; }
 .cc-dyes { gap: 3px; }
 .cc-dyes .cc-sw { width: 17px; height: 17px; }

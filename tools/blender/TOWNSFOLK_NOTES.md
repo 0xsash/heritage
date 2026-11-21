@@ -529,3 +529,104 @@ track on all nine bodies (207 checks); no outfit drops a piece on any hero body,
 * Hair is still a painted shell: the swept-back hairline is a clean curve now, not a soft fade (no alpha).
 * Women wear the men's cut (doublet, breeches, buff coat) on their own bodies; there is no women's tailoring (no
   waist shaping beyond the body's own, no skirts for the heroine's outfits).
+
+
+## Phase E: women's own clothes, hair that reads as hair, heavy customisation
+
+The owner: men and women must never look the same, and character creation must show heavy customisation. Nothing
+that existed was renamed or removed: every phase A–D body, piece, prop, clip and archetype name still works (some
+pieces now also fit the new body). New builders are in `townsfolk/garments_e.py` (garments) and
+`townsfolk/garments_e2.py` (hair, beards, headwear, mantles, the eyepatch); `garments.py` imports them at its end, so
+they register into the same table and follow the same fitting rules.
+
+Build: `TOWNSFOLK_FROM=bodies` with the same command as before (`TOWNSFOLK_SHOTS=none` skips the Blender previews;
+the approval pictures are now taken in the game, see below). The bake is the slow part: about 45 min on 4 cores for
+85 garment references and their occluder bodies; a full run from `bodies` is about 70 min.
+
+### A third woman's build: `woman_lean`
+1.66 m, ~25 y, lean and long-limbed (MakeHuman: muscle 0.62, weight 0.36, proportions 0.75). It **borrows the `woman`
+skin tile** (`BODIES[b]['tile']`; `bodies.SKIN_TILE_OF`, `TILE_BODIES`): same MakeHuman UVs, painted once, so the
+3 × 3 skin atlas is unchanged. It carries the heroine's pieces and the women's everyday ones (shoes, clogs, bodice,
+kerchief, skirt, apron, coif, huik, pelerine, the mantles, `hair_bun`, `hair_braid`), not the phase D men's cut.
+
+### Women's garments (ref body `woman`; on `woman`, `woman_stout`, `woman_old`, `woman_lean`)
+Designed from Brabant dress of the 1640s–50s (Teniers' and Brouwer's market and kermis scenes): the rok hitched up
+over a contrasting onderrok, a jak or a laced lijfje, the schort, the wide flat collar.
+
+| piece | slot | what it is |
+|---|---|---|
+| `onderrok` | legs | petticoat, full and pleated, to the lower calf; skirt weights with some calf follow |
+| `rok` | legs | overskirt gathered at the waist and **hitched up at the front corners** (opgeschort): the hem rises over the knee in front and at the front corners and falls long behind; the hitched cloth bunches at the hips. Requires `onderrok` |
+| `schort` | apron | short linen working apron over the rok, with a waistband. Requires `rok` |
+| `jak` | torso | a woman's fitted jacket: full sleeves gathered at wide turned-back cuffs (**accent**), seven brass buttons, and a flared **basque** over the hips, pushed out over whatever skirt the body can wear |
+| `kraag_f` | collar | wide flat linen collar over the shoulders, on the jak or the bodice |
+| `waist_sash` | sash | silk sash round the waist, knotted at the left hip with two hanging ends (the schutter woman's field sign) |
+| `boots_f` | feet | soft riding boots to the calf, close-fitting, no turned-down cuff |
+
+Silhouette: from the front and the side the women are a fitted bodice over a wide, two-layer skirt with a ragged,
+lifted hem; the men are a doublet over breeches and boots (or a coat to the thigh). See the silhouette test below.
+
+### Men: more range
+`casaque` (coat: a loose riding coat to mid-thigh over the doublet, open in front, wide sleeves with turned-back cuffs
+in the **accent**; requires `doublet`), `jerkin` (coat: sleeveless leather jerkin to the hip with a flared skirt and
+buttons; requires `doublet`), `hat_tall` (capotain with a band and buckle), `cap_knit` (knitted cap with a rolled
+brim), three beards: `beard_short` (a close shell along the jaw, lips bare, with a moustache), `beard_goatee`
+(mouche + thin moustache), `moustache_wide` (wide, upturned).
+
+### Women's headwear
+`hat_f` (riding hat: tall felt crown, modest brim, ribbon band in the accent), `hat_straw` (wide flat straw hat, accent
+ribbon), `bontmuts` (dyed soft crown in a thick roll of fur: new part `fur`), `muts_f` (soft dark bonnet over a white
+cap edge). With `coif` that is five. All new hats hide `hair_crown`.
+
+### Hair (`hair2` in `garments_e2.py`)
+Every new style is a **shell with a lower, softer hairline** (`hairline_soft`: 33–40° over the brow, down at the
+temples, round behind the ears to the nape), **volume** (`soft_bulge`: crown, sides, nape, a parting groove where
+there is one), sculpted **locks laid on the shell** (`lock_mesh` roots on the shell rows; `conform` pulls anything
+standing out back onto the shell, `hug` lays locks that run past the hairline against the head, so they read as hair
+lying down and not as spikes), a few **loose strands** at the temples, and a **proper back** (locks all round down to
+the nape). Long styles add a hanging curtain (`hair_curtain`) with locks on it; plaits are three twisted strands
+(`braid_path`); ringlets are corkscrew tubes (`curl_tube`).
+
+| women (`woman`, `woman_stout`, `woman_lean`) | men (`man`, `man_young`, `man_stout`) |
+|---|---|
+| `hair_f_curls` 1640s: parted, ringlets at both sides, knot behind | `hair_m_curly` curls to the shoulders |
+| `hair_f_loose` long and loose down the back (lies over the mantle) | `hair_m_lovelock` long, one plaited lovelock with a ribbon (accent) |
+| `hair_f_twin` two plaits down the back | `hair_m_shag` unkempt, ragged fringe |
+| `hair_f_crown` plaits wound round the head | `hair_m_swept` swept back, to the collar |
+| `hair_f_low` waves into a low knot, loose strands | `hair_m_fringe` short, combed forward |
+| `hair_f_fringe` a short fringe over the brow, bun behind | |
+| `hair_f_tail` tied high with a ribbon (accent), long tail | |
+
+With the existing ones the hero has 9 women's styles (`hair_bun`, `hair_braid` + 7) and 9 men's (`hair_crop`,
+`hair_long`, `hair_tail`, `hair_thin` + 5) plus bald. All carry the face morphs and hide `scalp`.
+
+### Mantles and a mark
+`mantle_short` (the mantle with its fall ending at the hips) and `mantle_hood` (the long mantle with a hood lying down
+on the back), both from `garments.mantle_core` (the phase D `mantle` builder, now parameterised; `mantle` is
+unchanged). `eyepatch` (slot `mark`): a leather patch over the right eye on a cord that runs up over the left brow;
+carries the face morphs.
+
+### Two dye channels, eye mask
+* **COLOR_0.g = accent** on pieces: parts made of the new `acc` part (jak and casaque cuffs, hat ribbons, plait ties,
+  the lovelock's bow) take the accent dye instead of the main one. `set_dye(obj, mask, accent)`; the manifest marks such
+  pieces `"accent": true`. The game multiplies `texture * dye/0.55` where r = 1 and `* accent/0.55` where g = 1
+  (`TownsfolkKit.masked`, `FolkSpec.accent`). Old pieces have g = 0: nothing changes for them.
+* **Bodies: COLOR_0.g = 1 on the eyeballs** (r stays 0 there). The game tints the iris by luminance where g = 1
+  (`FolkSpec.eyes`), and draws face marks (scar, freckles, weathered) in the skin shader from the rest-pose position
+  inside the face region's box (`FolkSpec.mark`); the eyepatch is a piece.
+
+### Manifest
+`hero` gains `headwear` (by sex), `mantles`, `marks`, and longer `bodies.f`, `hair` and `beards` lists. The class
+outfits with their main / accent roles (three per class per sex) live in the game, `src/rpg/look.ts` `OUTFITS`; the
+phase D `hero.outfits` are kept for older code. New archetypes for the street: `market_woman` (lijfje, kerchief,
+onderrok, rok, schort; coif, straw hat or bonnet), `burgher_jak` (jak, kraag, long skirt; coif, riding hat or
+bontmuts), `carter` (doublet and jerkin, knitted cap, the new beards), `gentleman` (doublet, collar and casaque, tall
+hat).
+
+### Audit: who wears what
+No archetype, named NPC look (`NpcDef.look` in the content files) or enemy puts a woman in a man's piece: women wear
+`bodice`, `kerchief`, `skirt`, `apron`, `coif`, `huik`, `beguine_veil` and now the phase E pieces; the enemies are
+men. Two pieces are shared by design and were left so: `habit` (the beguine's black habit and the Capuchin's brown
+one are the same cut, as both were long plain robes) and `pelerine` (the pilgrim's shoulder cape, worn by men and
+women pilgrims alike). The phase D men's pieces that were refitted to women (`doublet`, `breeches`, `buff_coat`...)
+still fit those bodies so nothing breaks, but no outfit, archetype or hero option uses them on a woman any more.
