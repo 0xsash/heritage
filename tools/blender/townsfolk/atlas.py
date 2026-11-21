@@ -7,7 +7,7 @@
 import bpy, bmesh, math, json
 import numpy as np
 from .common import log, get_bm, put_bm, activate
-from .bodies import BODY_ORDER
+from .bodies import BODY_ORDER, SKIN_TILE_OF, TILE_BODIES
 
 ATLAS_MARGIN = 0.003
 # relative texel density by garment (small, close-up details get more)
@@ -165,7 +165,8 @@ def stage_mesh():
     multi_edit([ref] + eyes, lambda: bpy.ops.uv.pack_islands(rotate=True, scale=True, margin_method='FRACTION', margin=0.004,
                                                               shape_method='CONCAVE'))
     lay = {o.name.split('.')[0]: get_uv(o) for o in [ref] + eyes}
-    for t, bid in enumerate(BODY_ORDER):
+    for bid in BODY_ORDER:
+        t = SKIN_TILE_OF[bid]
         tx, ty = t % SKIN_TILES, t // SKIN_TILES
         for part in ('body', 'eye_l', 'eye_r'):
             o = bpy.data.objects[f'{part}.{bid}']
@@ -176,4 +177,4 @@ def stage_mesh():
             put_uv(o, MH[o.name], 'mh_uv')
             o.data.uv_layers.active = o.data.uv_layers['UVMap']
             o['skin_tile'] = t
-    log('skin atlas: %d bodies in %d x %d tiles' % (len(BODY_ORDER), SKIN_TILES, SKIN_TILES))
+    log('skin atlas: %d bodies in %d x %d tiles' % (len(TILE_BODIES), SKIN_TILES, SKIN_TILES))

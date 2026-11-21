@@ -569,6 +569,84 @@
     }
    }
   },
+  "woman_lean": {
+   "sex": "f",
+   "age": "adult",
+   "height": 1.66,
+   "pelvisScale": 0.96861,
+   "grips": {
+    "fist_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.02225,
+      0.12101,
+      0.00295
+     ],
+     "quat": [
+      0.891393,
+      0.028933,
+      -0.306931,
+      0.332227
+     ]
+    },
+    "hang_r": {
+     "bone": "hand_r",
+     "pos": [
+      0.03956,
+      0.16271,
+      -0.02929
+     ],
+     "quat": [
+      0.891393,
+      0.028933,
+      -0.306931,
+      0.332227
+     ]
+    },
+    "hang_l": {
+     "bone": "hand_l",
+     "pos": [
+      -0.02764,
+      0.15754,
+      -0.04861
+     ],
+     "quat": [
+      -0.338462,
+      0.257011,
+      0.899431,
+      0.102044
+     ]
+    },
+    "sword_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.01633,
+      0.08667,
+      0.00242
+     ],
+     "quat": [
+      0.533206,
+      0.722069,
+      0.220581,
+      0.381644
+     ]
+    },
+    "along_r": {
+     "bone": "hand_r",
+     "pos": [
+      -0.0291,
+      0.07245,
+      0.01425
+     ],
+     "quat": [
+      -0.059251,
+      0.325751,
+      -0.026419,
+      0.943227
+     ]
+    }
+   }
+  },
   "girl": {
    "sex": "f",
    "age": "child",
@@ -783,7 +861,8 @@
     "woman_stout",
     "woman_old",
     "girl",
-    "boy"
+    "boy",
+    "woman_lean"
    ],
    "dyeable": false,
    "hides": [
@@ -803,7 +882,8 @@
     "woman_stout",
     "woman_old",
     "girl",
-    "boy"
+    "boy",
+    "woman_lean"
    ],
    "dyeable": false,
    "hides": [
@@ -913,7 +993,8 @@
     "woman",
     "woman_stout",
     "woman_old",
-    "girl"
+    "girl",
+    "woman_lean"
    ],
    "dyeable": true,
    "hides": [
@@ -930,7 +1011,8 @@
     "woman",
     "woman_stout",
     "woman_old",
-    "girl"
+    "girl",
+    "woman_lean"
    ],
    "dyeable": false,
    "hides": [],
@@ -947,7 +1029,8 @@
     "woman",
     "woman_stout",
     "woman_old",
-    "girl"
+    "girl",
+    "woman_lean"
    ],
    "dyeable": true,
    "hides": [
@@ -964,7 +1047,8 @@
     "woman",
     "woman_stout",
     "woman_old",
-    "girl"
+    "girl",
+    "woman_lean"
    ],
    "dyeable": true,
    "hides": [],
@@ -1004,7 +1088,8 @@
     "woman",
     "woman_stout",
     "woman_old",
-    "girl"
+    "girl",
+    "woman_lean"
    ],
    "dyeable": false,
    "hides": [
@@ -1340,7 +1425,8 @@
     "woman",
     "woman_stout",
     "woman_old",
-    "girl"
+    "girl",
+    "woman_lean"
    ],
    "dyeable": true,
    "hides": [],
@@ -1486,7 +1572,8 @@
     "man_old",
     "woman",
     "woman_stout",
-    "woman_old"
+    "woman_old",
+    "woman_lean"
    ],
    "dyeable": true,
    "hides": [],
@@ -1505,7 +1592,8 @@
     "woman",
     "woman_stout",
     "woman_old",
-    "girl"
+    "girl",
+    "woman_lean"
    ],
    "dyeable": true,
    "hides": [],
@@ -1532,6 +1620,584 @@
    "excludes": [
     "capuche"
    ]
+  },
+  "onderrok": {
+   "slot": "legs",
+   "layer": 1,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_old",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "hips",
+    "thigh",
+    "knee"
+   ],
+   "desc": "petticoat (onderrok): full and pleated, to the lower calf, worn under the hitched rok",
+   "excludes": [
+    "skirt",
+    "breeches",
+    "habit"
+   ]
+  },
+  "rok": {
+   "slot": "legs",
+   "layer": 1,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_old",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "hips"
+   ],
+   "desc": "the rok: woollen overskirt gathered at the waist and hitched up at the front corners (opgeschort) over the onderrok, falling long behind",
+   "requires": [
+    "onderrok"
+   ],
+   "excludes": [
+    "skirt",
+    "breeches",
+    "habit",
+    "apron"
+   ]
+  },
+  "schort": {
+   "slot": "apron",
+   "layer": 3,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_old",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "the schort: a short working apron of linen over the rok, tied at the waist",
+   "requires": [
+    "rok"
+   ]
+  },
+  "jak": {
+   "slot": "torso",
+   "layer": 2,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_old",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "chest",
+    "belly",
+    "upperarm",
+    "forearm_up"
+   ],
+   "desc": "the jak: a woman's fitted jacket, buttoned, with full sleeves, wide turned-back cuffs (accent) and a flared basque over the hips",
+   "accent": true,
+   "excludes": [
+    "bodice",
+    "doublet",
+    "smock",
+    "habit"
+   ]
+  },
+  "kraag_f": {
+   "slot": "collar",
+   "layer": 4,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_old",
+    "woman_lean"
+   ],
+   "dyeable": false,
+   "hides": [],
+   "desc": "wide flat linen collar (platte kraag) over the shoulders, worn on the jak or the bodice",
+   "morphs": true,
+   "excludes": [
+    "kerchief",
+    "collar_band",
+    "huik"
+   ]
+  },
+  "waist_sash": {
+   "slot": "sash",
+   "layer": 5,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "a silk sash round the waist, knotted at the left hip with two hanging ends"
+  },
+  "boots_f": {
+   "slot": "feet",
+   "layer": 1,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": false,
+   "hides": [
+    "shin",
+    "foot"
+   ],
+   "desc": "a woman's soft riding boots to the calf, laced at the front, no turned-down cuff"
+  },
+  "casaque": {
+   "slot": "coat",
+   "layer": 3,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": true,
+   "hides": [
+    "chest",
+    "forearm_up"
+   ],
+   "desc": "the casaque: a loose riding coat to mid-thigh over the doublet, open in front, with wide sleeves and turned-back cuffs (accent)",
+   "accent": true,
+   "requires": [
+    "doublet"
+   ],
+   "excludes": [
+    "buff_coat",
+    "jerkin",
+    "pelerine",
+    "sash",
+    "bandolier"
+   ]
+  },
+  "jerkin": {
+   "slot": "coat",
+   "layer": 3,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": false,
+   "hides": [
+    "chest",
+    "belly"
+   ],
+   "desc": "a sleeveless leather jerkin to the hip with a tabbed skirt, over the doublet",
+   "requires": [
+    "doublet"
+   ],
+   "excludes": [
+    "buff_coat",
+    "sash"
+   ]
+  },
+  "hair_f_curls": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "1640s fashion: centre parting, smooth over the crown, bunches of ringlets at both sides of the face and a small knot behind",
+   "morphs": true
+  },
+  "hair_f_loose": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "long loose hair from a centre parting, down over the back to the shoulder blades, a few strands at the temples",
+   "morphs": true,
+   "excludes": [
+    "huik",
+    "beguine_veil",
+    "capuche"
+   ]
+  },
+  "hair_f_twin": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "parted in the middle, two plaits from behind the ears down the back",
+   "accent": true,
+   "morphs": true,
+   "excludes": [
+    "huik",
+    "beguine_veil",
+    "capuche"
+   ]
+  },
+  "hair_f_crown": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "plaits wound round the head like a crown, soft over the brow",
+   "morphs": true
+  },
+  "hair_f_low": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "soft waves drawn back into a low knot at the nape, loose strands at the temples",
+   "morphs": true
+  },
+  "hair_f_fringe": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "a short curled fringe over the brow (1640s), the rest drawn back into a bun",
+   "morphs": true
+  },
+  "hair_f_tail": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "drawn back and tied high with a ribbon (accent), a long tail down the back",
+   "accent": true,
+   "morphs": true,
+   "excludes": [
+    "huik",
+    "beguine_veil",
+    "capuche"
+   ]
+  },
+  "hair_m_curly": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "thick curls to the shoulders, no parting (the cavalier's mane)",
+   "morphs": true
+  },
+  "hair_m_lovelock": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "long hair with a lovelock: one longer plaited lock on the left tied with a ribbon (accent)",
+   "accent": true,
+   "morphs": true,
+   "excludes": [
+    "capuche"
+   ]
+  },
+  "hair_m_shag": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "unkempt hair to the jaw, a ragged fringe over the brow",
+   "morphs": true
+  },
+  "hair_m_swept": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "swept straight back from the brow, falling to the collar behind",
+   "morphs": true
+  },
+  "hair_m_fringe": {
+   "slot": "hair",
+   "layer": 2,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout"
+   ],
+   "dyeable": true,
+   "hides": [
+    "scalp"
+   ],
+   "desc": "short hair combed forward into a straight fringe",
+   "morphs": true
+  },
+  "moustache_wide": {
+   "slot": "beard",
+   "layer": 3,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "a wide moustache with upturned ends",
+   "morphs": true
+  },
+  "beard_goatee": {
+   "slot": "beard",
+   "layer": 3,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "a small tuft under the lower lip (mouche) and a thin moustache",
+   "morphs": true
+  },
+  "beard_short": {
+   "slot": "beard",
+   "layer": 3,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "a short, close full beard along the jaw, with a moustache",
+   "morphs": true
+  },
+  "hat_f": {
+   "slot": "head",
+   "layer": 6,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean",
+    "woman_old"
+   ],
+   "dyeable": true,
+   "hides": [
+    "hair_crown"
+   ],
+   "desc": "a woman's riding hat: tall felt crown, modest brim, a ribbon band (accent)",
+   "accent": true
+  },
+  "hat_tall": {
+   "slot": "head",
+   "layer": 6,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": true,
+   "hides": [
+    "hair_crown"
+   ],
+   "desc": "a tall-crowned felt hat (the capotain) with a band and a buckle"
+  },
+  "hat_straw": {
+   "slot": "head",
+   "layer": 6,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean",
+    "woman_old"
+   ],
+   "dyeable": false,
+   "hides": [
+    "hair_crown"
+   ],
+   "desc": "a wide flat straw hat with a low crown and a ribbon (accent), for the market and the road",
+   "accent": true
+  },
+  "bontmuts": {
+   "slot": "head",
+   "layer": 6,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean",
+    "woman_old"
+   ],
+   "dyeable": true,
+   "hides": [
+    "hair_crown"
+   ],
+   "desc": "a woman's winter cap: a soft dyed crown with a thick roll of fur round it"
+  },
+  "muts_f": {
+   "slot": "head",
+   "layer": 6,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_lean",
+    "woman_old"
+   ],
+   "dyeable": true,
+   "hides": [
+    "hair_crown"
+   ],
+   "desc": "a soft dark woollen bonnet worn flat on the crown over a white cap edge"
+  },
+  "cap_knit": {
+   "slot": "head",
+   "layer": 6,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "dyeable": true,
+   "hides": [
+    "hair_crown"
+   ],
+   "desc": "a knitted woollen cap with a rolled brim (soldiers, sailors, carters)"
+  },
+  "mantle_short": {
+   "slot": "mantle",
+   "layer": 5,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "the hero's short riding mantle: shoulder cape, standing collar and a fall to the hips",
+   "excludes": [
+    "pelerine",
+    "capuche",
+    "huik",
+    "mantle",
+    "mantle_hood"
+   ]
+  },
+  "mantle_hood": {
+   "slot": "mantle",
+   "layer": 5,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": true,
+   "hides": [],
+   "desc": "the hero's long mantle with a hood lying down on the back",
+   "excludes": [
+    "pelerine",
+    "capuche",
+    "huik",
+    "mantle",
+    "mantle_short"
+   ]
+  },
+  "eyepatch": {
+   "slot": "mark",
+   "layer": 3,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "woman",
+    "woman_stout",
+    "woman_lean"
+   ],
+   "dyeable": false,
+   "hides": [],
+   "desc": "a black leather eyepatch over the right eye on a thin cord",
+   "morphs": true
   }
  },
  "props": {
@@ -3369,6 +4035,568 @@
    "crowd": true
   },
   {
+   "id": "market_woman",
+   "role": "peasantWoman",
+   "weight": 4,
+   "bodies": [
+    "woman_stout",
+    "woman",
+    "woman_old"
+   ],
+   "gait": "walk",
+   "slots": {
+    "hair": [
+     {
+      "piece": "hair_bun",
+      "dye": [
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_dark",
+       "h_red"
+      ]
+     }
+    ],
+    "head": [
+     {
+      "piece": "coif"
+     },
+     {
+      "piece": "coif"
+     },
+     {
+      "piece": "hat_straw",
+      "dye": [
+       "linen",
+       "madder",
+       "woad"
+      ]
+     },
+     {
+      "piece": "muts_f",
+      "dye": [
+       "black",
+       "umber",
+       "woad_dk"
+      ]
+     }
+    ],
+    "torso": [
+     {
+      "piece": "bodice",
+      "dye": [
+       "madder",
+       "woad",
+       "russet",
+       "moss",
+       "brown",
+       "ochre"
+      ]
+     }
+    ],
+    "collar": [
+     {
+      "piece": "kerchief"
+     }
+    ],
+    "legs_under": [
+     {
+      "piece": "onderrok",
+      "dye": [
+       "madder",
+       "madder_dk",
+       "ochre",
+       "woad",
+       "rose"
+      ]
+     }
+    ],
+    "legs": [
+     {
+      "piece": "rok",
+      "dye": [
+       "woad",
+       "russet",
+       "grey",
+       "moss",
+       "brown",
+       "umber",
+       "slate"
+      ]
+     }
+    ],
+    "apron": [
+     {
+      "piece": "schort",
+      "dye": [
+       "linen",
+       "white",
+       "grey"
+      ]
+     }
+    ],
+    "feet": [
+     {
+      "piece": "clogs"
+     },
+     {
+      "piece": "shoes"
+     }
+    ]
+   },
+   "optional": {
+    "apron": 0.8
+   },
+   "props": [
+    [
+     "basket",
+     3
+    ],
+    [
+     "bread",
+     1
+    ],
+    [
+     "bundle",
+     1
+    ],
+    [
+     null,
+     2
+    ]
+   ],
+   "crowd": true
+  },
+  {
+   "id": "burgher_jak",
+   "role": "burgher",
+   "weight": 3,
+   "bodies": [
+    "woman",
+    "woman_stout",
+    "woman_old"
+   ],
+   "gait": "walk_formal",
+   "slots": {
+    "hair": [
+     {
+      "piece": "hair_bun",
+      "dye": [
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_dark",
+       "h_red"
+      ]
+     }
+    ],
+    "head": [
+     {
+      "piece": "coif"
+     },
+     {
+      "piece": "hat_f",
+      "dye": [
+       "black",
+       "umber"
+      ]
+     },
+     {
+      "piece": "bontmuts",
+      "dye": [
+       "black",
+       "madder_dk",
+       "woad_dk"
+      ]
+     }
+    ],
+    "torso": [
+     {
+      "piece": "jak",
+      "dye": [
+       "black",
+       "violet",
+       "woad_dk",
+       "madder_dk",
+       "moss"
+      ]
+     }
+    ],
+    "collar": [
+     {
+      "piece": "kraag_f"
+     }
+    ],
+    "legs": [
+     {
+      "piece": "skirt",
+      "dye": [
+       "black",
+       "woad_dk",
+       "violet",
+       "umber",
+       "madder_dk"
+      ]
+     }
+    ],
+    "feet": [
+     {
+      "piece": "shoes"
+     }
+    ]
+   },
+   "props": [
+    [
+     null,
+     3
+    ],
+    [
+     "rosary",
+     1
+    ],
+    [
+     "basket",
+     1
+    ]
+   ],
+   "crowd": true
+  },
+  {
+   "id": "carter",
+   "role": "peasant",
+   "weight": 3,
+   "bodies": [
+    "man",
+    "man_stout",
+    "man_young"
+   ],
+   "gait": "walk",
+   "slots": {
+    "hair": [
+     {
+      "piece": "hair_crop",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "hair_long",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     }
+    ],
+    "beard": [
+     {
+      "piece": "moustache",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "beard_full",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "beard_short",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "moustache_wide",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     }
+    ],
+    "head": [
+     {
+      "piece": "cap_knit",
+      "dye": [
+       "russet",
+       "grey",
+       "madder_dk",
+       "woad_dk",
+       "umber"
+      ]
+     },
+     {
+      "piece": "cap_flat",
+      "dye": [
+       "brown",
+       "grey"
+      ]
+     }
+    ],
+    "torso": [
+     {
+      "piece": "doublet",
+      "dye": [
+       "umber",
+       "brown",
+       "grey",
+       "slate",
+       "russet",
+       "green_dk"
+      ]
+     }
+    ],
+    "coat": [
+     {
+      "piece": "jerkin"
+     }
+    ],
+    "collar": [
+     {
+      "piece": "collar_band"
+     }
+    ],
+    "legs": [
+     {
+      "piece": "breeches",
+      "dye": [
+       "umber",
+       "brown",
+       "grey",
+       "slate",
+       "russet",
+       "green_dk"
+      ]
+     }
+    ],
+    "legs_under": [
+     {
+      "piece": "stockings",
+      "dye": [
+       "grey",
+       "linen",
+       "brown"
+      ]
+     }
+    ],
+    "feet": [
+     {
+      "piece": "boots"
+     },
+     {
+      "piece": "clogs"
+     }
+    ]
+   },
+   "optional": {
+    "beard": 0.7,
+    "collar": 0.3
+   },
+   "props": [
+    [
+     null,
+     3
+    ],
+    [
+     "bundle",
+     1
+    ],
+    [
+     "staff",
+     1
+    ]
+   ],
+   "crowd": true
+  },
+  {
+   "id": "gentleman",
+   "role": "burgher",
+   "weight": 2,
+   "bodies": [
+    "man",
+    "man_young",
+    "man_stout",
+    "man_old"
+   ],
+   "gait": "walk_formal",
+   "slots": {
+    "hair": [
+     {
+      "piece": "hair_long",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "hair_tail",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     }
+    ],
+    "beard": [
+     {
+      "piece": "beard_pointed",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "beard_goatee",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     },
+     {
+      "piece": "moustache_wide",
+      "dye": [
+       "h_dark",
+       "h_brown",
+       "h_chestnut",
+       "h_blond",
+       "h_black",
+       "h_red"
+      ]
+     }
+    ],
+    "head": [
+     {
+      "piece": "hat_tall",
+      "dye": [
+       "black",
+       "umber",
+       "grey"
+      ]
+     },
+     {
+      "piece": "hat_wide",
+      "dye": [
+       "black"
+      ]
+     }
+    ],
+    "torso": [
+     {
+      "piece": "doublet",
+      "dye": [
+       "black",
+       "woad_dk",
+       "violet",
+       "madder_dk"
+      ]
+     }
+    ],
+    "collar": [
+     {
+      "piece": "collar_band"
+     }
+    ],
+    "coat": [
+     {
+      "piece": "casaque",
+      "dye": [
+       "black",
+       "umber",
+       "woad_dk",
+       "moss",
+       "madder_dk"
+      ]
+     }
+    ],
+    "legs": [
+     {
+      "piece": "breeches",
+      "dye": [
+       "black",
+       "umber",
+       "woad_dk"
+      ]
+     }
+    ],
+    "legs_under": [
+     {
+      "piece": "stockings",
+      "dye": [
+       "black",
+       "grey",
+       "linen"
+      ]
+     }
+    ],
+    "feet": [
+     {
+      "piece": "boots"
+     },
+     {
+      "piece": "shoes"
+     }
+    ]
+   },
+   "props": [
+    [
+     null,
+     4
+    ],
+    [
+     "stick",
+     1
+    ],
+    [
+     "sword",
+     1
+    ]
+   ],
+   "crowd": true
+  },
+  {
    "id": "deserter",
    "role": "soldier",
    "weight": 1,
@@ -3697,25 +4925,67 @@
    ],
    "f": [
     "woman",
-    "woman_stout"
+    "woman_stout",
+    "woman_lean"
    ]
   },
   "hair": {
    "m": [
-    "hair_crop",
     "hair_long",
-    "hair_tail"
+    "hair_m_curly",
+    "hair_m_lovelock",
+    "hair_m_swept",
+    "hair_m_shag",
+    "hair_m_fringe",
+    "hair_tail",
+    "hair_crop",
+    "hair_thin"
    ],
    "f": [
-    "hair_bun",
-    "hair_braid"
+    "hair_f_curls",
+    "hair_f_low",
+    "hair_f_loose",
+    "hair_f_twin",
+    "hair_f_crown",
+    "hair_f_fringe",
+    "hair_f_tail",
+    "hair_braid",
+    "hair_bun"
    ]
   },
   "beards": [
    "beard_pointed",
    "moustache",
    "beard_full",
+   "beard_short",
+   "beard_goatee",
+   "moustache_wide",
    null
+  ],
+  "headwear": {
+   "m": [
+    "hat_wide",
+    "hat_tall",
+    "cap_flat",
+    "cap_knit",
+    "morion",
+    "hat_pilgrim"
+   ],
+   "f": [
+    "coif",
+    "hat_f",
+    "hat_straw",
+    "bontmuts",
+    "muts_f"
+   ]
+  },
+  "mantles": [
+   "mantle",
+   "mantle_short",
+   "mantle_hood"
+  ],
+  "marks": [
+   "eyepatch"
   ],
   "hairDyes": [
    "h_dark",

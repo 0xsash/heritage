@@ -76,6 +76,13 @@ BODIES = {
                       targets=sym({'head-age-incr': 0.7, 'head-diamond': 0.3, 'nose-hump-incr': 0.3,
                                    'nose-point-down': 0.35, 'X-cheek-volume-decr': 0.5, 'X-eye-bag-incr': 0.5,
                                    'chin-prominent-incr': 0.35, 'mouth-angles-down': 0.4})),
+    # phase E: the heroine's third build, lean and long-limbed; it borrows the `woman` skin tile (same UVs, same paint)
+    'woman_lean': dict(height=1.66, sex='f', age_group='adult', skin='young_caucasian_female', tile='woman',
+                       macros=dict(gender=0.0, age=0.45, muscle=0.62, weight=0.36, proportions=0.75, height=0.68,
+                                   cupsize=0.38, firmness=0.7),
+                       race=(0.92, 0.05, 0.03),
+                       targets=sym({'head-oval': 0.4, 'nose-scale-horiz-decr': 0.15, 'X-cheek-bones-incr': 0.4,
+                                    'X-cheek-volume-decr': 0.3, 'chin-prominent-incr': 0.15, 'neck-scale-vert-incr': 0.2})),
     'girl': dict(height=1.25, sex='f', age_group='child', skin='young_caucasian_female',
                  macros=dict(gender=0.0, age=0.155, muscle=0.5, weight=0.5, proportions=0.5, height=0.5,
                              cupsize=0.0, firmness=0.5),
@@ -88,6 +95,9 @@ BODIES = {
                              'chin-prominent-incr': 0.1})),
 }
 BODY_ORDER = list(BODIES)
+# the skin atlas has 3 x 3 tiles; a body with `tile` shares that body's tile (same MakeHuman UVs, painted once)
+TILE_BODIES = [b for b in BODY_ORDER if 'tile' not in BODIES[b]]
+SKIN_TILE_OF = {b: TILE_BODIES.index(BODIES[b].get('tile', b)) for b in BODY_ORDER}
 
 # Face morph targets shipped with every body (same names and order everywhere). Each is the half-difference of a
 # MakeHuman 'incr' / 'decr' target pair (so +1 is about the incr target and -1 about the decr one), times a gain.

@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { rng } from '../core/math';
-import { cloakPiece, heroSpec, HERO_CLIPS } from '../rpg/look';
+import { cloakPiece, heroSpec, HERO_CLIPS, OUTFITS, heroOptions } from '../rpg/look';
 import type { HeroData } from '../rpg/state';
 import type { Folk, TownsfolkKit } from '../rpg/townsfolk';
 import type { Hero } from './hero';
@@ -52,6 +52,8 @@ export function borrowClips(rider: GLTF, folk: Folk, names: string[]): THREE.Ani
  */
 export async function dressHero(hero: Hero, kit: TownsfolkKit, h: HeroData, rider: () => Promise<GLTF | null>): Promise<{ folk: Folk; rider: GLTF | null } | null> {
   const spec = heroSpec(kit, h);
+  // for the test pages: how any hero would be dressed
+  (window as unknown as { belfortLook?: object }).belfortLook = { heroSpec, OUTFITS, heroOptions, darkenLeather };
   const folk = kit.buildSpec(spec);
   if (!folk) return null;
   const missing = HERO_CLIPS.filter((c) => !kit.hasClip(c));
