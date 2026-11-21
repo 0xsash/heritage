@@ -7,6 +7,37 @@ note: plain present-day Flemish Dutch, "je/jij", no fake-old language.
 Those two fit together. What makes Tolkien and Martin grip is not old words. It is depth of time, concrete
 detail, people who want things, and a price on everything. All of that works in modern Dutch.
 
+## First of all: real Flemish, and clear on first reading
+
+The owner, who is Flemish, on the text so far: "Een verhaal dat bijt" is not something people would naturally
+understand; check whether it is Flemish Dutch or English translated into Dutch; and when sentences are shortened,
+the reader is left asking "what are they really trying to say here". This section outranks every rule below.
+Where "restraint" or "short" would make a line unclear, clarity wins.
+
+1. **Write it in Dutch; do not translate it.** If a phrase only works when you put it back into English word for
+   word, it is wrong. "Folklore die bijt" is "folklore that bites". Say what you mean in the words a Fleming would
+   use: "volksverhalen waar je bang van wordt".
+2. **Understood the first time, without context.** Every line must make sense to someone who reads only that line.
+   No one-word or verbless sentences that lean on an English rhythm ("Af.", "Voor niets, deze keer.", "Jij
+   misschien niet."). A short sentence still has a subject and a verb and says who does what.
+3. **Test: would someone from Diest say this to their neighbour?** Read it aloud. If it sounds like a film
+   trailer, an advertising slogan or a subtitle, rewrite it as something a person says.
+4. **Belgian Dutch word choice.** The standard language as spoken in Flanders, not Holland and not dialect:
+   wenen (not huilen), schoon/mooi, beenhouwer (not slager), kleed, zak, goesting, content, plezant, amai,
+   seffens, nonkel, where they fit the speaker. Never: nou, hartstikke, doei, gozer, "hoor" as a filler, mieters.
+   Do not pile dialect on: one Flemish word in a line is plenty.
+5. **Interface words are the ones players know.** "Nieuw spel", "Verder spelen", "Opslaan", "Instellingen",
+   "Terug". A button says what happens when you press it.
+6. **Literary does not mean cryptic.** The pull comes from what is told (rule 2 to 5 below), not from clipped
+   fragments. Prefer a full, plain sentence with one exact detail over a clever half-sentence.
+
+Wrong, and how to say it:
+- "Folklore die bijt." → "Volksverhalen waar je bang van wordt."
+- "Af." (as in: this is not a finished game) → "Dit is nog geen afgewerkt spel."
+- "Voor niets, deze keer." → "Deze keer vraag ik er niets voor."
+- "Pieter zal huilen." → "Pieter gaat ervan wenen."
+- "Ironisch, zegt Driesen." → "Daar hoort hij ook thuis, zegt Driesen."
+
 ## The rules
 
 1. **Je/jij.** Never gij/ge/uw. Only the drossaard and the proost say "u". No antique word order, no "aldus".

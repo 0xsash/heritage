@@ -82,18 +82,18 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
           <h2>EEN AVONTUUR IN BRABANT · ANNO 1650</h2>
           <div class="fe-cols">
             <div><h3>DIT IS</h3>
-              <p><b>Een avontuur.</b> Vlieg op een draak, land waar je wilt, kies partij, vecht.</p>
-              <p><b>Echt Brabant.</b> Diest ligt waar het in 1650 lag, straat voor straat.</p>
-              <p><b>Folklore die bijt.</b> De Kludde, dwaallichten, klokken met macht.</p>
+              <p><b>Een avonturenspel.</b> Je vliegt op een draak over Brabant, landt waar je wilt en trekt te voet de stad in.</p>
+              <p><b>Het Diest van 1650.</b> De straten, de poorten en de kerken liggen waar ze toen lagen.</p>
+              <p><b>Vol oude volksverhalen.</b> De Kludde, dwaallichtjes en klokken die meer kunnen dan luiden.</p>
             </div>
             <div><h3>DIT IS NIET</h3>
-              <p><b>Een geschiedenisles.</b> De Kroniek zegt eerlijk wat verzonnen is.</p>
-              <p><b>Een simulator.</b> De draak vliegt vanzelf. Jij stuurt.</p>
-              <p><b>Af.</b> Dit is het eerste hoofdstuk: een goed uur spel.</p>
+              <p><b>Een geschiedenisles.</b> In de Kroniek lees je wat echt gebeurd is en wat wij verzonnen hebben.</p>
+              <p><b>Een vliegsimulator.</b> De draak vliegt vanzelf. Jij moet alleen sturen.</p>
+              <p><b>Een afgewerkt spel.</b> Dit is het eerste hoofdstuk. Je bent er ongeveer een uur mee bezig.</p>
             </div>
           </div>
-          <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN JE VERHAAL'}</button></div>
-          <div class="fe-small">Muis en toetsenbord of een gamepad · geluid aan · je voortgang wordt op dit toestel bewaard</div>
+          <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN'}</button></div>
+          <div class="fe-small">Je speelt met muis en toetsenbord of met een gamepad. Zet het geluid aan. Je voortgang wordt op dit toestel bewaard.</div>
         </div>
       </div>`;
       el.querySelector('[data-go="ok"]')!.addEventListener('click', () => (back ? title() : create()));
@@ -108,16 +108,16 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
           <h2>HET HERTOGDOM BRABANT · ANNO 1650</h2>
           <div class="fe-menu">
             ${save ? `<button data-go="continue">VERDER SPELEN<small>${esc(save.name)} · ${esc(heroLine(save))} · niveau ${save.level}</small></button>` : ''}
-            <button data-go="new">${save ? 'NIEUW VERHAAL' : 'BEGIN JE VERHAAL'}</button>
+            <button data-go="new">NIEUW SPEL</button>
           </div>
-          <div class="fe-small">Best met muis en toetsenbord of een gamepad · met geluid · <button class="fe-link" data-go="what">wat is dit?</button></div>
+          <div class="fe-small">Je speelt het best met muis en toetsenbord of met een gamepad, en met het geluid aan · <button class="fe-link" data-go="what">wat is dit?</button></div>
         </div>
         <div class="fe-credit">Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)</div>
       </div>`;
       el.querySelector('[data-go="continue"]')?.addEventListener('click', () => done({ mode: 'continue' }));
       el.querySelector('[data-go="what"]')!.addEventListener('click', () => promise(true));
       el.querySelector('[data-go="new"]')!.addEventListener('click', () => {
-        if (save && !confirm('Een nieuw verhaal beginnen? Je huidige personage gaat verloren.')) return;
+        if (save && !confirm('Wil je een nieuw spel beginnen? Je huidige personage gaat dan verloren.')) return;
         create(); // the story is told in the prologue, which you play
       });
     };
