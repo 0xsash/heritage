@@ -310,7 +310,7 @@ lc_img = Image.fromarray(lc, "P")
 dr = ImageDraw.Draw(lc_img)
 for rv in rivers_out:
     q = [((rv["p"][i] - ox0) / OC, (rv["p"][i + 1] - oz0) / OC) for i in range(0, len(rv["p"]), 2)]
-    dr.line(q, fill=4, width=max(1, int(round(rv["w"] / OC))), joint="curve")
+    dr.line(q, fill=4, width=max(1, int(round(max(rv["w"] / K, 20.0) / OC))), joint="curve")  # outside towns the land is compressed K times; rivers too
 pal = []
 for c in PALETTE:
     pal += list(c)
@@ -773,7 +773,7 @@ for po in polities_out:
         d.line(q + q[:1], fill=PCOL.get(po["id"], (0, 0, 0)), width=3)
 for rv in rivers_out:
     q = [pp(rv["p"][i], rv["p"][i + 1]) for i in range(0, len(rv["p"]), 2)]
-    d.line(q, fill=(30, 70, 150), width=max(2, int(rv["w"] / OC * S)), joint="curve")
+    d.line(q, fill=(30, 70, 150), width=max(2, int(max(rv["w"] / K, 20.0) / OC * S)), joint="curve")
 for dk_ in dikes_out:
     q = [pp(dk_["p"][i], dk_["p"][i + 1]) for i in range(0, len(dk_["p"]), 2)]
     d.line(q, fill=(110, 80, 40), width=2)
