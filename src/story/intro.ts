@@ -38,7 +38,7 @@ export const INTRO_LINES: Record<string, [string, string]> = {
 
   // De Kerk
   intro_kerk_1: ['', 'In het Begijnhof verzorgen de begijnen de zieken. Bij valavond gaat hun poort dicht, voor iedereen.'],
-  intro_kerk_2: ['', 'De toren van Sint-Sulpitius is nooit afgebouwd, maar de klokken hangen erin. De kanunniken weten waarom ze moeten slaan.'],
+  intro_kerk_2: ['', 'De toren van Sint-Sulpitius is nooit afgebouwd. De kanunniken weten waarom de klokken erin moeten slaan.'],
   intro_kerk_3: ['', 'In Scherpenheuvel stond een eik met een Mariabeeld. Nu staat daar een kerk met zeven zijden, en heel Brabant komt er bidden.'],
   intro_kerk_4: ['', 'De priesters en de begijnen weten meer over de klokken dan ze zeggen. Ze bidden dat niemand het ooit vraagt.'],
 
@@ -426,7 +426,7 @@ function kerkShots(): Shot[] {
       name: 'kerk-toren', sky: 'golden', lines: ['intro_kerk_2'], into: 'cut',
       focus: [-15, 50],
       // up at the squat, unfinished tower; a canon of the chapter crosses below
-      cam: { path: [[-4, 1.7, 65], [-7, 2.3, 62]], look: [[-24, 12, 41], [-26, 18, 38]], fov: [48, 44] },
+      cam: { path: [[-76, 16, 84], [-68, 21, 76]], look: [[-28, 20, 38], [-27, 25, 37]], fov: [44, 40] },
       cast: (s) => s.walk(at(s, CANON, -13, 55, -2.3, 'walk', 5), [[-17, 51], [-21, 47]], 0.8, 'walk_formal'),
       cues: [[1.2, (s) => s.sound.bell(147, 0.32)], [3.8, (s) => s.sound.bell(147, 0.26)]],
     },

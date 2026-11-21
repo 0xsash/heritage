@@ -439,6 +439,7 @@ export class Prologue {
             this.card.classList.add('show', 'title');
             this.setFade(0, 3);
             this.t = 3;
+            this.said.add('lit');
           });
         }
         if (this.said.has('sky') && t > 5) this.say('pro_n10');
@@ -621,9 +622,8 @@ export class Prologue {
           // lights on the water: the camera turns from the two of them to the river
           snd?.bed('drone', 0.5, 4);
           snd?.bed('water', 0.7, 2);
-          const dx = WATER.x - hero.x, dz = WATER.z - hero.z, l = Math.hypot(dx, dz) || 1;
-          const bx = hero.x - (dx / l) * 4 + (dz / l) * 2, bz = hero.z - (dz / l) * 4 - (dx / l) * 2;
-          c?.startBeat({ path: [v(bx, 2.0, bz), v(bx + dx * 0.22, 1.7, bz + dz * 0.22)], look: [v(hero.x + dx * 0.4, 1.0, hero.z + dz * 0.4), v(WATER.x + 3, 0.4, WATER.z + 6)], fov: [44, 34] }, 7, 1.4, 1.6);
+          // (a cut to the water's edge and back: the trees stand between the path and the river)
+          c?.startBeat({ path: [v(1431, 1.3, -67), v(1434, 1.0, -63)], look: [v(1449, 0.6, -42), v(1449, 0.4, -40)], fov: [46, 38] }, 6.5, 0, 0);
         }
         break;
       case 'rise':
@@ -675,7 +675,7 @@ export class Prologue {
         }
         break;
       case 'dawn':
-        if (this.said.has('sky') && t > 3 && this.once('dawn')) {
+        if (this.said.has('lit') && this.once('dawn')) {
           // dawn: from beside the rider, up and back until the meadows and the town are the picture; then it is yours
           snd?.bed('drone', 0.5, 3);
           snd?.bed('wind', 0.4, 3);
