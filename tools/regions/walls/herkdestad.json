@@ -1,0 +1,84 @@
+{
+ "note": "Herk-de-Stad: egg-shaped earthen wall and moat with three gates (15th c. sources), traced from the Ferraris map (1777). Open farmland inside the walls.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Herk-de-Stad' (https://id.erfgoed.net/erfgoedobjecten/140050)",
+ "ring": [
+  [
+   -180,
+   -36
+  ],
+  [
+   -144,
+   -96
+  ],
+  [
+   -48,
+   -150
+  ],
+  [
+   96,
+   -180
+  ],
+  [
+   150,
+   -162
+  ],
+  [
+   204,
+   -96
+  ],
+  [
+   234,
+   -12
+  ],
+  [
+   222,
+   66
+  ],
+  [
+   168,
+   120
+  ],
+  [
+   72,
+   144
+  ],
+  [
+   -48,
+   144
+  ],
+  [
+   -132,
+   114
+  ],
+  [
+   -186,
+   48
+  ]
+ ],
+ "gates": {
+  "Diesterpoort": [
+   -192,
+   0
+  ],
+  "Hasseltse Poort": [
+   156,
+   -168
+  ],
+  "Sint-Truiderpoort": [
+   204,
+   90
+  ]
+ },
+ "gateSources": {
+  "Diesterpoort": "inventory 140050 ('Diesterpoort of Halense Poort'); Ferraris 'Porte de Diest'",
+  "Hasseltse Poort": "inventory 140050 ('Hasseltse Poort of Driespoort'); Ferraris 'Porte de Hasselt'",
+  "Sint-Truiderpoort": "inventory 140050 ('Sint-Truiderpoort of Oppumse Poort of Heelsteenpoort'); Ferraris 'Porte de St Trond'"
+ },
+ "gatesUncertain": [],
+ "moat": [
+  [
+   0,
+   12
+  ]
+ ]
+}

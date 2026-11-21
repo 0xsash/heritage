@@ -1,0 +1,117 @@
+{
+ "note": "Brussels second wall (1356-83), the 'pentagon', with seven main gates and the Oeverpoort of 1561 at the Willebroek canal basin. Ring through the gate positions taken from OSM (gate squares and the surviving Hallepoort) along today's inner ring, which follows the wall line; checked against the Ferraris map (1777), where the main rampart lies within about 50 m of this line. The outer bastions and Fort Monterey (1672-75) are later and not included.",
+ "source": "en.wikipedia 'Second walls of Brussels'; OpenStreetMap",
+ "ring": [
+  [
+   -534,
+   1510
+  ],
+  [
+   -160,
+   1300
+  ],
+  [
+   250,
+   1100
+  ],
+  [
+   654,
+   885
+  ],
+  [
+   1000,
+   400
+  ],
+  [
+   1230,
+   -453
+  ],
+  [
+   914,
+   -862
+  ],
+  [
+   500,
+   -1050
+  ],
+  [
+   47,
+   -1128
+  ],
+  [
+   -378,
+   -960
+  ],
+  [
+   -790,
+   -713
+  ],
+  [
+   -900,
+   -300
+  ],
+  [
+   -981,
+   218
+  ],
+  [
+   -850,
+   800
+  ]
+ ],
+ "gates": {
+  "Hallepoort": [
+   -534,
+   1510
+  ],
+  "Naamsepoort": [
+   654,
+   885
+  ],
+  "Leuvensepoort": [
+   1230,
+   -453
+  ],
+  "Schaarbeeksepoort": [
+   914,
+   -862
+  ],
+  "Laekensepoort": [
+   47,
+   -1128
+  ],
+  "Oeverpoort": [
+   -378,
+   -960
+  ],
+  "Vlaamsepoort": [
+   -790,
+   -713
+  ],
+  "Anderlechtsepoort": [
+   -981,
+   218
+  ]
+ },
+ "gateSources": {
+  "Hallepoort": "survives; OSM building 'Porte de Hal - Hallepoort'",
+  "Naamsepoort": "OSM square 'Porte de Namur - Naamsepoort'",
+  "Leuvensepoort": "en.wikipedia 'Second walls of Brussels' (seven gates incl. Leuven); position at the end of the Leuvenseweg, uncertain",
+  "Schaarbeeksepoort": "en.wikipedia 'Second walls of Brussels'; position uncertain",
+  "Laekensepoort": "en.wikipedia 'Second walls of Brussels'; position at today's 'Porte d'Anvers - Antwerpsepoort', uncertain",
+  "Oeverpoort": "en.wikipedia 'Second walls of Brussels' ('Shore Gate', added 1561); OSM 'Porte du Rivage - Oeverpoort'",
+  "Vlaamsepoort": "OSM 'Porte de Flandre - Vlaamsepoort'",
+  "Anderlechtsepoort": "OSM 'Porte d'Anderlecht - Anderlechtsepoort'"
+ },
+ "gatesUncertain": [
+  "Leuvensepoort",
+  "Schaarbeeksepoort",
+  "Laekensepoort"
+ ],
+ "moat": [
+  [
+   0,
+   13
+  ]
+ ]
+}

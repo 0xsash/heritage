@@ -133,10 +133,14 @@
   ]
  },
  "gateSources": {
-  "Mechelsepoort": "Ferraris 'Porte de Malines'",
-  "Waterpoort": "Ferraris 'Porte de l'Eau'",
-  "Tiensepoort": "Ferraris 'Porte de Tirlemont'",
-  "Leuvensepoort": "Ferraris 'Porte de Louvain'"
+  "Mechelsepoort": "Ferraris 'Porte de Malines'; inventory 140036 gives the 1360 gates as Waterpoort, Brakepoort (Diestsepoort), Leuvensepoort (Bonewijkpoort) and Schaluinpoort - this one is probably the Schaluinpoort (not verified)",
+  "Waterpoort": "Ferraris 'Porte de l'Eau'; confirmed by inventory 140036",
+  "Tiensepoort": "Ferraris 'Porte de Tirlemont'; not among the four 1360 gates of inventory 140036 (Ferraris name, uncertain for 1650)",
+  "Leuvensepoort": "Ferraris 'Porte de Louvain'; inventory 140036 ('Leuvensepoort of Bonewijkpoort')"
  },
- "moat": []
+ "moat": [],
+ "gatesUncertain": [
+  "Mechelsepoort",
+  "Tiensepoort"
+ ]
 }

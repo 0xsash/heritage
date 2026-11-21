@@ -1,0 +1,97 @@
+{
+ "note": "Herentals: medieval earthen wall with stone gates, reduced in 1578 to behind the Nete and given pentagonal bastions and earth sconces (the old beguinage, left outside, became a Spanish fort). Traced from the Ferraris map (1777).",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Herentals' (https://id.erfgoed.net/erfgoedobjecten/140033)",
+ "ring": [
+  [
+   -7,
+   -1054
+  ],
+  [
+   -117,
+   -991
+  ],
+  [
+   -281,
+   -827
+  ],
+  [
+   -372,
+   -554
+  ],
+  [
+   -390,
+   -189
+  ],
+  [
+   -299,
+   29
+  ],
+  [
+   -135,
+   357
+  ],
+  [
+   -26,
+   412
+  ],
+  [
+   229,
+   394
+  ],
+  [
+   339,
+   211
+  ],
+  [
+   375,
+   -153
+  ],
+  [
+   229,
+   -499
+  ],
+  [
+   211,
+   -772
+  ],
+  [
+   193,
+   -991
+  ],
+  [
+   65,
+   -1064
+  ]
+ ],
+ "gates": {
+  "Zandpoort": [
+   -393,
+   8
+  ],
+  "Bovenpoort": [
+   241,
+   396
+  ],
+  "Koepoort": [
+   375,
+   -171
+  ],
+  "Benedenpoort": [
+   193,
+   -973
+  ]
+ },
+ "gateSources": {
+  "Zandpoort": "survives; inventory 140033 ('Zandpoort alias Antwerpsche Poort')",
+  "Bovenpoort": "survives; inventory 140033 ('Bovenpoort alias Hoogpoort, poort van Diest')",
+  "Koepoort": "inventory 140033; Ferraris 'Koey Poorte'",
+  "Benedenpoort": "inventory 140033 ('Nederpoort of Benedenpoort'); Ferraris 'Beneden Poorte'"
+ },
+ "gatesUncertain": [],
+ "moat": [
+  [
+   0,
+   14
+  ]
+ ]
+}

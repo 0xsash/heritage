@@ -53,7 +53,7 @@ def layout(cfg=None, iters=4000):
         if not os.path.exists(wpath):
             continue
         walls = json.load(open(wpath))
-        towns.append(dict(t, real=np.array(ref.fwd(t["lat"], t["lon"])), R=town_radius(walls, cfg["suburbMargin"]),
+        towns.append(dict(t, real=np.array(ref.fwd(t["lat"], t["lon"])), R=town_radius(walls, t.get("margin", cfg["suburbMargin"])),
                           walls=walls))
     n = len(towns)
     tgt = np.array([t["real"] / K for t in towns])

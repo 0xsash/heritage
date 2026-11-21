@@ -1,0 +1,109 @@
+{
+ "note": "Dendermonde: late-medieval brick wall with four gates (Jacob van Deventer c. 1565), modernised into a bastioned fortress from 1577-78 (Sanderus 1641 shows the 17th-c. form); traced from the Ferraris map (1777) along the main rampart. The Dender runs through the town into the Schelde on the north side; the Waaslandpoort is a bridgehead over the Schelde.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Dendermonde' (https://id.erfgoed.net/erfgoedobjecten/140019)",
+ "ring": [
+  [
+   -467,
+   -103
+  ],
+  [
+   -450,
+   -253
+  ],
+  [
+   -300,
+   -278
+  ],
+  [
+   100,
+   -278
+  ],
+  [
+   283,
+   -312
+  ],
+  [
+   517,
+   -253
+  ],
+  [
+   617,
+   -245
+  ],
+  [
+   650,
+   -170
+  ],
+  [
+   633,
+   80
+  ],
+  [
+   600,
+   263
+  ],
+  [
+   467,
+   463
+  ],
+  [
+   350,
+   563
+  ],
+  [
+   200,
+   663
+  ],
+  [
+   67,
+   663
+  ],
+  [
+   -133,
+   530
+  ],
+  [
+   -233,
+   330
+  ],
+  [
+   -383,
+   163
+  ],
+  [
+   -433,
+   63
+  ]
+ ],
+ "gates": {
+  "Steenpoort": [
+   -467,
+   -103
+  ],
+  "Waaslandpoort": [
+   283,
+   -312
+  ],
+  "Mechelsepoort": [
+   617,
+   -245
+  ],
+  "Brusselsepoort": [
+   350,
+   563
+  ]
+ },
+ "gateSources": {
+  "Steenpoort": "nl.wikipedia 'Dendermonde' (west, to Gent); Ferraris 'Porte de Gand'",
+  "Waaslandpoort": "nl.wikipedia 'Dendermonde' (north, Veerstraat); Ferraris 'Porte de Waes'",
+  "Mechelsepoort": "nl.wikipedia 'Dendermonde'; Ferraris 'Porte de Malines'",
+  "Brusselsepoort": "nl.wikipedia 'Dendermonde'; Ferraris 'Porte de Bruxelles'"
+ },
+ "gatesUncertain": [],
+ "moat": [
+  [
+   0,
+   17
+  ]
+ ]
+}

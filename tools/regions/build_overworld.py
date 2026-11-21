@@ -13,7 +13,13 @@ Layout and warp: warp.py (formula in its docstring and in docs/history/regions-1
   4. roads: shortest path over OSM trunk/primary/secondary roads between the facing
      gates of linked towns (towns.json "links"), warped; straight line if no path
   5. villages: OSM place=village|hamlet (and minor towns) with Ferraris built-up land
-     within 250 m, warped
+     within 250 m, warped (outside the Ferraris coverage - the Republic, Wallonia - kept
+     unchecked, "ferraris": false)
+  6. sea: the OSM coastline, flood-filled from the North Sea (Westerschelde included);
+     the drowned land of Saeftinghe as marsh (sites.json)
+  7. dikes along the Scheldt estuary (OSM man_made=dyke near the Schelde), warped
+  8. polities c. 1650 (politics.json + admin.json), warped polygons and a per-village lookup
+  9. sites: points outside the towns (forts, abbeys, lost villages; sites.json)
 Usage: build_overworld.py
 """
 import heapq, json, math, os
@@ -58,6 +64,23 @@ else:
         print("  classified tile", tx, tz, flush=True)
     np.save(frac_path, frac)
 frac = frac.astype(np.float32)
+# outside the service's coverage the tiles are near-white (JPEG ~248, not 255): blank them, with a
+# 300 m border, so the classifier's heath/meadow artefacts there do not show (cached)
+blank_path = os.path.join(CACHE, "region", "blank20.npy")
+if os.path.exists(blank_path):
+    blank20 = np.load(blank_path)
+else:
+    blank20 = np.zeros((GH, GW), bool)
+    sub = int(RC / idx["mpp"])
+    tsz = int(idx["tile"] / sub)
+    for tx, tz in idx["tiles"]:
+        im = np.asarray(Image.open(os.path.join(CACHE, "region", "ferraris", f"t_{int(tx)}_{int(tz)}.jpg")).convert("RGB")).astype(np.int16)
+        bl = ((im.min(-1) > 236) & (im.max(-1) - im.min(-1) < 12)).astype(np.uint8)
+        bl = cv2.dilate(bl, np.ones((121, 121), np.uint8))
+        gx, gz = int((tx - RX0) / RC), int((tz - RZ0) / RC)
+        blank20[gz:gz + tsz, gx:gx + tsz] = cv2.resize(bl, (tsz, tsz), interpolation=cv2.INTER_AREA) > 0.5
+    np.save(blank_path, blank20)
+frac[blank20] = 0
 covered = frac.sum(-1) > 0.5
 
 
@@ -67,19 +90,40 @@ def real_cell(x, z):
 
 # ------------------------------------------------------------------ rivers (real)
 RIVERS = {  # canonical name: (OSM names, real width in m c.1650)
-    "Schelde": (["Schelde", "Zeeschelde", "Boven-Zeeschelde", "Beneden-Zeeschelde"], 350),
+    "Schelde": (["Schelde", "Zeeschelde", "Boven-Zeeschelde", "Beneden-Zeeschelde", "Bovenschelde", "Escaut", "Oude Schelde"], 350),
     "Rupel": (["Rupel"], 150),
     "Nete": (["Nete", "Beneden-Nete"], 40),
     "Grote Nete": (["Grote Nete"], 16),
     "Kleine Nete": (["Kleine Nete"], 16),
-    "Dijle": (["Dijle"], 22),
+    "Dijle": (["Dijle", "Dyle", "Dyle - Dijle"], 22),
     "Demer": (["Demer"], 20),
-    "Zenne": (["Zenne", "Senne - Zenne", "Zenne - Senne"], 14),
+    "Zenne": (["Zenne", "Senne - Zenne", "Zenne - Senne", "Senne", "La Senne"], 14),
     "Durme": (["Durme"], 30),
-    "Leie": (["Leie", "Lys"], 30),
-    "Dender": (["Dender"], 25),
+    "Leie": (["Leie", "Lys", "La Lys", "Leie - La Lys", "Oude Leie"], 30),
+    "Dender": (["Dender", "Dendre"], 25),
+    "Maas": (["Maas", "Meuse", "La Meuse"], 120),
+    "IJzer": (["IJzer", "Yser"], 25),
+    "Grote Gete": (["Grote Gete", "Grote Gete - Grande Gette", "Gete"], 10),
+    "Kleine Gete": (["Kleine Gete"], 8),
+    "Velp": (["Velpe", "Velp"], 5),
+    "Herk": (["Herk"], 6),
+    "Mangelbeek": (["Mangelbeek"], 4),
+    "Jeker": (["Jeker", "Geer", "Le Geer"], 6),
+    "Dommel": (["Dommel"], 6),
+    "Abeek": (["Abeek"], 4),
+    "Bosbeek": (["Bosbeek"], 4),
+    "Zwalm": (["Zwalmbeek", "Zwalm"], 5),
+    "Kale": (["Oude Kale", "Nieuwe Kale"], 8),
+    "Moervaart": (["Moervaart", "Oude Moervaart"], 12),
+    "Mark": (["Mark"], 6),
+    "Lieve": (["Lieve", "Oude Lieve"], 10),
+    "Ieperlee": (["Ieperlee", "Kanaal Ieper-IJzer"], 10),
+    "Brugse vaart (Brugge-Oostende)": (["Kanaal Brugge-Oostende"], 20),
     "Willebroekse vaart": (["Zeekanaal Brussel-Schelde", "Zeekanaal Brussel-Schelde - Canal maritime de Bruxelles à l'Escaut"], 20),
 }
+# Later canals (Leuven-Dijle 1750, Netekanaal, Albertkanaal, Zuid-Willemsvaart, Kempense kanalen,
+# Roeselare-Leie, Gent-Terneuzen, Schelde-Rijn) are not in the list. The Gent-Brugge canal (1613-23)
+# has no matching OSM name in the extract and is missing (see README).
 name2river = {n: r for r, (ns, _) in RIVERS.items() for n in ns}
 relements = json.load(open(os.path.join(CACHE, "region", "osm", "rivers.json")))["elements"]
 segs = {}
@@ -152,6 +196,14 @@ ox0 = min(t["ow"][0] - t["R"] for t in towns) - M
 oz0 = min(t["ow"][1] - t["R"] for t in towns) - M
 ox1 = max(t["ow"][0] + t["R"] for t in towns) + M
 oz1 = max(t["ow"][1] + t["R"] for t in towns) + M
+SITES = json.load(open(os.path.join(HERE, "sites.json")))
+_inc = [ref.fwd(q["lat"], q["lon"]) for q in SITES.get("includeInOverworld", [])]
+if _inc:
+    _P = warp.inverse(np.array(_inc, np.float64), L)
+    _P = _P[~np.isnan(_P[:, 0])]
+    if len(_P):
+        ox0, oz0 = min(ox0, _P[:, 0].min() - M / 2), min(oz0, _P[:, 1].min() - M / 2)
+        ox1, oz1 = max(ox1, _P[:, 0].max() + M / 2), max(oz1, _P[:, 1].max() + M / 2)
 OC = 20.0
 ox0, oz0 = math.floor(ox0 / OC) * OC, math.floor(oz0 / OC) * OC
 OW_, OH_ = int(math.ceil((ox1 - ox0) / OC)), int(math.ceil((oz1 - oz0) / OC))
@@ -164,8 +216,12 @@ def in_bounds(p, pad=0):
 
 
 def to_ow(real_pts):
-    P = warp.inverse(np.array(real_pts, np.float64), L)
-    return P
+    Q = np.array(real_pts, np.float64).reshape(-1, 2)
+    return np.concatenate([warp.inverse(Q[i:i + 20000], L) for i in range(0, len(Q), 20000)] or [np.zeros((0, 2))])
+
+
+def fwd(P):
+    return np.concatenate([warp.forward(P[i:i + 100000], L) for i in range(0, len(P), 100000)])
 
 
 rivers_out = []
@@ -205,7 +261,7 @@ for r, c in real_rivers:
 win = int(K)  # K cells of 20 m: the real footprint of one overworld pixel
 fs = np.stack([cv2.blur(frac[..., k], (win, win)) for k in range(6)], -1)
 P = np.stack(np.meshgrid(ox0 + (np.arange(OW_) + 0.5) * OC, oz0 + (np.arange(OH_) + 0.5) * OC), -1).reshape(-1, 2)
-Q = warp.forward(P, L)
+Q = fwd(P)
 cx, cz = real_cell(Q[:, 0], Q[:, 1])
 ok = (cx >= 0) & (cx < GW) & (cz >= 0) & (cz < GH)
 cxs, czs = np.clip(cx, 0, GW - 1), np.clip(cz, 0, GH - 1)
@@ -222,6 +278,32 @@ lc[(F[:, BUILT] > 0.35) & s_in] = 6
 marsh = (lc == 1) & (river_mask[czs, cxs] == 1)
 lc[marsh] = 5
 lc[~ok | ~covered[czs, cxs]] = 0
+# sea: OSM coastline drawn on a 100 m real grid (small gaps between extract pieces close at
+# that size), flood-filled from a point in the North Sea, then scaled to the 20 m grid
+coast = json.load(open(os.path.join(CACHE, "region", "osm", "coast.json")))["elements"]
+SC = 5
+cg = np.zeros((GH // SC + 1, GW // SC + 1), np.uint8)
+for e in coast:
+    q = np.array([[(ref.fwd(p["lat"], p["lon"])[0] - RX0) / (RC * SC), (ref.fwd(p["lat"], p["lon"])[1] - RZ0) / (RC * SC)] for p in e["geometry"]], np.int32)
+    cv2.polylines(cg, [q], False, 1, thickness=1)
+seed = ref.fwd(*SITES["seaSeed"])
+ffmask = np.zeros((cg.shape[0] + 2, cg.shape[1] + 2), np.uint8)
+ffmask[1:-1, 1:-1] = cg
+fill = np.zeros_like(cg)
+cv2.floodFill(fill, ffmask, (int((seed[0] - RX0) / (RC * SC)), int((seed[1] - RZ0) / (RC * SC))), 1, flags=4)
+fill = fill | (cg & cv2.dilate(fill, np.ones((3, 3), np.uint8)))  # the coastline cells next to the sea
+sea_real = cv2.resize(fill, (GW, GH), interpolation=cv2.INTER_NEAREST).astype(bool)
+if sea_real.mean() > 0.6:
+    print("  WARNING: sea flood-fill leaked (coastline gap); sea not painted")
+    sea_real[:] = False
+print("  sea share of the real grid", round(float(sea_real.mean()), 3))
+lc[sea_real[czs, cxs] & ok] = 4
+# the drowned land of Saeftinghe (and any other 'marshAreas' in sites.json): tidal flats and salt marsh
+for ma in SITES.get("marshAreas", []):
+    q = np.array([[(ref.fwd(a, b)[0] - RX0) / RC, (ref.fwd(a, b)[1] - RZ0) / RC] for a, b in ma["ring"]], np.int32)
+    m_ = np.zeros((GH, GW), np.uint8)
+    cv2.fillPoly(m_, [q], 1)
+    lc[(m_[czs, cxs] == 1) & ok & ~sea_real[czs, cxs]] = 5
 lc = lc.reshape(OH_, OW_)
 # paint the rivers at their real width
 lc_img = Image.fromarray(lc, "P")
@@ -239,7 +321,11 @@ print("landcover", {CLS[k]: round(float((lc == k).mean()), 3) for k in range(7)}
 
 # ------------------------------------------------------------------ 3. roads between towns
 STEM = {"antwerpen": "Antwerp", "mechelen": "Mechel", "leuven": "Leuven", "lier": "Lier", "aarschot": "Aarschot",
-        "diest": "Diest", "scherpenheuvel": "Scherpenheuvel"}
+        "diest": "Diest", "scherpenheuvel": "Scherpenheuvel", "hasselt": "Hasselt", "sinttruiden": "Truid", "tongeren": "Tonger",
+        "maaseik": "Maaseik", "halen": "Halen", "herkdestad": "Herk", "zoutleeuw": "Zoutleeuw", "tienen": "Tiens", "bilzen": "Bilzen",
+        "borgloon": "Borgloon", "beringen": "Bering", "brussel": "Brussel", "gent": "Gent", "dendermonde": "Dendermond", "aalst": "Aalst",
+        "brugge": "Brug", "kortrijk": "Kortrijk", "oudenaarde": "Oudenaard", "ieper": "Ieper", "oostende": "Oostend",
+        "herentals": "Herental", "turnhout": "Turnhout"}
 tby = {t["id"]: t for t in towns}
 
 
@@ -430,6 +516,11 @@ for link in cfg["links"]:
 
 # ------------------------------------------------------------------ 4. villages
 pel = json.load(open(os.path.join(CACHE, "region", "osm", "places.json")))["elements"]
+RG = cfg["region"]
+
+
+def inreg(lat, lon):
+    return RG["south"] <= lat <= RG["north"] and RG["west"] <= lon <= RG["east"]
 built_frac = frac[..., BUILT]
 bw = int(2 * 250 / RC) + 1
 built_sum = cv2.boxFilter(built_frac, -1, (bw, bw), normalize=False)  # cells of built within ~250 m
@@ -438,28 +529,33 @@ for e in pel:
     tg = e["tags"]
     pl = tg.get("place")
     nm = tg.get("name")
-    if pl not in ("village", "hamlet", "town") or not nm:
+    if pl not in ("village", "hamlet", "town", "city") or not nm:
         continue
     q = np.array(ref.fwd(e["lat"], e["lon"]))
     if any(np.hypot(*(q - t["real"])) < t["R"] + 300 for t in towns):
         continue
     gx, gz = real_cell(q[0], q[1])
     if not (0 <= gx < GW and 0 <= gz < GH) or not covered[gz, gx]:
+        if pl in ("village", "town", "city") and inreg(e["lat"], e["lon"]):
+            cand.append((nm, pl, q, {"town": 120, "city": 300}.get(pl, 25), False))  # outside Ferraris: unchecked
         continue
     area_m2 = float(built_sum[gz, gx]) * RC * RC
     if area_m2 < 600:
         continue  # Ferraris shows (next to) no houses here: a later settlement
     houses = int(np.clip(round(area_m2 / 150), 3, 400))
-    cand.append((nm, pl, q, houses))
+    cand.append((nm, pl, q, houses, True))
 Pv = to_ow(np.array([c[2] for c in cand]))
 vill = []
-for (nm, pl, q, houses), p in zip(cand, Pv):
+for (nm, pl, q, houses, fer), p in zip(cand, Pv):
     if np.isnan(p[0]) or not in_bounds(p):
         continue
     if any(np.hypot(p[0] - t["ow"][0], p[1] - t["ow"][1]) < t["R"] + 150 for t in towns):
         continue
-    vill.append({"name": nm, "x": round(float(p[0]), 1), "z": round(float(p[1]), 1), "size": houses,
-                 "kind": "town" if pl == "town" else pl})
+    v_ = {"name": nm, "x": round(float(p[0]), 1), "z": round(float(p[1]), 1), "size": houses,
+          "kind": "town" if pl in ("town", "city") else pl}
+    if not fer:
+        v_["ferraris"] = False
+    vill.append(v_)
 vill.sort(key=lambda v: (-{"town": 2, "village": 1, "hamlet": 0}[v["kind"]], -v["size"]))
 villages = []
 for v in vill:
@@ -467,16 +563,164 @@ for v in vill:
         villages.append(v)
 print("villages", len(villages), "of", len(cand), "candidates")
 
+# ------------------------------------------------------------------ 7. dikes on the Scheldt estuary
+dk = json.load(open(os.path.join(CACHE, "region", "osm", "dykes.json")))["elements"]
+schelde_real = [c for r, c in real_rivers if r == "Schelde"]
+sch_mask = np.zeros((GH, GW), np.uint8)
+for c in schelde_real:
+    q = np.array([[(x - RX0) / RC, (z - RZ0) / RC] for x, z in c], np.int32)
+    cv2.polylines(sch_mask, [q], False, 1, thickness=int(2 * 4000 / RC))
+sch_mask |= cv2.dilate(sea_real.astype(np.uint8), np.ones((int(4000 / RC), int(4000 / RC)), np.uint8))
+dikes_out = []
+for e in dk:
+    g = [ref.fwd(p["lat"], p["lon"]) for p in e["geometry"]]
+    gx_, gz_ = real_cell([a for a, _ in g], [b for _, b in g])
+    okk = (gx_ >= 0) & (gx_ < GW) & (gz_ >= 0) & (gz_ < GH)
+    if okk.mean() < 0.5 or sch_mask[np.clip(gz_, 0, GH - 1), np.clip(gx_, 0, GW - 1)].mean() < 0.5 or plen(g) < 300:
+        continue
+    Pd = to_ow(densify(simplify(g, 10.0), 200.0))
+    Pd = [tuple(map(float, p)) for p in Pd if not np.isnan(p[0]) and in_bounds(p)]
+    if len(Pd) >= 2:
+        dikes_out.append({"name": e["tags"].get("name"), "p": [round(v, 1) for xy in simplify(Pd, 3.0) for v in xy]})
+print("dikes", len(dikes_out))
+
+# ------------------------------------------------------------------ 8. polities c. 1650
+from shapely.geometry import Polygon, MultiPolygon, LineString, box as sbox
+from shapely.ops import unary_union, split as ssplit
+POL = json.load(open(os.path.join(HERE, "politics.json")))
+ADM = {f"{a['name']}|{a['admin_level']}": a for a in json.load(open(os.path.join(CACHE, "region", "osm", "admin.json")))}
+
+
+def adm_geom(key):
+    a = ADM.get(key)
+    if not a:
+        print("  admin area missing:", key)
+        return None
+    polys = [Polygon([(lo, la) for la, lo in r]).buffer(0) for r in a["rings"] if len(r) >= 4]
+    return unary_union(polys) if polys else None
+
+
+REGBOX = sbox(RG["west"] - 0.3, RG["south"] - 0.3, RG["east"] + 0.3, RG["north"] + 0.3)
+
+
+def side_of(line, north):
+    """the part of REGBOX north (or south) of a polyline [[lat, lon], ...] extended to the box edges."""
+    pts = [(lo, la) for la, lo in line]
+    pts = [(RG["west"] - 1, pts[0][1])] + pts + [(RG["east"] + 1, pts[-1][1])]
+    far = RG["north"] + 1 if north else RG["south"] - 1
+    return Polygon(pts + [(pts[-1][0], far), (pts[0][0], far)]).buffer(0)
+
+
+geoms = {}
+for pdef in POL["polities"]:
+    g = unary_union([x for x in (adm_geom(k) for k in pdef.get("areas", [])) if x is not None])
+    for k in pdef.get("minusAreas", []):
+        m_ = adm_geom(k)
+        if m_ is not None:
+            g = g.difference(m_)
+    for ring in pdef.get("add", []):
+        g = g.union(Polygon([(lo, la) for la, lo in ring]))
+    if "clipSouthOf" in pdef:
+        g = g.intersection(side_of(pdef["clipSouthOf"], north=False))
+    if "clipNorthOf" in pdef:
+        g = g.intersection(side_of(pdef["clipNorthOf"], north=True))
+    geoms[pdef["id"]] = g.intersection(REGBOX)
+# Liège: today's province of Liège is missing from the extracts (it straddles the German-speaking
+# community), so Haspengouw south of Limburg is taken as whatever is left in a box there
+if "liege" in geoms:
+    hb = sbox(5.0, RG["south"] - 0.3, RG["east"] + 0.3, 50.86)
+    others = unary_union([v for k, v in geoms.items() if k != "liege"])
+    geoms["liege"] = geoms["liege"].union(hb.difference(others)).difference(geoms.get("brabant", Polygon()))
+polities_out = []
+for pdef in POL["polities"]:
+    g = geoms[pdef["id"]].simplify(0.002)
+    parts = [g] if g.geom_type == "Polygon" else list(getattr(g, "geoms", []))
+    rings = []
+    for pg in parts:
+        if pg.geom_type != "Polygon" or pg.area < 1e-5:
+            continue
+        real = [ref.fwd(la, lo) for lo, la in pg.exterior.coords]
+        Pp = to_ow(densify(real, 400.0))
+        Pp = np.where(np.isnan(Pp), np.nan, Pp)
+        okp = ~np.isnan(Pp[:, 0])
+        if okp.mean() < 0.5:
+            continue
+        Pp = Pp[okp]
+        Pp[:, 0] = np.clip(Pp[:, 0], ox0 - 2000, ox1 + 2000)
+        Pp[:, 1] = np.clip(Pp[:, 1], oz0 - 2000, oz1 + 2000)
+        q = simplify([tuple(p) for p in Pp], 15.0)
+        if len(q) >= 4:
+            rings.append([round(v, 1) for xy in q for v in xy])
+    o = {k: pdef[k] for k in ("id", "name", "en", "sovereign", "source", "deviations", "uncertain") if k in pdef}
+    if "subdivisions" in pdef:
+        o["subdivisions"] = pdef["subdivisions"]
+    o["rings"] = rings
+    polities_out.append(o)
+    print("  polity", pdef["id"], len(rings), "rings")
+
+
+def polity_at(lat, lon):
+    from shapely.geometry import Point
+    pt = Point(lon, lat)
+    for pdef in POL["polities"]:
+        if geoms[pdef["id"]].contains(pt):
+            return pdef["id"]
+    return None
+
+
+# villages get their polity (real position)
+for v in villages:
+    pass
+_pv = {}
+for (nm, pl, q, houses, fer) in cand:
+    lat, lon = ref.inv(q[0], q[1])
+    _pv.setdefault(nm, polity_at(lat, lon))
+for v in villages:
+    v["polity"] = _pv.get(v["name"])
+
+# ------------------------------------------------------------------ 9. sites outside the towns
+sites_out = []
+for s_ in SITES["sites"] + [dict(p, kind="fort") for p in POL.get("points", [])]:
+    p = to_ow([ref.fwd(s_["lat"], s_["lon"])])[0]
+    if np.isnan(p[0]):
+        continue
+    o = {k: v for k, v in s_.items() if k not in ("lat", "lon")}
+    o.update(x=round(float(p[0]), 1), z=round(float(p[1]), 1), realLat=s_["lat"], realLon=s_["lon"])
+    if "polity" not in o:
+        o["polity"] = polity_at(s_["lat"], s_["lon"])
+    sites_out.append(o)
+marsh_out = []
+for ma in SITES.get("marshAreas", []):
+    Pm = to_ow(densify([ref.fwd(a, b) for a, b in ma["ring"]], 300.0))
+    Pm = Pm[~np.isnan(Pm[:, 0])]
+    marsh_out.append({k: v for k, v in ma.items() if k != "ring"} | {"p": [round(float(v), 1) for xy in Pm for v in xy]})
+
+# fold check: share of overworld pixels where the warp is not locally invertible
+_P = np.stack(np.meshgrid(ox0 + (np.arange(0, OW_, 4) + 0.5) * OC, oz0 + (np.arange(0, OH_, 4) + 0.5) * OC), -1).reshape(-1, 2)
+_A, _B, _C = fwd(_P), fwd(_P + [1.0, 0]), fwd(_P + [0, 1.0])
+_det = (_B[:, 0] - _A[:, 0]) * (_C[:, 1] - _A[:, 1]) - (_B[:, 1] - _A[:, 1]) * (_C[:, 0] - _A[:, 0])
+FOLD = float((_det <= 0).mean())
+print("fold share", round(FOLD, 4))
+
 # ------------------------------------------------------------------ overworld.json
+def _town_landmarks(tid):
+    f = os.path.join(OUT, f"{tid}.json")
+    if not os.path.exists(f):
+        return []
+    w_ = json.load(open(f))
+    return [{k: L_[k] for k in ("n", "k", "x", "z", "h", "special", "uncertain") if k in L_} for L_ in w_.get("landmarks", [])]
+
+
 towns_out = []
 for t in towns:
     towns_out.append({"id": t["id"], "name": t["name"], "centre": [round(float(t["ow"][0]), 1), round(float(t["ow"][1]), 1)],
                       "radius": round(t["R"], 1), "realLat": t["lat"], "realLon": t["lon"],
                       "realCentre": [round(float(t["real"][0]), 1), round(float(t["real"][1]), 1)],
-                      "file": f"{t['id']}.json",
+                      "file": f"{t['id']}.json", "polity": POL["towns"].get(t["id"], {}).get("polity"),
+                      "landmarks": _town_landmarks(t["id"]),
                       "gates": {g: [round(x + float(t["ow"][0]), 1), round(z + float(t["ow"][1]), 1)] for g, (x, z) in t["walls"]["gates"].items()}})
 ow = {
-    "name": "Brabant and the Scheldt, c. 1650 (compressed overworld)",
+    "name": "Flanders, Brabant and Loon, c. 1650 (compressed overworld)",
     "year": cfg["year"],
     "K": K,
     "ref": {"name": cfg["ref"]["name"], "lat": ref.lat0, "lon": ref.lon0},
@@ -490,6 +734,11 @@ ow = {
     "rivers": rivers_out,
     "roads": roads_out,
     "villages": villages,
+    "dikes": dikes_out,
+    "drowned": marsh_out,
+    "sites": sites_out,
+    "polities": polities_out,
+    "foldShare": round(FOLD, 5),
     "warp": {
         "description": "overworld p -> real q (both in metres around ref). Inside town i (|p - c_i_ow| <= R_i): q = c_i_real + (p - c_i_ow). "
                        "Elsewhere: q = K*p + D(p), D(p) = sum_i w_i d_i / sum_i w_i, d_i = (c_i_real - K*c_i_ow) - u_i*R_i*(K-1), "
@@ -499,6 +748,7 @@ ow = {
                    "ow": [round(float(t["ow"][0]), 1), round(float(t["ow"][1]), 1)], "R": round(t["R"], 1)} for t in towns],
     },
     "attribution": "Map data © OpenStreetMap contributors (ODbL); historical land cover from the Ferraris map (1777), "
+                   "where it covers (Flanders and Brussels; elsewhere field), "
                    "Digitaal Vlaanderen (geo.api.vlaanderen.be/HISTCART)",
 }
 json.dump(ow, open(os.path.join(OUT, "overworld.json"), "w"), separators=(",", ":"))
@@ -515,9 +765,18 @@ try:
 except Exception:
     font = small = ImageFont.load_default()
 pp = lambda x, z: ((x - ox0) / OC * S, (z - oz0) / OC * S)
+PCOL = {"brabant": (200, 40, 40), "mechelen": (230, 120, 0), "flanders": (20, 20, 20), "liege": (130, 0, 160), "staats_vlaanderen": (255, 120, 0),
+        "zeeland": (255, 120, 0), "staats_brabant": (255, 120, 0), "maas_lands": (0, 140, 140), "hainaut": (90, 90, 90), "namur": (90, 90, 90)}
+for po in polities_out:
+    for rg in po["rings"]:
+        q = [pp(rg[i], rg[i + 1]) for i in range(0, len(rg), 2)]
+        d.line(q + q[:1], fill=PCOL.get(po["id"], (0, 0, 0)), width=3)
 for rv in rivers_out:
     q = [pp(rv["p"][i], rv["p"][i + 1]) for i in range(0, len(rv["p"]), 2)]
     d.line(q, fill=(30, 70, 150), width=max(2, int(rv["w"] / OC * S)), joint="curve")
+for dk_ in dikes_out:
+    q = [pp(dk_["p"][i], dk_["p"][i + 1]) for i in range(0, len(dk_["p"]), 2)]
+    d.line(q, fill=(110, 80, 40), width=2)
 for rd in roads_out:
     q = [pp(rd["p"][i], rd["p"][i + 1]) for i in range(0, len(rd["p"]), 2)]
     d.line(q, fill=(120, 60, 20) if rd["src"] == "osm-generalised" else (200, 110, 30), width=3)
@@ -537,6 +796,18 @@ for t in towns_out:
         a, b_ = pp(gx, gz)
         d.rectangle([a - 3, b_ - 3, a + 3, b_ + 3], fill=(255, 220, 0))
     d.text((x - 30, z - r - 18), t["name"], fill=(0, 0, 0), font=font)
+for st in sites_out:
+    x, z = pp(st["x"], st["z"])
+    d.polygon([(x, z - 7), (x + 6, z + 5), (x - 6, z + 5)], fill=(255, 255, 255), outline=(0, 0, 0))
+    d.text((x + 7, z - 4), st["name"], fill=(0, 0, 0), font=small)
+for po in polities_out:
+    if po["rings"]:
+        rg = max(po["rings"], key=len)
+        xs_, zs_ = rg[0::2], rg[1::2]
+        cxp, czp = sum(xs_) / len(xs_), sum(zs_) / len(zs_)
+        if in_bounds((cxp, czp)):
+            x, z = pp(cxp, czp)
+            d.text((x - 40, z), po["name"].upper(), fill=PCOL.get(po["id"], (0, 0, 0)), font=font)
 km = 1000 / OC * S
 d.line([(20, OH_ * S - 20), (20 + km, OH_ * S - 20)], fill=(0, 0, 0), width=4)
 d.text((20, OH_ * S - 40), "1 km (overworld) = 6 km real outside towns", fill=(0, 0, 0), font=small)

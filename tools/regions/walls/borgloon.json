@@ -1,0 +1,83 @@
+{
+ "note": "Borgloon (Looz), old seat of the counts of Loon: wall and four gates from shortly after 1200, traced from the Ferraris map (1777), where the line is a ditch and hedge. Besieged by Lorraine in 1654.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Borgloon' (https://id.erfgoed.net/erfgoedobjecten/140046)",
+ "ring": [
+  [
+   -260,
+   -139
+  ],
+  [
+   -229,
+   -241
+  ],
+  [
+   -152,
+   -292
+  ],
+  [
+   -51,
+   -292
+  ],
+  [
+   87,
+   -242
+  ],
+  [
+   187,
+   -152
+  ],
+  [
+   242,
+   -76
+  ],
+  [
+   204,
+   26
+  ],
+  [
+   89,
+   102
+  ],
+  [
+   -51,
+   102
+  ],
+  [
+   -127,
+   51
+  ],
+  [
+   -216,
+   -25
+  ]
+ ],
+ "gates": {
+  "Graethempoort": [
+   -260,
+   -133
+  ],
+  "Wellerpoort": [
+   -148,
+   -292
+  ],
+  "Steenpoort": [
+   242,
+   -76
+  ],
+  "Keulerpoort": [
+   -183,
+   28
+  ]
+ },
+ "gateSources": {
+  "Graethempoort": "inventory 140046 (west, to Gratem)",
+  "Wellerpoort": "inventory 140046 ('Wellerpoort of Hasseltse poort'); position uncertain",
+  "Steenpoort": "inventory 140046 ('Steenpoort of Tongerse Poort')",
+  "Keulerpoort": "inventory 140046 ('Keulerpoort, Nerempoort of Akense poort'); position uncertain"
+ },
+ "gatesUncertain": [
+  "Wellerpoort",
+  "Keulerpoort"
+ ],
+ "moat": []
+}

@@ -1,0 +1,117 @@
+{
+ "note": "Ypres: Burgundian stone wall finished 1409, with bastions in front of the gates from the late 16th c.; Vauban's great works are later (1680s). The ring follows the moats and ramparts that survive in OSM (east and south) and the line of the Ieperlee (west); it matches the inner rampart on the Ferraris map (1777) within about 50 m.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Ieper' (https://id.erfgoed.net/erfgoedobjecten/140005)",
+ "ring": [
+  [
+   -220,
+   -440
+  ],
+  [
+   320,
+   -440
+  ],
+  [
+   340,
+   -480
+  ],
+  [
+   420,
+   -300
+  ],
+  [
+   420,
+   100
+  ],
+  [
+   440,
+   450
+  ],
+  [
+   460,
+   760
+  ],
+  [
+   340,
+   760
+  ],
+  [
+   100,
+   780
+  ],
+  [
+   -180,
+   700
+  ],
+  [
+   -260,
+   500
+  ],
+  [
+   -500,
+   460
+  ],
+  [
+   -700,
+   250
+  ],
+  [
+   -780,
+   0
+  ],
+  [
+   -640,
+   -250
+  ],
+  [
+   -420,
+   -420
+  ]
+ ],
+ "gates": {
+  "Menenpoort": [
+   420,
+   -80
+  ],
+  "Rijselpoort": [
+   340,
+   760
+  ],
+  "Boterpoort": [
+   60,
+   -440
+  ],
+  "Diksmuidse Poort": [
+   -640,
+   -250
+  ],
+  "Elverdingse Poort": [
+   -780,
+   0
+  ],
+  "Mesenpoort": [
+   -180,
+   700
+  ]
+ },
+ "gateSources": {
+  "Menenpoort": "OSM (site of the 1927 memorial); name in use in the 17th c. not verified",
+  "Rijselpoort": "survives (oldest gate); nl.wikipedia 'Ieper'",
+  "Boterpoort": "name from memory, not verified",
+  "Diksmuidse Poort": "road to Diksmuide; not verified",
+  "Elverdingse Poort": "not verified",
+  "Mesenpoort": "road to Mesen; not verified"
+ },
+ "gatesUncertain": [
+  "Menenpoort",
+  "Boterpoort",
+  "Diksmuidse Poort",
+  "Elverdingse Poort",
+  "Mesenpoort"
+ ],
+ "moat": [
+  [
+   0,
+   15
+  ]
+ ]
+}

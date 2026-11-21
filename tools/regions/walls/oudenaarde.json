@@ -1,0 +1,103 @@
+{
+ "note": "Oudenaarde: second wall of before 1279 on both banks of the Scheldt (taking in Pamele), with the Burgundian castle of 1385; rebuilt by Vauban only in 1667-78, so the 1650 line is the older (partly bastioned) one. Traced from the Ferraris map (1777) along the main rampart, which is Vauban's line: approximate.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Oudenaarde' (https://id.erfgoed.net/erfgoedobjecten/140026)",
+ "ring": [
+  [
+   -277,
+   -281
+  ],
+  [
+   8,
+   -376
+  ],
+  [
+   134,
+   -241
+  ],
+  [
+   293,
+   -178
+  ],
+  [
+   467,
+   -115
+  ],
+  [
+   625,
+   60
+  ],
+  [
+   641,
+   265
+  ],
+  [
+   546,
+   392
+  ],
+  [
+   388,
+   534
+  ],
+  [
+   277,
+   550
+  ],
+  [
+   103,
+   566
+  ],
+  [
+   39,
+   392
+  ],
+  [
+   -55,
+   234
+  ],
+  [
+   -119,
+   75
+  ],
+  [
+   -166,
+   -178
+  ],
+  [
+   -214,
+   -241
+  ]
+ ],
+ "gates": {
+  "Beverepoort": [
+   -277,
+   -281
+  ],
+  "Einepoort": [
+   309,
+   -154
+  ],
+  "Baarpoort": [
+   277,
+   550
+  ],
+  "Meerspoort": [
+   -119,
+   109
+  ]
+ },
+ "gateSources": {
+  "Beverepoort": "inventory 140026 (street link Markt-Beverepoort)",
+  "Einepoort": "inventory 140026 (east)",
+  "Baarpoort": "inventory 140026 (south)",
+  "Meerspoort": "name from OSM 'Meerspoort'; position uncertain"
+ },
+ "gatesUncertain": [
+  "Meerspoort"
+ ],
+ "moat": [
+  [
+   0,
+   15
+  ]
+ ]
+}

@@ -1,0 +1,138 @@
+{
+ "note": "Bruges: the second enceinte of 1297 (double moat, earthen rampart, stone gates), converted into a bastioned fortress from 1614; traced from the Ferraris map (1777) along the main rampart.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Brugge' (https://id.erfgoed.net/erfgoedobjecten/140001)",
+ "ring": [
+  [
+   25,
+   -1338
+  ],
+  [
+   425,
+   -1350
+  ],
+  [
+   700,
+   -1313
+  ],
+  [
+   925,
+   -1000
+  ],
+  [
+   1075,
+   -725
+  ],
+  [
+   1125,
+   -425
+  ],
+  [
+   1150,
+   -50
+  ],
+  [
+   1050,
+   400
+  ],
+  [
+   763,
+   638
+  ],
+  [
+   550,
+   900
+  ],
+  [
+   375,
+   1025
+  ],
+  [
+   50,
+   1100
+  ],
+  [
+   -300,
+   1050
+  ],
+  [
+   -625,
+   975
+  ],
+  [
+   -750,
+   600
+  ],
+  [
+   -825,
+   325
+  ],
+  [
+   -800,
+   -250
+  ],
+  [
+   -725,
+   -550
+  ],
+  [
+   -600,
+   -750
+  ],
+  [
+   -400,
+   -1050
+  ],
+  [
+   -200,
+   -1250
+  ]
+ ],
+ "gates": {
+  "Dampoort": [
+   700,
+   -1313
+  ],
+  "Kruispoort": [
+   1125,
+   -425
+  ],
+  "Gentpoort": [
+   763,
+   638
+  ],
+  "Katelijnepoort": [
+   375,
+   1025
+  ],
+  "Boeveriepoort": [
+   -625,
+   975
+  ],
+  "Smedenpoort": [
+   -825,
+   325
+  ],
+  "Ezelpoort": [
+   -600,
+   -750
+  ]
+ },
+ "gateSources": {
+  "Dampoort": "nl.wikipedia 'Brugse stadspoorten' (gates of the second enceinte); position read off Ferraris",
+  "Kruispoort": "nl.wikipedia 'Brugse stadspoorten' (gates of the second enceinte); position read off Ferraris",
+  "Gentpoort": "nl.wikipedia 'Brugse stadspoorten' (gates of the second enceinte); position read off Ferraris",
+  "Katelijnepoort": "nl.wikipedia 'Brugse stadspoorten' (gates of the second enceinte); position read off Ferraris",
+  "Boeveriepoort": "nl.wikipedia 'Brugse stadspoorten' (gates of the second enceinte); position read off Ferraris",
+  "Smedenpoort": "nl.wikipedia 'Brugse stadspoorten' (gates of the second enceinte); position read off Ferraris",
+  "Ezelpoort": "nl.wikipedia 'Brugse stadspoorten' (gates of the second enceinte); position read off Ferraris"
+ },
+ "gatesUncertain": [
+  "Boeveriepoort"
+ ],
+ "moat": [
+  [
+   0,
+   20
+  ]
+ ]
+}

@@ -26,7 +26,7 @@ import json, math, os, sys
 import cv2
 import numpy as np
 from PIL import Image
-from common import CACHE, HERE, REPO, config, town
+from common import CACHE, HERE, REPO, Frame, config, town
 import warp
 
 tid = sys.argv[1]
@@ -43,7 +43,7 @@ meta = json.load(open(os.path.join(CACHE, tid, "maps", "ferraris.json")))
 LM = json.load(open(os.path.join(HERE, "landmarks.json")))
 lmc = LM["towns"].get(tid, {"keep": [], "drop": [], "pois": []})
 YEAR = cfg["year"]
-TOWN_CAP = {"antwerpen": 14.0, "leuven": 12.5, "mechelen": 12.5}.get(tid, 11.5)
+TOWN_CAP = {"antwerpen": 14.0, "leuven": 12.5, "mechelen": 12.5, "gent": 13.0, "brussel": 13.0, "brugge": 12.5}.get(tid, 11.5)
 TID_INDEX = [t["id"] for t in cfg["towns"]].index(tid)
 
 # ------------------------------------------------------------------ land cover (ferraris_classes.py)
@@ -143,6 +143,21 @@ def matches(name, pat):
 DROP = LM["common_drop"] + lmc["drop"]
 
 
+# landmarks.json "landmarks": the sourced landmark register (see tools/regions/README.md). An entry
+# with "match" (OSM building name, '*' suffix = prefix) or "id" (OSM way id) is kept like a "keep" rule
+# and takes its position and footprint from that building; otherwise it is placed at lat/lon.
+LMS = lmc.get("landmarks", [])
+for i_, L_ in enumerate(LMS):
+    if L_.get("match") or L_.get("id"):
+        r_ = {"lm": L_["k"], "as": L_["n"], "_lmi": i_}
+        if L_.get("id"):
+            r_["id"] = L_["id"]
+            r_["n"] = "#" + str(L_["id"])
+        else:
+            r_["n"] = L_["match"]
+        lmc["keep"].insert(0, r_)
+
+
 def landmark_rule(name, oid=None):
     for k in lmc["keep"]:
         if k.get("id") is not None:
@@ -180,6 +195,10 @@ for bd in w["buildings"]:
             nb["lm"] = rule["lm"]
         if rule.get("as"):
             nb["n"] = rule["as"]
+        if "_lmi" in rule:
+            nb["_lmi"] = rule["_lmi"]
+            if LMS[rule["_lmi"]].get("h"):
+                nb["h"] = max(nb["h"], float(LMS[rule["_lmi"]]["h"]))
         kept.append(nb)
         n_land += 1
         continue
@@ -206,6 +225,37 @@ for bd in w["buildings"]:
     nb["h"] = min(bd["h"], cap)
     kept.append(nb)
 n_osm_kept = len(kept)
+
+# ------------------------------------------------------------------ ruler c. 1650 (politics.json)
+POL = json.load(open(os.path.join(HERE, "politics.json")))
+RULER = dict(POL["towns"].get(tid, {}))
+if RULER.get("polity"):
+    pp = next((q for q in POL["polities"] if q["id"] == RULER["polity"]), None)
+    if pp:
+        RULER.update(name=pp["name"], en=pp["en"], sovereign=pp["sovereign"], source=pp["source"])
+
+# ------------------------------------------------------------------ landmark register
+TF = Frame(T["lat"], T["lon"])
+landmarks = []
+for i_, L_ in enumerate(LMS):
+    o = {"n": L_["n"], "k": L_["k"]}
+    hits = [bd for bd in kept if bd.get("_lmi") == i_]
+    if hits:
+        big = max(hits, key=lambda bd: area(bd["p"]))
+        cx, cz = centroid(big["p"])
+        o.update(x=cx, z=cz, building=big["id"], footprint=round(sum(area(bd["p"]) for bd in hits)))
+    elif "lat" in L_:
+        cx, cz = TF.fwd(L_["lat"], L_["lon"])
+        o.update(x=cx, z=cz)
+    elif "x" in L_:
+        o.update(x=float(L_["x"]), z=float(L_["z"]))
+    else:
+        print("  landmark without position:", L_["n"])
+        continue
+    for k_ in ("h", "footprintNote", "y1650", "src", "uncertain", "special"):
+        if k_ in L_:
+            o[k_] = L_[k_]
+    landmarks.append(o)
 
 # ------------------------------------------------------------------ fill gaps from Ferraris
 rng = np.random.default_rng(YEAR + TID_INDEX)
@@ -306,7 +356,7 @@ def length(q):
 
 
 OLD_COUNTRY = {"primary", "secondary", "tertiary", "unclassified", "track", "path", "bridleway"}
-RAMPART_NAMES = ("vest", "lei", "ring", "boulevard", "singel", "kaai", "kade", "leien")
+RAMPART_NAMES = ("vest", "lei", "ring", "boulevard", "singel", "kaai", "kade", "leien", "wal", "graaf", "laan")
 roads = []
 dropped = {"rampart": 0}
 RAMP = []
@@ -353,7 +403,9 @@ for r in w["roads"]:
         roads.append(r)
 
 # ------------------------------------------------------------------ water
-OK_CANALS = ("zeekanaal", "willebroek", "brussel-schelde")
+# canals that existed by 1650: Willebroek (1561), Gent-Brugge-Oostende (1613-23 / 1620s), the Lieve (13th c.),
+# the Ieperlee (medieval), the Sassevaart (1547-49)
+OK_CANALS = ("zeekanaal", "willebroek", "brussel-schelde", "gent-oostende", "brugge-oostende", "lieve", "ieperlee", "sassevaart")
 water_lines = []
 for wl in w["waterLines"]:
     nm = (wl.get("n") or "").lower()
@@ -436,7 +488,9 @@ for c in contours:
     for x, z in c:
         p += [round(X0 + (x + 0.5) * CELL, 1), round(Z0 + (z + 0.5) * CELL, 1)]
     land.append({"k": "park", "p": p})
-gm = [pt for r in w["roads"] if r.get("n") in ("Grote Markt", "Basiliekplein") for pt in pts(r["p"])]
+SQUARE = T.get("square", ["Grote Markt", "Markt", "Basiliekplein"])
+gm = [pt for r in w["roads"] if r.get("n") in SQUARE[:1] for pt in pts(r["p"])] or \
+     [pt for r in w["roads"] if r.get("n") in SQUARE for pt in pts(r["p"])]
 if len(gm) >= 3:
     hull = cv2.convexHull(np.array(gm, np.float32)).reshape(-1, 2)
     land.append({"k": "townSquare", "p": [round(float(v), 1) for xy in hull for v in xy]})
@@ -471,6 +525,8 @@ for bd in kept:
         pois.append({"n": bd["n"], "x": round(cx, 1), "z": round(cz, 1), "k": bd["lm"]})
 for p in lmc.get("pois", []):
     pois.append(dict(p))
+for L_ in landmarks:
+    pois.append({"n": L_["n"], "x": round(L_["x"], 1), "z": round(L_["z"], 1), "k": L_["k"]})
 for fo in forts:
     cx, cz = centroid([v for xy in fo["ring"] for v in xy])
     pois.append({"n": fo["name"], "x": round(cx, 1), "z": round(cz, 1), "k": "castle"})
@@ -581,7 +637,7 @@ for bd in kept:
         bd = dict(bd, id=next_id)
         next_id -= 1
     seen_ids.add(bd["id"])
-    nb = dict(bd)
+    nb = {k_: v_ for k_, v_ in bd.items() if not k_.startswith("_")}
     nb["p"] = sh(pts(bd["p"]))
     buildings_out.append(nb)
 roads_out = shift_lines(roads)
@@ -593,8 +649,9 @@ walls_out = {"ring": [[round(x + OX, 1), round(z + OZ, 1)] for x, z in ring],
              "gates": {k: [round(x + OX, 1), round(z + OZ, 1)] for k, (x, z) in walls["gates"].items()}}
 if forts:
     walls_out["forts"] = [{"name": fo["name"], "ring": [[round(x + OX, 1), round(z + OZ, 1)] for x, z in fo["ring"]]} for fo in forts]
-if "gateSources" in walls:
-    walls_out["gateSources"] = walls["gateSources"]
+for k_ in ("gateSources", "gatesUncertain", "source", "note", "walled"):
+    if k_ in walls:
+        walls_out[k_] = walls[k_]
 xs = [v for bd in buildings_out for v in bd["p"][0::2]] + [p[0] for p in walls_out["ring"]]
 zs = [v for bd in buildings_out for v in bd["p"][1::2]] + [p[1] for p in walls_out["ring"]]
 out = {
@@ -611,15 +668,28 @@ out = {
     "pois": pois_out,
     "year": YEAR,
     "walls": walls_out,
+    "landmarks": [dict({k_: v_ for k_, v_ in L_.items() if k_ not in ("x", "z")}, x=round(L_["x"] + OX, 1), z=round(L_["z"] + OZ, 1))
+                  for L_ in landmarks],
+    "ruler": RULER,
     "overworld": {"id": tid, "centre": [round(OX, 1), round(OZ, 1)], "radius": round(RAD, 1), "K": cfg["K"],
                   "note": "coordinates are overworld metres: town-local metres (around origin) + centre; 1:1 scale inside radius"},
 }
 os.makedirs(os.path.dirname(out_path), exist_ok=True)
 json.dump(out, open(out_path, "w"), separators=(",", ":"))
+if os.path.getsize(out_path) > 1.45e6:
+    # keep big towns (Gent) under ~1.5 MB: whole-metre building and land coordinates
+    for bd in out["buildings"]:
+        bd["p"] = [int(round(v)) for v in bd["p"]]
+    for it in out["land"]:
+        it["p"] = [int(round(v)) for v in it["p"]]
+    for it in out["roads"]:
+        it["p"] = [int(round(v)) for v in it["p"]]
+    json.dump(out, open(out_path, "w"), separators=(",", ":"))
+    print("  compacted to whole metres:", os.path.getsize(out_path) // 1024, "KB")
 stats = {"buildings_osm": len(w["buildings"]), "osm_kept": n_osm_kept, "landmarks": n_land, "town_blocks": added_town,
          "farmsteads": added_farm, "buildings_out": len(buildings_out), "roads": f"{len(w['roads'])}->{len(roads_out)}",
          "roads_dropped": dropped, "moats": moats, "water_lines": len(water_lines_out), "water_areas": len(water_areas_out),
-         "land": len(land_out), "pois": len(pois_out), "size_kb": round(os.path.getsize(out_path) / 1024)}
+         "land": len(land_out), "pois": len(pois_out), "landmarks": len(landmarks), "size_kb": round(os.path.getsize(out_path) / 1024)}
 stats["rampart_names"] = sorted({n for n in RAMP if n})
 json.dump(stats, open(os.path.join(CACHE, "build", f"{tid}_stats.json"), "w"))
 print(tid, {k: v for k, v in stats.items() if k != "rampart_names"})

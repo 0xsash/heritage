@@ -165,7 +165,7 @@
   ]
  },
  "gateSources": {
-  "Lisperpoort": "Ferraris 'Porte de Bois-le-Duc' (the road north to Lisp and 's-Hertogenbosch); Dutch name from the Lisperstraat (inferred)",
+  "Lisperpoort": "inventory 140034 ('Lisperbuitenpoort', 1415); Ferraris 'Porte de Bois-le-Duc'",
   "Leuvensepoort": "Ferraris 'Porte de Louvain'",
   "Sluispoort": "Ferraris 'Porte et Ecluse du ...' (gate with the Nete sluice; name inferred)",
   "Mechelsepoort": "Ferraris 'Porte de Malines'",
@@ -176,5 +176,9 @@
    0,
    34
   ]
+ ],
+ "gatesUncertain": [
+  "Lisperpoort",
+  "Sluispoort"
  ]
 }

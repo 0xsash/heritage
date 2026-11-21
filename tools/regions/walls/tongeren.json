@@ -1,0 +1,145 @@
+{
+ "note": "Tongeren medieval wall (c. 1290, about 2.7 km, six gates; enlarged early 16th c.), traced from the Ferraris map (1777). The 2nd-c. Roman wall (4.5 km) ran further out and stood partly as ruins in 1650 (pois). Local metres around the Grote Markt.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Tongeren' (https://id.erfgoed.net/erfgoedobjecten/140056)",
+ "ring": [
+  [
+   -308,
+   -208
+  ],
+  [
+   -200,
+   -267
+  ],
+  [
+   -67,
+   -283
+  ],
+  [
+   67,
+   -258
+  ],
+  [
+   167,
+   -300
+  ],
+  [
+   317,
+   -383
+  ],
+  [
+   417,
+   -292
+  ],
+  [
+   450,
+   -167
+  ],
+  [
+   492,
+   -17
+  ],
+  [
+   483,
+   133
+  ],
+  [
+   500,
+   167
+  ],
+  [
+   467,
+   217
+  ],
+  [
+   333,
+   267
+  ],
+  [
+   200,
+   317
+  ],
+  [
+   83,
+   367
+  ],
+  [
+   67,
+   467
+  ],
+  [
+   -200,
+   492
+  ],
+  [
+   -233,
+   417
+  ],
+  [
+   -300,
+   333
+  ],
+  [
+   -342,
+   267
+  ],
+  [
+   -367,
+   50
+  ],
+  [
+   -375,
+   -67
+  ],
+  [
+   -358,
+   -150
+  ]
+ ],
+ "gates": {
+  "Hasseltsepoort": [
+   -317,
+   -200
+  ],
+  "Maastrichterpoort": [
+   417,
+   -292
+  ],
+  "Moerenpoort": [
+   500,
+   167
+  ],
+  "Luikerpoort": [
+   -233,
+   417
+  ],
+  "Sint-Truiderpoort": [
+   -342,
+   267
+  ],
+  "Naamsepoort": [
+   -367,
+   50
+  ]
+ },
+ "gateSources": {
+  "Moerenpoort": "survives (1379); inventory 37296; Ferraris 'Porte du Pont'; also called Visépoort",
+  "Hasseltsepoort": "Ferraris 'Porte de Hasselt'",
+  "Maastrichterpoort": "Ferraris 'Porte de Maestricht'",
+  "Luikerpoort": "Ferraris 'Porte de Liège'",
+  "Sint-Truiderpoort": "Ferraris 'Porte de St Trond'",
+  "Naamsepoort": "Ferraris 'Porte de Namur'"
+ },
+ "gatesUncertain": [
+  "Hasseltsepoort",
+  "Maastrichterpoort",
+  "Luikerpoort",
+  "Sint-Truiderpoort",
+  "Naamsepoort"
+ ],
+ "moat": [
+  [
+   0,
+   22
+  ]
+ ]
+}

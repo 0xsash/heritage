@@ -1,0 +1,74 @@
+{
+ "note": "Halen: rhomboid second wall of 1385 (wet ditch and ironstone wall, three gates), damaged in 1567 and 1572 and not repaired until 1706, so in 1650 a ruinous enceinte. Traced from the Ferraris map (1777, earthen rampart with half-bastions); the later extension east to the Gete is left out.",
+ "source": "Inventaris Onroerend Erfgoed, 'Historische stadskern van Halen' (https://id.erfgoed.net/erfgoedobjecten/140194)",
+ "ring": [
+  [
+   -230,
+   75
+  ],
+  [
+   -200,
+   -70
+  ],
+  [
+   -35,
+   -230
+  ],
+  [
+   70,
+   -175
+  ],
+  [
+   156,
+   -120
+  ],
+  [
+   168,
+   -8
+  ],
+  [
+   130,
+   80
+  ],
+  [
+   90,
+   180
+  ],
+  [
+   10,
+   253
+  ],
+  [
+   -110,
+   170
+  ]
+ ],
+ "gates": {
+  "Diesterpoort": [
+   -207,
+   -33
+  ],
+  "Koepoort": [
+   100,
+   -160
+  ],
+  "Luikerpoort": [
+   168,
+   -8
+  ]
+ },
+ "gateSources": {
+  "Diesterpoort": "inventory 140194 (west)",
+  "Luikerpoort": "inventory 140194 (east, where the wall crosses the Velpe)",
+  "Koepoort": "inventory 140194 ('Koepoort/Kempense Poort', north); position uncertain"
+ },
+ "gatesUncertain": [
+  "Koepoort"
+ ],
+ "moat": [
+  [
+   0,
+   9
+  ]
+ ]
+}
