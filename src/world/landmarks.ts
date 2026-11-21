@@ -138,7 +138,8 @@ function sulpitius(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: TH
   const half = Math.min(f.hw * 0.75, 6.5);
   const tx = f.cx + f.ux * (f.hu - half) * end;
   const tz = f.cz + f.uz * (f.hu - half) * end;
-  const H = 34;
+  // the stump stands a little clear of the nave roof, so the pale stone shows from the market
+  const H = Math.max(34, Math.min(40, f.h + f.rise * 0.85));
   const prevMat = gb.curMat;
   gb.curMat = M.white;
   towerBox(gb, tx, tz, f.ux, f.uz, half, 0, H, GOBERTANGE);

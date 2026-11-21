@@ -46,7 +46,7 @@ export const ROOF = {
   slate: S('roofSlate', '#3e4149', '#474b53', '#363940', '#4a4a4e'),
   thatchish: S('roofClay', '#8a6a3e', '#93734a', '#7f6038'),
   /** reed and straw thatch, grey-brown with age */
-  thatch: S('thatch', '#b09a70', '#bba378', '#a3906c', '#c2a87a', '#a8977a'),
+  thatch: S('thatch', '#a28c7c', '#ab9480', '#958272', '#b39a80', '#9c8a7e'),
 };
 
 /** dark oak of frames, soffits and boards */

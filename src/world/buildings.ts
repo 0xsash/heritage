@@ -652,12 +652,18 @@ ${GLSL_FACADE}`,
 
 /** Helpers for the facade shader. Colours are linear. */
 const GLSL_FACADE = /* glsl */ `
+// Facade details sample textures inside per-pixel branches, where implicit
+// derivatives are undefined (speckle on some GPUs): take the gradients of the
+// wall coordinates once, up front, and pass them explicitly.
+vec2 gDX; vec2 gDY;
 vec3 layerDetail(int l, vec2 p) {
-  vec4 a = texture(uAlbedoArr, vec3(p.x / uScale[l], -p.y / uScale[l], float(l)));
+  float k = 1.0 / uScale[l];
+  vec4 a = textureGrad(uAlbedoArr, vec3(p.x * k, -p.y * k, float(l)), vec2(gDX.x, -gDX.y) * k, vec2(gDY.x, -gDY.y) * k);
   return clamp(toLinear(a.rgb) / uMean[l], 0.0, 2.6);
 }
 vec3 layerNormal(int l, vec2 p) {
-  return texture(uNormalArr, vec3(p.x / uScale[l], -p.y / uScale[l], float(l))).xyz * 2.0 - 1.0;
+  float k = 1.0 / uScale[l];
+  return textureGrad(uNormalArr, vec3(p.x * k, -p.y * k, float(l)), vec2(gDX.x, -gDX.y) * k, vec2(gDY.x, -gDY.y) * k).xyz * 2.0 - 1.0;
 }
 // paint over wood: keep only a hint of the grain so paints stay their colour
 vec3 woodPaint(vec3 paint, vec2 p) { return paint * mix(vec3(1.0), layerDetail(L_WOOD, p), 0.35); }
@@ -696,6 +702,9 @@ const FRAG_SURFACE = /* glsl */ `
   gAO = nao.a;
   gNrm = nao.xyz * 2.0 - 1.0;
   vec3 V = normalize(vWPos - cameraPosition);
+  gDX = dFdx(vWall.xy);
+  gDY = dFdy(vWall.xy);
+  vec2 gFW = abs(gDX) + abs(gDY);
 
   if (vWall.z > -1.5 && vWall.z < 0.0) {
     float ridgeV = vStyle.y;
@@ -704,10 +713,10 @@ const FRAG_SURFACE = /* glsl */ `
     if (layer == L_THATCH) {
       // thatch: grey-brown with age, golden where it was patched, moss low down and on the ridge
       float patchy = vnoise(vWPos.xz * 0.3 + bseed * 17.0);
-      diffuseColor.rgb *= mix(vec3(0.82, 0.84, 0.86), vec3(1.15, 1.05, 0.82), smoothstep(0.55, 0.8, patchy));
+      diffuseColor.rgb *= mix(vec3(0.95, 0.88, 0.8), vec3(1.18, 1.04, 0.78), smoothstep(0.55, 0.8, patchy));
       diffuseColor.rgb *= 0.78 + 0.4 * w;
       float moss = smoothstep(0.5, 0.78, vnoise(vWPos.xz * 0.5 + bseed * 40.0)) * (0.35 + 0.4 * smoothstep(1.5, 0.0, vv));
-      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.11, 0.05), moss * 0.45);
+      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.11, 0.1, 0.05), moss * 0.25);
       gRough = 0.95;
       if (ridgeV > 0.5) {
         // the ridge was capped with turf or clay, sprouting grass
@@ -723,7 +732,7 @@ const FRAG_SURFACE = /* glsl */ `
       vec2 tuv = vWall.xy / tsize;
       if (slate) tuv.x += 0.5 * mod(floor(tuv.y), 2.0);
       vec2 tf = fract(tuv);
-      float tfade = 1.0 - smoothstep(0.12, 0.55, fwidth(tuv.y) + fwidth(tuv.x));
+      float tfade = 1.0 - smoothstep(0.12, 0.55, gFW.y / tsize.y + gFW.x / tsize.x);
       float lip = smoothstep(0.0, 0.26, tf.y);
       float each = 0.84 + 0.32 * hash12(floor(tuv) + bseed * 31.0);
       if (slate) {
@@ -792,18 +801,20 @@ const FRAG_SURFACE = /* glsl */ `
       float arch = top - 2.2 * (x / 0.42) * (x / 0.42);
       float win = step(x, 0.42) * step(sill, v) * step(v, arch);
       float surround = step(x, 0.52) * step(sill - 0.3, v) * step(v, arch + 0.45) * (1.0 - win);
-      vec3 ws = C_WSTONE * 0.85 * layerDetail(L_STONE, vec2(u, v) * 0.7) * (0.8 + 0.3 * vnoise(vec2(u, v) * 4.0));
-      col = mix(col, ws * grime * streak, surround);
       // buttress between bays, with white stone corner blocks
       float bt = 1.0 - smoothstep(0.0, 0.09, abs(cu - 0.02));
       float quoin = bt * step(0.5, fract(v / 0.62));
-      col = mix(col * mix(0.7, 1.0, 1.0 - bt), ws, quoin * 0.8);
+      col *= mix(0.7, 1.0, 1.0 - bt);
+      if (surround + quoin > 0.01) {
+        vec3 ws = C_WSTONE * 0.85 * layerDetail(L_STONE, vec2(u, v) * 0.7) * (0.8 + 0.3 * vnoise(vec2(u, v) * 4.0));
+        col = mix(col, ws * grime * streak, max(surround, quoin * 0.8));
+      }
       if (win > 0.5) {
         vec2 cell = floor(vec2(u, v) / 0.21);
         float h = hash12(cell + ci * 17.0);
         vec3 glass = h < 0.3 ? vec3(0.08, 0.14, 0.5) : h < 0.55 ? vec3(0.5, 0.06, 0.07) : h < 0.78 ? vec3(0.62, 0.42, 0.08) : vec3(0.1, 0.36, 0.2);
         vec2 f2 = abs(fract(vec2(u, v) / 0.21) - 0.5);
-        float leadFade = 1.0 - smoothstep(0.0, 0.5, fwidth(u) * 6.0);
+        float leadFade = 1.0 - smoothstep(0.0, 0.5, gFW.x * 6.0);
         float lead = (step(0.43, max(f2.x, f2.y)) * leadFade + (1.0 - step(0.035, x)) + (1.0 - step(0.02, abs(x - 0.21))));
         vec3 gcol = mix(glass, vec3(0.02), min(lead, 1.0));
         col = mix(vec3(0.03, 0.033, 0.04), gcol, 0.1);
@@ -841,11 +852,13 @@ const FRAG_SURFACE = /* glsl */ `
       float plH = framed ? 0.42 : (rich ? 0.85 : 0.6);
       plH += (vnoise(vec2(u * 0.7, sd * 9.0)) - 0.5) * 0.06;
       float plinth = step(v, plH);
-      vec3 ironC = C_IRON * layerDetail(L_IRON, p) * (0.85 + 0.3 * h1);
+      // stone colours are sampled only where they are used (the shader is costly on slow GPUs)
+      #define IRONC (C_IRON * layerDetail(L_IRON, p) * (0.85 + 0.3 * h1))
+      #define WSTONE (C_WSTONE * layerDetail(L_STONE, p * 0.8))
       if (plinth > 0.5 && !barn) {
         if (plaster || begijn) col = C_TAR * (0.9 + 0.3 * vnoise(p * 6.0));
         else if (brick && !rich) col = mix(col * 0.45, C_TAR, 0.5);
-        else col = ironC;
+        else col = IRONC;
         gRough = 0.8;
       }
 
@@ -888,18 +901,19 @@ const FRAG_SURFACE = /* glsl */ `
         float course = floor(v / 0.3);
         float qw = mod(course, 2.0) < 0.5 ? 0.52 : 0.3;
         float quoin = step(cu2, qw) * step(v, E + 0.05) * step(1.3, Lw);
-        vec3 qc = (rich || begijn) && h1 < 0.6 ? C_WSTONE * layerDetail(L_STONE, p * 0.8) : ironC;
-        if (brick && (rich || h1 < 0.5)) col = mix(col, qc * grime, quoin);
-        if ((begijn || hall || stoneH) && h1 < 0.7) col = mix(col, (hall ? C_WSTONE : ironC) * grime, quoin);
+        if (quoin > 0.5) {
+          if (brick && (rich || h1 < 0.5)) col = ((rich || begijn) && h1 < 0.6 ? WSTONE : IRONC) * grime;
+          if ((begijn || hall || stoneH) && h1 < 0.7) col = (hall ? C_WSTONE : IRONC) * grime;
+        }
         float band = 0.0;
         if (brick && rich) band = step(mod(v - plH, 0.66), 0.14) * step(v, E);
         if (brick || hall) band = max(band, step(abs(v - G - 0.06), 0.09) * (single ? 0.0 : 1.0));
-        col = mix(col, C_WSTONE * layerDetail(L_STONE, p * 0.8) * grime * streak, band * 0.9);
+        if (band > 0.5) col = mix(col, WSTONE * grime * streak, 0.9);
       }
       if ((plaster || begijn) && plinth < 0.5) {
         // limewash worn thin, the brick showing through in patches
         float worn = smoothstep(0.6, 0.78, vnoise(p * 0.9 + sd * 20.0));
-        col = mix(col, col * vec3(0.78, 0.6, 0.48) * mix(vec3(1.0), layerDetail(L_BRICK, p), 0.5), worn * 0.45);
+        if (worn > 0.01) col = mix(col, col * vec3(0.78, 0.6, 0.48) * mix(vec3(1.0), layerDetail(L_BRICK, p), 0.5), worn * 0.45);
       }
       if (barn) {
         // boards or daub; a tarred lower band
@@ -1001,7 +1015,7 @@ const FRAG_SURFACE = /* glsl */ `
         inF = kind > 0.5 ? inRect(m, wlo - vec2(0.16, 0.0), whi + vec2(0.16, 0.2)) * step(m.y, archTop + 0.2) : 0.0;
       }
       if (inF > 0.5 && inO < 0.5) {
-        vec3 fc = stoneFrames ? ((begijn || stoneH) && h1 > 0.6 ? ironC : C_WSTONE * layerDetail(L_STONE, p * 0.8)) : C_TIMBER * layerDetail(L_WOOD, p.yx);
+        vec3 fc = stoneFrames ? ((begijn || stoneH) && h1 > 0.6 ? IRONC : WSTONE) : C_TIMBER * layerDetail(L_WOOD, p.yx);
         col = fc * grime * (0.85 + 0.3 * vnoise(p * 9.0));
         gRough = 0.85;
         gNrm = vec3(0.0, 0.0, 1.0);
@@ -1029,7 +1043,6 @@ const FRAG_SURFACE = /* glsl */ `
         vec2 o = m - wlo;
         vec2 sz = whi - wlo;
         float rs = hash12(vec2(bi * 3.7 + sd * 57.0, s * 5.3 + 1.0));
-        vec3 wd = layerDetail(L_WOOD, vec2(o.x * 1.3, o.y));
         if (kind == 3.0 || kind == 6.0 || kind == 5.0 || (kindArch && hb < 0.5)) {
           // plank door: boards of uneven width, iron strap hinges, a split (stable) door on some
           float seamP = fract(o.x / (kind == 6.0 ? 0.26 : 0.19) + hash12(vec2(floor(o.x / 0.19), sd)) * 0.1);
@@ -1048,14 +1061,14 @@ const FRAG_SURFACE = /* glsl */ `
           gNrm = normalize(vec3((seam - 0.5) * 0.25, 0.0, 1.0));
         } else if (kind == 4.0 || kindArch) {
           // open shop front: dark interior with goods, a counter flap let down, the upper shutter propped up
-          vec3 inside = vec3(0.05, 0.035, 0.025) * (0.6 + 0.8 * vnoise(o * 6.0 + rs * 9.0));
+          vec3 inside = vec3(0.04, 0.028, 0.02) * (0.75 + 0.5 * vnoise(o * 4.0 + rs * 9.0));
           float shelf = step(fract(o.y / 0.42), 0.12);
           inside = mix(inside, vec3(0.16, 0.1, 0.05), shelf * 0.6);
           float goods = step(0.55, vnoise(o * vec2(5.0, 2.0) + rs * 17.0)) * (1.0 - shelf);
-          inside = mix(inside, mix(vec3(0.25, 0.16, 0.06), vec3(0.3, 0.26, 0.18), rs), goods * 0.6);
+          inside = mix(inside, mix(vec3(0.16, 0.1, 0.045), vec3(0.2, 0.17, 0.12), rs), goods * 0.4 * (kindArch ? 0.0 : 1.0));
           float counter = step(o.y, 0.18);
           float flap = step(sz.y - 0.22, o.y);
-          col = mix(inside, woodPaint(paint * 1.4, o), max(counter, flap));
+          col = mix(inside, woodPaint(paint * 1.4, o), max(counter, flap) * (kindArch ? 0.0 : 1.0));
           gEmit = inside * vec3(1.0, 0.6, 0.3) * uNight * 3.0;
           gRough = 0.8;
         } else {
@@ -1069,7 +1082,7 @@ const FRAG_SURFACE = /* glsl */ `
           bool shut = lower && fract(rs * 7.3) < shutP;
           bool shutAll = kind == 1.0 && s < 0.5 && fract(rs * 3.1) < 0.25;
           if (bar > 0.5 && !shutAll) {
-            col = stoneFrames && cross ? C_WSTONE * layerDetail(L_STONE, p * 0.8) * grime : C_TIMBER * 1.3;
+            col = stoneFrames && cross ? WSTONE * grime : C_TIMBER * 1.3;
             gRough = 0.8;
           } else if (shut || shutAll) {
             // shutters: planked, painted; some in the diagonal two-colour bands of the paintings
@@ -1091,7 +1104,7 @@ const FRAG_SURFACE = /* glsl */ `
             vec2 g = o;
             vec2 qd = h0 < 0.5 ? vec2(g.x + g.y, g.x - g.y) * 0.7071 / 0.13 : g / vec2(0.12, 0.155);
             vec2 qf = abs(fract(qd) - 0.5);
-            float leadW = fwidth(qd.x) * 1.5;
+            float leadW = (gFW.x + gFW.y) / 0.12 * 1.5;
             float lead = smoothstep(0.5 - max(0.06, leadW), 0.5, max(qf.x, qf.y)) * (1.0 - smoothstep(0.08, 0.25, leadW));
             float qh = hash12(floor(qd) + rs * 7.0);
             float fres = pow(1.0 - abs(dot(V, gWN)), 3.0);
