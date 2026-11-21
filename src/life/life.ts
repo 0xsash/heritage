@@ -190,7 +190,7 @@ export class Life {
     this.board = new Board(q, q.content.camps);
     this.shops = new Shops({
       q, standing: this.standing,
-      use: (g, seller) => this.useGood(g, seller),
+      use: (g, seller, price) => this.useGood(g, seller, price),
       spent: (g) => this.spentGood(g),
       coins: () => d.sound.coins(),
     });
@@ -697,7 +697,8 @@ export class Life {
     const rule = QUEST_STANDING[id];
     if (rule) {
       const list = Array.isArray(rule) ? rule : rule[outcome ?? ''] ?? [];
-      for (const [f, n] of list) this.standing.add(f, n);
+      // the main story is not a side you pick: it does not cost you standing with a rival party
+      for (const [f, n] of list) this.standing.add(f, n, '', !id.startsWith('main_'));
     }
     if (id.startsWith('job_')) {
       const j = this.board.job(id);
@@ -709,7 +710,7 @@ export class Life {
 
   /** Renown with a place moved: its party follows. */
   renown(town: string, n: number) {
-    this.standing.renown(town, n);
+    this.standing.renown(town, n, !this.d.quests.completing?.startsWith('main_'));
   }
 
   /** You read something: it counts for a "read the notices" job. */
@@ -1307,10 +1308,15 @@ export class Life {
     return null;
   }
 
-  private useGood(g: Good, _seller: string): boolean {
+  private useGood(g: Good, _seller: string, price?: number): boolean {
     const q = this.d.quests;
     const u = g.use;
     const max = q.sheet.derived().maxHp;
+    if ('heal' in u && q.s.hero.hp >= max) {
+      // nothing to mend: keep your money
+      this.d.toast('Je bent al helemaal hersteld');
+      return false;
+    }
     if ('heal' in u) {
       q.s.hero.hp = Math.min(max, q.s.hero.hp + max * u.heal);
       this.d.toast(`${g.name.toUpperCase()} · hersteld`);
@@ -1332,6 +1338,8 @@ export class Life {
         const d = this.d.world.discoveries.find((x) => x.key === key);
         if (!d) continue;
         if (!d.found) names.push(d.title);
+        // a place you learn from a map counts as found: what finding it would give, the map gives now
+        if (!d.found) q.addXp(15);
         d.found = true;
         this.d.kroniek.unlock(`plaats:${key}`, true);
       }
@@ -1339,7 +1347,7 @@ export class Life {
     } else if ('kroniek' in u) {
       for (const id of u.kroniek) this.d.kroniek.unlock(id);
     } else if ('talisman' in u) {
-      const gear = talismanGear(u.talisman, q.s.hero.level);
+      const gear = talismanGear(u.talisman, q.s.hero.level, price);
       if (!gear) return false;
       q.giveGear(gear);
     }

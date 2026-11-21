@@ -28,6 +28,8 @@ export interface Job {
   n?: number;
   /** the choices the job was made from (template, client, camp / sender / spot), kept in the save once taken */
   pin: Pin;
+  /** the level the job was made for: its rewards come from this (a bounty's quest level can be higher, from its camp) */
+  level: number;
 }
 
 /** What a taken job was made of, so a change to the templates never changes a job someone is doing. */
@@ -126,7 +128,7 @@ export class Board {
           { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Haal je premie op bij ${short(client)}`, npc: client }] },
         ],
       };
-      job = { id, template: t, def, notice: def.summary, client, pin: { t: t.id, c: client, x: camp.id } };
+      job = { id, template: t, def, notice: def.summary, client, pin: { t: t.id, c: client, x: camp.id }, level };
     } else if (t.kind === 'delivery') {
       const froms = (t.from ?? []).filter((f) => f !== client);
       const fi = Math.floor(r() * froms.length);
@@ -143,7 +145,7 @@ export class Board {
           { id: 'bring', journal: fill(t.journal[1], vars), objectives: [{ id: 'bring', kind: 'talk', text: `Breng ${what} naar ${short(client)}`, npc: client }] },
         ],
       };
-      job = { id, template: t, def, notice: def.summary, client, from, item, pin: { t: t.id, c: client, x: from } };
+      job = { id, template: t, def, notice: def.summary, client, from, item, pin: { t: t.id, c: client, x: from }, level };
     } else if (t.kind === 'read') {
       const n = 3;
       vars.n = String(n);
@@ -155,7 +157,7 @@ export class Board {
           { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Vertel het aan ${short(client)}`, npc: client }] },
         ],
       };
-      job = { id, template: t, def, notice: def.summary, client, n, pin: { t: t.id, c: client } };
+      job = { id, template: t, def, notice: def.summary, client, n, pin: { t: t.id, c: client }, level };
     } else {
       const si = Math.floor(r() * FETCH_SPOTS.length);
       const pinned = pin?.x ? FETCH_SPOTS.findIndex((f) => f.where === pin.x) : -1;
@@ -171,7 +173,7 @@ export class Board {
           { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Breng alles terug naar ${short(client)}`, npc: client }] },
         ],
       };
-      job = { id, template: t, def, notice: def.summary, client, item, pin: { t: t.id, c: client, x: spot.where } };
+      job = { id, template: t, def, notice: def.summary, client, item, pin: { t: t.id, c: client, x: spot.where }, level };
     }
     if (!job) return null;
     this.q.addQuest(job.def);
@@ -183,7 +185,7 @@ export class Board {
   pinLevel(id: string) {
     const j = this.job(id);
     if (!j) return;
-    this.q.s.flags[`${id}_lv`] = j.def.level ?? this.q.s.hero.level;
+    this.q.s.flags[`${id}_lv`] = j.level;
     this.q.s.flags[`${id}_pin`] = JSON.stringify(j.pin);
   }
 

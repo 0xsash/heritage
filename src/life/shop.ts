@@ -10,13 +10,13 @@ import type { ShopView, ShopWare } from '../ui/gamehud';
 import { GEAR_STOCK, SPECIALS, TALISMANS } from '../content/diest_life';
 import type { Standing } from './standing';
 import type { Good } from './types';
-import { today } from './lines';
+import { hash, seeded, today } from './lines';
 
 export interface ShopHost {
   q: QuestEngine;
   standing: Standing;
-  /** carry out a good's effect; false when it cannot be used now (already known, full life...) */
-  use(g: Good, seller: string): boolean;
+  /** carry out a good's effect (`price`: what was paid); false when it cannot be used now (already known, full life...) */
+  use(g: Good, seller: string, price: number): boolean;
   /** is this good of no use any more (a print of places already known)? */
   spent(g: Good): string | null;
   coins(): void;
@@ -25,14 +25,15 @@ export interface ShopHost {
 let uidN = 0;
 const uid = () => `l${Date.now().toString(36)}${(uidN++).toString(36)}`;
 
-export function talismanGear(id: string, level: number): Gear | null {
+export function talismanGear(id: string, level: number, paid?: number): Gear | null {
   const t = TALISMANS[id];
   if (!t) return null;
-  return { uid: uid(), base: 'pelgrimsinsigne', name: t.name, slot: 'talisman', rarity: t.rarity, ilvl: Math.max(1, level), mods: { ...t.mods }, text: t.text };
+  return { uid: uid(), base: 'pelgrimsinsigne', name: t.name, slot: 'talisman', rarity: t.rarity, ilvl: Math.max(1, level), mods: { ...t.mods }, text: t.text, paid };
 }
 
 export class Shops {
-  private stock = new Map<string, { key: string; items: Gear[] }>();
+  /** each seller's table today: rolled once a day, with what a higher tier opens added to it */
+  private stock = new Map<string, { day: string; L: number; opened: Set<string>; items: Gear[] }>();
 
   constructor(private h: ShopHost) {}
 
@@ -40,34 +41,54 @@ export class Shops {
     return `${TIERS[t].name} bij ${FACTIONS[f].name}`;
   }
 
-  /** Gear on the table: rolled for the hero's level, better with standing; the same all day. */
+  /**
+   * Gear on the table: rolled for the hero's level, better with standing; the same all day. It is rolled
+   * from the day, the seller, your level and tier, so a reload shows the same table (what you own is not
+   * on it twice). A purchase or a level does not reroll it; a higher tier adds what it opens.
+   */
   private gear(seller: string, f: FactionId): Gear[] {
     const spec = GEAR_STOCK[seller];
     if (!spec) return [];
-    const L = this.h.q.s.hero.level, t = this.h.standing.level(f);
-    const key = `${today()}|${L}|${t}`;
+    const day = today(), t = this.h.standing.level(f);
     let s = this.stock.get(seller);
-    if (!s || s.key !== key) {
+    if (!s || s.day !== day) {
+      const L = this.h.q.s.hero.level;
       const items: Gear[] = [];
       const slots = spec.slot ? Array(spec.count).fill(spec.slot) : ['wapen', 'harnas', 'talisman', undefined];
-      slots.forEach((slot, i) => items.push(rollGear(L + (i === slots.length - 1 && t >= 1 ? 1 : 0), t >= 1 ? 1 : 0, slot)));
-      if (t >= 2) items.push(rollGear(L + 1, 2, spec.slot ?? undefined));
-      for (const sp of SPECIALS[seller] ?? []) {
-        if (t < sp.tier) continue;
-        const g = rollGear(L + 1, 2, sp.base);
-        g.name = sp.name;
-        g.text = sp.text;
-        if (sp.tier >= 4) {
-          g.rarity = 3;
-          if (g.dmg) g.dmg = [Math.round(g.dmg[0] * 1.2), Math.round(g.dmg[1] * 1.2)];
-          if (g.armor) g.armor = Math.round(g.armor * 1.2);
-        }
-        items.push(g);
-      }
-      s = { key, items };
+      slots.forEach((slot, i) => items.push(this.roll(`${day}|${seller}|${L}|${t}|${i}`, L + (i === slots.length - 1 && t >= 1 ? 1 : 0), t >= 1 ? 1 : 0, slot)));
+      s = { day, L, opened: new Set(), items };
       this.stock.set(seller, s);
     }
+    const L = s.L;
+    if (t >= 2 && !s.opened.has('rare')) {
+      s.opened.add('rare');
+      s.items.push(this.roll(`${day}|${seller}|${L}|rare`, L + 1, 2, spec.slot ?? undefined));
+    }
+    for (const sp of SPECIALS[seller] ?? []) {
+      if (t < sp.tier || s.opened.has(sp.name)) continue;
+      s.opened.add(sp.name);
+      const g = this.roll(`${day}|${seller}|${L}|${sp.name}`, L + 1, 2, sp.base);
+      g.name = sp.name;
+      g.text = sp.text;
+      if (sp.tier >= 4) {
+        g.rarity = 3;
+        if (g.dmg) g.dmg = [Math.round(g.dmg[0] * 1.2), Math.round(g.dmg[1] * 1.2)];
+        if (g.armor) g.armor = Math.round(g.armor * 1.2);
+      }
+      s.items.push(g);
+    }
+    // a piece you bought (and still have) is not for sale again, also after a reload
+    const h = this.h.q.s.hero;
+    const own = new Set([...h.bag.map((g) => g.uid), ...Object.values(h.gear).map((g) => g?.uid)]);
+    s.items = s.items.filter((g) => !own.has(g.uid));
     return s.items;
+  }
+
+  /** One piece, the same every time for the same key (and with a uid made from it). */
+  private roll(key: string, level: number, minRarity: 0 | 1 | 2, slot?: 'wapen' | 'harnas' | 'talisman') {
+    const g = rollGear(level, minRarity, slot, seeded(hash(key)));
+    g.uid = `s${hash(key).toString(36)}`;
+    return g;
   }
 
   /** The shop panel for a seller: their goods, their gear, and what standing would open. */
@@ -92,6 +113,7 @@ export class Shops {
       if (need > tier) w.locked = `Voor wie ${this.tierName(f, need)} is`;
       else if ((g.level ?? 0) > L) w.locked = `Vanaf niveau ${g.level}`;
       else if (spent) w.locked = spent;
+      else if ('heal' in g.use && this.h.q.s.hero.hp >= this.h.q.sheet.derived().maxHp) w.locked = 'Je bent al helemaal hersteld';
       wares.push(w);
     }
     this.gear(seller, f).forEach((g, i) => {
@@ -107,6 +129,8 @@ export class Shops {
       wares,
       sellRate: 0.8 + tier * 0.05,
       buy: (key) => this.buy(seller, f, goods, key),
+      // the same shop again, as it is now (prices, tiers, what is left, what you wear), with the same greeting
+      refresh: () => this.view(seller, f, title, goods, greet),
     };
   }
 
@@ -118,7 +142,7 @@ export class Shops {
       if (!g) return false;
       const price = st.price(g.price, f);
       if (s.florins < price || (g.tier ?? 0) > st.level(f) || this.h.spent(g)) return false;
-      if (!this.h.use(g, seller)) return false;
+      if (!this.h.use(g, seller, price)) return false;
       s.florins -= price;
       st.spend(f, price);
       return true;
@@ -132,6 +156,7 @@ export class Shops {
       const price = st.price(gearValue(g) * 4, f);
       if (s.florins < price) return false;
       s.florins -= price;
+      g.paid = price;
       s.hero.bag.push(g);
       items.splice(i, 1);
       st.spend(f, price);

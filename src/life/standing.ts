@@ -76,16 +76,20 @@ export class Standing {
   /** Change standing; says so in a toast, and loudly when a tier is crossed. */
   add(f: FactionId, n: number, why = '', rival = true) {
     if (!n || !FACTIONS[f]) return;
-    // the rival party notices: a quarter of what you gained, at least one point
-    if (rival && n >= 3) for (const [a, b] of RIVAL_PAIRS) if (a === f || b === f) this.add(a === f ? b : a, -Math.max(1, Math.round(n / 4)), '', false);
     const before = this.level(f);
+    const was = this.points(f);
     this.s.standing[f] = Math.max(0, (this.s.standing[f] ?? 0) + n);
+    // what really changed: a loss stops at nothing
+    const moved = this.points(f) - was;
     // a party you have not found yet moves without a word
-    if (!this.known(f)) return;
-    const after = this.tier(f);
-    this.onChange?.(f, before, after.index);
-    if (after.index !== before) this.toast(`${FACTIONS[f].name.toUpperCase()} · ${after.index > before ? 'nu' : 'nog maar'} ${after.name}`);
-    else this.toast(`${FACTIONS[f].name.toUpperCase()} ${n > 0 ? '+' : ''}${n}${why ? ' · ' + why : ''}`);
+    if (moved && this.known(f)) {
+      const after = this.tier(f);
+      this.onChange?.(f, before, after.index);
+      if (after.index !== before) this.toast(`${FACTIONS[f].name.toUpperCase()} · ${after.index > before ? 'nu' : 'nog maar'} ${after.name}`);
+      else this.toast(`${FACTIONS[f].name.toUpperCase()} ${moved > 0 ? '+' : ''}${moved}${why ? ' · ' + why : ''}`);
+    }
+    // then the rival party notices: a quarter of what you gained, at least one point
+    if (rival && n >= 3) for (const [a, b] of RIVAL_PAIRS) if (a === f || b === f) this.add(a === f ? b : a, -Math.max(1, Math.round(n / 4)), `omdat je ${FACTIONS[f].name.replace(/^De /, 'de ')} helpt`, false);
   }
 
   /** Money spent with a party turns into standing: one point for every ten florins. */
@@ -95,14 +99,15 @@ export class Standing {
     const pts = Math.floor(sp[f] / 10);
     if (pts > 0) {
       sp[f] -= pts * 10;
-      this.add(f, pts, 'goede klant');
+      // trade is not taking sides: no rival minds where you shop
+      this.add(f, pts, 'goede klant', false);
     }
   }
 
   /** Renown with a place moved (a quest effect): the place's party follows. */
-  renown(town: string, n: number) {
+  renown(town: string, n: number, rival = true) {
     const f = PLACE_FACTION[town];
-    if (f) this.add(f, n);
+    if (f) this.add(f, n, '', rival);
   }
 
   /** Bars with the tier name, for the character panel. */

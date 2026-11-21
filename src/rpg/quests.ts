@@ -4,7 +4,7 @@
 import { type Gear, Sheet, uniqueGear } from './character';
 import { stuivers } from './money';
 import type { CampDef, Cond, Content, Effect, ItemDef, NpcDef, Objective, QuestDef, Stage } from './types';
-import { type SaveData, loadSave, writeSave } from './state';
+import { type SaveData, claimSave, fromEarlierVisit, loadSave, writeSave } from './state';
 
 export interface QuestEvents {
   toast(kicker: string, text: string): void;
@@ -39,12 +39,41 @@ export class QuestEngine {
   private dirty = false;
   sheet: Sheet;
 
+  /** the quest being completed right now (its rewards are being paid), else null */
+  completing: string | null = null;
+  /** when the save was last written, for the light periodic save (performance.now ms) */
+  private savedAt = 0;
+
   constructor(public content: Content, private ev: QuestEvents) {
+    // this tab plays the save from now on: claim it before reading it, so another tab stops writing first
+    claimSave();
     this.s = loadSave();
     this.sheet = new Sheet(this.s.hero);
     for (const q of content.quests) this.quests.set(q.id, q);
     for (const i of content.items) this.items.set(i.id, i);
     for (const n of content.npcs) this.npcs.set(n.id, n);
+    this.resumeCutPrologue();
+    // health, buffs and food eaten in a fight change the save without marking it: write it when the tab is left
+    if (typeof window !== 'undefined') window.addEventListener('pagehide', () => this.save());
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && this.save());
+  }
+
+  /**
+   * Nothing is saved during the prologue, so a tab closed in it leaves a made character with no prologue,
+   * no first quest and no weapon, and "Verder spelen" does not run it again. Pick up such a save (from an
+   * earlier visit, not one this page just made) as if the prologue had been skipped.
+   */
+  private resumeCutPrologue() {
+    const s = this.s;
+    if (!s.created || !fromEarlierVisit() || s.flags.prologue || s.quests.main_arrive) return;
+    s.flags.prologue = true;
+    if (!s.hero.gear.wapen) {
+      const w = uniqueGear(this.sheet.origin.start);
+      if (w) s.hero.gear.wapen = w;
+    }
+    if (!s.kroniek.includes('mens:neelke')) s.kroniek.push('mens:neelke');
+    this.start('main_arrive');
+    writeSave(s);
   }
 
   quest(id: string) {
@@ -54,6 +83,8 @@ export class QuestEngine {
   /** Quests and items made while playing (notice-board jobs, the town walk: src/life). */
   addQuest(q: QuestDef) {
     this.quests.set(q.id, q);
+    // a saved quest whose definition arrives late (a job rebuilt after a reload): its pickups and journal entry appear now
+    if (this.s.quests[q.id]?.status === 'active') this.ev.changed();
   }
 
   addItem(i: ItemDef) {
@@ -112,7 +143,7 @@ export class QuestEngine {
       const st = this.s.quests[e.fail];
       if (st) {
         st.status = 'failed';
-        this.ev.toast('QUEST FAILED', this.quests.get(e.fail)?.title ?? e.fail);
+        this.ev.toast('OPDRACHT MISLUKT', this.quests.get(e.fail)?.title ?? e.fail);
       }
       return;
     }
@@ -123,7 +154,7 @@ export class QuestEngine {
     if ('give' in e) {
       const n = e.n ?? 1;
       this.s.inv[e.give] = (this.s.inv[e.give] ?? 0) + n;
-      this.ev.toast('RECEIVED', `${this.items.get(e.give)?.name ?? e.give}${n > 1 ? ' ×' + n : ''}`);
+      this.ev.toast('GEKREGEN', `${this.items.get(e.give)?.name ?? e.give}${n > 1 ? ' ×' + n : ''}`);
       return;
     }
     if ('take' in e) {
@@ -132,13 +163,12 @@ export class QuestEngine {
     }
     if ('florins' in e) {
       this.s.florins += e.florins;
-      this.ev.toast(e.florins >= 0 ? 'FLORINS' : 'PAID', `${e.florins >= 0 ? '+' : ''}${e.florins} florins`);
+      this.ev.toast(e.florins >= 0 ? 'GEKREGEN' : 'BETAALD', stuivers(Math.abs(e.florins)));
       return;
     }
     if ('renown' in e) {
       const [town, n] = e.renown;
       this.s.renown[town] = (this.s.renown[town] ?? 0) + n;
-      this.ev.toast('RENOWN', `${town} ${n >= 0 ? '+' : ''}${n}`);
       this.ev.renown?.(town, n);
       return;
     }
@@ -226,6 +256,7 @@ export class QuestEngine {
       if (g) lines.push(g.name);
     }
     this.ev.banner('done', q.title, lines);
+    this.completing = id;
     if (r?.florins) this.s.florins += r.florins;
     for (const [town, n] of r?.renown ?? []) {
       this.s.renown[town] = (this.s.renown[town] ?? 0) + n;
@@ -235,6 +266,7 @@ export class QuestEngine {
     for (const id of r?.gear ?? []) this.applyOne({ gear: id });
     if (r?.xp) this.addXp(r.xp);
     this.ev.completed?.(id, outcome);
+    this.completing = null;
     if (this.s.tracked === id) {
       const next = Object.entries(this.s.quests).filter(([, v]) => v.status === 'active').sort((a, b) => b[1].started - a[1].started)[0];
       this.s.tracked = next?.[0] ?? null;
@@ -279,10 +311,9 @@ export class QuestEngine {
         }
       }
     }
-    if (this.dirty) {
-      this.dirty = false;
-      writeSave(this.s);
-    }
+    // also every 15 s: health, buff timers and food eaten in a fight change the save without marking it
+    const now = performance.now();
+    if (this.dirty || now - this.savedAt > 15000) this.save();
   }
 
   /** An enemy died: count it for any kill objective it matches. */
@@ -422,6 +453,8 @@ export class QuestEngine {
   }
 
   save() {
+    this.dirty = false;
+    this.savedAt = performance.now();
     writeSave(this.s);
   }
 }

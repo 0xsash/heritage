@@ -180,6 +180,8 @@ export interface Gear {
   armor?: number;
   mods: Partial<Stats> & { crit?: number; hp?: number; fire?: number };
   text?: string;
+  /** what you paid for it at a shop: a merchant never buys it back for more than half of that */
+  paid?: number;
 }
 
 interface Base { id: string; name: string; slot: Slot; ilvl: number; dmg?: [number, number]; armor?: number }
@@ -225,23 +227,23 @@ const UNIQUE: Record<string, Omit<Gear, 'uid'>> = {
 
 let uidCounter = Date.now() % 100000;
 const uid = () => `g${(uidCounter++).toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`;
-const pick = <T,>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)];
 
 export function uniqueGear(id: string): Gear | null {
   const u = UNIQUE[id];
   return u ? { ...u, mods: { ...u.mods }, uid: uid() } : null;
 }
 
-/** A random piece of loot for a monster of this level. */
-export function rollGear(level: number, minRarity: Rarity = 0, slot?: Slot): Gear {
-  const r = Math.random();
+/** A random piece of loot for a monster of this level (`rnd`: a seeded generator, for a shop's table). */
+export function rollGear(level: number, minRarity: Rarity = 0, slot?: Slot, rnd: () => number = Math.random): Gear {
+  const pick = <T,>(a: readonly T[]) => a[Math.floor(rnd() * a.length)];
+  const r = rnd();
   let rarity: Rarity = r < 0.02 ? 3 : r < 0.12 ? 2 : r < 0.42 ? 1 : 0;
   if (rarity < minRarity) rarity = minRarity;
   if (rarity === 3) rarity = 2; // legendaries come from named enemies and quests
   const fits = BASES.filter((b) => b.ilvl <= level + 1 && (!slot || b.slot === slot));
   const best = fits.filter((b) => b.ilvl >= Math.max(1, level - 4));
   const base = pick(best.length ? best : fits);
-  const ilvl = Math.max(1, level + Math.floor(Math.random() * 3) - 1);
+  const ilvl = Math.max(1, level + Math.floor(rnd() * 3) - 1);
   const scale = 1 + (ilvl - base.ilvl) * 0.08 + rarity * 0.12;
   const g: Gear = { uid: uid(), base: base.id, name: base.name, slot: base.slot, rarity, ilvl, mods: {} };
   if (base.dmg) g.dmg = [Math.round(base.dmg[0] * scale), Math.round(base.dmg[1] * scale)];
@@ -261,6 +263,12 @@ export function rollGear(level: number, minRarity: Rarity = 0, slot?: Slot): Gea
 
 export function gearValue(g: Gear) {
   return Math.max(1, Math.round(g.ilvl * 2 * (1 + g.rarity * 1.6)));
+}
+
+/** What a merchant pays for it: its value at their rate, and never more than half of what you paid for it. */
+export function sellValue(g: Gear, rate = 1) {
+  const v = gearValue(g) * rate;
+  return Math.max(1, Math.round(g.paid !== undefined ? Math.min(v, g.paid * 0.5) : v));
 }
 
 export function gearLines(g: Gear): string[] {
@@ -344,6 +352,8 @@ export class Sheet {
       this.h.level++;
       gained++;
     }
+    // at the top there is nothing left to fill
+    if (this.h.level >= LEVEL_CAP) this.h.xp = 0;
     if (gained) this.h.hp = this.derived().maxHp;
     return gained;
   }
@@ -358,14 +368,29 @@ export class Sheet {
     this.h.bag.splice(i, 1);
     if (old) this.h.bag.push(old);
     const after = this.derived().maxHp;
-    this.h.hp = Math.max(1, Math.min(after, this.h.hp + (after - before)));
+    // keep the same share of your life: taking a piece off and putting it back changes nothing
+    this.h.hp = Math.max(1, Math.min(after, (this.h.hp * after) / Math.max(1, before)));
   }
 
-  /** Is this better than what is worn? (for the green arrow on loot) */
+  /**
+   * How strong the hero is with these stats, in one number to compare gear by: the damage of an average
+   * hit (with crits), how much it takes to bring you down (life and armour, as combat counts them), and,
+   * weighed lightly, dragon fire. Bell skills scale with Klank, so it counts for the Beiaardier's hits too.
+   */
+  private worth(d: Derived) {
+    const hit = ((d.dmg[0] + d.dmg[1]) / 2) * (1 + (0.75 * d.crit) / 100) * (this.h.origin === 'klokkenluider' ? Math.sqrt(d.power) : 1);
+    const life = d.maxHp * (1 + (d.armor * 2.2) / 100);
+    const fire = d.power * (1 + d.fire / 100);
+    return Math.log(hit) + 0.5 * Math.log(life) + 0.1 * Math.log(fire);
+  }
+
+  /** Is this better than what is worn? (for the "beter" mark on loot and in shops) */
   better(g: Gear) {
     const cur = this.h.gear[g.slot];
     if (!cur) return true;
-    const score = (x: Gear) => (x.dmg ? (x.dmg[0] + x.dmg[1]) * 1.5 : 0) + (x.armor ?? 0) + Object.values(x.mods).reduce((a, b) => a + (b ?? 0), 0) * 1.2;
-    return score(g) > score(cur);
+    if (cur.uid === g.uid) return false;
+    const now = this.worth(this.derived());
+    const withIt = this.worth(new Sheet({ ...this.h, gear: { ...this.h.gear, [g.slot]: g } }).derived());
+    return withIt > now + 1e-6;
   }
 }

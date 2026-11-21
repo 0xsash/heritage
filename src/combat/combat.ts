@@ -150,6 +150,8 @@ const HEAVY: AttackDef = { clip: 'attack3', dur: 0.8, hit: 0.38, mult: 2.4, arc:
 const SPAWN_R = 300;
 const DESPAWN_R = 460;
 const MAX_TOKENS = 2;
+/** how far (in multiples of their range, straight-line) guns and wisps shoot at a dragon flying too high for anyone else */
+const SKY_REACH = 2;
 
 export class Combat {
   group = new THREE.Group();
@@ -368,8 +370,11 @@ export class Combat {
     // ---- enemies
     let tokens = this.enemies.filter((e) => e.token).length;
     const target = this.deadT >= 0 ? null : onFoot ? p.heroPos : flying && p.altitude() < 26 ? p.pos : null;
+    // high up, only guns and wisps can answer: within their reach (as the crow flies) they shoot at the dragon
+    const high = this.deadT < 0 && flying && !target ? p.pos : null;
     for (const e of this.enemies) {
-      tokens += this.think(e, sdt, target, flying, tokens, d);
+      const t = target ?? (high && e.type.ranged && e.pos.distanceTo(high) < e.type.ranged.range * SKY_REACH ? high : null);
+      tokens += this.think(e, sdt, t, flying, tokens, d);
       this.moveEnemy(e, sdt);
     }
     // a cleared camp starts its respawn clock
@@ -757,6 +762,10 @@ export class Combat {
     if (this.cds.potion > 0) return;
     if ((inv.salve ?? 0) <= 0) {
       this.floaters.add('Je zalf is op', this.headPos(), 'note', 1.1, 0.6);
+      return;
+    }
+    if (this.quests.s.hero.hp >= maxHp && this.heal <= 0) {
+      this.floaters.add('Je bent ongedeerd', this.headPos(), 'note', 1.1, 0.6);
       return;
     }
     inv.salve--;

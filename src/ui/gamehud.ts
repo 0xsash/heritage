@@ -8,7 +8,7 @@
 
 import { bookTabs } from './kroniekui';
 import * as THREE from 'three';
-import { type Gear, RARITY, STAT_HELP, STAT_NAMES, type Stat, gearLines, gearValue, rollGear, xpToNext } from '../rpg/character';
+import { type Gear, LEVEL_CAP, RARITY, STAT_HELP, STAT_NAMES, type Stat, gearLines, gearValue, rollGear, sellValue, xpToNext } from '../rpg/character';
 import type { QuestEngine } from '../rpg/quests';
 import { FACTIONS } from '../rpg/factions';
 import { stuivers } from '../rpg/money';
@@ -220,8 +220,9 @@ export class PlayerFrame {
     this.res.parentElement!.dataset.label = meterLabel;
     this.res.parentElement!.classList.toggle('fire', fireMeter !== null);
     const need = xpToNext(h.level);
-    this.xp.style.width = `${(100 * h.xp) / need}%`;
-    this.xpText.textContent = `Niveau ${h.level} · ${h.xp} / ${need} ervaring`;
+    const top = h.level >= LEVEL_CAP;
+    this.xp.style.width = top ? '100%' : `${Math.min(100, (100 * h.xp) / need)}%`;
+    this.xpText.textContent = top ? `Niveau ${h.level} · hoogste niveau` : `Niveau ${h.level} · ${h.xp} / ${need} ervaring`;
     const who = `${esc(h.name)} <span>${esc(q.sheet.origin.name)} · niveau ${h.level}</span><b>${stuivers(q.s.florins)}</b>`;
     if (this.who.innerHTML !== who) this.who.innerHTML = who;
     const sig = slots.map((s) => `${s.key}${s.name}${s.count ?? ''}${s.locked ?? ''}`).join('|');
@@ -308,6 +309,8 @@ export interface ShopView {
   buy(key: string): boolean;
   /** what the merchant pays for gear, as a share of its value (default 1) */
   sellRate?: number;
+  /** the same shop rebuilt as it is now (after a purchase, a sale or a change of gear) */
+  refresh?(): ShopView;
 }
 
 export class CharacterPanel {
@@ -321,6 +324,8 @@ export class CharacterPanel {
   extra: (() => string) | null = null;
   private wares: Gear[] = [];
   private waresLevel = 0;
+  /** clicks are ignored until then (ms): the panel is rebuilt after each action, so the second click of a double click would land on the next card */
+  private busyUntil = 0;
 
   constructor(root: HTMLElement, private q: QuestEngine, private onChange: () => void, private coins: () => void) {
     this.el.hidden = true;
@@ -346,6 +351,15 @@ export class CharacterPanel {
     return this.open;
   }
 
+  /** a purchase you cannot pay: the button says so for a moment */
+  private poor(b: HTMLButtonElement) {
+    const was = b.textContent;
+    b.textContent = 'TE WEINIG STUIVERS';
+    setTimeout(() => {
+      if (b.isConnected) b.textContent = was;
+    }, 1200);
+  }
+
   render() {
     if (!this.open) return;
     const h = this.q.s.hero;
@@ -357,7 +371,7 @@ export class CharacterPanel {
       .join('');
     const bag = h.bag.length
       ? h.bag
-          .map((g) => gearCard(g, `<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ beter</span>' : ''}<button data-eq="${g.uid}">DRAGEN</button>${this.shop ? `<button data-sell="${g.uid}">VERKOPEN · ${Math.max(1, Math.round(gearValue(g) * (this.vendor?.sellRate ?? 1)))}</button>` : ''}</div>`))
+          .map((g) => gearCard(g, `<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ beter</span>' : ''}<button data-eq="${g.uid}">DRAGEN</button>${this.shop ? `<button data-sell="${g.uid}">VERKOPEN · ${sellValue(g, this.vendor?.sellRate ?? 1)}</button>` : ''}</div>`))
           .join('')
       : '<div class="empty">Je zak is leeg. Verslagen vijanden laten soms iets vallen.</div>';
     const v = this.vendor;
@@ -397,26 +411,40 @@ export class CharacterPanel {
         <div class="col"><h3>IN JE ZAK</h3><div class="bag">${bag}</div></div>
         ${shopHtml ? `<div class="col">${shopHtml}</div>` : ''}
       </div>`;
-    this.el.querySelectorAll<HTMLButtonElement>('button[data-eq]').forEach((b) =>
+    /** one action per click, and none for a moment after it */
+    const act = (b: HTMLButtonElement, fn: () => void) =>
       b.addEventListener('click', () => {
+        const now = performance.now();
+        if (now < this.busyUntil) return;
+        this.busyUntil = now + 450;
+        fn();
+      });
+    /** after an action: the shop as it is now, then the panel */
+    const redraw = () => {
+      if (this.vendor?.refresh) this.vendor = this.vendor.refresh();
+      this.render();
+    };
+    this.el.querySelectorAll<HTMLButtonElement>('button[data-eq]').forEach((b) =>
+      act(b, () => {
         this.q.sheet.equip(b.dataset.eq!);
         this.q.save();
         this.onChange();
-        this.render();
+        redraw();
       }),
     );
     this.el.querySelectorAll<HTMLButtonElement>('button[data-sell]').forEach((b) =>
-      b.addEventListener('click', () => {
+      act(b, () => {
         const i = h.bag.findIndex((g) => g.uid === b.dataset.sell);
         if (i < 0) return;
-        this.q.s.florins += Math.max(1, Math.round(gearValue(h.bag[i]) * sellRate));
+        this.q.s.florins += sellValue(h.bag[i], sellRate);
         h.bag.splice(i, 1);
         this.q.save();
         this.coins();
-        this.render();
+        redraw();
       }),
     );
-    this.el.querySelector<HTMLButtonElement>('button[data-buy]')?.addEventListener('click', () => {
+    const buyOne = this.el.querySelector<HTMLButtonElement>('button[data-buy]');
+    if (buyOne) act(buyOne, () => {
       if (this.q.s.florins < 6) return;
       this.q.s.florins -= 6;
       this.q.s.inv.salve = (this.q.s.inv.salve ?? 0) + 1;
@@ -425,16 +453,20 @@ export class CharacterPanel {
       this.render();
     });
     this.el.querySelectorAll<HTMLButtonElement>('button[data-vbuy]').forEach((b) =>
-      b.addEventListener('click', () => {
-        if (!this.vendor?.buy(b.dataset.vbuy!)) return;
+      act(b, () => {
+        if (!this.vendor?.buy(b.dataset.vbuy!)) {
+          const w = this.vendor?.wares.find((x) => x.key === b.dataset.vbuy);
+          if (w && !w.locked && this.q.s.florins < w.price) this.poor(b);
+          return;
+        }
         this.q.save();
         this.coins();
         this.onChange();
-        this.render();
+        redraw();
       }),
     );
     this.el.querySelectorAll<HTMLButtonElement>('button[data-buyg]').forEach((b) =>
-      b.addEventListener('click', () => {
+      act(b, () => {
         const i = Number(b.dataset.buyg);
         const g = this.wares[i];
         if (!g || this.q.s.florins < gearValue(g) * 4) return;

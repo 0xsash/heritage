@@ -206,9 +206,9 @@ async function boot() {
       if (!levels) return;
       const L = quests.s.hero.level;
       const o = quests.sheet.origin;
-      late.banner?.show('level', 'NIEUW NIVEAU', `Niveau ${L}`, [
+      late.banner?.show('level', 'NIEUW NIVEAU', levels > 1 ? `Niveau ${L - levels} → ${L}` : `Niveau ${L}`, [
         'Je wordt sterker. Je levenskracht is weer vol.',
-        L === o.skill2.level ? `Nieuwe vaardigheid: ${o.skill2.name} (R)` : '',
+        L - levels < o.skill2.level && L >= o.skill2.level ? `Nieuwe vaardigheid: ${o.skill2.name} (R)` : '',
       ]);
       sound.levelUp();
       combat.fx.ring(player.onFoot ? player.heroPos : player.pos, 6, '#c8a8ff', 0.8);
@@ -764,7 +764,7 @@ async function boot() {
           { key: 'Q', name: 'Zalf', icon: 'salve', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
         ]
       : [
-          { key: 'LMB', name: 'Zwaard', icon: 'sword', cd: 0, ready: true },
+          { key: 'LMB', name: 'Slaan', icon: 'sword', cd: 0, ready: true },
           { key: 'RMB', name: o.skill.short, icon: o.skill.id, cd: combat.cds.skill / o.skill.cooldown, ready: combat.cds.skill <= 0 && combat.resonance >= o.skill.cost },
           { key: 'R', name: o.skill2.short, icon: o.skill2.id, cd: combat.cds.skill2 / o.skill2.cooldown, ready: combat.cds.skill2 <= 0 && combat.resonance >= o.skill2.cost, locked: quests.s.hero.level < o.skill2.level ? `niveau ${o.skill2.level}` : undefined },
           { key: 'SPATIE', name: 'Rol', icon: 'roll', cd: 0, ready: combat.inCombat },

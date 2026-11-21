@@ -73,6 +73,7 @@ export interface HeroData {
 }
 
 export interface SaveData {
+  /** the format's version (SAVE_VERSION); loadSave walks an older one up through MIGRATE */
   v: 2;
   /** false until the character has been made */
   created: boolean;
@@ -130,6 +131,22 @@ export function freshLife(): LifeSave {
 }
 
 const KEY = 'belfort-save-v2';
+/** a save that could not be read is copied here before anything can overwrite it */
+const BROKEN_KEY = 'belfort-save-v2-broken';
+/** which open tab plays the save: only that one writes it (see claimSave) */
+const OWNER_KEY = 'belfort-save-v2-owner';
+
+/** The save format's version. A change to the format adds a step to MIGRATE and raises this by one. */
+export const SAVE_VERSION = 2;
+
+/**
+ * Numbered steps that bring an older save up to date: MIGRATE[n] turns a version-n save into version n+1,
+ * in place. Never drop a step: a save from any older version must still walk up to SAVE_VERSION.
+ * (There is no step from 1: version 1 lived under another key and never reaches loadSave.)
+ */
+const MIGRATE: Record<number, (d: Record<string, unknown>) => void> = {
+  // 2: (d) => { ...turn a version-2 save into version 3... },
+};
 
 export function freshSave(): SaveData {
   return {
@@ -157,32 +174,146 @@ export function freshSave(): SaveData {
 }
 
 export function hasSave() {
+  return loadSave().created === true;
+}
+
+const isObj = (x: unknown): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x);
+
+/** Walk a parsed save up to SAVE_VERSION and fill in defaults; null when it cannot be read (not a save, or from a newer build). */
+export function migrate(raw: unknown): SaveData | null {
+  if (!isObj(raw) || typeof raw.v !== 'number') return null;
+  const d = raw;
+  if ((d.v as number) > SAVE_VERSION) return null;
+  while ((d.v as number) < SAVE_VERSION) {
+    const step = MIGRATE[d.v as number];
+    if (!step) return null;
+    step(d);
+    d.v = (d.v as number) + 1;
+  }
+  // every field has a default, so a save missing one (an older or hand-edited one) still loads
+  const f = freshSave();
+  const obj = <T,>(x: unknown, def: T): T => (isObj(x) ? (x as T) : def);
+  const arr = <T,>(x: unknown, def: T[]): T[] => (Array.isArray(x) ? (x as T[]) : def);
+  const hero = { ...f.hero, ...obj(d.hero, {}) } as HeroData;
+  hero.gear = obj(hero.gear, {});
+  hero.bag = arr(hero.bag, []);
+  const quests = obj<Record<string, QuestState>>(d.quests, {});
+  for (const [id, q] of Object.entries(quests)) {
+    if (!isObj(q)) delete quests[id];
+    else Object.assign(q, { done: arr(q.done, []), counts: obj(q.counts, {}), log: arr(q.log, []), started: Number(q.started) || 0 });
+  }
+  return {
+    ...f,
+    ...d,
+    v: SAVE_VERSION,
+    hero,
+    quests,
+    flags: obj(d.flags, {}),
+    inv: obj(d.inv, f.inv),
+    renown: obj(d.renown, {}),
+    standing: obj(d.standing, {}),
+    taken: arr(d.taken, []),
+    discovered: arr(d.discovered, []),
+    kroniek: arr(d.kroniek, []),
+    life: { ...freshLife(), ...obj(d.life, {}) },
+  } as SaveData;
+}
+
+/** the save as this page found it at its first read: undefined before that, null once this page has written one */
+let foundAtBoot: string | null | undefined;
+
+export function loadSave(): SaveData {
+  let raw: string | null = null;
   try {
-    const raw = localStorage.getItem(KEY);
-    return !!raw && (JSON.parse(raw) as SaveData).created === true;
+    raw = localStorage.getItem(KEY);
+  } catch {
+    /* storage blocked: play on with a fresh save */
+  }
+  if (foundAtBoot === undefined) foundAtBoot = raw;
+  if (!raw) return freshSave();
+  let d: SaveData | null = null;
+  try {
+    d = migrate(JSON.parse(raw));
+  } catch {
+    d = null;
+  }
+  if (d) return d;
+  // unreadable (cut off, garbage, or from a newer build): keep a copy before a new game can overwrite it
+  try {
+    if (localStorage.getItem(BROKEN_KEY) !== raw) localStorage.setItem(BROKEN_KEY, raw);
+  } catch {
+    /* ignore */
+  }
+  return freshSave();
+}
+
+/** The save this page plays was already in storage when the page opened (an earlier visit), not written by this page. */
+export function fromEarlierVisit() {
+  return typeof foundAtBoot === 'string';
+}
+
+// ------------------------------------------------------------ one tab at a time
+// Each tab holds the whole save in memory and writes all of it, so two open tabs would undo each other's
+// progress. The tab that last started playing owns the save; any other tab stops writing and says so.
+const TAB = Math.random().toString(36).slice(2) + Date.now().toString(36);
+let claimed = false;
+let lost = false;
+
+/** This tab plays the save from now on (call it before reading the save to play it). */
+export function claimSave() {
+  claimed = true;
+  try {
+    localStorage.setItem(OWNER_KEY, TAB);
+  } catch {
+    /* ignore */
+  }
+  if (typeof window !== 'undefined') window.addEventListener('storage', onStorage);
+}
+
+function onStorage(e: StorageEvent) {
+  if (e.key === OWNER_KEY && e.newValue && e.newValue !== TAB) loseSave();
+}
+
+function ownedElsewhere() {
+  try {
+    const o = localStorage.getItem(OWNER_KEY);
+    return claimed && !!o && o !== TAB;
   } catch {
     return false;
   }
 }
 
-export function loadSave(): SaveData {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return freshSave();
-    const d = JSON.parse(raw) as SaveData;
-    if (d.v !== 2) return freshSave();
-    const f = freshSave();
-    return { ...f, ...d, hero: { ...f.hero, ...d.hero }, life: { ...freshLife(), ...(d.life ?? {}) } };
-  } catch {
-    return freshSave();
-  }
+/** Another tab took the save over: stop writing here, and cover this tab with a notice. */
+function loseSave() {
+  if (lost) return;
+  lost = true;
+  if (typeof document === 'undefined') return;
+  document.exitPointerLock?.();
+  const el = document.createElement('div');
+  el.className = 'elsewhere';
+  el.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(12,10,8,.92);color:#e8dcc0;font:18px/1.5 Georgia,serif;text-align:center;padding:16px';
+  el.innerHTML = '<div style="max-width:30em">Het spel is in een ander venster geopend. Daar wordt je voortgang nu bewaard, hier niet meer.</div><button style="font:inherit;padding:8px 18px;cursor:pointer">HIER VERDER SPELEN</button>';
+  el.querySelector('button')!.addEventListener('click', () => location.reload());
+  for (const t of ['pointerdown', 'mousedown', 'click', 'wheel'] as const) el.addEventListener(t, (ev) => ev.stopPropagation());
+  document.body.appendChild(el);
 }
 
-export function writeSave(d: SaveData) {
+/** false when the save was not written (storage blocked or full, or another tab plays it) */
+export function writeSave(d: SaveData): boolean {
+  if (lost) return false;
+  if (ownedElsewhere()) {
+    loseSave();
+    return false;
+  }
+  // a tab that writes a save before it claimed one (a new game, the debug default) plays that save
+  if (!claimed) claimSave();
+  foundAtBoot = null;
   try {
     localStorage.setItem(KEY, JSON.stringify(d));
+    return true;
   } catch {
     /* private window or storage blocked: play on without saving */
+    return false;
   }
 }
 
