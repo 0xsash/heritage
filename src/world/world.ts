@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { hash01, rng } from '../core/math';
 import type { MaterialSet } from '../render/textures';
-import { addBuilding, makeBuildingMaterial, setTownTest, styleFor } from './buildings';
+import { addBuilding, makeBuildingMaterial, setStreetTest, setTownTest, styleFor, type BuildingStyle } from './buildings';
 import { WorldCollision } from './collision';
 import { analyse, pointInRing, toRing, type Footprint } from './footprint';
 import { GeomBuilder, triangulate } from './geom';
@@ -46,6 +46,8 @@ export class World {
   group = new THREE.Group();
   collision = new WorldCollision();
   footprints: Footprint[] = [];
+  /** the house type and parts chosen for each footprint (for tools and tests) */
+  houseStyles = new Map<Footprint, BuildingStyle>();
   discoveries: Discovery[] = [];
   streets: NamedSegment[] = [];
   private streetGrid = new Map<number, NamedSegment[]>();
@@ -266,14 +268,30 @@ export class World {
     const set = this.assets.build;
     const mat = makeBuildingMaterial(set, this.uniforms);
     const chunks = new Map<string, GeomBuilder>();
+    // First every footprint and its style (the style decides hipped roofs, which
+    // collision must know), then the meshes, which look at the neighbours to
+    // tell street fronts from party walls and yards.
+    const styled: [Footprint, BuildingStyle][] = [];
     for (const b of this.data.buildings) {
       const f = analyse(b);
+      const style = styleFor(f);
+      f.hip = style.hip;
       this.footprints.push(f);
       this.collision.add(f);
+      styled.push([f, style]);
+      this.houseStyles.set(f, style);
+    }
+    const squares = this.data.land.filter((l) => l.k === 'townSquare').map((l) => toRing(l.p));
+    setStreetTest((x, z) => {
+      if (this.collision.buildingAt(x, z)) return false;
+      if (this.isBlocked(x, z)) return true; // within a few metres of a road (or water)
+      return squares.some((r) => pointInRing(r, x, z));
+    });
+    for (const [f, style] of styled) {
       const key = Math.floor(f.cx / CHUNK) + ',' + Math.floor(f.cz / CHUNK);
       let gb = chunks.get(key);
-      if (!gb) chunks.set(key, (gb = new GeomBuilder()));
-      addBuilding(gb, f, styleFor(f), set);
+      if (!gb) chunks.set(key, (gb = new GeomBuilder(true)));
+      addBuilding(gb, f, style, set);
     }
     for (const gb of chunks.values()) {
       const mesh = new THREE.Mesh(gb.build(), mat);

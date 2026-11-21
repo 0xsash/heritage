@@ -1,13 +1,17 @@
 // The town wall of Diest c. 1560, traced from the Ferraris map (1777), which
 // still shows the late-medieval enceinte: a brick curtain wall with a
 // crenellated walk, half-round towers, gatehouses on the roads, and a moat.
+// Footings, corbels and gate halls are of the local rust-brown ironstone
+// (Diestiaan ijzerzandsteen, quarried in the town itself and at Webbekom,
+// Langdorp and Testelt), the walls above of brick from Zichem and Loksbergen;
+// the gates are entered through a stone arch.
 
 import * as THREE from 'three';
 import { hash01 } from '../core/math';
 import type { MaterialSet } from '../render/textures';
 import type { WorldCollision } from './collision';
 import { analyse } from './footprint';
-import { GeomBuilder } from './geom';
+import { GeomBuilder, triangulate } from './geom';
 
 export interface WallData {
   ring: [number, number][];
@@ -20,7 +24,7 @@ const TOWER_EVERY = 62;
 const GATE_GAP = 11;
 
 const brick = new THREE.Color('#6c4636');
-const stone = new THREE.Color('#5f4a33'); // brown ironstone, as in the church
+const stone = new THREE.Color('#674a31'); // brown ironstone, as in the church
 const slate = new THREE.Color('#3b3f47');
 
 function box(gb: GeomBuilder, c: [number, number], u: [number, number], halfU: number, halfN: number, y0: number, y1: number, color: THREE.Color) {
@@ -62,11 +66,49 @@ function roundTower(gb: GeomBuilder, x: number, z: number, r: number, h: number,
   gb.curMat = wallMat;
 }
 
+/**
+ * The two faces of the gate hall come down to the ground round a pointed arch,
+ * as wide as the passage between the towers (which is all open in collision).
+ */
+function gateArches(gb: GeomBuilder, gx: number, gz: number, u: [number, number]) {
+  const n: [number, number] = [-u[1], u[0]];
+  const half = 2.9, outer = 4.2, spring = 3.3, apex = 5.7, top = 6.2;
+  const arch: [number, number][] = [];
+  const N = 10;
+  for (let i = 0; i <= N; i++) {
+    // two arcs meeting at the apex (a pointed arch)
+    const t = i / N;
+    const a = t * Math.PI;
+    const x = -Math.cos(a) * half;
+    const y = spring + Math.sin(a) * (apex - spring) * (1 + 0.25 * Math.sin(a) * (1 - Math.abs(Math.cos(a))));
+    arch.push([x, Math.min(apex, y)]);
+  }
+  const face: [number, number][] = [[-outer, -0.3], [-half, -0.3], ...arch.map(([x, y]) => [x, y] as [number, number]), [half, -0.3], [outer, -0.3], [outer, top], [-outer, top]];
+  // the arch points run left to right; the outline must not cross itself
+  const tris = triangulate(face);
+  for (const side of [1, -1]) {
+    const P = (su: number, y: number, sn = side * 4.2) => [gx + u[0] * su + n[0] * sn, y, gz + u[1] * su + n[1] * sn];
+    const out: [number, number, number] = [n[0] * side, 0, n[1] * side];
+    for (const [a, b, c] of tris) gb.tri(P(face[a][0], face[a][1]), P(face[b][0], face[b][1]), P(face[c][0], face[c][1]), stone, out);
+  }
+  // intrados and jambs: the passage seen from inside
+  const P = (su: number, y: number, sn: number) => [gx + u[0] * su + n[0] * sn, y, gz + u[1] * su + n[1] * sn];
+  const shade = stone.clone().multiplyScalar(0.6);
+  for (let i = 0; i < arch.length - 1; i++) {
+    const [x0, y0] = arch[i], [x1, y1] = arch[i + 1];
+    const mx = (x0 + x1) / 2, my = (y0 + y1) / 2 - spring;
+    gb.quad(P(x0, y0, -4.2), P(x1, y1, -4.2), P(x1, y1, 4.2), P(x0, y0, 4.2), shade, [-u[0] * mx, -my, -u[1] * mx]);
+  }
+  for (const s of [-1, 1]) {
+    gb.quad(P(s * half, -0.3, -4.2), P(s * half, -0.3, 4.2), P(s * half, spring, 4.2), P(s * half, spring, -4.2), shade, [-u[0] * s, 0, -u[1] * s]);
+  }
+}
+
 export function buildWalls(data: WallData, set: MaterialSet, col: WorldCollision, mat: THREE.Material, waterMat: THREE.Material) {
   const group = new THREE.Group();
-  const gb = new GeomBuilder();
+  const gb = new GeomBuilder(true);
   const wallMat = set.index.brickOld + 0.31;
-  const stoneMat = set.index.stone + 0.62;
+  const stoneMat = (set.index.ironstone ?? set.index.stone) + 0.62;
   const roofMat = set.index.roofSlate + 0.17;
   gb.curMat = wallMat;
 
@@ -97,9 +139,9 @@ export function buildWalls(data: WallData, set: MaterialSet, col: WorldCollision
       if (nearGate(c[0], c[1], GATE_GAP)) continue;
       // ironstone footing, brick above (slightly overlapping pieces so corners close)
       gb.curMat = stoneMat;
-      box(gb, c, u, step / 2 + 0.35, WALL_T / 2 + 0.25, -0.3, 1.6, stone);
+      box(gb, c, u, step / 2 + 0.35, WALL_T / 2 + 0.25, -0.3, 2.4, stone);
       gb.curMat = wallMat;
-      box(gb, c, u, step / 2 + 0.35, WALL_T / 2, 1.6, WALL_H, brick);
+      box(gb, c, u, step / 2 + 0.35, WALL_T / 2, 2.4, WALL_H, brick);
       // merlon on the outer edge, every other piece
       if (k % 2 === 0) {
         const m: [number, number] = [c[0] + out[0] * (WALL_T / 2 - 0.3), c[1] + out[1] * (WALL_T / 2 - 0.3)];
@@ -147,6 +189,7 @@ export function buildWalls(data: WallData, set: MaterialSet, col: WorldCollision
     // the gate hall bridges the passage above head height (no collision below it)
     gb.curMat = stoneMat;
     box(gb, [gx, gz], u, 4.2, 4.2, 6.2, 12.5, stone);
+    gateArches(gb, gx, gz, u);
     gb.curMat = wallMat;
     // a steep roof over the gate hall
     gb.curMat = roofMat;

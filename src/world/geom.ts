@@ -5,6 +5,10 @@
 //     (u, v, eaveHeight)   walls  → windows, doors, grime
 //     (u, v, -1)           roofs  → u along the ridge, v up the slope
 //     (0, 0, -2)           plain  → texture projected from world position
+//   aStyle (buildings only, when `styled`): what the facade is made of and how
+//     it is laid out, read by the building shader (see buildings.ts):
+//     walls (type + seed, wall length, flags, ground floor height + 10 * rise steps)
+//     roofs (0, slope length eave→ridge, flags, 0)
 
 import * as THREE from 'three';
 
@@ -16,6 +20,11 @@ export class GeomBuilder {
   mat: number[] = [];
   /** material layer (integer part) + per-object seed (fraction) for the next triangles */
   curMat = 0;
+  /** per-vertex facade description (only stored when the builder is `styled`) */
+  curStyle: [number, number, number, number] = [0, 0, 0, 0];
+  style: number[] = [];
+
+  constructor(public styled = false) {}
 
   get vertexCount() {
     return this.pos.length / 3;
@@ -50,6 +59,10 @@ export class GeomBuilder {
     const d = [0, 0, -2];
     this.wall.push(...(wa ?? d), ...(wb ?? d), ...(wc ?? d));
     this.mat.push(this.curMat, this.curMat, this.curMat);
+    if (this.styled) {
+      const s = this.curStyle;
+      this.style.push(s[0], s[1], s[2], s[3], s[0], s[1], s[2], s[3], s[0], s[1], s[2], s[3]);
+    }
   }
 
   quad(
@@ -69,6 +82,7 @@ export class GeomBuilder {
     g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
     g.setAttribute('aWall', new THREE.Float32BufferAttribute(this.wall, 3));
     g.setAttribute('aMat', new THREE.Float32BufferAttribute(this.mat, 1));
+    if (this.styled) g.setAttribute('aStyle', new THREE.Float32BufferAttribute(this.style, 4));
     g.computeBoundingSphere();
     g.computeBoundingBox();
     return g;

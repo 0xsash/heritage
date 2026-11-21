@@ -79,6 +79,46 @@
     0.2865,
     0.1711
    ]
+  },
+  {
+   "name": "thatch",
+   "source": "procedural (tools/assets/build_town_layers.py)",
+   "metres": 2.4,
+   "mean": [
+    0.0896,
+    0.0642,
+    0.0302
+   ]
+  },
+  {
+   "name": "ironstone",
+   "source": "procedural (tools/assets/build_town_layers.py)",
+   "metres": 3.2,
+   "mean": [
+    0.0806,
+    0.0416,
+    0.0224
+   ]
+  },
+  {
+   "name": "wood",
+   "source": "procedural (tools/assets/build_town_layers.py)",
+   "metres": 1.6,
+   "mean": [
+    0.1646,
+    0.1056,
+    0.0571
+   ]
+  },
+  {
+   "name": "daub",
+   "source": "procedural (tools/assets/build_town_layers.py)",
+   "metres": 2.2,
+   "mean": [
+    0.6711,
+    0.6322,
+    0.5354
+   ]
   }
  ],
  "ground": [

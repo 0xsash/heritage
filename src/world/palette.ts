@@ -2,6 +2,10 @@
 // surface detail; these tints set the actual colours (final colour = tint x
 // texture detail), so the palette stays under our control: warm brick,
 // whitewash, Diest's brown iron sandstone, clay and slate roofs, deep greens.
+//
+// Diest c. 1650: limewashed daub between dark oak (the commonest house), lime
+// over brick (kalei, white to ochre, never quite clean), rust-brown Diestiaan
+// ironstone, orange-red local tiles ("tichelen"), grey-brown old thatch.
 
 import * as THREE from 'three';
 import { hash01 } from '../core/math';
@@ -22,16 +26,37 @@ export const WALL = {
   brickDark: S('brickDark', '#5f3b2e', '#6b4335', '#553429'),
   whitewash: S('brickWhite', '#d6d0c0', '#cdc6b4', '#dfd9ca', '#c8bfa9'),
   plaster: S('plaster', '#d6ccb6', '#cbbd9c', '#c7b497', '#d3beab', '#bfb39a'),
-  ironstone: S('stone', '#6a4628', '#5f3e23', '#73502f'),
+  ironstone: S('ironstone', '#5e4532', '#54402f', '#664a33', '#5a412e'),
   limestone: S('stone', '#cdc2ab', '#c2b69d'),
   barn: S('brickDark', '#5a4234', '#66503f', '#4f3a2e'),
+  /** vakwerk infill: limewash over loam - white, cream, ochre, a faint pink */
+  daub: S('daub', '#e6ddd2', '#e3d6c2', '#dcc8aa', '#e2cdbd', '#e8e0d6', '#dccbb4'),
+  /** daub left unwashed or washed long ago: the loam shows */
+  daubLoam: S('daub', '#b8a07c', '#a88f6c', '#bfa987'),
+  /** kalei: lime over brick */
+  limewash: S('brickWhite', '#d8d1bf', '#cfc5ab', '#d3bf95', '#cdb9a2', '#c8c3b4'),
+  /** the Begijnhof's whitewashed houses */
+  begijn: S('brickWhite', '#dedad0', '#d6d1c4', '#e0d9c8'),
+  /** barns and sheds: tarred and weathered boards */
+  planks: S('wood', '#6e5a46', '#5d4b3b', '#7a6650'),
 };
 
 export const ROOF = {
   clay: S('roofClay', '#9f4f31', '#8f4429', '#ad5a37', '#94502f', '#a3613f'),
   slate: S('roofSlate', '#3e4149', '#474b53', '#363940', '#4a4a4e'),
   thatchish: S('roofClay', '#8a6a3e', '#93734a', '#7f6038'),
+  /** reed and straw thatch, grey-brown with age */
+  thatch: S('thatch', '#a28c7c', '#ab9480', '#958272', '#b39a80', '#9c8a7e'),
 };
+
+/** dark oak of frames, soffits and boards */
+export const TIMBER_DARK = c('#3a2a1e');
+/** a pentice of weathered boards */
+export const LUIFEL = c('#6a5a48');
+/** white sandstone (Gobertange) copings and step treads */
+export const COPING = c('#bdb39c');
+/** chimney caps, black with smoke */
+export const SOOT_STONE = c('#3c3833');
 
 export const IRONSTONE = WALL.ironstone.tints[0];
 export const IRONSTONE_DARK = c('#5c3d22');
