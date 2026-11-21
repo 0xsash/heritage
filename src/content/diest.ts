@@ -439,7 +439,7 @@ export const diest: Content = {
       ],
     },
     pieter_b5: { who: 'pieter', text: 'Ik ben koster, geen profeet. Ik weet alleen dat hij sliep zolang de klokken luidden, honderden jaren lang. Misschien vond hij dat niet erg.', next: 'pieter_b4' },
-    pieter_b_loon: { who: 'pieter', text: 'Het beeldje wel. Maar door de Maastrichtsepoort komen nu karren uit het land van Loon, voorbij Halen. Daar zwijgen de torens al een jaar, zeggen de voerlui, en meer zeggen ze niet.', next: 'pieter_b4' },
+    pieter_b_loon: { who: 'pieter', text: 'Het beeldje wel. Maar door de Beverenpoort komen nu karren uit het land van Loon, voorbij Halen. Daar zwijgen de torens al een jaar, zeggen de voerlui, en meer zeggen ze niet.', next: 'pieter_b4' },
     pieter_after: { who: 'pieter', text: 'Hoor je dat? Ze slaan weer elk uur. Ik heb in mijn hele leven nog nooit zo graag naar klokken geluisterd. Je draak hoort ze minder graag, zie ik.' },
 
     // ================================================================ Marieke
