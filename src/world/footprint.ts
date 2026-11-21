@@ -36,6 +36,8 @@ export interface Footprint {
   kind: string;
   name?: string;
   id: number;
+  /** the block this plot was cut from (plots.ts) */
+  pid?: number;
 }
 
 const SHED_KINDS = new Set(['roof', 'carport', 'garage', 'garages', 'shed', 'service', 'kiosk', 'toilets', 'greenhouse', 'bunker']);
@@ -55,16 +57,18 @@ export function analyse(b: BuildingData): Footprint {
     if (z < minZ) minZ = z;
     if (z > maxZ) maxZ = z;
   }
-  // Minimum-area oriented box, testing each edge direction.
+  // Minimum-area oriented box, testing each edge direction (or the ridge the plot layout chose).
   let best = { area: Infinity, ux: 1, uz: 0, lo: 0, hi: 0, nlo: 0, nhi: 0 };
-  for (let i = 0; i < ring.length; i++) {
-    const [ax, az] = ring[i];
-    const [bx, bz] = ring[(i + 1) % ring.length];
-    let ux = bx - ax, uz = bz - az;
-    const len = Math.hypot(ux, uz);
-    if (len < 0.5) continue;
-    ux /= len;
-    uz /= len;
+  const dirs: [number, number][] = [];
+  if (b.rd) dirs.push(b.rd);
+  else
+    for (let i = 0; i < ring.length; i++) {
+      const [ax, az] = ring[i];
+      const [bx, bz] = ring[(i + 1) % ring.length];
+      const len = Math.hypot(bx - ax, bz - az);
+      if (len >= 0.5) dirs.push([(bx - ax) / len, (bz - az) / len]);
+    }
+  for (const [ux, uz] of dirs) {
     const nx = -uz, nz = ux;
     let lo = Infinity, hi = -Infinity, nlo = Infinity, nhi = -Infinity;
     for (const [x, z] of ring) {
@@ -81,7 +85,7 @@ export function analyse(b: BuildingData): Footprint {
   let { ux, uz, lo, hi, nlo, nhi } = best;
   let nx = -uz, nz = ux;
   // Ridge runs along the long side.
-  if (nhi - nlo > hi - lo) {
+  if (!b.rd && nhi - nlo > hi - lo) {
     [ux, uz, nx, nz] = [nx, nz, -ux, -uz];
     [lo, hi, nlo, nhi] = [nlo, nhi, -hi, -lo];
   }
@@ -119,7 +123,7 @@ export function analyse(b: BuildingData): Footprint {
     h = b.h < 4 ? h + j * 0.35 : h + (j - 0.5) * 0.7;
   }
   return {
-    ring, minX, minZ, maxX, maxZ, h, cx, cz, ux, uz, nx, nz, hu, hw, rise, hip: 0, kind, name: b.n, id: b.id,
+    ring, minX, minZ, maxX, maxZ, h, cx, cz, ux, uz, nx, nz, hu, hw, rise, hip: 0, kind, name: b.n, id: b.id, pid: b.pid,
   };
 }
 

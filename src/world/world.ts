@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { hash01, rng } from '../core/math';
 import type { MaterialSet } from '../render/textures';
-import { addBuilding, makeBuildingMaterial, setStreetTest, setTownTest, styleFor, type BuildingStyle } from './buildings';
+import { addBuilding, keepWhole, makeBuildingMaterial, setFootprintTest, setStreetTest, setTownTest, styleFor, type BuildingStyle } from './buildings';
 import { WorldCollision } from './collision';
 import { analyse, pointInRing, toRing, type Footprint } from './footprint';
 import { GeomBuilder, triangulate } from './geom';
@@ -12,6 +12,7 @@ import { makeGroundMaterial, makeWaterMaterial } from './ground';
 import { buildLandmarks } from './landmarks';
 import { LORE } from './lore';
 import { LAND, ROAD, pick } from './palette';
+import { splitBlocks, type PlotStats } from './plots';
 import { TreeRenderer, type TreeAtlas, type TreeItem } from './trees';
 import { buildWalls, makeTownTest } from './walls';
 import type { PoiData, RoadData, WorldData } from './types';
@@ -48,6 +49,8 @@ export class World {
   footprints: Footprint[] = [];
   /** the house type and parts chosen for each footprint (for tools and tests) */
   houseStyles = new Map<Footprint, BuildingStyle>();
+  /** how many long blocks were cut into plots at load (plots.ts) */
+  plotStats: PlotStats = { blocks: 0, plots: 0, rejected: 0 };
   discoveries: Discovery[] = [];
   streets: NamedSegment[] = [];
   private streetGrid = new Map<number, NamedSegment[]>();
@@ -271,8 +274,25 @@ export class World {
     // First every footprint and its style (the style decides hipped roofs, which
     // collision must know), then the meshes, which look at the neighbours to
     // tell street fronts from party walls and yards.
+    // The long blocks of the map are cut into narrow period plots first (plots.ts).
+    // The plots tile each block exactly, so the solid outline of the town is the
+    // same as the map's; data.buildings itself (the map in the HUD) is left alone.
+    const squares = this.data.land.filter((l) => l.k === 'townSquare').map((l) => toRing(l.p));
+    const streetTest = (col: WorldCollision) => (x: number, z: number) => {
+      if (col.buildingAt(x, z)) return false;
+      if (this.isBlocked(x, z)) return true; // within a few metres of a road (or water)
+      return squares.some((r) => pointInRing(r, x, z));
+    };
+    const blocks = new WorldCollision();
+    for (const b of this.data.buildings) blocks.add(analyse(b));
+    const { out: buildings, stats } = splitBlocks(this.data.buildings, {
+      isStreet: streetTest(blocks),
+      streetName: (x, z) => this.streetAt(x, z, 12),
+      keepWhole,
+    });
+    this.plotStats = stats;
     const styled: [Footprint, BuildingStyle][] = [];
-    for (const b of this.data.buildings) {
+    for (const b of buildings) {
       const f = analyse(b);
       const style = styleFor(f);
       f.hip = style.hip;
@@ -281,12 +301,8 @@ export class World {
       styled.push([f, style]);
       this.houseStyles.set(f, style);
     }
-    const squares = this.data.land.filter((l) => l.k === 'townSquare').map((l) => toRing(l.p));
-    setStreetTest((x, z) => {
-      if (this.collision.buildingAt(x, z)) return false;
-      if (this.isBlocked(x, z)) return true; // within a few metres of a road (or water)
-      return squares.some((r) => pointInRing(r, x, z));
-    });
+    setStreetTest(streetTest(this.collision));
+    setFootprintTest((x, z) => this.collision.buildingAt(x, z));
     for (const [f, style] of styled) {
       const key = Math.floor(f.cx / CHUNK) + ',' + Math.floor(f.cz / CHUNK);
       let gb = chunks.get(key);

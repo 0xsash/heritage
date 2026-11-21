@@ -59,6 +59,12 @@ export function setStreetTest(test: (x: number, z: number) => boolean) {
   onStreet = test;
 }
 
+/** The footprint (if any) at a point, to tell party walls between plots of one block from outer walls. */
+let footprintAt = (_x: number, _z: number): Footprint | null => null;
+export function setFootprintTest(test: (x: number, z: number) => Footprint | null) {
+  footprintAt = test;
+}
+
 // The Grote Markt, from which wealth falls off.
 const MARKT_X = -20, MARKT_Z = 60;
 const inBegijnhof = (x: number, z: number) => x > 630 && x < 800 && z > -385 && z < -140;
@@ -98,6 +104,17 @@ const SHEDLIKE = new Set(['roof', 'carport', 'garage', 'garages', 'shed', 'servi
 // 1720s, the medieval schepenhuis (named 1337, its cellars survive): both drawn
 // as late-medieval ironstone halls (inventaris.onroerenderfgoed.be 41643, 41642).
 const HALLS = new Set(['Lakenhalle', 'Stadhuis Diest']);
+
+/**
+ * Footprints the plot splitter (plots.ts) leaves whole: churches and chapels, the
+ * Lakenhalle and the schepenhuis, every named house, the Begijnhof, sheds and
+ * barns, and everything outside the walls.
+ */
+export function keepWhole(f: Footprint) {
+  const k = f.kind;
+  return CHURCH.has(k) || k === 'ruins' || k === 'wall' || !!f.name || SHEDLIKE.has(k) || k === 'farm'
+    || !inTown(f.cx, f.cz) || inBegijnhof(f.cx, f.cz);
+}
 
 export function styleFor(f: Footprint): BuildingStyle {
   const s = f.id;
@@ -174,7 +191,9 @@ export function styleFor(f: Footprint): BuildingStyle {
   const hip = f.rise > 0 && !church && (thatched && (type === 'farm' || type === 'barn') ? hash01(s * 43) < 0.8 : false) && f.hu > f.hw * 1.15
     ? (f.rise / Math.max(f.hw, 0.01)) * 1.05
     : 0;
-  const chimney = !church && type !== 'barn' && f.rise > 1.2 && area > 25 && area < 900;
+  // on the plots cut from a block (plots.ts): a stack on about half the front houses, few outbuildings
+  const plotChimney = f.pid === undefined || hash01(s * 67 + 5) < (k === 'outbuilding' ? 0.12 : 0.5);
+  const chimney = !church && type !== 'barn' && f.rise > 1.2 && area > 25 && area < 900 && plotChimney;
   const twoStorey = f.h >= 5.4;
   const G = type === 'hall' ? Math.min(4.2, f.h * 0.5) : twoStorey ? Math.max(2.8, Math.min(3.55, f.h * 0.5)) : f.h;
   const jetty = type === 'timber' && town && twoStorey && G >= 3.45 && hash01(s * 47) < (rich ? 0.75 : 0.5);
@@ -184,6 +203,14 @@ export function styleFor(f: Footprint): BuildingStyle {
     roof, roofTint: P.pick(roof.tints, s * 11 + 4),
     stepped, parapet, chimney, hip, jetty, luifel, G, rich, poor,
   };
+}
+
+/** Does a plot of the same block stand against this end of the ridge (a party gable, hidden or plain)? */
+function partyEnd(f: Footprint, end: number) {
+  if (f.pid === undefined) return false;
+  const uu = (f.hu + 0.3) * end;
+  const o = footprintAt(f.cx + f.ux * uu, f.cz + f.uz * uu);
+  return !!o && o !== f && o.pid === f.pid;
 }
 
 /** Does the footprint end in a straight gable wall at this end of the ridge (so a gable can stand on it)? */
@@ -272,6 +299,19 @@ export function addBuilding(gb: GeomBuilder, f: Footprint, style: BuildingStyle,
   // Walls: one straight run per footprint edge, split where the roof changes plane.
   gb.curMat = wallMat;
   const jettyJ = 0.34;
+  // party walls between plots of one block: no eaves or verges over the neighbour, and no wall
+  // at all where the neighbour's roof is everywhere at least as high (it would never be seen)
+  const sibling = (x: number, z: number) => {
+    if (f.pid === undefined) return null;
+    const o = footprintAt(x, z);
+    return o && o !== f && o.pid === f.pid ? o : null;
+  };
+  const party = ring.map((a, i) => {
+    const b = ring[(i + 1) % ring.length];
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (len < 0.05) return false;
+    return !!sibling((a[0] + b[0]) / 2 + ((b[1] - a[1]) / len) * 0.2, (a[1] + b[1]) / 2 - ((b[0] - a[0]) / len) * 0.2);
+  });
   for (let i = 0; i < ring.length; i++) {
     const a = ring[i], b = ring[(i + 1) % ring.length];
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
@@ -283,6 +323,14 @@ export function addBuilding(gb: GeomBuilder, f: Footprint, style: BuildingStyle,
     const ts = [0, ...(planes.length ? creases(planes, a, b) : []), 1];
     const pts = ts.map((t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] as [number, number]);
     const tops = pts.map((p) => top(p[0], p[1]));
+    if (party[i]) {
+      const hidden = [0.03, ...ts.slice(1, -1), 0.25, 0.5, 0.75, 0.97].every((t) => {
+        const px = a[0] + (b[0] - a[0]) * t + ox * 0.2, pz = a[1] + (b[1] - a[1]) * t + oz * 0.2;
+        const o = sibling(px, pz);
+        return !!o && roofHeight(o, px, pz) >= top(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t) - 0.02;
+      });
+      if (hidden) continue;
+    }
     const gable = tops.some((y) => y > f.h + 0.3);
     let flags = baseFlags | (street ? F_STREET : 0) | (gable ? F_GABLE : 0);
     const jet = style.jetty && street && f.h > style.G + 1.2;
@@ -361,7 +409,7 @@ export function addBuilding(gb: GeomBuilder, f: Footprint, style: BuildingStyle,
       gb.tri(pt(i0), pt(i1), pt(i2), shade, UP, uv(i0), uv(i1), uv(i2));
     }
   }
-  addEaves(gb, f, ring, planes, style, roofMat, seed, thatch);
+  addEaves(gb, f, ring, planes, style, roofMat, seed, thatch, party);
   gb.curStyle = [0, 0, 0, 0];
 
   if (style.stepped) {
@@ -381,7 +429,7 @@ export function addBuilding(gb: GeomBuilder, f: Footprint, style: BuildingStyle,
  * with the walls), verges over gable ends; thatch gets a thick, rounded edge.
  * Each strip is drawn twice: roof on top, dark boarding underneath.
  */
-function addEaves(gb: GeomBuilder, f: Footprint, ring: [number, number][], planes: Plane[], style: BuildingStyle, roofMat: number, seed: number, thatch: boolean) {
+function addEaves(gb: GeomBuilder, f: Footprint, ring: [number, number][], planes: Plane[], style: BuildingStyle, roofMat: number, seed: number, thatch: boolean, party: boolean[]) {
   const o = thatch ? 0.55 : f.h < 4 ? 0.22 : 0.4;
   const ov = (thatch ? 0.35 : 0.22) + (style.jetty ? 0.36 : 0);
   const under = P.TIMBER_DARK;
@@ -389,7 +437,7 @@ function addEaves(gb: GeomBuilder, f: Footprint, ring: [number, number][], plane
   for (let i = 0; i < ring.length; i++) {
     const a = ring[i], b = ring[(i + 1) % ring.length];
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    if (len < 0.3) continue;
+    if (len < 0.3 || party[i]) continue;
     const ox = (b[1] - a[1]) / len, oz = -(b[0] - a[0]) / len;
     const ts = [0, ...creases(planes, a, b), 1];
     const pts = ts.map((t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] as [number, number]);
@@ -500,8 +548,8 @@ function addParapets(gb: GeomBuilder, f: Footprint, style: BuildingStyle, wallMa
     const uOut = f.hu * end + 0.01 * end, uIn = uOut - th * end;
     const P3 = (s: number, y: number, uu: number) => [f.cx + f.ux * uu + f.nx * s, y, f.cz + f.uz * uu + f.nz * s];
     const outward: [number, number, number] = [f.ux * end, 0, f.uz * end];
-    // only where the footprint really ends in a straight gable wall
-    if (!squareEnd(f, end)) continue;
+    // only where the footprint really ends in a straight gable wall, and not against the next plot
+    if (!squareEnd(f, end) || partyEnd(f, end)) continue;
     const prof: [number, number][] = [[-f.hw - 0.05, f.h], [0, f.h + f.rise], [f.hw + 0.05, f.h]];
     for (let k = 0; k < 2; k++) {
       const [s0, y0] = prof[k], [s1, y1] = prof[k + 1];
@@ -550,6 +598,7 @@ function addSteppedGables(gb: GeomBuilder, f: Footprint, color: THREE.Color, sto
   const tris = triangulate(prof);
   const wallMat = gb.curMat;
   for (const end of [1, -1]) {
+    if (partyEnd(f, end)) continue;
     const uOut = f.hu * end + 0.02 * end;
     const uIn = uOut - thick * end;
     const P3 = (s: number, y: number, uu: number) => [f.cx + f.ux * uu + f.nx * s, y, f.cz + f.uz * uu + f.nz * s];

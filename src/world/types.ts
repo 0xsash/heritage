@@ -12,6 +12,10 @@ export interface BuildingData {
   t?: string;
   n?: string;
   hist?: 1;
+  /** set at load on the plots cut from a long block (plots.ts): the block's id */
+  pid?: number;
+  /** ridge direction forced by the plot layout (unit vector); else the long axis */
+  rd?: [number, number];
 }
 
 export interface RoadData {
