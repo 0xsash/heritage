@@ -133,6 +133,35 @@ ARCHETYPES = [
                     legs=[P('breeches', 'russet', 'brown', 'grey')], legs_under=[P('stockings', 'grey', 'linen')],
                     feet=[P('shoes'), P('clogs')]),
          optional=dict(head=0.5, belt=0.8), props=[[None, 4], ['bread', 1], ['bundle', 1]]),
+    # ---- phase E: the women's own cut and more range for the men in the street
+    dict(id='market_woman', role='peasantWoman', weight=4, bodies=['woman_stout', 'woman', 'woman_old'], gait='walk',
+         slots=dict(hair=[P('hair_bun', *HAIR_F)], head=[P('coif'), P('coif'), P('hat_straw', 'linen', 'madder', 'woad'), P('muts_f', 'black', 'umber', 'woad_dk')],
+                    torso=[P('bodice', 'madder', 'woad', 'russet', 'moss', 'brown', 'ochre')], collar=[P('kerchief')],
+                    legs_under=[P('onderrok', 'madder', 'madder_dk', 'ochre', 'woad', 'rose')],
+                    legs=[P('rok', 'woad', 'russet', 'grey', 'moss', 'brown', 'umber', 'slate')],
+                    apron=[P('schort', 'linen', 'white', 'grey')], feet=[P('clogs'), P('shoes')]),
+         optional=dict(apron=0.8), props=[['basket', 3], ['bread', 1], ['bundle', 1], [None, 2]]),
+    dict(id='burgher_jak', role='burgher', weight=3, bodies=['woman', 'woman_stout', 'woman_old'], gait='walk_formal',
+         slots=dict(hair=[P('hair_bun', *HAIR_F)], head=[P('coif'), P('hat_f', 'black', 'umber'), P('bontmuts', 'black', 'madder_dk', 'woad_dk')],
+                    torso=[P('jak', 'black', 'violet', 'woad_dk', 'madder_dk', 'moss')], collar=[P('kraag_f')],
+                    legs=[P('skirt', 'black', 'woad_dk', 'violet', 'umber', 'madder_dk')], feet=[P('shoes')]),
+         props=[[None, 3], ['rosary', 1], ['basket', 1]]),
+    dict(id='carter', role='peasant', weight=3, bodies=['man', 'man_stout', 'man_young'], gait='walk',
+         slots=dict(hair=[P('hair_crop', *HAIR_M), P('hair_long', *HAIR_M)],
+                    beard=[P('moustache', *HAIR_M), P('beard_full', *HAIR_M), P('beard_short', *HAIR_M), P('moustache_wide', *HAIR_M)],
+                    head=[P('cap_knit', 'russet', 'grey', 'madder_dk', 'woad_dk', 'umber'), P('cap_flat', 'brown', 'grey')],
+                    torso=[P('doublet', *DULL)], coat=[P('jerkin')], collar=[P('collar_band')],
+                    legs=[P('breeches', *DULL)], legs_under=[P('stockings', 'grey', 'linen', 'brown')], feet=[P('boots'), P('clogs')]),
+         optional=dict(beard=0.7, collar=0.3), props=[[None, 3], ['bundle', 1], ['staff', 1]]),
+    dict(id='gentleman', role='burgher', weight=2, bodies=['man', 'man_young', 'man_stout', 'man_old'], gait='walk_formal',
+         slots=dict(hair=[P('hair_long', *HAIR_M), P('hair_tail', *HAIR_M)],
+                    beard=[P('beard_pointed', *HAIR_M), P('beard_goatee', *HAIR_M), P('moustache_wide', *HAIR_M)],
+                    head=[P('hat_tall', 'black', 'umber', 'grey'), P('hat_wide', 'black')],
+                    torso=[P('doublet', 'black', 'woad_dk', 'violet', 'madder_dk')], collar=[P('collar_band')],
+                    coat=[P('casaque', 'black', 'umber', 'woad_dk', 'moss', 'madder_dk')],
+                    legs=[P('breeches', 'black', 'umber', 'woad_dk')], legs_under=[P('stockings', 'black', 'grey', 'linen')],
+                    feet=[P('boots'), P('shoes')]),
+         props=[[None, 4], ['stick', 1], ['sword', 1]]),
     # ---- enemies: never picked for the street crowd
     dict(id='deserter', role='soldier', weight=1, crowd=False, bodies=['man', 'man_young', 'man_stout'], gait='walk',
          slots=dict(hair=[P('hair_crop', *HAIR_M), P('hair_long', *HAIR_M)],
@@ -163,8 +192,18 @@ EXCLUDES = {'bandolier': ['buff_coat', 'sash', 'pelerine'], 'bands': ['capuche',
             'pelerine': ['capuche', 'huik', 'buff_coat'], 'belt': ['habit', 'rope_belt'], 'smock': ['doublet', 'habit', 'bodice'],
             'doublet': ['smock', 'habit', 'bodice'], 'habit': ['bodice', 'skirt', 'breeches', 'stockings'],
             'mantle': ['pelerine', 'capuche', 'huik'], 'hair_braid': ['huik', 'beguine_veil'],
-            'hair_tail': ['capuche']}
+            'hair_tail': ['capuche'],
+            # phase E
+            'jak': ['bodice', 'doublet', 'smock', 'habit'], 'kraag_f': ['kerchief', 'collar_band', 'huik'],
+            'rok': ['skirt', 'breeches', 'habit', 'apron'], 'onderrok': ['skirt', 'breeches', 'habit'],
+            'casaque': ['buff_coat', 'jerkin', 'pelerine', 'sash', 'bandolier'], 'jerkin': ['buff_coat', 'sash'],
+            'mantle_short': ['pelerine', 'capuche', 'huik', 'mantle', 'mantle_hood'],
+            'mantle_hood': ['pelerine', 'capuche', 'huik', 'mantle', 'mantle_short'],
+            'hair_f_loose': ['huik', 'beguine_veil', 'capuche'], 'hair_f_twin': ['huik', 'beguine_veil', 'capuche'],
+            'hair_f_tail': ['huik', 'beguine_veil', 'capuche'], 'hair_m_lovelock': ['capuche']}
+REQUIRES.update({'schort': ['rok'], 'rok': ['onderrok'], 'casaque': ['doublet'], 'jerkin': ['doublet']})
 HAT_HIDES = ['hair_crown']
+HATS = ('hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'hat_f', 'hat_tall', 'hat_straw', 'bontmuts', 'muts_f', 'cap_knit')
 GRIP_KINDS = {'fist_r': ('hand_r', 'fist'), 'hang_r': ('hand_r', 'hang'), 'hang_l': ('hand_l', 'hang'),
               'sword_r': ('hand_r', 'sword'), 'along_r': ('hand_r', 'along')}
 PROP_GRIP = {'basket': 'hang_r', 'bread': 'hang_r', 'bundle': 'hang_r', 'lantern': 'hang_r', 'rosary': 'hang_r',
@@ -174,9 +213,18 @@ PROP_GRIP = {'basket': 'hang_r', 'bread': 'hang_r', 'bundle': 'hang_r', 'lantern
 # the player's character creation: which bodies, hair and beards it offers, and the three class outfits (every
 # outfit assembles on every listed body of both sexes; the game adds the `mantle` on top in any dye)
 HERO = {
-    'bodies': {'m': ['man', 'man_young', 'man_stout'], 'f': ['woman', 'woman_stout']},
-    'hair': {'m': ['hair_crop', 'hair_long', 'hair_tail'], 'f': ['hair_bun', 'hair_braid']},
-    'beards': ['beard_pointed', 'moustache', 'beard_full', None],
+    'bodies': {'m': ['man', 'man_young', 'man_stout'], 'f': ['woman', 'woman_stout', 'woman_lean']},
+    'hair': {'m': ['hair_crop', 'hair_long', 'hair_tail', 'hair_m_curly', 'hair_m_lovelock', 'hair_m_shag', 'hair_m_swept',
+                   'hair_m_fringe', 'hair_thin'],
+             'f': ['hair_bun', 'hair_braid', 'hair_f_curls', 'hair_f_loose', 'hair_f_twin', 'hair_f_crown', 'hair_f_low',
+                   'hair_f_fringe', 'hair_f_tail']},
+    'beards': ['beard_pointed', 'moustache', 'beard_full', 'beard_short', 'beard_goatee', 'moustache_wide', None],
+    # phase E: headwear by sex, the three mantles, the mark; the class outfits (main / accent dye roles) are in
+    # src/rpg/look.ts, which also keeps the phase D `outfits` below working for older code
+    'headwear': {'m': ['hat_wide', 'hat_tall', 'cap_flat', 'cap_knit', 'morion', 'hat_pilgrim'],
+                 'f': ['coif', 'hat_f', 'hat_straw', 'bontmuts', 'muts_f']},
+    'mantles': ['mantle', 'mantle_short', 'mantle_hood'],
+    'marks': ['eyepatch'],
     'hairDyes': ['h_dark', 'h_brown', 'h_chestnut', 'h_blond', 'h_black', 'h_red', 'h_grey'],
     'mantle': {'piece': 'mantle', 'dyes': ['madder', 'madder_dk', 'woad_dk', 'moss', 'green_dk', 'umber', 'black', 'grey', 'ochre']},
     'outfits': {
@@ -269,10 +317,11 @@ def skin_mask(body, eyes):
     if 'aux' in me.color_attributes:
         me.color_attributes['aux'].data.foreach_get('color', lips)
     lips = np.clip(lips.reshape(-1, 4)[:, 0], 0, 1)
-    for o, r in [(body, 1.0 - lips)] + [(e, np.zeros(len(e.data.vertices), np.float32)) for e in eyes]:
+    for o, r, g in [(body, 1.0 - lips, 0.0)] + [(e, np.zeros(len(e.data.vertices), np.float32), 1.0) for e in eyes]:
         a = o.data.color_attributes.get('dye') or o.data.color_attributes.new('dye', 'FLOAT_COLOR', 'POINT')
         flat = np.zeros((len(o.data.vertices), 4), dtype=np.float32)
         flat[:, 0] = r
+        flat[:, 1] = g                  # phase E: g = 1 on the eyeballs (the game tints the iris)
         flat[:, 3] = 1.0
         a.data.foreach_set('color', flat.ravel())
 
@@ -352,7 +401,7 @@ def stage_export():
     # pieces that frame the face follow the face morphs; body garments never need to
     meta_ = json.loads(sc['garments'])
     morph_pieces = {g for g in json.loads(sc.get('morph_pieces', '[]'))
-                    if meta_.get(g, {}).get('slot') in ('head', 'hair', 'beard', 'mantle', 'collar')}
+                    if meta_.get(g, {}).get('slot') in ('head', 'hair', 'beard', 'mantle', 'collar', 'mark')}
     man = bpy.data.objects['rig.man']
     idle = bpy.data.actions['idle']
     pel_man = man.data.bones['pelvis'].head_local.z
@@ -472,12 +521,14 @@ def stage_export():
         dye = np.zeros(len(o.data.vertices) * 4, dtype=np.float32)
         o.data.color_attributes['dye'].data.foreach_get('color', dye)
         h = list(hides.get(g, []))
-        if g in ('hat_wide', 'hat_pilgrim', 'cap_flat', 'morion'):
+        if g in HATS:
             h += HAT_HIDES
         layer = {'legs_under': 0, 'feet': 1, 'legs': 1, 'torso': 2, 'hair': 2, 'beard': 3, 'apron': 3, 'coat': 3,
                  'collar': 4, 'belt': 4, 'sash': 5, 'bandolier': 5, 'mantle': 5, 'head': 6, 'plume': 7}.get(m['slot'], 3)
         pc = dict(slot=m['slot'], layer=layer, bodies=m['bodies'], dyeable=bool(dye.reshape(-1, 4)[:, 0].max() > 0.5),
                   hides=h, desc=m['desc'])
+        if dye.reshape(-1, 4)[:, 1].max() > 0.5:
+            pc['accent'] = True
         if g in morph_pieces:
             pc['morphs'] = True
         if g in REQUIRES:

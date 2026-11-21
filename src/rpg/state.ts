@@ -45,6 +45,26 @@ export interface HeroData {
   faction: FactionId;
   /** the dragon's scale colour (see src/player/scales.ts) */
   scales: string;
+  // --- added with the second character kit; an older save has none of these and gets the defaults in look.ts
+  /** overall scale of the figure, 0.92 .. 1.08 (1: the body as built) */
+  height?: number;
+  /** iris colour (hex); null: as painted */
+  eyes?: string | null;
+  /** scar, freckles, eyepatch, weathered; null: none */
+  mark?: string | null;
+  /** which of the class's outfits (index into look.ts OUTFITS) */
+  outfit?: number;
+  /** the outfit's main and accent dyes (palette names); absent: the outfit's own */
+  main?: string;
+  accent?: string;
+  /** headwear piece, null for bare-headed; absent: the outfit's own (when `hat` is on) */
+  headwear?: string | null;
+  /** mantle style: mantle, mantle_short, mantle_hood */
+  mantle?: string;
+  /** the dragon's belly and wing membranes, its eyes (hex; null: as painted) and its horns (see scales.ts) */
+  dragonBelly?: string | null;
+  dragonEyes?: string | null;
+  dragonHorns?: string;
   level: number;
   xp: number;
   hp: number;

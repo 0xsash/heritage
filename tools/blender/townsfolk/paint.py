@@ -10,7 +10,7 @@ import bpy, os, math, json, glob
 import numpy as np
 from mathutils import Vector, Matrix
 from .common import log, R, PARTS, TEX, SKIN_TEX, WORK, CACHE, srgb
-from .bodies import BODIES, BODY_ORDER
+from .bodies import BODIES, BODY_ORDER, TILE_BODIES
 from .atlas import garment_refs, SKIN_TILES
 
 vnoise, fbm, box_blur, soft_blur, sstep, rgb, mixc = R.vnoise, R.fbm, R.box_blur, R.soft_blur, R.sstep, R.rgb, R.mixc
@@ -240,7 +240,7 @@ def paint_garments(m, gnames):
     # ---- dyeable cloth: wool, second wool (stockings), dyed linen, felt, lining, sash, cloth_b ----
     for n, var, streak, folds in (('wool', 0.40, 0.06, 0.12), ('wool2', 0.35, 0.20, 0.0), ('linen_d', 0.35, 0.05, 0.10),
                                   ('felt', 0.35, 0.0, 0.0), ('lining', 0.3, 0.0, 0.1), ('sash', 0.3, 0.08, 0.15),
-                                  ('cloth_b', 0.4, 0.0, 0.2)):
+                                  ('cloth_b', 0.4, 0.0, 0.2), ('acc', 0.35, 0.04, 0.1)):
         M = part(n)
         if not M.any():
             continue
@@ -249,7 +249,7 @@ def paint_garments(m, gnames):
         p.rough[M] = 0.9 if n != 'sash' else 0.7
 
     # long garments: painted vertical folds that deepen towards the hem
-    for g in ('skirt', 'habit', 'huik', 'apron', 'smock', 'buff_coat'):
+    for g in ('skirt', 'habit', 'huik', 'apron', 'smock', 'buff_coat', 'rok', 'onderrok', 'schort', 'casaque'):
         M = G(g)
         if not M.any():
             continue
@@ -258,6 +258,19 @@ def paint_garments(m, gnames):
         k = np.clip(fold, -1, 1) * 0.07
         p.col[M] = (p.col * (1 + k[..., None]))[M]
     # skirt: a darker hem band and a waistband line
+    # phase E: a darker hem band on the petticoat and the rok, too
+    for g in ('onderrok', 'rok'):
+        M = G(g)
+        if M.any():
+            t = A[:, :, 0]
+            band = sstep(0.88, 0.90, t) * sstep(0.97, 0.95, t)
+            p.col[M] = (p.col * (1 - 0.32 * band[..., None]))[M]
+    # the jak and the casaque: a seam down the front; the jerkin: stitched seams
+    for g in ('jak', 'casaque', 'jerkin'):
+        M = G(g) & (part('wool') | part('leather'))
+        if M.any():
+            seam = sstep(0.004, 0.0015, np.abs(x)) * (y < 0)
+            p.col[M] = (p.col * (1 - 0.40 * seam[..., None]))[M]
     M = G('skirt')
     if M.any():
         t = A[:, :, 0]
@@ -388,6 +401,20 @@ def paint_garments(m, gnames):
         if n == 'iron':
             p.metal[M] = 0.7
 
+    # ---- fur (the bontmuts) and the eyepatch ----
+    M = part('fur')
+    if M.any():
+        tuft = vnoise(np.stack([x * 300.0, y * 300.0, z * 300.0], axis=2))
+        p.base(M, rgb('#6a5038'), rgb('#a08060'), rgb('#3a2818'), var=0.6, streak=0.4)
+        p.col[M] = (p.col * (1 + 0.25 * tuft[..., None]))[M]
+        p.shade(M, np.array([0.45, 0.4, 0.4], np.float32), strength=0.9, cavity=0.4)
+        p.rough[M] = 0.95
+    M = part('patch')
+    if M.any():
+        p.base(M, rgb('#221c1a'), rgb('#4a3e38'), rgb('#0e0b0a'), var=0.3)
+        p.shade(M, np.array([0.5, 0.5, 0.5], np.float32), strength=0.6, edge=0.4, edge_col=rgb('#6a5a50'))
+        p.rough[M] = 0.5
+
     # ---- metals ----
     M = part('brass')
     k = np.clip(0.5 + 0.55 * p.up + 0.25 * p.N[:, :, 0] - 0.2 * p.N[:, :, 1] + 0.1 * p.n_mid, 0, 1)
@@ -449,7 +476,7 @@ def paint_skins(m, lms):
     orm = np.zeros((H, W, 3), np.float32)
     nrm = np.zeros((H, W, 3), np.float32)
     th, tw = H // SKIN_TILES, W // SKIN_TILES
-    for t, bid in enumerate(BODY_ORDER):
+    for t, bid in enumerate(TILE_BODIES):
         tx, ty = t % SKIN_TILES, t // SKIN_TILES
         sl = (slice(ty * th, (ty + 1) * th), slice(tx * tw, (tx + 1) * tw))     # pixel row 0 is v = 0
         sub = {k: (v[sl] if isinstance(v, np.ndarray) else v) for k, v in m.items()}
@@ -685,7 +712,7 @@ def stage_paint():
         log('reusing skin bake', npz)
     else:
         objs, skin_imgs, offsets = [], {}, {}
-        for t, bid in enumerate(BODY_ORDER):
+        for t, bid in enumerate(TILE_BODIES):         # a body sharing a tile is painted with its owner
             png = glob.glob(os.path.join(CACHE, 'mh', BODIES[bid]['skin'], '*.png'))
             img = bpy.data.images.load(png[0]) if png else None
             for part in ('body', 'eye_l', 'eye_r'):

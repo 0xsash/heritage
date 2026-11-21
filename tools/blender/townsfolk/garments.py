@@ -435,7 +435,7 @@ def g_boots(ctx, ref):
     # the cuff: a wide funnel turned down over the boot top
     cuffs = []
     for sd, sx in (('l', 1), ('r', -1)):
-        c = Vector((ctx.knee.x * sx, ctx.knee.y, kz - 0.07 * ctx.k))
+        c = Vector((ctx.knee.x * sx, ctx.knee.y, kz - 0.05 * ctx.k))
         bvh = ctx.bvh('boots', [boots])
         pts = ring_out(bvh, c, UP, 24)
         rows = 4
@@ -444,7 +444,7 @@ def g_boots(ctx, ref):
             t = j / (rows - 1)
             for p in pts:
                 d = Vector((p.x - c.x, p.y - c.y, 0))
-                verts.append(c + d * (1.06 + 0.32 * t) + Vector((0, 0, (0.01 - 0.09 * t) * ctx.k)))
+                verts.append(c + d * (1.08 + 0.62 * t) + Vector((0, 0, (0.03 - 0.10 * t) * ctx.k)))
         cf = new_mesh_obj(f'cuff_{sd}', verts, grid_faces(rows, 24, True), 'leather')
         fix_normals_out(cf, lambda p, c=c: Vector((c.x, c.y, p.z)))
         solidify(cf, 0.005 * ctx.k)
@@ -536,7 +536,8 @@ def g_doublet(ctx, ref):
     smooth_boundary(o, 2)
     subdivide(o, 1)
     hz, wz = ctx.hip.z, ctx.waist_z
-    inflate_n(o, lambda co, n: ctx.k * (0.009 + 0.007 * smoothstep(0.22, 0.04, ctx.along_fore(co)) * (abs(co.x) > 0.24 * ctx.k)),
+    inflate_n(o, lambda co, n: ctx.k * (0.009 + 0.007 * smoothstep(0.22, 0.04, ctx.along_fore(co)) * (abs(co.x) > 0.24 * ctx.k)
+                                        + 0.010 * smoothstep(0.14, 0.26, ctx.along_fore(co)) * (abs(co.x) > 0.20 * ctx.k)),
               smooth_iter=3)
     # the short tabbed skirt flares out over the hips
     bm = get_bm(o)
@@ -622,7 +623,7 @@ def g_collar_band(ctx, ref):
 
     def depth(a):
         front = math.exp(-((math.atan2(math.sin(a), math.cos(a))) / 0.75) ** 2)
-        return 0.085 + 0.045 * front
+        return 0.110 + 0.060 * front
     o = drape_band(ctx, 'collar_band', [d, ctx.body], c, Vector((0, -0.28, 1)), depth, count=30, rows=5,
                    gap=0.005 * ctx.k, slope=1.25, open_front=0.10, lift=0.004)
     set_part(o, 'linen')
@@ -731,7 +732,7 @@ def g_skirt(ctx, ref):
     rw = ref.waist_z
     cut_by_ref(o, ref.S, lambda co, w: co.z - (rw - 0.02))
     subdivide(o, 1)
-    skirt_shape(ctx, o)
+    skirt_shape(ctx, o, flare=0.16)
     relax(o, 1, 0.3)
     wz = ctx.waist_z
     zmin = min(v.co.z for v in o.data.vertices)
@@ -750,7 +751,7 @@ def g_apron(ctx, ref):
     cut_by_ref(o, ref.S, lambda co, w: max(abs(math.atan2(co.x, -(co.y - ref.hip.y * 0.5))) - 0.95,
                                            co.z - (rw - 0.03), (rmin + 0.10) - co.z))
     subdivide(o, 1)
-    skirt_shape(ctx, o, extra=0.013)
+    skirt_shape(ctx, o, extra=0.013, flare=0.16)
     relax(o, 1, 0.3)
     solidify(o, 0.003 * ctx.k)
     set_part(o, 'linen_d')
@@ -998,16 +999,16 @@ def lathe_ellipse(name, profile, nseg, part, squash_y=1.0):
 @garment('hat_wide', 'head', MEN + WOMEN, 'man', 'wide-brimmed felt hat with a low crown and a band')
 def g_hat_wide(ctx, ref):
     r0 = 0.096
-    prof = [(0.0, 0.112), (0.050, 0.111), (0.078, 0.106), (0.088, 0.092), (0.092, 0.056), (r0, 0.012), (r0 + 0.004, 0.002),
-            (0.150, 0.002), (0.200, -0.006), (0.212, -0.012), (0.205, -0.016), (0.150, -0.007), (r0 + 0.002, -0.006), (r0 - 0.004, 0.0)]
+    prof = [(0.0, 0.128), (0.052, 0.127), (0.080, 0.121), (0.089, 0.104), (0.093, 0.060), (r0, 0.012), (r0 + 0.004, 0.002),
+            (0.160, 0.002), (0.228, -0.007), (0.244, -0.013), (0.236, -0.018), (0.160, -0.008), (r0 + 0.002, -0.006), (r0 - 0.004, 0.0)]
     o = lathe_mesh('hat_wide', prof, 40, 'felt')
     bm = get_bm(o)
     for v in bm.verts:                                       # a softly rolling brim: up at the sides, down in front
         r = math.hypot(v.co.x, v.co.y)
         if r > r0 + 0.01:
             a = math.atan2(v.co.x, -v.co.y)
-            t = (r - r0) / 0.11
-            v.co.z += (0.025 * math.sin(a) ** 2 - 0.012 * max(0.0, math.cos(a))) * t * t
+            t = (r - r0) / 0.14
+            v.co.z += (0.032 * math.sin(a) ** 2 - 0.014 * max(0.0, math.cos(a))) * t * t
     put_bm(bm, o)
     band = lathe_mesh('hatband', [(0.0915, 0.044), (0.0955, 0.040), (0.0985, 0.012), (0.0985, 0.006), (0.094, 0.004)], 40, 'cloth_b')
     hat = join([o, band], 'hat_wide')
@@ -1470,11 +1471,11 @@ def g_sash(ctx, ref):
     c = (top + low) / 2 + Vector((0, ctx.hip.y * 0.5, 0))
     bv = bvh_sub([bc], lambda p: p.z > ctx.waist_z - 0.25 * k)
     pts, ln = convex_ring(bv, c, n, count=48)
-    band = strap_mesh('sash_band', pts, ln, n, c, 0.075 * k, 0.006, 0.003, 'sash')
+    band = strap_mesh('sash_band', pts, ln, n, c, 0.092 * k, 0.006, 0.003, 'sash')
     # knot and two tails at the left hip
     i0 = min(range(len(pts)), key=lambda i: (pts[i] - (low + Vector((0.02 * k, -0.1, 0)))).length + (5 if pts[i].y > ctx.hip.y else 0))
     kp = pts[i0] + (pts[i0] - c).normalized() * 0.015
-    knot = rounded_box('sash_knot', (0.07 * k, 0.04 * k, 0.06 * k), 'sash', roundness=0.7)
+    knot = rounded_box('sash_knot', (0.09 * k, 0.05 * k, 0.075 * k), 'sash', roundness=0.7)
     knot.data.transform(Matrix.Translation(kp))
     bvc = bvh_of([bc])
     tails = []
@@ -2073,6 +2074,11 @@ def torso_surface(objs):
 @garment('mantle', 'mantle', ADULTS, 'man', 'the hero\'s travelling mantle: shoulder cape, small standing collar with a brass clasp, '
          'and a full fall down the back to the calves on the cloak chain; open in front', layer=2)
 def g_mantle(ctx, ref):
+    return mantle_core(ctx, 'mantle')
+
+
+def mantle_core(ctx, name, hem=None, hood=None):
+    """The hero's mantle; phase E adds a short one (hem: 'hip') and one with a hood lying on the back (hood=fn)."""
     k = ctx.k
     under = outer_layers(ctx, TOPS)
     # ---- the shoulder cape (yoke) over whatever is worn
@@ -2143,6 +2149,8 @@ def g_mantle(ctx, ref):
 
     z_top = ctx.neck.z - 0.075 * k
     z_hem = 0.5 * (ctx.knee.z + ctx.ank.z) - 0.01 * k
+    if hem == 'hip':
+        z_hem = ctx.hip.z - 0.10 * k
     zs = np.linspace(z_top - 0.30 * k, z_top, 12)
     y_sb = max(by(0.0, z, ctx.hip.y) for z in zs)                 # shoulder blades / back of the coat
     cols, rows = 29, 21
@@ -2194,7 +2202,8 @@ def g_mantle(ctx, ref):
     set_keep(fall)
     transfer_weights(fall, ctx.T, ctx.bones)
     cloak_chain_weights(ctx, fall, z_top - 0.04 * k, z_hem)
-    o = join([yoke, collar, fall] + clasps, 'mantle')
+    extra = [hood(ctx, yoke, fall)] if hood else []
+    o = join([yoke, collar, fall] + clasps + extra, name)
     return finish(o, ctx, weights=None)
 
 
@@ -2287,3 +2296,7 @@ def stage_garments(only=None):
     build_props()
     bpy.context.scene['garments'] = json.dumps({g: dict(slot=G[g]['slot'], bodies=list(rep.get(g, {})), ref=G[g]['ref'],
                                                        desc=G[g]['desc']) for g in G})
+
+
+# phase E: women's own clothes, more pieces for the men, new hair, beards, hats and mantles (registers into G)
+from . import garments_e  # noqa: E402,F401

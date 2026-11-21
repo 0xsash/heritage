@@ -29,7 +29,7 @@ export interface KitManifest {
     pelvisScale?: number;
     grips?: Record<string, { bone: string; pos: [number, number, number]; quat: [number, number, number, number] }>;
   }>;
-  pieces: Record<string, { slot: string; layer?: number; bodies: string[]; dyeable?: boolean; hides?: string[]; requires?: string[]; excludes?: string[] }>;
+  pieces: Record<string, { slot: string; layer?: number; bodies: string[]; dyeable?: boolean; hides?: string[]; requires?: string[]; excludes?: string[]; accent?: boolean }>;
   props: Record<string, { grip: string; hand: string }>;
   palette: Record<string, string>;
   clips: Record<string, { stride?: number; loop?: boolean }>;
@@ -48,6 +48,10 @@ export interface HeroKit {
   hair?: Partial<Record<'m' | 'f', (string | null)[]>>;
   beards?: (string | null)[];
   outfits?: Record<string, { wear: Record<string, string | null>; prop?: string | null }>;
+  /** phase E: headwear by sex, the mantle styles, the marks (an eyepatch) */
+  headwear?: Partial<Record<'m' | 'f', string[]>>;
+  mantles?: string[];
+  marks?: string[];
   /** the hero's travelling mantle: not part of any outfit, the game adds it (and dyes it the chosen colour) */
   mantle?: { piece: string; dyes?: string[] };
 }
@@ -79,6 +83,16 @@ export interface FolkSpec {
   face?: Record<string, number>;
   /** an explicit skin tone (index into the manifest's skinTones) */
   skin?: number;
+  /** the accent dye (palette name or hex) for the parts of pieces that take one (COLOR_0.g: cuffs, ribbons, bands) */
+  accent?: string | null;
+  /** iris colour (hex); null or absent: as painted */
+  eyes?: string | null;
+  /** a mark drawn on the face: scar, freckles, weathered (the eyepatch is a piece) */
+  mark?: string | null;
+  /** overall scale (1 = the body as built); named people get 1 */
+  scale?: number;
+  /** more regions to hide (the hero's hair under a coif) */
+  hide?: string[];
 }
 
 export interface Folk {
@@ -207,14 +221,20 @@ export class TownsfolkKit {
     return face;
   }
 
-  /** Re-dye one piece on a figure already built (the hero's cloak). */
-  redye(root: THREE.Object3D, piece: string, dye: string | null) {
+  /** Re-dye one piece on a figure already built (the hero's cloak); `accent` too when the piece takes one. */
+  redye(root: THREE.Object3D, piece: string, dye: string | null, accent: string | null = null) {
     const hex = this.dye(dye ?? undefined);
+    const acc = this.dye(accent ?? undefined);
     root.traverse((o) => {
       const t = o.userData.folk as Tagged | undefined;
       const base = this.bases.get(o);
-      if (t?.kind === 'piece' && t.piece === piece && base) (o as THREE.Mesh).material = this.dyed(base, hex);
+      if (t?.kind === 'piece' && t.piece === piece && base) (o as THREE.Mesh).material = this.dyed(base, hex, this.m.pieces[piece]?.accent ? acc : null);
     });
+  }
+
+  /** The hex of a palette name or hex colour (null when it is neither). */
+  colour(name: string | null | undefined) {
+    return this.dye(name ?? undefined);
   }
 
   /** Identify a kit node: from glTF extras, or by its name ("hat_wide.man" arrives as "hat_wideman"). */
@@ -286,10 +306,10 @@ export class TownsfolkKit {
     if (!this.ok || !this.templates.has(spec.body)) return null;
     const chosen = new Map<string, string | null>();
     for (const [piece, dye] of Object.entries(spec.wear)) if (this.m.pieces[piece]?.bodies.includes(spec.body)) chosen.set(piece, this.dye(dye ?? undefined));
-    return this.assemble(spec.body, chosen, spec.prop ?? null, rng(spec.seed ?? hashStr(spec.body + Object.keys(spec.wear).join())), spec.role ?? 'burgher', 'named', spec.gait, 1, spec);
+    return this.assemble(spec.body, chosen, spec.prop ?? null, rng(spec.seed ?? hashStr(spec.body + Object.keys(spec.wear).join())), spec.role ?? 'burgher', 'named', spec.gait, spec.scale ?? 1, spec);
   }
 
-  private assemble(body: string, chosen: Map<string, string | null>, prop: string | null, r: () => number, role: Role, id: string, gait = 'walk', scale?: number, look?: { face?: Record<string, number>; skin?: number }): Folk {
+  private assemble(body: string, chosen: Map<string, string | null>, prop: string | null, r: () => number, role: Role, id: string, gait = 'walk', scale?: number, look?: Pick<FolkSpec, 'face' | 'skin' | 'accent' | 'eyes' | 'mark' | 'hide'>): Folk {
     const B = this.m.bodies[body];
     // layering rules: a collar needs its doublet, a hat excludes a hood...
     for (let pass = 0; pass < 3; pass++)
@@ -300,6 +320,8 @@ export class TownsfolkKit {
       }
     const hidden = new Set<number>();
     for (const piece of chosen.keys()) for (const h of this.m.pieces[piece].hides ?? []) if (this.m.regions[h] !== undefined) hidden.add(this.m.regions[h]);
+    for (const h of look?.hide ?? []) if (this.m.regions[h] !== undefined) hidden.add(this.m.regions[h]);
+    const accent = this.dye(look?.accent ?? undefined);
 
     // the face: every person gets their own (morph weights and skin tone), when the kit has them;
     // a chosen face (the hero's) is given explicitly
@@ -325,9 +347,11 @@ export class TownsfolkKit {
       if (hidden.size) mesh.geometry = this.hide(mesh.geometry, hidden);
       if (t?.kind === 'piece' && t.piece) {
         this.bases.set(mesh, mesh.material as THREE.MeshStandardMaterial);
-        mesh.material = this.dyed(mesh.material as THREE.MeshStandardMaterial, chosen.get(t.piece) ?? null);
+        mesh.material = this.dyed(mesh.material as THREE.MeshStandardMaterial, chosen.get(t.piece) ?? null, this.m.pieces[t.piece]?.accent ? accent : null);
+      } else if (t?.kind === 'body' && tone && mesh.geometry.getAttribute('color')) {
+        this.bases.set(mesh, mesh.material as THREE.MeshStandardMaterial);
+        mesh.material = look?.eyes || look?.mark ? this.skinned(mesh, tone, look.eyes ?? null, look.mark ?? null) : this.toned(mesh.material as THREE.MeshStandardMaterial, tone);
       }
-      else if (t?.kind === 'body' && tone && mesh.geometry.getAttribute('color')) mesh.material = this.toned(mesh.material as THREE.MeshStandardMaterial, tone);
       // the same face on the body and on whatever frames it (coif, wimple, beard)
       const dict = mesh.morphTargetDictionary, inf = mesh.morphTargetInfluences;
       if (dict && inf) for (const [name, w] of face) if (dict[name] !== undefined) inf[dict[name]] = w;
@@ -428,12 +452,91 @@ export class TownsfolkKit {
     return this.masked(base, `tone${tone.join(',')}`, new THREE.Color(tone[0], tone[1], tone[2]));
   }
 
-  /** The kit material with a dye where COLOR_0.r says so (null: as painted). */
-  private dyed(base: THREE.MeshStandardMaterial, hex: string | null) {
-    return this.masked(base, hex ?? '-', hex ? new THREE.Color(hex).multiplyScalar(1 / 0.55) : new THREE.Color(1, 1, 1));
+  /** The kit material with a dye where COLOR_0.r says so, and an accent dye where COLOR_0.g says so (null: as painted). */
+  private dyed(base: THREE.MeshStandardMaterial, hex: string | null, accent: string | null = null) {
+    const acc = accent ? new THREE.Color(accent).multiplyScalar(1 / 0.55) : null;
+    return this.masked(base, `${hex ?? '-'}${accent ? '|' + accent : ''}`, hex ? new THREE.Color(hex).multiplyScalar(1 / 0.55) : new THREE.Color(1, 1, 1), acc);
   }
 
-  private masked(base: THREE.MeshStandardMaterial, id: string, dye: THREE.Color) {
+  /**
+   * A chosen face (the hero's): the skin tone where COLOR_0.r marks skin, the iris tinted where COLOR_0.g marks the
+   * eyeballs, and a mark on the face (scar, freckles, weathered) drawn from the rest pose, so it stays put in motion.
+   */
+  private skinned(mesh: THREE.Mesh, tone: [number, number, number], eyes: string | null, mark: string | null) {
+    const base = this.bases.get(mesh) ?? (mesh.material as THREE.MeshStandardMaterial);
+    const g = mesh.geometry;
+    // the face's box in the rest pose (region 1 = face): where the marks go
+    const reg = g.getAttribute('_region') as THREE.BufferAttribute | undefined;
+    const pos = g.getAttribute('position') as THREE.BufferAttribute;
+    const lo = new THREE.Vector3(Infinity, Infinity, Infinity), hi = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+    const v = new THREE.Vector3();
+    const face = this.m.regions.face ?? 1;
+    for (let i = 0; i < pos.count; i++) {
+      if (reg && Math.round(reg.getX(i)) !== face) continue;
+      v.fromBufferAttribute(pos, i);
+      lo.min(v);
+      hi.max(v);
+    }
+    const centre = lo.clone().add(hi).multiplyScalar(0.5);
+    const size = hi.clone().sub(lo);
+    const key = `${base.uuid}|skin|${tone.join(',')}|${eyes ?? '-'}|${mark ?? '-'}|${centre.toArray().map((x) => x.toFixed(3)).join(',')}`;
+    const had = this.mats.get(key);
+    if (had) return had;
+    const mat = base.clone();
+    mat.vertexColors = false;
+    const markId = mark === 'scar' ? 1 : mark === 'freckles' ? 2 : mark === 'weathered' ? 3 : 0;
+    const eye = eyes ? new THREE.Color(eyes) : null;
+    const scar = `
+            vec2 a = vec2(-0.20, 0.30), b = vec2(-0.08, -0.22);
+            vec2 pa = q.xy - a, ba = b - a;
+            float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+            float d = length(pa - ba * h);
+            float line = smoothstep(0.024, 0.008, d) * front;
+            float rim = clamp(smoothstep(0.05, 0.022, d) * front - line, 0.0, 1.0);
+            diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.8, 0.62, 0.6), rim * 0.55);
+            diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.9, 0.68, 0.64) * max(dot(diffuseColor.rgb, vec3(0.333)), 0.2) * 1.8, line * 0.85);`;
+    const freckles = `
+            float zone = smoothstep(0.34, 0.12, length(vec2(abs(q.x) * 0.9, q.y + 0.02))) * front;
+            float f = step(0.80, hsh(floor(vRest * 420.0))) * zone;
+            diffuseColor.rgb *= 1.0 - f * vec3(0.30, 0.42, 0.50);`;
+    const weathered = `
+            float lines = smoothstep(0.55, 1.0, sin(q.y * 150.0 + hsh(floor(vRest * 60.0)) * 3.0)) * smoothstep(0.1, 0.35, q.y) * front;
+            diffuseColor.rgb *= mix(vec3(1.0), vec3(0.86, 0.74, 0.64), vMask.r);
+            diffuseColor.rgb *= 1.0 - 0.14 * lines;
+            float cheek = smoothstep(0.25, 0.06, length(vec2(abs(q.x) - 0.24, q.y + 0.08))) * front;
+            diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.12, 0.84, 0.78), cheek * 0.65);`;
+    mat.onBeforeCompile = (sh) => {
+      sh.uniforms.uDye = { value: new THREE.Color(tone[0], tone[1], tone[2]) };
+      sh.uniforms.uEye = { value: eye ?? new THREE.Color(1, 1, 1) };
+      sh.uniforms.uHead = { value: centre };
+      sh.uniforms.uHeadSize = { value: size };
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\n#ifndef USE_COLOR\nattribute vec4 color;\n#endif\nvarying vec3 vMask;\nvarying vec3 vRest;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvMask = color.rgb;\nvRest = position;');
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', `#include <common>
+          uniform vec3 uDye; uniform vec3 uEye; uniform vec3 uHead; uniform vec3 uHeadSize;
+          varying vec3 vMask; varying vec3 vRest;
+          float hsh(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }`)
+        .replace('#include <color_fragment>', `#include <color_fragment>
+          diffuseColor.rgb *= mix(vec3(1.0), uDye, vMask.r);
+          ${eye ? `{
+            float l = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+            float iris = vMask.g * smoothstep(0.42, 0.30, l) * smoothstep(0.015, 0.05, l);
+            diffuseColor.rgb = mix(diffuseColor.rgb, uEye * (0.35 + 2.2 * l), iris);
+          }` : ''}
+          ${markId ? `{
+            vec3 q = (vRest - uHead) / max(uHeadSize.y, 0.05);
+            float front = smoothstep(-0.05, 0.25, q.z) * vMask.r;
+            ${markId === 1 ? scar : markId === 2 ? freckles : weathered}
+          }` : ''}`);
+    };
+    mat.customProgramCacheKey = () => `folk-skin-${eye ? 1 : 0}-${markId}`;
+    this.mats.set(key, mat);
+    return mat;
+  }
+
+  private masked(base: THREE.MeshStandardMaterial, id: string, dye: THREE.Color, accent: THREE.Color | null = null) {
     const key = `${base.uuid}|${id}`;
     let m = this.mats.get(key);
     if (m) return m;
@@ -442,14 +545,15 @@ export class TownsfolkKit {
     mat.vertexColors = false;
     mat.onBeforeCompile = (sh) => {
       sh.uniforms.uDye = { value: dye };
+      sh.uniforms.uAccent = { value: accent ?? new THREE.Color(1, 1, 1) };
       sh.vertexShader = sh.vertexShader
-        .replace('#include <common>', '#include <common>\n#ifndef USE_COLOR\nattribute vec4 color;\n#endif\nvarying float vDyeMask;')
-        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvDyeMask = color.r;');
+        .replace('#include <common>', '#include <common>\n#ifndef USE_COLOR\nattribute vec4 color;\n#endif\nvarying vec2 vDyeMask;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvDyeMask = color.rg;');
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform vec3 uDye;\nvarying float vDyeMask;')
-        .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= mix(vec3(1.0), uDye, vDyeMask);');
+        .replace('#include <common>', '#include <common>\nuniform vec3 uDye;\nuniform vec3 uAccent;\nvarying vec2 vDyeMask;')
+        .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= mix(vec3(1.0), uDye, vDyeMask.x) * mix(vec3(1.0), uAccent, vDyeMask.y);');
     };
-    mat.customProgramCacheKey = () => 'folk-dye';
+    mat.customProgramCacheKey = () => 'folk-dye2';
     this.mats.set(key, mat);
     return mat;
   }

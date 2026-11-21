@@ -101,7 +101,7 @@ async function boot() {
   const dragonP = kitP.then(() => loadModel('models/dragon.glb'));
   const front = skipFront
     ? Promise.resolve({ mode: 'continue' as const })
-    : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, origin: peek.hero.origin, sex: peek.hero.sex, background: peek.hero.background } : null, () => sound.start(), kitP);
+    : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, origin: peek.hero.origin, sex: peek.hero.sex, background: peek.hero.background } : null, () => sound.start(), kitP, dragonP);
 
   // --- load everything
   const [data, meta] = await Promise.all([
@@ -179,7 +179,7 @@ async function boot() {
   }
   // what the rest of the game clones as "a person" when it has nothing better: the rider if fetched, else a plain man from the kit
   const peopleModel = riderModel ?? (townsfolk ? kitStandIn(townsfolk) : null);
-  if (dragonModel) tintDragon(dragonModel.scene, heroData.scales);
+  if (dragonModel) tintDragon(dragonModel.scene, heroData.scales, heroData);
 
   // --- quests, people, combat, HUD
   const toasts: string[] = [];

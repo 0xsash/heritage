@@ -53,6 +53,8 @@ PARTS = {
     'straw': (16, '#b8954f', 0), 'bread': (17, '#b8783c', 0), 'lining': (18, '#a09888', 1), 'sash': (19, '#d8d0c8', 1),
     'gourd': (20, '#9a6a34', 0), 'beads': (21, '#3a2a20', 0), 'glass': (22, '#e8d8a0', 0), 'iron': (23, '#3a3836', 0),
     'cloth_b': (24, '#d0c8b8', 1), 'lace': (25, '#f0ece2', 0), 'beard': (26, '#8a7a6a', 1),
+    # phase E: 'acc' takes the accent dye (COLOR_0.g); fur and the eyepatch keep their paint
+    'acc': (27, '#c8c0b0', 2), 'fur': (28, '#6a5038', 0), 'patch': (29, '#1e1a18', 0),
 }
 for k, (i, c, _) in PARTS.items():         # make_rider's strap/lathe helpers create materials through its table
     R.PARTS[k] = (i, c)
@@ -137,14 +139,16 @@ def cut_by_ref(obj, ref_obj, fn):
     put_bm(bm, obj)
 
 
-def set_dye(obj, mask):
-    """COLOR_0 for the game: R = 1 where the vertex takes the dye colour, 0 where the painted colour is kept.
-    G, B are reserved (0); A = 1."""
+def set_dye(obj, mask, accent=None):
+    """COLOR_0 for the game: R = 1 where the vertex takes the dye colour, 0 where the painted colour is kept;
+    G = 1 where it takes the piece's accent dye instead (phase E: cuffs, trims); B reserved (0); A = 1."""
     me = obj.data
     a = me.color_attributes.get('dye') or me.color_attributes.new('dye', 'FLOAT_COLOR', 'POINT')
     m = np.asarray(mask, dtype=np.float32).reshape(-1)
     flat = np.zeros((len(me.vertices), 4), dtype=np.float32)
     flat[:, 0] = m
+    if accent is not None:
+        flat[:, 1] = np.asarray(accent, dtype=np.float32).reshape(-1)
     flat[:, 3] = 1.0
     a.data.foreach_set('color', flat.ravel())
 
@@ -153,11 +157,16 @@ def dye_from_parts(obj):
     """Default dye mask from the part materials: a vertex takes dye if any of its faces belongs to a dye part."""
     me = obj.data
     m = np.zeros(len(me.vertices), dtype=np.float32)
+    acc = np.zeros(len(me.vertices), dtype=np.float32)
     for p in me.polygons:
         part = me.materials[p.material_index].name[2:]
-        if PARTS.get(part, (0, '', 0))[2]:
+        flag = PARTS.get(part, (0, '', 0))[2]
+        if flag == 1:
             m[list(p.vertices)] = 1.0
-    set_dye(obj, m)
+        elif flag == 2:
+            acc[list(p.vertices)] = 1.0
+    m[acc > 0.5] = 0.0
+    set_dye(obj, m, acc)
 
 
 def rig_landmarks(rig):

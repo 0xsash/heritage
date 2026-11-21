@@ -36,12 +36,25 @@ TARGET = {'body': 3800, 'stockings': 260, 'breeches': 650, 'shoes': 420, 'clogs'
           'huik': 980, 'sash': 260, 'hair_crop': 560, 'hair_long': 700, 'hair_thin': 360, 'hair_child': 560,
           'hair_bun': 420, 'beard_pointed': 160, 'moustache': 100, 'beard_full': 260,
           'mantle': 9999, 'hair_braid': 800, 'hair_tail': 560}
+# phase E
+HAIR_E = ['hair_f_curls', 'hair_f_loose', 'hair_f_twin', 'hair_f_crown', 'hair_f_low', 'hair_f_fringe', 'hair_f_tail',
+          'hair_m_curly', 'hair_m_lovelock', 'hair_m_shag', 'hair_m_swept', 'hair_m_fringe']
+TARGET.update({'onderrok': 700, 'rok': 760, 'schort': 320, 'jak': 1150, 'kraag_f': 9999, 'waist_sash': 320, 'boots_f': 520,
+               'casaque': 1150, 'jerkin': 640, 'moustache_wide': 120, 'beard_goatee': 140, 'beard_short': 9999,
+               'hat_f': 420, 'hat_tall': 420, 'hat_straw': 440, 'bontmuts': 420, 'muts_f': 300, 'cap_knit': 340,
+               'mantle_short': 9999, 'mantle_hood': 9999, 'eyepatch': 9999})
+TARGET.update({h: 1150 for h in HAIR_E})
+TARGET.update({'hair_f_loose': 1400, 'hair_m_curly': 1300, 'hair_f_twin': 1300, 'hair_f_crown': 1300})
 PROP_TARGET = {'sword': 9999, 'musket': 9999, 'basket': 500, 'staff': 260, 'stick': 160, 'bread': 220, 'lantern': 240, 'rosary': 420, 'bundle': 240, 'dagger': 9999, 'bellstaff': 320}
 # phase-A ray distances per piece (metres) used to decide what a piece covers
 HIDE_DIST = {'skirt': 0.40, 'habit': 0.40, 'huik': 0.06, 'smock': 0.16, 'buff_coat': 0.12, 'breeches': 0.10,
              'coif': 0.05, 'beguine_veil': 0.06, 'kerchief': 0.05, 'collar_band': 0.02, 'capuche': 0.05,
              'pelerine': 0.05, 'boots': 0.05, 'shoes': 0.05, 'clogs': 0.06, 'stockings': 0.03, 'apron': 0.0}
-NO_HIDE_PIECES = {'skullcap', 'bands', 'plume', 'bandolier', 'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'beard_pointed', 'moustache', 'beard_full',
+EXTRA_HIDES.update({h: ['scalp'] for h in HAIR_E})
+HIDE_DIST.update({'onderrok': 0.40, 'rok': 0.40, 'jak': 0.10, 'casaque': 0.12, 'jerkin': 0.10, 'boots_f': 0.05, 'kraag_f': 0.02})
+NO_HIDE_PIECES_E = {'schort', 'waist_sash', 'moustache_wide', 'beard_goatee', 'beard_short', 'hat_f', 'hat_tall', 'hat_straw',
+                    'bontmuts', 'muts_f', 'cap_knit', 'mantle_short', 'mantle_hood', 'eyepatch'} | set(HAIR_E)
+NO_HIDE_PIECES = NO_HIDE_PIECES_E | {'skullcap', 'bands', 'plume', 'bandolier', 'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'beard_pointed', 'moustache', 'beard_full',
                   'belt', 'rope_belt', 'sash', 'apron', 'hair_crop', 'hair_long', 'hair_thin', 'hair_child', 'hair_bun',
                   'mantle', 'hair_braid', 'hair_tail'}
 
@@ -315,7 +328,8 @@ def apply_weights(obj, weights, bones):
             g.add([i], x / tot, 'REPLACE')
 
 
-MORPH_PIECES_OFF = {'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'plume', 'skullcap'}     # rigid: never morphed
+MORPH_PIECES_OFF = {'hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'plume', 'skullcap', 'hat_f', 'hat_tall', 'hat_straw',
+                    'bontmuts', 'muts_f', 'cap_knit'}     # rigid: never morphed
 
 
 class FullBody:
