@@ -57,7 +57,9 @@ function towerBox(gb: GeomBuilder, cx: number, cz: number, ux: number, uz: numbe
   return c;
 }
 
-let M = { stone: 0, slate: 0, brick: 0, grass: 0 };
+let M = { stone: 0, white: 0, slate: 0, brick: 0, grass: 0 };
+/** white Gobertange sandstone, as in the west tower of Sint-Sulpitius */
+const GOBERTANGE = new THREE.Color('#bfb59e');
 
 export interface LandmarkResult {
   group: THREE.Group;
@@ -73,8 +75,8 @@ export function buildLandmarks(
   year = 2000,
 ): LandmarkResult {
   const group = new THREE.Group();
-  const gb = new GeomBuilder();
-  M = { stone: set.index.stone + 0.5, slate: set.index.roofSlate + 0.5, brick: set.index.brickOld + 0.5, grass: set.index.plaster + 0.5 };
+  const gb = new GeomBuilder(true);
+  M = { stone: (set.index.ironstone ?? set.index.stone) + 0.5, white: set.index.stone + 0.37, slate: set.index.roofSlate + 0.5, brick: set.index.brickOld + 0.5, grass: set.index.plaster + 0.5 };
   gb.curMat = M.stone;
   const extraPois: LandmarkResult['extraPois'] = [];
 
@@ -128,16 +130,24 @@ export function buildLandmarks(
   return { group, extraPois };
 }
 
-// --- Sint-Sulpitius: brown ironstone tower with the bell-shaped "Mustard Pot" lantern
+// --- Sint-Sulpitius: the nave and choir are rust-brown ironstone, the west
+// tower white Gobertange stone (RBINS excursion guide "Ijzerzandsteen in
+// Diest", 2014), crowned later by the bell-shaped "Mustard Pot" lantern
 function sulpitius(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: THREE.Group, year: number) {
   const end = f.ux > 0 ? -1 : 1; // west end
   const half = Math.min(f.hw * 0.75, 6.5);
   const tx = f.cx + f.ux * (f.hu - half) * end;
   const tz = f.cz + f.uz * (f.hu - half) * end;
   const H = 34;
-  towerBox(gb, tx, tz, f.ux, f.uz, half, 0, H, P.IRONSTONE);
+  const prevMat = gb.curMat;
+  gb.curMat = M.white;
+  towerBox(gb, tx, tz, f.ux, f.uz, half, 0, H, GOBERTANGE);
+  gb.curMat = M.stone;
+  // an ironstone base course and string courses, the stones mixed as they are on the tower
+  towerBox(gb, tx, tz, f.ux, f.uz, half + 0.2, -0.3, 2.2, P.IRONSTONE);
   towerBox(gb, tx, tz, f.ux, f.uz, half + 0.35, 14, 14.8, P.IRONSTONE_DARK);
   towerBox(gb, tx, tz, f.ux, f.uz, half + 0.35, H - 0.8, H, P.IRONSTONE_DARK);
+  gb.curMat = prevMat;
   // corner pinnacles
   const nx = -f.uz, nz = f.ux;
   for (const [a, b] of [[1, 1], [1, -1], [-1, -1], [-1, 1]]) {
@@ -149,9 +159,22 @@ function sulpitius(gb: GeomBuilder, f: Footprint, col: WorldCollision, group: TH
   prism(gb, tx, tz, half * 0.62, 8, H, H + 4, P.IRONSTONE_DARK, Math.PI / 8);
   col.addColumn(tx, tz, half * 1.1, H);
 
+  // the small crossing tower (dakruiter): it exists in 1650, but the carillon
+  // that made it famous was only hung in 1671 (Hemony bells), so it stays plain
+  {
+    const cxx = f.cx - f.ux * end * f.hu * 0.12, czz = f.cz - f.uz * end * f.hu * 0.12;
+    const y0 = f.h + f.rise - 0.6;
+    const prev = gb.curMat;
+    gb.curMat = M.stone;
+    prism(gb, cxx, czz, 1.5, 8, y0, y0 + 3.2, P.IRONSTONE_DARK, Math.PI / 8);
+    spire(gb, cxx, czz, 1.8, 8, y0 + 3.2, 7.5, SLATE, Math.PI / 8);
+    gb.curMat = prev;
+  }
+
   if (year < 1670) {
     // Before the Baroque carillon lantern ("the Mustard Pot") the tower stood
-    // unfinished: a squat stump of ironstone under a low provisional roof.
+    // unfinished (built 1503-1537, only its base): a squat stump of white
+    // stone under a low provisional roof.
     const prev = gb.curMat;
     gb.curMat = M.slate;
     spire(gb, tx, tz, half * 0.95, 4, H + 4, half * 0.9, SLATE, Math.atan2(f.uz, f.ux) + Math.PI / 4);

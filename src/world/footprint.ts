@@ -1,6 +1,7 @@
 // Footprint analysis shared by mesh building and collision: oriented bounding
 // box, ridge line and the roof-height function for each building.
 
+import { hash01 } from '../core/math';
 import type { BuildingData } from './types';
 
 export interface Footprint {
@@ -25,6 +26,13 @@ export interface Footprint {
   hw: number;
   /** roof rise at the ridge (0 = flat) */
   rise: number;
+  /**
+   * Slope of the hipped ends (m rise per m), 0 for a plain gable. Thatched
+   * farmhouses of the Hageland were mostly hipped (schilddak), so the roof
+   * comes down on all four sides; set by the building style before the
+   * footprint enters collision, so walking on the roof matches the mesh.
+   */
+  hip: number;
   kind: string;
   name?: string;
   id: number;
@@ -87,7 +95,7 @@ export function analyse(b: BuildingData): Footprint {
   let rise = 0;
   if (kind === 'basilica') {
     // The landmark builder raises the domed drum; keep the footprint low and flat.
-    return { ring, minX, minZ, maxX, maxZ, h: 13, cx, cz, ux, uz, nx, nz, hu, hw, rise: 0, kind, name: b.n, id: b.id };
+    return { ring, minX, minZ, maxX, maxZ, h: 13, cx, cz, ux, uz, nx, nz, hu, hw, rise: 0, hip: 0, kind, name: b.n, id: b.id };
   }
   const church = kind === 'church' || kind === 'chapel' || kind === 'cathedral';
   const tiny = SHED_KINDS.has(kind) || hu * hw * 4 < 28;
@@ -96,12 +104,22 @@ export function analyse(b: BuildingData): Footprint {
     // Buildings mapped with flat roofs (modern sheds, shops) are given low pitched
     // roofs too, so they read as barns and halls rather than modern boxes.
     const wide = hw * 2;
-    const pitchDeg = church ? 52 : b.r === 'f' ? (wide > 16 ? 26 : 38) : b.r === 'h' ? 36 : wide > 14 ? 40 : 50;
+    // No two old houses had quite the same pitch: +-4 degrees by plot.
+    const jit = church ? 0 : (hash01(b.id * 7 + 13) - 0.5) * 8;
+    const pitchDeg = jit + (church ? 52 : b.r === 'f' ? (wide > 16 ? 26 : 38) : b.r === 'h' ? 36 : wide > 14 ? 40 : 50);
     rise = Math.tan((pitchDeg * Math.PI) / 180) * hw;
     rise = Math.min(rise, church ? 22 : wide > 16 ? 7.5 : 9);
   }
+  // Eaves were never level along a street: each plot was built on its own, so
+  // let the eave line wander by a few decimetres (kept above 2.6 m).
+  let h = b.h;
+  if (rise > 0 && !church && kind !== 'wall') {
+    // low houses only grow, so nothing hung on their walls ends up above the eave
+    const j = hash01(b.id * 3 + 29);
+    h = b.h < 4 ? h + j * 0.35 : h + (j - 0.5) * 0.7;
+  }
   return {
-    ring, minX, minZ, maxX, maxZ, h: b.h, cx, cz, ux, uz, nx, nz, hu, hw, rise, kind, name: b.n, id: b.id,
+    ring, minX, minZ, maxX, maxZ, h, cx, cz, ux, uz, nx, nz, hu, hw, rise, hip: 0, kind, name: b.n, id: b.id,
   };
 }
 
@@ -110,7 +128,12 @@ export function roofHeight(f: Footprint, x: number, z: number): number {
   if (f.rise <= 0) return f.h;
   const d = Math.abs((x - f.cx) * f.nx + (z - f.cz) * f.nz);
   const t = 1 - d / Math.max(f.hw, 0.01);
-  return f.h + f.rise * (t > 0 ? t : 0);
+  let y = f.h + f.rise * (t > 0 ? t : 0);
+  if (f.hip > 0) {
+    const a = Math.abs((x - f.cx) * f.ux + (z - f.cz) * f.uz);
+    y = Math.min(y, f.h + f.hip * Math.max(0, f.hu - a));
+  }
+  return y;
 }
 
 export function pointInRing(ring: [number, number][], x: number, z: number): boolean {
