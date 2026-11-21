@@ -646,3 +646,26 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .charpanel button.poor { opacity: 0.45; }
 .map .legend .mapzoom { color: var(--ink-dim); letter-spacing: 0.1em; font-family: var(--serif); text-transform: none; }
 .map.show ~ .lifenote, .map.show ~ .lifebuffs { display: none; }
+
+/* ---------- the faction intro: an in-engine film (src/story/cine.ts) ---------- */
+#ui.film-on > :not(.film):not(.overlay) { opacity: 0 !important; pointer-events: none !important; transition: none !important; }
+#ui.film-on::after { opacity: 0; }
+.film { position: absolute; inset: 0; pointer-events: none; z-index: 9; }
+.film-snap { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
+.film-bar { position: absolute; left: 0; right: 0; height: 11vh; background: #040302; transform: scaleY(0); transition: transform 1.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2; }
+.film-bar.top { top: 0; transform-origin: top; }
+.film-bar.bot { bottom: 0; transform-origin: bottom; }
+.film.bars .film-bar { transform: scaleY(1); }
+.film-fade { position: absolute; inset: 0; background: #040302; opacity: 1; z-index: 4; }
+.film-sub { position: absolute; left: 50%; bottom: calc(11vh + 20px); transform: translate(-50%, 4px); width: min(780px, calc(100% - 64px)); text-align: center; font-family: var(--serif); font-size: clamp(19px, 1.95vw, 25px); line-height: 1.42; letter-spacing: 0.005em; color: #f4ead0; text-shadow: 0 1px 2px #000, 0 0 14px rgba(0, 0, 0, 0.9), 0 0 32px rgba(0, 0, 0, 0.6); opacity: 0; transition: opacity 0.7s ease, transform 0.7s ease; z-index: 3; }
+.film-sub.show { opacity: 1; transform: translate(-50%, 0); }
+.film-sub b { display: block; font-family: var(--display); font-weight: 500; font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+.film-title { position: absolute; left: clamp(24px, 5vw, 72px); top: calc(11vh + clamp(18px, 4vh, 40px)); display: flex; flex-direction: column; gap: 6px; opacity: 0; transform: translateY(6px); transition: opacity 1.4s ease, transform 1.4s ease; z-index: 3; text-shadow: 0 1px 3px #000, 0 0 18px rgba(0, 0, 0, 0.85); }
+.film-title.show { opacity: 1; transform: none; }
+.film-title i { font-style: normal; font-family: var(--display); font-size: 12px; letter-spacing: 0.42em; color: var(--gold); }
+.film-title b { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 3.4vw, 44px); letter-spacing: 0.18em; color: #f1e4c4; }
+.film-title b::after { content: ''; display: block; width: 64px; height: 1px; margin-top: 10px; background: linear-gradient(90deg, var(--gold), transparent); }
+.film-skip { position: absolute; right: 24px; bottom: calc(5.5vh - 9px); font-size: 13px; letter-spacing: 0.04em; color: rgba(232, 220, 196, 0.32); transition: color 0.2s; z-index: 3; }
+.film.skipping .film-skip { color: var(--gold); }
+.film.gone .film-sub, .film.gone .film-title, .film.gone .film-skip { opacity: 0 !important; }
+#ui.beat .waypoint, #ui.beat .cine-obj, #ui.beat .prompt, #ui.beat .compass { opacity: 0 !important; transition: opacity 0.6s; }

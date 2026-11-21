@@ -226,6 +226,300 @@ export class Sound {
     [392, 523, 659].forEach((f, i) => setTimeout(() => this.bell(f, 0.2), i * 180));
   }
 
+  // ---------------------------------------------------------------- cinematic
+  // Beds that loop and can swell or fade (a drone, water, a crowd), a room for
+  // distant things (a generated echo, no file), and a few one-shots. All of it
+  // is made from oscillators and the shared noise buffer.
+
+  private beds = new Map<string, { gain: GainNode; stop: () => void; extra?: (v: number, t: number) => void }>();
+  private room: ConvolverNode | null = null;
+  private roomIn: GainNode | null = null;
+
+  /** A long, dark echo for bells across fields and voices in a church. */
+  private reverb() {
+    if (!this.ctx) return null;
+    if (this.roomIn) return this.roomIn;
+    const ctx = this.ctx, len = Math.floor(ctx.sampleRate * 3.2);
+    const ir = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) {
+      const d = ir.getChannelData(c);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2);
+    }
+    this.room = ctx.createConvolver();
+    this.room.buffer = ir;
+    this.roomIn = ctx.createGain();
+    this.roomIn.gain.value = 0.55;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 2400;
+    this.roomIn.connect(this.room).connect(lp).connect(this.master);
+    return this.roomIn;
+  }
+
+  private makeBed(name: string): { gain: GainNode; stop: () => void; extra?: (v: number, t: number) => void } | null {
+    if (!this.ctx) return null;
+    const ctx = this.ctx;
+    const out = ctx.createGain();
+    out.gain.value = 0;
+    out.connect(this.master);
+    const nodes: AudioScheduledSourceNode[] = [];
+    const osc = (type: OscillatorType, f: number, g: number, dest: AudioNode, detune = 0) => {
+      const o = ctx.createOscillator();
+      o.type = type;
+      o.frequency.value = f;
+      o.detune.value = detune;
+      const gg = ctx.createGain();
+      gg.gain.value = g;
+      o.connect(gg).connect(dest);
+      o.start();
+      nodes.push(o);
+      return { o, g: gg };
+    };
+    const noise = (dest: AudioNode) => {
+      const s = ctx.createBufferSource();
+      s.buffer = this.noise;
+      s.loop = true;
+      s.connect(dest);
+      s.start(0, Math.random() * 1.5);
+      nodes.push(s);
+      return s;
+    };
+    const lfo = (rate: number, depth: number, param: AudioParam) => {
+      const o = ctx.createOscillator();
+      o.frequency.value = rate;
+      const g = ctx.createGain();
+      g.gain.value = depth;
+      o.connect(g).connect(param);
+      o.start();
+      nodes.push(o);
+    };
+    let extra: ((v: number, t: number) => void) | undefined;
+    if (name === 'drone') {
+      // a low organ-like pad on D: root, fifth, octave, slowly beating, under a lowpass that opens as it swells
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 320;
+      f.Q.value = 0.6;
+      f.connect(out);
+      const room = this.reverb();
+      if (room) {
+        const send = ctx.createGain();
+        send.gain.value = 0.35;
+        f.connect(send).connect(room);
+      }
+      osc('sawtooth', 73.4, 0.16, f, -6);
+      osc('sawtooth', 73.4, 0.16, f, 7);
+      osc('triangle', 110, 0.14, f, 3);
+      osc('sawtooth', 146.8, 0.06, f, -4);
+      osc('sine', 36.7, 0.35, out);
+      lfo(0.07, 90, f.frequency);
+      extra = (v, t) => f.frequency.setTargetAtTime(240 + v * 900, t, 1.2);
+    } else if (name === 'water') {
+      // slow lapping: low noise, its level breathing
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = 520;
+      const am = ctx.createGain();
+      am.gain.value = 0.6;
+      noise(f);
+      f.connect(am).connect(out);
+      lfo(0.31, 0.3, am.gain);
+      const f2 = ctx.createBiquadFilter();
+      f2.type = 'bandpass';
+      f2.frequency.value = 1500;
+      f2.Q.value = 2;
+      const am2 = ctx.createGain();
+      am2.gain.value = 0.08;
+      noise(f2);
+      f2.connect(am2).connect(out);
+      lfo(0.83, 0.07, am2.gain);
+    } else if (name === 'murmur') {
+      // many voices, far off: band-limited noise with syllable-rate wobble on three bands
+      for (const [fc, rate] of [[420, 3.1], [700, 4.3], [1050, 2.4]] as const) {
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass';
+        f.frequency.value = fc;
+        f.Q.value = 3;
+        const am = ctx.createGain();
+        am.gain.value = 0.35;
+        noise(f);
+        f.connect(am).connect(out);
+        lfo(rate, 0.25, am.gain);
+        lfo(rate * 0.37, 60, f.frequency);
+      }
+    } else if (name === 'night') {
+      // a still night: a faint high wind and, far away, a frog chorus (pulsed sine)
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 900;
+      f.Q.value = 0.5;
+      const g = ctx.createGain();
+      g.gain.value = 0.25;
+      noise(f);
+      f.connect(g).connect(out);
+      lfo(0.11, 0.12, g.gain);
+      const frogs = osc('square', 1850, 0.0, out);
+      const pulse = ctx.createGain();
+      pulse.gain.value = 0;
+      frogs.g.disconnect();
+      frogs.g.connect(pulse).connect(out);
+      frogs.g.gain.value = 0.012;
+      lfo(13, 1, pulse.gain);
+    } else if (name === 'wind') {
+      const f = ctx.createBiquadFilter();
+      f.type = 'bandpass';
+      f.frequency.value = 500;
+      f.Q.value = 0.8;
+      noise(f);
+      f.connect(out);
+      lfo(0.13, 260, f.frequency);
+    } else return null;
+    const bed = {
+      gain: out,
+      stop: () => {
+        for (const n of nodes) {
+          try {
+            n.stop();
+          } catch {
+            /* already stopped */
+          }
+        }
+        out.disconnect();
+      },
+      extra,
+    };
+    this.beds.set(name, bed);
+    return bed;
+  }
+
+  /** Bring a bed (drone, water, murmur, night, wind) to a level over some seconds. 0 silences it. */
+  bed(name: 'drone' | 'water' | 'murmur' | 'night' | 'wind', level: number, seconds = 2) {
+    if (!this.ctx) return;
+    const b = this.beds.get(name) ?? (level > 0 ? this.makeBed(name) : null);
+    if (!b) return;
+    const t = this.ctx.currentTime;
+    const peak: Record<string, number> = { drone: 0.22, water: 0.16, murmur: 0.09, night: 0.07, wind: 0.12 };
+    b.gain.gain.cancelScheduledValues(t);
+    b.gain.gain.setTargetAtTime(Math.max(0, level) * (peak[name] ?? 0.1), t, Math.max(0.05, seconds / 3));
+    b.extra?.(level, t);
+  }
+
+  /** Everything cinematic falls silent (a film ended or was skipped). */
+  cineStop(seconds = 0.6) {
+    for (const name of this.beds.keys()) this.bed(name as 'drone', 0, seconds);
+  }
+
+  /** A bell far away, across the fields: darker, softer, with a long echo. */
+  bellFar(fundamental = 147, gain = 0.25) {
+    if (!this.ctx) return;
+    const room = this.reverb();
+    const t = this.ctx.currentTime + 0.02;
+    const out = this.ctx.createGain();
+    out.gain.value = gain;
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 1400;
+    out.connect(lp);
+    lp.connect(this.master);
+    if (room) lp.connect(room);
+    for (const [ratio, amp, decay] of [[0.5, 0.5, 9], [1, 0.6, 7], [1.2, 0.4, 5], [1.5, 0.2, 4], [2, 0.45, 3.5], [3, 0.1, 2]] as [number, number, number][]) {
+      const o = this.ctx.createOscillator();
+      o.frequency.value = fundamental * ratio;
+      o.detune.value = (Math.random() - 0.5) * 5;
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(amp, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+      o.connect(g).connect(out);
+      o.start(t);
+      o.stop(t + decay + 0.1);
+    }
+  }
+
+  /** The bells of the land, one after another, each further and fainter; the last one does not come. */
+  bellsGoingOut(n = 5, every = 1.6) {
+    for (let i = 0; i < n; i++) setTimeout(() => this.bellFar(196 - i * 14, 0.3 * Math.pow(0.62, i)), i * every * 1000);
+  }
+
+  /** A deep hit for a cut to black or a title. */
+  hitLow(gain = 0.5) {
+    this.thump(32, gain, 1.6);
+    this.burst(1.4, 260, gain * 0.25, 'lowpass', 0.4);
+    const room = this.reverb();
+    if (room && this.ctx) {
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      const t = this.ctx.currentTime;
+      o.frequency.setValueAtTime(55, t);
+      o.frequency.exponentialRampToValueAtTime(30, t + 1.5);
+      g.gain.setValueAtTime(gain * 0.4, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+      o.connect(g).connect(room);
+      o.start(t);
+      o.stop(t + 2.3);
+    }
+  }
+
+  /** A shuttle passing through a loom, and the beater: tak-tak. */
+  loom() {
+    this.burst(0.12, 900, 0.07, 'bandpass', 2);
+    setTimeout(() => this.thump(140, 0.12, 0.08), 180);
+    setTimeout(() => this.thump(120, 0.1, 0.08), 330);
+  }
+
+  /** A crossbow or a bowstring. */
+  twang() {
+    this.ring(220, 0.08, 0.35);
+    this.burst(0.15, 3000, 0.08, 'bandpass', 1.5);
+  }
+
+  /** Cart wheels on a dirt track and a creaking axle. */
+  creak() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(180 + Math.random() * 60, t);
+    o.frequency.linearRampToValueAtTime(130 + Math.random() * 40, t + 0.45);
+    const f = this.ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = 900;
+    f.Q.value = 6;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.03, t + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    o.connect(f).connect(g).connect(this.master);
+    o.start(t);
+    o.stop(t + 0.55);
+  }
+
+  /** A drum roll far off, for the garrison. */
+  drum(beats = 6) {
+    for (let i = 0; i < beats; i++) setTimeout(() => { this.thump(90, 0.12, 0.12); this.burst(0.06, 1800, 0.04, 'bandpass', 1); }, i * 140 + (i % 2) * 30);
+  }
+
+  /** A high, thin ring that comes when the world goes quiet. */
+  silence(seconds = 3) {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    o.frequency.value = 3520;
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.006, t + seconds * 0.4);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + seconds);
+    o.connect(g).connect(this.master);
+    o.start(t);
+    o.stop(t + seconds + 0.05);
+  }
+
+  /** A splash, small or large. */
+  splash(big = false) {
+    this.burst(big ? 0.9 : 0.4, big ? 1600 : 2400, big ? 0.3 : 0.12, 'lowpass', 0.7);
+    if (big) this.thump(50, 0.4, 0.5);
+  }
+
   private ring(freq: number, gain: number, dur: number) {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
