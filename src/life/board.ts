@@ -35,7 +35,7 @@ interface Pin { t: string; c: string; x?: string }
 
 /** Where each camp is, in words (camps without a place here are not posted). */
 const CAMP_WHERE: Record<string, string> = {
-  schaffen: 'de weg naar Schaffen', kaggevinne: 'Kaggevinne', broek: 'het Broek, buiten de Koepoort', broek2: 'het moeras bij Webbekom', eikenbos: 'het eikenbos bij Scherpenheuvel',
+  schaffen: 'de weg naar Schaffen', kaggevinne: 'Kaggevinne', broek: 'het Broek, voorbij de oude Koepoort', broek2: 'het moeras bij Webbekom', eikenbos: 'het eikenbos bij Scherpenheuvel',
 };
 const CAMP_NAME: Record<string, string> = { schaffen: 'de deserteurs', kaggevinne: 'de wegrovers', broek: 'de broekhonden', broek2: 'de broekhonden', eikenbos: 'de dwaallichten' };
 
@@ -123,7 +123,7 @@ export class Board {
         reward: pay(10 + level * 4 + lv * 3, 60 + level * 25),
         stages: [
           { id: 'kill', journal: fill(t.journal[0], vars), objectives: [{ id: 'kill', kind: 'kill', text: `Verdrijf ${vars.camp} bij ${vars.where}`, camp: camp.id, count, at: camp.at, r: camp.r + 20 }], onDone: [{ stage: [id, 'pay'] }] },
-          { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Haal je premie bij ${short(client)}`, npc: client }] },
+          { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Haal je premie op bij ${short(client)}`, npc: client }] },
         ],
       };
       job = { id, template: t, def, notice: def.summary, client, pin: { t: t.id, c: client, x: camp.id } };
@@ -134,7 +134,7 @@ export class Board {
       const what = (t.goods ?? [])[Math.min((t.goods ?? []).length - 1, (t.from ?? []).indexOf(from))] ?? 'een pakje';
       Object.assign(vars, { from: who(from), to: who(client), what });
       const item = `${id}_goods`;
-      this.q.addItem({ id: item, name: what[0].toUpperCase() + what.slice(1), text: `Van ${short(from)}, voor ${short(client)}.`, quest: true });
+      this.q.addItem({ id: item, name: what[0].toUpperCase() + what.slice(1), text: `Het komt van ${short(from)} en is bestemd voor ${short(client)}.`, quest: true });
       const def: QuestDef = {
         ...base, title: fill(t.title, { ...vars, to: short(client) }), summary: fill(t.notice, vars),
         reward: pay(8 + level * 2, 40 + level * 15),
@@ -162,7 +162,7 @@ export class Board {
       const spot = FETCH_SPOTS[pinned >= 0 ? pinned : si];
       Object.assign(vars, { where: spot.where, what: spot.what });
       const item = `${id}_lost`;
-      this.q.addItem({ id: item, name: spot.what[0].toUpperCase() + spot.what.slice(1), text: `Verloren ${spot.where}. Van ${short(client)}.`, quest: true });
+      this.q.addItem({ id: item, name: spot.what[0].toUpperCase() + spot.what.slice(1), text: `Verloren ${spot.where}. Het is van ${short(client)}.`, quest: true });
       const def: QuestDef = {
         ...base, title: fill(t.title, { ...vars, what: spot.what }), summary: fill(t.notice, vars),
         reward: pay(10 + level * 3, 50 + level * 18),
