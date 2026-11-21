@@ -16,29 +16,29 @@ export interface LoreEntry {
 export const LORE: Record<string, LoreEntry> = {
   Diest: {
     title: 'Diest',
-    text: 'Een ommuurde lakenstad aan de Demer, in Brabant, onder de koning van Spanje. Haar baron is de Prins van Oranje, en die woont bij de opstandelingen in het noorden. Sinds de vrede van 1648 mogen zijn baljuws terugkomen. Ze zijn niet geliefd.',
+    text: 'Een ommuurde stad aan de Demer, in Brabant, onder de koning van Spanje. Haar laken was ooit beroemd; nu brouwt ze vooral bier. Haar baron is de Prins van Oranje, en die woont bij de opstandelingen in het noorden. Zijn drossaard is hier niet geliefd.',
     r: 700,
     major: true,
   },
   'Sint-Sulpitius en Dionysiuskerk': {
     title: 'Sint-Sulpitiuskerk',
-    text: 'Gebouwd van bruine ijzerzandsteen, over twee mensenlevens, en al een eeuw af. Behalve de toren: men zegt dat de bouwmeesters ruzieden tot het geld op was. Hij staat er plat en gedrongen bij, als een man die op zijn beurt wacht.',
+    text: 'De kapittelkerk is gebouwd van bruine ijzerzandsteen. Er is meer dan twee eeuwen aan gewerkt, van 1321 tot 1534, en de toren is nooit afgeraakt: men zegt dat het geld op was. Hij staat er plat en gedrongen bij, als een man die op zijn beurt wacht.',
     r: 90,
     major: true,
   },
   Lakenhalle: {
     title: 'De Lakenhalle',
-    text: 'Hier werd het laken van Diest gemeten toen Diest nog iets betekende in Keulen. De ellenmaat hangt er nog. De kopers niet.',
+    text: 'Hier werd het laken van Diest gemeten en gezegeld toen het nog op alle grote markten lag, tweehonderd jaar geleden. De ellenmaat hangt er nog, maar de kopers komen niet meer.',
     r: 45,
   },
   'Stadhuis Diest': {
-    title: 'Het Stadhuis',
+    title: 'Het Schepenhuis',
     text: 'Hier zetelen de schepenen van Diest. Ze beslechten geschillen, zetten de broodprijs vast en maken ruzie over wie de muren betaalt. Dat laatste duurt het langst.',
     r: 40,
   },
   'Ingang Begijnhof': {
     title: 'Het Begijnhof',
-    text: 'Een stad in de stad, gesticht in 1253. De begijnen leggen geen eeuwige geloften af: wie wil, mag gaan. Bijna niemand gaat. De poort sluit bij valavond.',
+    text: 'Een stad in de stad, waar al sinds 1245 begijnen wonen. Ze leggen geen eeuwige geloften af: wie wil, mag gaan. Bijna niemand gaat. De poort sluit bij valavond.',
     r: 80,
     major: true,
   },
@@ -49,12 +49,12 @@ export const LORE: Record<string, LoreEntry> = {
   },
   'Hof van Nassau': {
     title: 'Hof van Nassau',
-    text: 'Het huis van de Nassaus, heren van Diest sinds 1499. In de lange oorlog werd het in beslag genomen, in 1648 teruggegeven. Sindsdien heeft er niemand geslapen.',
+    text: 'Het huis van de Nassaus, heren van Diest sinds 1499. De prinsen hebben er nooit lang gewoond. Prins Filips Willem ontving er zijn gasten, en na hem is er geen prins meer komen slapen.',
     r: 40,
   },
   'Den Drossaerd': {
     title: 'Het Huis van de Drossaard',
-    text: 'Hier woont de drossaard, de baljuw van de baron. Hij bewaart de vrede als het moet en de boetes als het kan. Het tweede bewaart hij beter.',
+    text: 'Hier woont de drossaard, de man van de baron in Diest. Hij bewaart de vrede als het moet en de boetes als het kan. De boetes bewaart hij beter.',
     r: 35,
   },
   'Refugiehuis van Averbode': {
@@ -64,7 +64,7 @@ export const LORE: Record<string, LoreEntry> = {
   },
   'Het Spijker - Refugiehuis van Tongerlo': {
     title: 'Refugie van Tongerlo',
-    text: 'De graanschuur van de abdij van Tongerlo. In goede jaren ligt hier haar graan. In slechte jaren ook de abdij zelf, boven op het koren.',
+    text: 'De graanschuur van de abdij van Tongerlo. In goede jaren ligt hier haar graan. In slechte jaren schuilen hier ook de kanunniken zelf, boven op het koren.',
     r: 35,
   },
   'Onze-Lieve-Vrouwekerk': {
@@ -74,18 +74,18 @@ export const LORE: Record<string, LoreEntry> = {
   },
   'Stadspark De Warande': {
     title: 'De Warande',
-    text: 'Het jachtpark van de heer, ommuurd binnen de stadsmuren. Stropen is hier een zaak voor de galg, dus de hazen zijn brutaal.',
+    text: 'Het jachtpark van de heer, achter een hoge muur. Op stropen staat hier de galg, dus de hazen zijn brutaal.',
     r: 140,
     major: true,
   },
   'Ruïne Warandekasteel': {
     title: 'Het Kasteel van de Heren van Diest',
-    text: 'De oude zetel van de heren van Diest op de Warandeheuvel, uit de tijd voor de baronie aan Nassau kwam. Van hier keken de heren over hun stad. De Nassaus kijken van verder.',
+    text: 'De oude zetel van de heren van Diest op de Warandeheuvel, uit de tijd voor de baronie aan Nassau kwam. Van hier keken de heren uit over hun stad. De Nassaus kijken van veel verder toe.',
     r: 60,
   },
   Tafelrondmotte: {
     title: 'De Tafelronde',
-    text: 'Een begraasde mottenheuvel naast de Warande. Het volk noemt hem de Tafelronde, al weet niemand meer welke ridders eraan zaten.',
+    text: 'Een met gras begroeide burchtheuvel naast de Warande. Het volk noemt hem de Tafelronde, al weet niemand meer welke ridders eraan zaten.',
     r: 55,
   },
   Allerheiligenkapel: {
@@ -94,27 +94,27 @@ export const LORE: Record<string, LoreEntry> = {
     r: 45,
   },
   Antwerpsepoort: {
-    title: 'De Antwerpse Poort',
+    title: 'De Schaluinpoort',
     text: 'De weg naar het noorden, naar de Kempen en verder naar Antwerpen. De vrede van 1648 hield de Schelde gesloten, en Antwerpen leeft nu van zijn schilders, zijn drukkers en zijn herinneringen.',
     r: 60,
   },
   Schaffensepoort: {
-    title: 'De Schaffense Poort',
+    title: 'De Schaffensepoort',
     text: 'De weg naar het noordoosten, naar Schaffen en de heide. De poort gaat dicht bij valavond. Wie te laat is, slaapt in de gracht en betaalt de volgende ochtend tol.',
     r: 60,
   },
   Koepoort: {
-    title: 'De Koepoort',
-    text: 'Elke ochtend wordt het vee langs deze poort naar de Demerweiden gedreven, en elke avond terug. Twee keer geteld.',
+    title: 'De oude Koepoort',
+    text: 'Deze poort is na 1508 dichtgemetseld. Het vee wordt er nu elke ochtend voorbij gedreven naar de Demerweiden, en elke avond terug. Het wordt twee keer geteld.',
     r: 60,
   },
   Maastrichtsepoort: {
-    title: 'De Maastrichtse Poort',
-    text: 'De weg naar het zuidoosten, naar Tienen en Maastricht. Hier wordt tol betaald op wijn, zout en alles wat de tollenaar een naam kan geven.',
+    title: 'De Beverenpoort',
+    text: 'Hier begint de weg naar Hasselt en Maastricht. Hier wordt tol betaald op wijn, zout en alles wat de tollenaar een naam kan geven.',
     r: 60,
   },
   Leuvensepoort: {
-    title: 'De Leuvense Poort',
+    title: 'De Putterstraatpoort',
     text: 'De weg naar het zuidwesten, naar Leuven, zijn universiteit en het hof van de landvoogd in Brussel. Geleerden en advocaten komen hier langs, zelden samen.',
     r: 60,
   },
@@ -124,8 +124,8 @@ export const LORE: Record<string, LoreEntry> = {
     r: 60,
   },
   Demerpoort: {
-    title: 'De Demerpoort',
-    text: 'Waar de Demer de stad binnenkomt. De rivier drijft de molens aan en voert weg wat de stad liever vergeet. Soms brengt ze het terug.',
+    title: 'De Waterpoort op de Demer',
+    text: 'Hier komt de Demer de stad binnen. De rivier drijft de molens aan en voert weg wat de stad liever vergeet. Soms brengt ze het terug.',
     r: 60,
   },
   Webbekom: {
@@ -135,35 +135,35 @@ export const LORE: Record<string, LoreEntry> = {
   },
   'Sint-Trudokerk': {
     title: 'Sint-Trudokerk, Webbekom',
-    text: 'De dorpskerk van Webbekom, toegewijd aan Sint-Truiden. Het klokkentouw is altijd vochtig.',
+    text: 'De dorpskerk van Webbekom, toegewijd aan Sint-Trudo. Het klokkentouw is altijd vochtig.',
     r: 50,
   },
   Kaggevinne: {
     title: 'Kaggevinne',
-    text: 'Een gehucht aan de weg naar Scherpenheuvel. Een handvol hoeves, een heleboel ganzen. De ganzen waren er eerst.',
+    text: 'Een gehucht aan de weg naar Scherpenheuvel. Er staat een handvol hoeves en er lopen veel meer ganzen. De ganzen waren er eerst.',
     r: 250,
   },
   'Veldkapel Galgeberg': {
     title: 'De Galgenberg',
-    text: 'Diest hangt zijn veroordeelden op deze heuvel, in het zicht van de weg, zodat reizigers in een eerlijke stemming aankomen. De laatste tijd vooral deserteurs uit de Franse oorlog.',
+    text: 'De schepenbank van Kaggevinne hangt haar veroordeelden op deze heuvel, in het zicht van de weg, zodat elke reiziger met eerlijke bedoelingen aankomt. De laatste tijd zijn het vooral deserteurs uit de oorlog met Frankrijk.',
     r: 120,
     major: true,
   },
   Scherpenheuvel: {
     title: 'Scherpenheuvel',
-    text: 'De "scherpe heuvel". Veertig jaar geleden stond hier heide en één eik, met een Mariabeeldje in de takken. Toen lieten de aartshertogen Albrecht en Isabella er een heilige stad aanleggen, ommuurd in een zevenpuntige ster. Nu wandelt half Brabant hierheen.',
+    text: 'Een halve eeuw geleden was dit een kale heuvel met heide en één eik, met een Mariabeeldje in de takken. Toen lieten de aartshertogen Albrecht en Isabella er een stad met zeven zijden aanleggen, rond een nieuwe kerk. Nu komt half Brabant hier op bedevaart.',
     r: 380,
     major: true,
   },
   'Basiliek van Onze-Lieve-Vrouw van Scherpenheuvel': {
     title: 'De Basiliek van Onze-Lieve-Vrouw',
-    text: 'Gebouwd voor de aartshertogen en ingewijd in 1627: zeven zijden, voor de zeven smarten en de zeven vreugden van Maria, onder een koepel beschilderd met gouden sterren. Het hoogaltaar staat waar de eik stond.',
+    text: 'De kerk is gebouwd in opdracht van de aartshertogen en ingewijd in 1627. Ze heeft zeven zijden, voor de zeven smarten en de zeven vreugden van Maria, en een koepel vol gouden sterren. Het hoogaltaar staat waar de eik stond.',
     r: 90,
     major: true,
   },
   'De Heilige Eik': {
     title: 'De Wortels van de Eik',
-    text: 'De eik werd in 1602 geveld en zijn hout gesneden tot beeldjes van Onze-Lieve-Vrouw, die pelgrims mee naar huis nemen. De wortels zijn nooit uitgegraven. Ze liggen onder het altaar, en sommigen zeggen dat ze nog groeien.',
+    text: 'De eik werd kort na 1600 geveld op bevel van de bisschop. Uit zijn hout zijn beeldjes van Onze-Lieve-Vrouw gesneden, die pelgrims mee naar huis nemen. De wortels zijn nooit uitgegraven. Ze liggen onder het altaar, en sommigen zeggen dat ze nog groeien.',
     r: 60,
     major: true,
   },
