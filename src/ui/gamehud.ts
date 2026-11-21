@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { type Gear, RARITY, STAT_HELP, STAT_NAMES, type Stat, gearLines, gearValue, rollGear, xpToNext } from '../rpg/character';
 import type { QuestEngine } from '../rpg/quests';
 import { FACTIONS } from '../rpg/factions';
+import { DRAGON_SKILLS } from '../player/dragonskills';
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const div = (cls: string, html = '') => {
@@ -143,6 +144,10 @@ const ICONS: Record<string, string> = {
   rookbom: '<path d="M7 18a4 4 0 0 1-.500-8 5.500 5.500 0 0 1 10.600-1.200A4.600 4.600 0 0 1 17 18z"/><path d="M9 21h6"/>',
   roll: '<path d="M19.500 12a7.500 7.500 0 1 1-2.600-5.700"/><path d="M17.500 2.500v4.300h-4.300"/>',
   salve: '<path d="M8 9h8l1.500 3v7.500a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V12zM9.500 5h5v4h-5zM10 15h4M12 13v4"/>',
+  // the dragon's skills, taught by Het Oude Volk (src/player/dragonskills.ts): mist, the wing, the call
+  ds_nevel: '<path d="M3 9c2-1.500 4-1.500 6 0s4 1.500 6 0 4-1.500 6 0M3 13c2-1.500 4-1.500 6 0s4 1.500 6 0 4-1.500 6 0M5 17c2-1.200 3.500-1.200 5.500 0s3.500 1.200 5.500 0"/>',
+  ds_slag: '<path d="M12 6c-2 3-5 4.500-9 5 3 1 5.500 2.500 6.500 5L12 14l2.500 2c1-2.500 3.500-4 6.500-5-4-.500-7-2-9-5z"/><path d="M5 20h14"/>',
+  ds_roep: '<path d="M12 3c2 3 5 4 5 8a5 5 0 0 1-10 0c0-4 3-5 5-8z"/><path d="M4 20c2.500-1.500 5.500-1.500 8 0s5.500 1.500 8 0"/>',
 };
 const icon = (id: string | undefined) => (id && ICONS[id] ? `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICONS[id]}</svg>` : '');
 
@@ -311,7 +316,7 @@ export class CharacterPanel {
   shop = false;
   /** the merchant whose wares are shown (null: Marieke's old mixed stock) */
   vendor: ShopView | null = null;
-  /** extra rows for the stats column (standing with the four parties) */
+  /** extra rows for the stats column (standing with the parties you know: src/life/standing.ts) */
   extra: (() => string) | null = null;
   private wares: Gear[] = [];
   private waresLevel = 0;
@@ -381,6 +386,11 @@ export class CharacterPanel {
           <div class="sk"><b>Rechtermuis · ${esc(o.skill.name)}</b><p>${esc(o.skill.text)}</p></div>
           <div class="sk${h.level < o.skill2.level ? ' locked' : ''}"><b>R · ${esc(o.skill2.name)}${h.level < o.skill2.level ? ` (niveau ${o.skill2.level})` : ''}</b><p>${esc(o.skill2.text)}</p></div>
           <div class="sk"><b>Linkermuis in de lucht · Drakenvuur</b><p>${esc(h.dragon)} spuwt vuur waar je kijkt.</p></div>
+          ${(() => {
+            // what Het Oude Volk taught the dragon, in one entry (the panel has to fit at 1280 x 720)
+            const ds = Object.values(DRAGON_SKILLS).filter((d) => this.q.s.flags[`ov_${d.id}`]);
+            return ds.length ? `<div class="sk"><b>Gaven van ${esc(h.dragon)}</b><p>${ds.map((d) => `${esc(d.name)} (${d.key === 'RMB' ? 'rechtermuis' : d.key}${d.flying ? ' in de lucht' : ' te voet'})`).join(', ')}. Geleerd van het Oude Volk.</p></div>` : '';
+          })()}
         </div>
         <div class="col"><h3>GEDRAGEN</h3>${worn}${this.extra && !v ? this.extra() : ""}</div>
         <div class="col"><h3>ZAK</h3><div class="bag">${bag}</div></div>

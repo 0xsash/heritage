@@ -201,6 +201,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .ebar .eb { height: 6px; background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(0, 0, 0, 0.9); margin-top: 2px; }
 .ebar .eb i { display: block; height: 100%; background: linear-gradient(180deg, #e04a32, #8a1a0e); }
 .ebar.elite { width: 140px; }
+/* a creature whose weakness Het Oude Volk taught you */
+.ebar.weak .en::before { content: '◆ '; color: #a9cbb8; }
 .ebar.elite .en { color: #ffcf5a; font-family: var(--display); font-size: 15px; }
 .ebar.elite .eb { height: 8px; border-color: #b08a3a; }
 .ebar.tele .eb { box-shadow: 0 0 8px 2px rgba(255, 60, 30, 0.8); }
@@ -607,7 +609,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .lifebuffs .lb-zegen { border-left-color: #d8d2c0; }
 .lifebuffs .lb-moed { border-left-color: #c8402a; }
 .lifebuffs .lb-uitgerust, .lifebuffs .lb-eten { border-left-color: #7aa860; }
-.charpanel .standing { margin: 6px 0 10px; }
+.charpanel .standing { margin: 4px 0 6px; }
 .charpanel .standing .sd-top { display: flex; justify-content: space-between; gap: 8px; font-size: 16px; }
 .charpanel .standing .sd-top b { color: #ffe0a0; font-weight: 600; white-space: nowrap; }
 .charpanel .standing .sd-bar { height: 6px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(214, 173, 87, 0.25); margin-top: 3px; }

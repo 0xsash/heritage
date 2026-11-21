@@ -16,6 +16,7 @@ export type Action =
   | 'skill' // right mouse / LT — origin skill
   | 'skill2' // R / B on foot — second skill
   | 'potion' // Q / d-pad down — drink a salve
+  | 'dragon' // G / d-pad left — call the dragon to your side in a fight (once Het Oude Volk taught it)
   | 'character' // I / C(on foot) — character and bag
   | 'help'; // H / Start
 
@@ -34,6 +35,7 @@ const KEYMAP: Record<string, Action> = {
   KeyP: 'paint',
   KeyR: 'skill2',
   KeyQ: 'potion',
+  KeyG: 'dragon',
   KeyI: 'character',
   Tab: 'character',
   KeyH: 'help',
@@ -191,6 +193,7 @@ export class Input {
         [8, 'map'],
         [5, 'journal'],
         [13, 'potion'],
+        [14, 'dragon'],
         [1, 'skill2'],
         [9, 'help'],
         [12, 'time'],

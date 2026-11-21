@@ -20,6 +20,25 @@ import type { CampDef } from '../rpg/types';
 import type { WorldCollision } from '../world/collision';
 import { type Body, type EnemyType, TYPES, makeBody } from './enemies';
 import { Floaters, Fx } from './fx';
+import { DRAGON_SKILLS, type DragonSkillId } from '../player/dragonskills';
+
+/**
+ * What the player has learned from Het Oude Volk (src/life/oudevolk.ts), as combat needs it: which
+ * creatures' weaknesses they know, the safe paths, whether they may let a beaten creature go, and the
+ * dragon's skills. Null until that layer is up: then combat is exactly as before.
+ */
+export interface CombatLore {
+  /** damage multiplier against this enemy type (1: nothing known) */
+  weak(type: string): number;
+  /** how far this type notices you, as a multiplier (the safe paths through the Broek) */
+  aggro(type: string): number;
+  /** may a beaten creature be let go? */
+  canSpare(): boolean;
+  /** a creature was let go */
+  spared(type: string, camp: string): void;
+  /** has the dragon learned this skill? */
+  has(id: DragonSkillId): boolean;
+}
 
 export interface CombatEvents {
   trauma(n: number): void;
@@ -56,6 +75,10 @@ class Enemy {
   hitThisSwing = false;
   aimAt = new THREE.Vector3();
   lastHurt = 0;
+  /** seconds left of the dragon's mist: a calmed creature can be let go sooner */
+  calm = 0;
+  /** let go instead of killed: it runs off and fades */
+  spared = false;
 
   constructor(public type: EnemyType, public level: number, public name: string, public elite: boolean, public camp: CampState, public body: Body, home: [number, number]) {
     this.maxHp = this.hp = Math.round(type.hp(level) * (elite ? 2.6 : 1));
@@ -152,7 +175,12 @@ export class Combat {
   fire = 100;
   private fireCd = 0;
   private fireIdle = 0;
-  cds: Record<string, number> = { skill: 0, skill2: 0, potion: 0 };
+  cds: Record<string, number> = { skill: 0, skill2: 0, potion: 0, nevel: 0, slag: 0, roep: 0 };
+  /** what Het Oude Volk taught (src/life/oudevolk.ts) */
+  lore: CombatLore | null = null;
+  /** the name of the creature you could let go right now (E), for the prompt */
+  spareHint: string | null = null;
+  private spareTarget: Enemy | null = null;
   private heal = 0;
   private buff = 0;
   private critsLeft = 0;
@@ -166,7 +194,7 @@ export class Combat {
   dmgTakenMul = 1;
   inCombat = false;
   /** things the player has done (the tutorial watches these) */
-  tally = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0 };
+  tally = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0, spares: 0, dskills: 0 };
   /** the elite you are fighting, for the bar at the top of the screen */
   bossTarget: Enemy | null = null;
 
@@ -244,6 +272,11 @@ export class Combat {
       const r = elite ? 0 : 3 + Math.random() * c.def.r * 0.5;
       const home: [number, number] = [c.def.at[0] + Math.cos(a) * r, c.def.at[1] + Math.sin(a) * r];
       const e = new Enemy(t, level, name, elite, c, makeBody(t, this.model, elite, this.kit), home);
+      if ((this.lore?.weak(t.id) ?? 1) > 1) {
+        // you know how to beat this one: a small mark by its name
+        e.bar.classList.add('weak');
+        e.bar.title = 'Je kent zijn zwakte';
+      }
       e.pos.y = this.col.heightAt(e.pos.x, e.pos.z);
       e.wanderTo.copy(e.pos);
       e.body.root.position.copy(e.pos);
@@ -293,6 +326,8 @@ export class Combat {
 
     // ---- cooldowns and meters
     for (const k of Object.keys(this.cds)) this.cds[k] = Math.max(0, this.cds[k] - sdt);
+    this.spareTarget = canAct && onFoot && this.deadT < 0 ? this.findSpare() : null;
+    this.spareHint = this.spareTarget ? this.spareTarget.name : null;
     this.comboT -= sdt;
     this.invuln -= sdt;
     this.buff -= sdt;
@@ -321,6 +356,7 @@ export class Combat {
       input.consume('attack');
       input.consume('skill');
       input.consume('skill2');
+      input.consume('dragon');
     }
     p.hero.setArmed(onFoot && (this.inCombat || this.atk !== null || this.time - this.lastFight < 8));
 
@@ -376,6 +412,13 @@ export class Combat {
       input.consume('attack');
       return;
     }
+
+    // a beaten creature in reach: E lets it go (before anything else uses the key)
+    if (this.spareTarget && input.peek('interact')) {
+      input.consume('interact');
+      this.spare(this.spareTarget);
+    }
+    if (input.consume('dragon')) this.dragonSkill('roep', d);
 
     if (input.consume('attack')) {
       if (this.atk) {
@@ -557,6 +600,153 @@ export class Combat {
     }
   }
 
+  // ================================================================ what Het Oude Volk taught
+  /** A creature (not a man, not a named one) beaten weak and close by, when you have learned to let them go. */
+  private findSpare(): Enemy | null {
+    if (!this.lore?.canSpare()) return null;
+    const me = this.player.heroPos;
+    let best: Enemy | null = null, bd = 3.4 * 3.4;
+    for (const e of this.enemies) {
+      if (!e.alive || e.elite || e.type.body === 'human') continue;
+      if (e.hp / e.maxHp > (e.calm > 0 ? 0.6 : 0.35)) continue;
+      const d2 = (e.pos.x - me.x) ** 2 + (e.pos.z - me.z) ** 2;
+      if (d2 < bd) { bd = d2; best = e; }
+    }
+    return best;
+  }
+
+  /** Let it go: it counts as driven off (quests that ask you to beat them still move), drops nothing, and is remembered. */
+  private spare(e: Enemy) {
+    this.releaseToken(e);
+    e.state = 'dead';
+    e.spared = true;
+    e.deadT = 0;
+    e.aggro = false;
+    e.bar.style.display = 'none';
+    this.tally.spares++;
+    this.lastFight = this.time;
+    const top = e.pos.clone().setY(e.pos.y + e.body.top + 0.4);
+    this.floaters.add('Laten gaan', top, 'skill', 1.3);
+    this.fx.particles.emit(e.pos.clone().setY(e.pos.y + 0.8), { n: 24, color: '#bcd8c8', speed: 1.6, up: 1.5, life: 1.4, size: 0.35, gravity: -0.4, drag: 1.2 });
+    this.sound.chime(false);
+    const xp = Math.round(e.type.xp(e.level) * 0.75 * (e.level >= this.sheet.h.level - 3 ? 1 : 0.3));
+    this.floaters.add(`+${xp} ervaring`, top.clone().setY(top.y + 0.5), 'xp', 1.5, 1.2);
+    const before = this.sheet.h.level;
+    this.quests.addXp(xp);
+    if (this.sheet.h.level > before) this.ev.levelUp(this.sheet.h.level);
+    this.quests.onKill(e.type.id, e.camp.def.id, e.pos.x, e.pos.z, false);
+    if (this.bossTarget === e) this.bossTarget = null;
+    this.lore?.spared(e.type.id, e.camp.def.id);
+  }
+
+  /** The dragon's skills (src/player/dragonskills.ts): mist and wing in flight, the call on foot. */
+  private dragonSkill(id: DragonSkillId, d: ReturnType<Combat['sheet']['derived']>, cam?: THREE.PerspectiveCamera) {
+    const def = DRAGON_SKILLS[id];
+    const p = this.player;
+    if (!this.lore?.has(id)) return;
+    const head = p.onFoot ? this.headPos() : p.pos.clone().setY(p.pos.y + 3);
+    if (this.cds[id] > 0) return;
+    if (def.cost && this.fire < def.cost) {
+      this.floaters.add('Te weinig vuur', head, 'note', 1.1, 0.6);
+      return;
+    }
+    const dragonDmg = (14 + this.sheet.h.level * 6) * d.power * (1 + d.fire / 100);
+    if (id === 'nevel') {
+      // where the camera looks: the ground, as for fire
+      const origin = cam ? cam.position.clone() : p.pos.clone();
+      const dir = new THREE.Vector3();
+      if (cam) cam.getWorldDirection(dir);
+      else dir.copy(p.forward);
+      const q = origin.clone(), step = dir.clone().multiplyScalar(4);
+      for (let i = 0; i < 110; i++) {
+        q.add(step);
+        if (q.y < this.col.heightAt(q.x, q.z)) break;
+      }
+      // mist does not carry far: aimed at the horizon, it falls on the ground just ahead of him
+      if (Math.hypot(q.x - p.pos.x, q.z - p.pos.z) > 35) q.copy(p.pos).addScaledVector(p.forward, 8);
+      q.y = this.col.heightAt(q.x, q.z);
+      for (let i = 0; i < 5; i++) this.fx.particles.emit(q.clone().setY(q.y + 1), { n: 34, color: '#cfd8d2', speed: 5, up: 1, life: 2.6, size: 1.3, gravity: -0.2, drag: 1.4 });
+      this.fx.ring(q, 10, '#cfe0d8', 0.6);
+      this.sound.whoosh();
+      let n = 0;
+      for (const e of this.enemies) {
+        // where it falls, and the ground right under him, where it pours off his wings
+        const under = Math.hypot(e.pos.x - p.pos.x, e.pos.z - p.pos.z) < 12 && p.altitude() < 40;
+        if (!e.alive || (e.pos.distanceTo(q) > 10 + e.radius && !under)) continue;
+        e.blind = 4;
+        e.calm = 6;
+        e.aggro = false;
+        this.releaseToken(e);
+        if (e.state !== 'stagger') e.state = 'idle';
+        n++;
+      }
+      this.floaters.add(n ? 'Neveladem' : 'Neveladem · niemand geraakt', head, 'skill', 1.2);
+    } else if (id === 'slag') {
+      const alt = p.altitude();
+      if (alt > 32) {
+        this.floaters.add('Te hoog voor een vleugelslag', head, 'note', 1.2, 0.6);
+        return;
+      }
+      const at = p.pos.clone().setY(this.col.heightAt(p.pos.x, p.pos.z));
+      this.fx.ring(at, 11, '#e8dcc0', 0.45);
+      this.fx.particles.emit(at.clone().setY(at.y + 0.4), { n: 60, color: '#8a7a60', speed: 10, up: 1.2, life: 1.2, size: 0.6, gravity: 2, drag: 1.5 });
+      this.sound.boom();
+      this.ev.trauma(0.35);
+      let n = 0;
+      for (const e of this.enemies) {
+        if (!e.alive || Math.hypot(e.pos.x - at.x, e.pos.z - at.z) > 11 + e.radius) continue;
+        const dir = this.v2.copy(e.pos).sub(at).setY(0).normalize().clone();
+        this.damage(e, Math.round(dragonDmg * 0.55), true, dir);
+        if (e.alive) this.stagger(e, dir, 9);
+        n++;
+      }
+      if (n) this.hitstop = Math.max(this.hitstop, 0.08);
+      this.floaters.add('Vleugelslag', head, 'skill', 1.2);
+    } else {
+      // the call: he comes from wherever he is, and the ground round you burns
+      const at = p.heroPos.clone();
+      p.hero.act('cast', 0.6);
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2;
+        const f = at.clone().add(new THREE.Vector3(Math.cos(a) * 4.5, 0, Math.sin(a) * 4.5));
+        f.y = this.col.heightAt(f.x, f.z);
+        this.fx.flash(f.clone().setY(f.y + 1), 3.5, '#ffb060', 0.25);
+        this.fx.particles.emit(f, { n: 22, color: '#ff8a2a', speed: 6, up: 4, life: 0.8, size: 0.4, gravity: 5 });
+        this.fx.scorch(f, 1.6);
+      }
+      this.fx.ring(at, 7.5, '#ff9a40', 0.5);
+      this.sound.howl();
+      this.sound.boom();
+      this.ev.trauma(0.4);
+      let n = 0;
+      for (const e of this.enemies) {
+        if (!e.alive || Math.hypot(e.pos.x - at.x, e.pos.z - at.z) > 7.5 + e.radius) continue;
+        this.damage(e, Math.round(dragonDmg * 1.2), true, this.v2.copy(e.pos).sub(at).setY(0).normalize().clone());
+        e.aggro = true;
+        n++;
+      }
+      if (n) this.hitstop = Math.max(this.hitstop, 0.1);
+      this.floaters.add(this.quests.fill('{dragon} antwoordt'), head, 'skill', 1.4);
+      this.lastFight = this.time;
+    }
+    this.cds[id] = def.cooldown;
+    if (def.cost) {
+      this.fire -= def.cost;
+      this.fireIdle = 0;
+    }
+    this.tally.dskills++;
+  }
+
+  /** The dragon's skills for the action bar: the learned ones that belong to how you are moving now. */
+  dragonSlots(flying: boolean) {
+    return (Object.keys(DRAGON_SKILLS) as DragonSkillId[])
+      .filter((id) => this.lore?.has(id) && DRAGON_SKILLS[id].flying === flying)
+      .map((id) => {
+        const s = DRAGON_SKILLS[id];
+        return { key: s.key, name: s.short, icon: `ds_${id}`, cd: this.cds[id] / s.cooldown, ready: this.cds[id] <= 0 && this.fire >= s.cost };
+      });
+  }
+
   private drink(maxHp: number) {
     const inv = this.quests.s.inv;
     if (this.cds.potion > 0) return;
@@ -576,8 +766,10 @@ export class Combat {
 
   // ================================================================ flight
   private flightActions(_dt: number, input: Input, cam: THREE.PerspectiveCamera, d: ReturnType<Combat['sheet']['derived']>) {
-    input.consume('skill');
-    input.consume('skill2');
+    // the dragon's own skills sit on the keys flight leaves free
+    if (input.consume('skill')) this.dragonSkill('nevel', d, cam);
+    if (input.consume('skill2')) this.dragonSkill('slag', d, cam);
+    input.consume('dragon');
     const wants = input.consume('attack') || input.held('attack');
     if (!wants || this.fireCd > 0 || this.fire < 18) return;
     this.fireCd = 0.3;
@@ -698,7 +890,7 @@ export class Combat {
   private damage(e: Enemy, raw: number, heavy: boolean, dir: THREE.Vector3) {
     if (!e.alive) return;
     const crit = raw < 0;
-    const dmg = Math.max(1, Math.abs(raw));
+    const dmg = Math.max(1, Math.round(Math.abs(raw) * (this.lore?.weak(e.type.id) ?? 1)));
     e.hp -= dmg;
     e.flash = 1;
     e.aggro = true;
@@ -871,10 +1063,22 @@ export class Combat {
     e.body.glow(e.flash, e.telegraph);
     if (!e.alive) {
       e.deadT += dt;
+      if (e.spared) {
+        // let go: it runs off, away from you, and is gone
+        const me = this.player.onFoot ? this.player.heroPos : this.player.pos;
+        const ax = e.pos.x - me.x, az = e.pos.z - me.z, al = Math.hypot(ax, az) || 1;
+        e.vel.x += ((ax / al) * e.type.speed * 0.8 - e.vel.x) * Math.min(1, dt * 4);
+        e.vel.z += ((az / al) * e.type.speed * 0.8 - e.vel.z) * Math.min(1, dt * 4);
+        e.yaw = Math.atan2(ax, az);
+        e.body.move(Math.hypot(e.vel.x, e.vel.z));
+        if (e.deadT > 2.6) e.body.root.visible = false;
+        return 0;
+      }
       e.vel.multiplyScalar(Math.exp(-dt * 4));
       return 0;
     }
     e.t -= dt;
+    e.calm -= dt;
     e.cd -= dt;
     e.stun -= dt;
     e.blind -= dt;
@@ -918,7 +1122,7 @@ export class Combat {
       return tokenDelta;
     }
 
-    if (!e.aggro && target && dist < t.aggro * (e.elite ? 1.3 : 1) && (!targetFlying || t.ranged || dist < 12)) {
+    if (!e.aggro && target && dist < t.aggro * (e.elite ? 1.3 : 1) * (this.lore?.aggro(t.id) ?? 1) && (!targetFlying || t.ranged || dist < 12)) {
       e.aggro = true;
       if (t.body === 'hound') this.sound.howl();
       if (t.body === 'human') this.floaters.add(this.quests.fill(['Daar! Pak {hem|haar}!', 'Een {ruiter|ruiterin}!', 'Halt!', 'Voor de buit!'][Math.floor(Math.random() * 4)]), e.pos.clone().setY(e.pos.y + 2.3), 'bark', 1.6, 0.3);

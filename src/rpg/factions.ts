@@ -1,12 +1,21 @@
-// The five parties of Brabant in 1650, as the player meets them. You pick a
-// first loyalty when you make your character; what you do afterwards moves
-// your standing with each. Standing opens doors: prices, wares, work, and
-// how people greet you.
+// The parties of Brabant in 1650, as the player meets them. You pick a first
+// loyalty from the five public ones when you make your character; what you do
+// afterwards moves your standing with each. Standing opens doors: prices,
+// wares, work, and how people greet you.
+//
+// A sixth party, Het Oude Volk, is hidden: it cannot be chosen at creation and
+// shows in no list until the player has found it (flag `ov_found`, see
+// src/life/oudevolk.ts). It lives on FACTIONS as a non-enumerable key, so
+// FACTIONS.oudevolk works everywhere while Object.keys(FACTIONS) (the creation
+// screen, the standing bars, any list) still gives the five public parties.
 
-export type FactionId = 'gilden' | 'kerk' | 'kroon' | 'oranje' | 'vrije';
+export type FactionId = 'gilden' | 'kerk' | 'kroon' | 'oranje' | 'vrije' | 'oudevolk';
 
 /** Helping one of these costs you a little with the other. */
-export const RIVALS: [FactionId, FactionId][] = [['kroon', 'oranje'], ['kerk', 'vrije']];
+export const RIVALS: [FactionId, FactionId][] = [['kroon', 'oranje'], ['kerk', 'vrije'], ['kerk', 'oudevolk']];
+
+/** Parties that stay out of every list until found (see `isKnown` in src/life/standing.ts). */
+export const HIDDEN_FACTIONS: FactionId[] = ['oudevolk'];
 
 export interface FactionDef {
   id: FactionId;
@@ -18,7 +27,7 @@ export interface FactionDef {
   color: string;
 }
 
-export const FACTIONS: Record<FactionId, FactionDef> = {
+const PUBLIC: Record<Exclude<FactionId, 'oudevolk'>, FactionDef> = {
   gilden: {
     id: 'gilden', name: 'De Gilden', tagline: 'Ambachten, schutters en schepenen', color: '#c9a44e',
     text: 'De stad is van wie er werkt. Wevers, brouwers en schutters besturen Diest via hun ambachten en de schepenbank. Ze willen rust, eerlijke handel en klokken die luiden.',
@@ -40,6 +49,15 @@ export const FACTIONS: Record<FactionId, FactionDef> = {
     text: 'Wie geen meester heeft en geen tol wil betalen. Ze kennen elk pad rond elke stadsmuur, kopen alles en verkopen het verder. Ze vragen niet waar je draak vandaan komt.',
   },
 };
+
+/** The hidden party: ordinary people who keep their grandparents' habits (invented for this game; see the Kroniek). */
+export const OUDE_VOLK: FactionDef = {
+  id: 'oudevolk', name: 'Het Oude Volk', tagline: 'Vroedvrouwen, rietsnijders en herders', color: '#8fa39a',
+  text: 'Geen gilde en geen kerk: gewone mensen die nog doen wat hun grootouders deden. Ze zetten melk bij de put en knopen riet aan de kapelpaal. Als enigen in Diest willen ze niet dat de klokken weer luiden, want de klokken laten ook de oude wakers van het land slapen.',
+};
+
+export const FACTIONS = PUBLIC as Record<FactionId, FactionDef>;
+Object.defineProperty(FACTIONS, 'oudevolk', { value: OUDE_VOLK, enumerable: false });
 
 /** Standing, WoW-style: each tier opens something (prices, wares, work). */
 export const TIERS: { at: number; name: string }[] = [

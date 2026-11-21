@@ -25,6 +25,8 @@ export interface Entry {
   truth: Truth;
   /** shown while the entry is still locked */
   hint: string;
+  /** a page about something the player has to find first (Het Oude Volk): not listed, not counted, until unlocked */
+  secret?: boolean;
 }
 
 /** A notice, a stone, a thing you can read in the world: reading it unlocks an entry. */
@@ -169,8 +171,12 @@ export interface KroniekEvents {
 export class Kroniek {
   constructor(private store: { kroniek: string[] }, private ev: KroniekEvents, private save: () => void) {}
 
+  /** what the player can see exists: every page, except secret ones not found yet */
+  private shown(e: Entry) {
+    return !e.secret || this.has(e.id);
+  }
   get total() {
-    return ENTRIES.length;
+    return ENTRIES.filter((e) => this.shown(e)).length;
   }
   get count() {
     return this.store.kroniek.filter((id) => BY_ID.has(id)).length;
@@ -182,7 +188,7 @@ export class Kroniek {
     return BY_ID.get(id);
   }
   list(cat: Cat) {
-    return ENTRIES.filter((e) => e.cat === cat);
+    return ENTRIES.filter((e) => e.cat === cat && this.shown(e));
   }
 
   /** Learn something. Returns the entry when it is new. */
@@ -199,7 +205,7 @@ export class Kroniek {
   /** A line of lore the player already knows (for loading screens and gossip), or any place card. */
   tip(r = Math.random()): Entry {
     const known = ENTRIES.filter((e) => this.has(e.id) && e.cat !== 'mens');
-    const pool = known.length >= 4 ? known : ENTRIES.filter((e) => e.cat === 'tijd' && e.truth === 'geschiedenis');
+    const pool = known.length >= 4 ? known : ENTRIES.filter((e) => e.cat === 'tijd' && e.truth === 'geschiedenis' && !e.secret);
     return pool[Math.floor(r * pool.length)];
   }
 }

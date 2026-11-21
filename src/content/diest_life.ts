@@ -168,6 +168,16 @@ export const QUEST_STANDING: Record<string, [FactionId, number][] | Record<strin
     bribed: [['vrije', 8], ['kroon', -5]],
     seized: [['kroon', 8], ['vrije', -5]],
   },
+  // Het Oude Volk (src/content/oudevolk.ts): helping them costs you with De Kerk, and the other way round
+  ov_tekens: [['oudevolk', 10]],
+  ov_eik: [['oudevolk', 12], ['kerk', -4]],
+  ov_broek: [['oudevolk', 14]],
+  ov_dof: {
+    volk: [['oudevolk', 22], ['kerk', -10]],
+    kerk: [['kerk', 12], ['oudevolk', -6]],
+    genoemd: [['kerk', 16], ['oudevolk', -30]],
+  },
+  ov_leuven: [['oudevolk', 10]],
 };
 
 // ===================================================================== wares
