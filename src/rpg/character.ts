@@ -11,10 +11,10 @@ export type Stats = Record<Stat, number>;
 
 export const STAT_NAMES: Record<Stat, string> = { kracht: 'Kracht', klank: 'Klank', list: 'List', taaiheid: 'Taaiheid' };
 export const STAT_HELP: Record<Stat, string> = {
-  kracht: 'Meer schade met het zwaard.',
-  klank: 'Sterkere klokkenmagie en drakenvuur.',
-  list: 'Meer kans op een voltreffer.',
-  taaiheid: 'Meer levenskracht en pantser.',
+  kracht: 'Je slaat harder met je wapen.',
+  klank: 'Je klokkenmagie en drakenvuur worden sterker.',
+  list: 'Je maakt vaker een voltreffer.',
+  taaiheid: 'Je hebt meer levenskracht en pantser.',
 };
 
 export interface SkillDef {
@@ -54,27 +54,27 @@ export const ORIGINS: Record<OriginId, OriginDef> = {
     id: 'schutter',
     name: 'Schutter',
     tagline: 'Zwaard en staal',
-    text: 'Gildebroeder van Sint-Joris. Slaat hard, staat stevig.',
-    lore: 'De Sint-Jorisgilde schiet al in de schuttershof sinds de tijd van de hertogen. Je eed kostte een jaar sparen. Je naam staat op het bord in de gildekamer. Onder die van de doden.',
+    text: 'Je bent van de Sint-Jorisgilde. Je slaat hard en staat stevig.',
+    lore: 'De Sint-Jorisgilde schiet al in haar schuttershof sinds de tijd van de hertogen. Voor je eed heb je een jaar gespaard. Je naam staat op het bord in de gildekamer, onder de namen van de doden.',
     role: 'van dichtbij, kan veel hebben',
     difficulty: 1,
     base: { kracht: 8, klank: 3, list: 4, taaiheid: 7 },
     growth: { kracht: 3, klank: 1, list: 1, taaiheid: 2 },
     skill: { id: 'zware_slag', short: 'Houw', name: 'Zware slag', text: 'Een brede houw die alles voor je wegslaat.', cooldown: 4, cost: 0, level: 1 },
-    skill2: { id: 'strijdkreet', short: 'Kreet', name: 'Strijdkreet', text: 'Acht tellen lang een derde meer schade, en wie dichtbij staat, deinst terug.', cooldown: 18, cost: 40, level: 3 },
+    skill2: { id: 'strijdkreet', short: 'Kreet', name: 'Strijdkreet', text: 'Acht tellen lang doe je een derde meer schade, en wie dichtbij staat, deinst terug.', cooldown: 18, cost: 40, level: 3 },
     start: 'gildezwaard',
   },
   klokkenluider: {
     id: 'klokkenluider',
     name: 'Beiaardier',
     tagline: 'Klank als wapen',
-    text: 'Kind van de toren. Hoort wat in het brons zit.',
-    lore: 'Je leerde het klavier in de toren, met vuisten en voeten, bij een meester die doof werd van zijn eigen klokken. Je hoort wat in het brons zit. In jouw handen snijdt een zuivere toon. Sinds zondag hoor je niets.',
+    text: 'Je leerde het vak in Mechelen. Je hoort wat er in brons zit.',
+    lore: 'Je leerde het klavier in Mechelen, met vuisten en voeten, bij een meester die doof werd van zijn eigen klokken. Diest heeft alleen gewone klokken, maar jij hoort wat er in het brons zit. Bij jou snijdt een zuivere toon als een mes. Sinds zondag hoor je niets meer.',
     role: 'klank op afstand, kwetsbaar van dichtbij',
     difficulty: 3,
     base: { kracht: 4, klank: 9, list: 4, taaiheid: 5 },
     growth: { kracht: 1, klank: 3, list: 1, taaiheid: 2 },
-    skill: { id: 'klokslag', short: 'Klokslag', name: 'Klokslag', text: 'Een galm die alles om je heen verdooft en raakt.', cooldown: 5, cost: 25, level: 1 },
+    skill: { id: 'klokslag', short: 'Klokslag', name: 'Klokslag', text: 'Een galm die alles om je heen raakt en verdooft.', cooldown: 5, cost: 25, level: 1 },
     skill2: { id: 'zuivere_toon', short: 'Toon', name: 'Zuivere toon', text: 'Een toon zo zuiver dat hij door een vijand heen snijdt.', cooldown: 6, cost: 30, level: 3 },
     start: 'klepelstaf',
   },
@@ -82,14 +82,14 @@ export const ORIGINS: Record<OriginId, OriginDef> = {
     id: 'smokkelaar',
     name: 'Smokkelaar',
     tagline: 'Snel en vals',
-    text: 'Kent elk pad langs de tol. Vecht niet eerlijk.',
-    lore: 'Aan elke brug van Brabant staat een tolhuis, en elk tolhuis wil zijn stuiver. Jij kent de karrensporen door de heide naar de Staatse grens. Je pistool kostte drie jaar zout. Het heeft zich al terugbetaald.',
+    text: 'Je kent elk pad om de tol heen en je vecht niet eerlijk.',
+    lore: 'Aan elke brug van Brabant staat een tolhuis, en elk tolhuis wil zijn stuiver. Jij kent de karrensporen door de heide naar de Staatse grens. Voor je pistool heb je drie jaar zout gesmokkeld. Het heeft zijn geld al opgebracht.',
     role: 'snel en gemeen, leeft van voltreffers',
     difficulty: 2,
     base: { kracht: 5, klank: 3, list: 9, taaiheid: 5 },
     growth: { kracht: 2, klank: 1, list: 3, taaiheid: 1 },
-    skill: { id: 'pistoolschot', short: 'Schot', name: 'Pistoolschot', text: 'Een schot met je radslotpistool. Hard, ver en luid.', cooldown: 3, cost: 0, level: 1 },
-    skill2: { id: 'rookbom', short: 'Rookbom', name: 'Rookbom', text: 'Verdwijn in de rook: vijanden zijn verblind en je volgende slagen zijn voltreffers.', cooldown: 16, cost: 35, level: 3 },
+    skill: { id: 'pistoolschot', short: 'Schot', name: 'Pistoolschot', text: 'Een schot met je radslotpistool: hard, ver en luid.', cooldown: 3, cost: 0, level: 1 },
+    skill2: { id: 'rookbom', short: 'Rookbom', name: 'Rookbom', text: 'Je verdwijnt in de rook: vijanden zien je niet meer en je volgende slagen zijn voltreffers.', cooldown: 16, cost: 35, level: 3 },
     start: 'ponjaard',
   },
 };
@@ -119,35 +119,35 @@ export interface BackgroundDef {
 export const BACKGROUNDS: Record<BackgroundId, BackgroundDef> = {
   diest: {
     id: 'diest', name: ['Diestenaar', 'Diestse'], place: 'Diest, binnen de muren',
-    lore: 'Je bent geboren binnen de muren, onder Sint-Sulpitius. Diest stuurde ooit laken tot in Keulen; nu brouwt het vooral bier. In het koor ligt een prins van Oranje begraven. De levende komen nooit.',
+    lore: 'Je bent geboren binnen de muren, onder Sint-Sulpitius. Diest verkocht ooit laken op alle grote markten; nu brouwt het vooral bier. In het koor ligt een prins van Oranje begraven. De levende prinsen komen hier nooit.',
     perkName: 'Klokkenkind', perk: '+5% kracht van klokkenmagie en drakenvuur.',
-    said: ['Van hier? Dan weet je hoe laat het is. Of wist.', 'Een Diestenaar met een draak. Mijn moeder gaat dat niet geloven.'],
+    said: ['Van hier? Dan wist je altijd hoe laat het was, tot zondag.', 'Een Diestenaar met een draak. Mijn moeder gaat dat niet geloven.'],
     bonus: { power: 0.05 },
   },
   kempen: {
     id: 'kempen', name: ['Kempenaar', 'Kempense'], place: 'de Kempen, ten noorden van de Demer',
     lore: 'Ten noorden van de Demer begint het zand. Je ouders hoedden schapen op heide die ooit bos was, en staken turf voor een heer die ze nooit zagen. In de Kempen klaagt niemand over het weer. Het weer luistert toch niet.',
     perkName: 'Taai als heide', perk: '+15 levenskracht.',
-    said: ['Uit de Kempen? Daar eten ze zand en zeggen ze dank je.', 'Een Kempenaar loopt nog als het paard al ligt.'],
+    said: ['Uit de Kempen? Daar eten ze zand en zeggen ze er nog merci voor.', 'Een Kempenaar loopt nog als het paard al ligt.'],
     bonus: { hp: 15 },
   },
   hageland: {
     id: 'hageland', name: ['Hagelander', 'Hagelandse'], place: 'het Hageland, ten zuiden van Diest',
-    lore: 'Ten zuiden van Diest liggen de heuvels van het Hageland, met wijngaarden op de zonkant. Uit de groeven komt de bruine ijzerzandsteen waarvan de kerken gebouwd zijn. Je droeg stenen voor je kon lezen. Je rug weet het nog.',
+    lore: 'Ten zuiden van Diest liggen de heuvels van het Hageland, met wijngaarden aan de zonnekant. Uit de groeven komt de bruine ijzerzandsteen waarvan de kerken gebouwd zijn. Je droeg stenen voor je kon lezen. Je rug weet het nog.',
     perkName: 'Steendragersarmen', perk: '+2 Kracht.',
-    said: ['Hagelanders. Zuur als hun wijn en hard als hun steen.', 'Van de heuvels? Breng de volgende keer wijn mee. Of liever niet.'],
+    said: ['Hagelanders zijn zuur als hun wijn en hard als hun steen.', 'Van de heuvels? Breng de volgende keer wijn mee. Of nee, doe maar niet.'],
     bonus: { kracht: 2 },
   },
   luik: {
     id: 'luik', name: ['Luikenaar', 'Luikse'], place: 'het prinsbisdom Luik',
-    lore: 'Luik is niet van Spanje en niet van Brabant, maar van een prins-bisschop. Het blijft neutraal en verkoopt aan elk leger. Je groeide op tussen aambeelden en musketlopen. Je weet wat een loop kost, en wie hem betaalt.',
+    lore: 'Luik is niet van Spanje en niet van Brabant, maar van een prins-bisschop, die neutraal wil blijven. De stad verkoopt wapens aan elk leger. Je groeide op tussen aambeelden en musketlopen. Je weet wat een loop kost, en wie hem betaalt.',
     perkName: 'Kent het staal', perk: '+5 pantser.',
     said: ['Een Luikenaar. Tel je vingers na een handdruk.', 'Uit Luik? Kijk dan eens naar het slot van mijn deur.'],
     bonus: { armor: 5 },
   },
   tros: {
     id: 'tros', name: ['Troskind', 'Troskind'], place: 'de tros van het leger',
-    lore: 'Achter elk leger trekt een tweede: marketentsters, wasvrouwen, knechten, kinderen. Je werd geboren op een kar in Henegouwen. In 1648 kwam er vrede met de Hollanders. Met Frankrijk niet. De tros trekt nog.',
+    lore: 'Achter elk leger trekt een tweede: marketentsters, wasvrouwen, knechten, kinderen. Je werd geboren op een kar in Henegouwen. In 1648 kwam er vrede met de Hollanders, maar niet met Frankrijk. De tros trekt nog altijd verder.',
     perkName: 'Vuil vechten', perk: '+5% kans op een voltreffer.',
     said: ['Van de tros? Hou je handen waar ik ze kan zien.', 'Een soldatenkind. Sluit de kippen op.'],
     bonus: { crit: 5 },
@@ -202,7 +202,7 @@ const BASES: Base[] = [
 
 const SUFFIX: [string, keyof Gear['mods']][] = [
   ['van de Schutterij', 'kracht'],
-  ['van de Beiaard', 'klank'],
+  ['van de Klokkenluider', 'klank'],
   ['van de Smokkelaar', 'list'],
   ['van de Begijnen', 'taaiheid'],
   ['van de Demer', 'hp'],
@@ -213,14 +213,14 @@ const RARE_NAMES = ['Demerdoorn', 'Klokkenhart', 'Weversdank', 'Galgenrust', 'To
 
 /** Named pieces: starting gear and quest rewards. */
 const UNIQUE: Record<string, Omit<Gear, 'uid'>> = {
-  gildezwaard: { base: 'korte_degen', name: 'Gildezwaard', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [4, 7], mods: {}, text: 'Het oefenzwaard van de Sint-Jorisgilde. Bot, maar eerlijk.' },
+  gildezwaard: { base: 'korte_degen', name: 'Gildezwaard', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [4, 7], mods: {}, text: 'Het oefenzwaard van de Sint-Jorisgilde. Het is bot, maar eerlijk.' },
   klepelstaf: { base: 'roestig_zwaard', name: 'Klepelstaf', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [3, 6], mods: { klank: 2 }, text: 'Een oude klepel aan een essenhouten steel.' },
   ponjaard: { base: 'korte_degen', name: 'Ponjaard', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [3, 6], mods: { crit: 3 }, text: 'Kort, scherp en makkelijk te verbergen.' },
-  pelgrimsmantel: { base: 'linnen_wambuis', name: 'Pelgrimsmantel', slot: 'harnas', rarity: 1, ilvl: 2, armor: 6, mods: { taaiheid: 2 }, text: 'Gezegend in Scherpenheuvel. Ruikt naar wierook.' },
-  roelofs_slagzwaard: { base: 'slagzwaard', name: 'Roelofs slagzwaard', slot: 'wapen', rarity: 3, ilvl: 5, dmg: [11, 18], mods: { kracht: 4, crit: 5 }, text: 'Roelof de Rode heeft er drie dorpen mee geplunderd. Het zwaard weet dat nog.' },
-  kluddevel: { base: 'buffeljas', name: 'Kluddevel', slot: 'harnas', rarity: 3, ilvl: 5, armor: 20, mods: { taaiheid: 4, hp: 25 }, text: 'De pels van de Kludde. Nog altijd nat. Nog altijd warm.' },
+  pelgrimsmantel: { base: 'linnen_wambuis', name: 'Pelgrimsmantel', slot: 'harnas', rarity: 1, ilvl: 2, armor: 6, mods: { taaiheid: 2 }, text: 'Gezegend in Scherpenheuvel. Hij ruikt nog naar wierook.' },
+  roelofs_slagzwaard: { base: 'slagzwaard', name: 'Lambrechts slagzwaard', slot: 'wapen', rarity: 3, ilvl: 5, dmg: [11, 18], mods: { kracht: 4, crit: 5 }, text: 'Lambrecht de Rode heeft er drie dorpen mee geplunderd. Het zwaard weet dat nog.' },
+  kluddevel: { base: 'buffeljas', name: 'Kluddevel', slot: 'harnas', rarity: 3, ilvl: 5, armor: 20, mods: { taaiheid: 4, hp: 25 }, text: 'De pels van de Kludde. Hij is nog altijd nat en nog altijd warm.' },
   eikenhart: { base: 'eiken_beeldje', name: 'Eikenhart', slot: 'talisman', rarity: 3, ilvl: 4, mods: { klank: 5, fire: 20, hp: 15 }, text: 'Hout van de heilige eik. Het zoemt als de klokken zwijgen.' },
-  zegelring: { base: 'pelgrimsinsigne', name: 'Wevers zegelring', slot: 'talisman', rarity: 2, ilvl: 3, mods: { list: 3, crit: 4 }, text: 'Het zegel van het weversambacht. Opent deuren in elke lakenhalle.' },
+  zegelring: { base: 'pelgrimsinsigne', name: 'Wevers zegelring', slot: 'talisman', rarity: 2, ilvl: 3, mods: { list: 3, crit: 4 }, text: 'Het zegel van het weversambacht. Het opent deuren in elke lakenhalle.' },
 };
 
 let uidCounter = Date.now() % 100000;

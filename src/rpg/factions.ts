@@ -33,11 +33,11 @@ export const FACTIONS: Record<FactionId, FactionDef> = {
   },
   oranje: {
     id: 'oranje', name: 'Oranje', tagline: 'De baron, zijn drossaard, zijn mensen', color: '#d98a2b',
-    text: 'Diest is van de Prins van Oranje: een protestantse heer in het noorden over een katholieke stad onder een Spaanse koning. Zijn drossaard int de boetes en wacht op betere tijden. Wie Oranje dient, dient een afwezige. Afwezigen onthouden veel.',
+    text: 'Diest is van de Prins van Oranje: een protestantse heer in het noorden over een katholieke stad onder een Spaanse koning. Zijn drossaard int de boetes en wacht op betere tijden. Wie Oranje dient, dient een heer die er nooit is. Zulke heren onthouden veel.',
   },
   vrije: {
     id: 'vrije', name: 'De Vrije Lieden', tagline: 'Marskramers, voerlui, smokkelaars', color: '#6f8a5a',
-    text: 'Wie geen meester heeft en geen tol wil betalen. Ze kennen elk pad rond elke stadsmuur, kopen alles en verkopen het verder. Ze vragen niet waar je draak vandaan komt.',
+    text: 'Dit zijn de mensen die geen meester hebben en geen tol willen betalen. Ze kennen elk pad rond elke stadsmuur, kopen alles en verkopen het verder. Ze vragen niet waar je draak vandaan komt.',
   },
 };
 

@@ -55,7 +55,7 @@ export function faceName(face: Record<string, number>) {
 
 export const NAMES: Record<Sex, string[]> = {
   m: ['Lieven', 'Joris', 'Rombout', 'Gommaar', 'Bartel', 'Arnout', 'Willem', 'Gillis', 'Jacob', 'Adriaan', 'Cornelis', 'Michiel', 'Steven', 'Gerard'],
-  f: ['Machteld', 'Clara', 'Katelijne', 'Margriet', 'Barbara', 'Josijne', 'Geertruid', 'Anna', 'Johanna', 'Magdalena', 'Beatrijs', 'Digna', 'Amelberga', 'Kathelijn'],
+  f: ['Machteld', 'Clara', 'Katelijne', 'Margriet', 'Barbara', 'Josijne', 'Geertruid', 'Anna', 'Johanna', 'Magdalena', 'Beatrijs', 'Agnes', 'Elisabeth', 'Kathelijn'],
 };
 export const DRAGONS = ['Gloed', 'Sintel', 'Vonk', 'Brons', 'Goudvleugel', 'Beiaard', 'Demerdraak', 'Gouden Griet', 'Roet', 'Heidebrand'];
 

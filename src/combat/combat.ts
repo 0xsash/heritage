@@ -553,7 +553,7 @@ export class Combat {
       this.invuln = 0.6;
       this.sound.whoosh();
       for (const e of this.enemies) if (e.alive && e.pos.distanceTo(p.heroPos) < 7) { e.blind = 3; this.releaseToken(e); e.state = 'idle'; }
-      this.floaters.add('Verdwenen in de rook', this.headPos(), 'skill', 1.2);
+      this.floaters.add('Je verdwijnt in de rook', this.headPos(), 'skill', 1.2);
     }
   }
 
@@ -561,7 +561,7 @@ export class Combat {
     const inv = this.quests.s.inv;
     if (this.cds.potion > 0) return;
     if ((inv.salve ?? 0) <= 0) {
-      this.floaters.add('Geen zalf meer', this.headPos(), 'note', 1.1, 0.6);
+      this.floaters.add('Je zalf is op', this.headPos(), 'note', 1.1, 0.6);
       return;
     }
     inv.salve--;
@@ -827,7 +827,7 @@ export class Combat {
   private pickUp(l: Loot) {
     if (l.kind === 'coin') {
       this.quests.s.florins += l.amount;
-      this.floaters.add(`+${l.amount} florijnen`, this.headPos(), 'coin', 1.1, 0.8);
+      this.floaters.add(`+${l.amount} stuivers`, this.headPos(), 'coin', 1.1, 0.8);
       this.sound.coins();
     } else if (l.kind === 'salve') {
       this.quests.s.inv.salve = (this.quests.s.inv.salve ?? 0) + 1;
