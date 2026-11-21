@@ -171,7 +171,7 @@ function bleach(n: number, len = 14) {
 /** a warm flame: a small glowing ball with a point light */
 function flame(s: Stage, x: number, y: number, z: number, power = 6, range = 14, color = '#ffb35a') {
   const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTexture(), color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-  glow.scale.setScalar(0.7);
+  glow.scale.setScalar(0.28);
   glow.position.set(x, y, z);
   s.group.add(glow);
   const l = s.light(new THREE.PointLight(color, power, range, 1.6), x, y, z);
@@ -411,29 +411,29 @@ function kerkShots(): Shot[] {
   return [
     {
       name: 'kerk-begijnhof', sky: 'golden', lines: ['intro_kerk_1'], into: 'black', blend: 1.0, title: title('kerk'),
-      focus: [692, -315],
+      focus: [703, -342],
       // beguines crossing the court to the Sint-Catharinakerk
-      cam: { path: [[687, 1.7, -309], [689, 2.3, -310.5]], look: [[699, 5, -323], [700, 7, -324]], fov: [50, 46] },
+      cam: { path: [[699.5, 1.7, -358], [700.5, 2.3, -354]], look: [[705, 4.5, -332], [705, 5.5, -330]], fov: [46, 42] },
       cast: (s) => {
-        s.walk(at(s, 'beguine', 689.5, -312.5, 2.4, 'walk', 2), [[694, -316.5]], 0.8);
-        s.walk(at(s, 'beguine', 688, -314, 2.4, 'walk', 3), [[692.5, -318]], 0.8);
-        const b = at(s, 'beguine', 692.5, -312.6, 0, 'pray', 4);
-        face(b, 700, -324);
+        s.walk(at(s, 'beguine', 700, -348, 0.2, 'walk', 2), [[702, -344], [704, -340]], 0.8);
+        s.walk(at(s, 'beguine', 698.6, -349.5, 0.2, 'walk', 3), [[700.6, -345.5], [702.6, -341.5]], 0.8);
+        const b = at(s, 'beguine', 707, -343, 0, 'pray', 4);
+        face(b, 706, -336);
       },
       cues: [[0, (s) => { s.sound.bed('drone', 0.25, 3); s.sound.bed('night', 0, 1); s.sound.bed('water', 0, 1); s.sound.bed('wind', 0.25, 2); }], [1.5, (s) => s.sound.bell(330, 0.12)]],
     },
     {
       name: 'kerk-toren', sky: 'golden', lines: ['intro_kerk_2'], into: 'cut',
-      focus: [-40, 48],
+      focus: [-15, 50],
       // up at the squat, unfinished tower; a canon of the chapter crosses below
-      cam: { path: [[-70, 1.7, 62], [-66, 2.4, 59]], look: [[-30, 16, 39], [-27, 24, 37]], fov: [46, 42] },
-      cast: (s) => s.walk(at(s, CANON, -46, 53, 0.9, 'walk', 5), [[-41, 49], [-36, 45]], 0.8, 'walk_formal'),
+      cam: { path: [[-4, 1.7, 65], [-7, 2.3, 62]], look: [[-24, 12, 41], [-26, 18, 38]], fov: [48, 44] },
+      cast: (s) => s.walk(at(s, CANON, -13, 55, -2.3, 'walk', 5), [[-17, 51], [-21, 47]], 0.8, 'walk_formal'),
       cues: [[1.2, (s) => s.sound.bell(147, 0.32)], [3.8, (s) => s.sound.bell(147, 0.26)]],
     },
     {
       name: 'kerk-scherpenheuvel', sky: 'golden', lines: ['intro_kerk_3'], into: 'black', blend: 0.9,
       focus: [-5062, 518],
-      // the basilica of Scherpenheuvel, where the oak stood
+      // the church of Scherpenheuvel, where the oak stood
       cam: { path: [[-5156, 48, 484], [-5150, 40, 502], [-5140, 32, 518]], look: [[-5062, 16, 518], [-5062, 17, 518], [-5062, 19, 518]], fov: [46, 42] },
       cast: (s) => {
         s.walk(at(s, 'pilgrim', -5128, 522, 1.6, 'walk', 6), [[-5108, 520]], 1.0);
@@ -443,14 +443,14 @@ function kerkShots(): Shot[] {
     },
     {
       name: 'kerk-gebed', sky: 'night', lines: ['intro_kerk_4'], into: 'black', blend: 1.0, env: { exposure: 1.2 },
-      focus: [694, -316],
+      focus: [702, -342],
       // a beguine at prayer by a candle, at night
-      cam: { path: [[690.6, 1.05, -312.6], [691.3, 1.05, -313.3]], look: [[694, 1.0, -316], [694, 1.0, -316]], fov: [38, 33], drift: 0.03 },
+      cam: { path: [[699.4, 1.15, -345.2], [699.9, 1.1, -344.6]], look: [[702.4, 1.0, -341.6], [702.4, 1.0, -341.6]], fov: [40, 34], drift: 0.03 },
       cast: (s) => {
-        const b = at(s, 'beguine', 694, -316, 0, 'pray', 9);
-        face(b, 695.4, -317.6);
-        s.group.add(box(0.5, 1.0, 0.4, '#5c554d', 695.6, 0.5, -317.8));
-        flame(s, 695.6, 1.12, -317.8, 5, 10);
+        const b = at(s, 'beguine', 702, -342, 0, 'pray', 9);
+        face(b, 703, -340.6);
+        s.group.add(box(0.5, 1.0, 0.4, '#5c554d', 703, 0.5, -340.6));
+        flame(s, 703, 1.12, -340.6, 6, 12);
       },
       cues: [[0, (s) => { s.sound.bed('night', 0.5, 2); s.sound.bed('drone', 0.4, 3); }]],
     },
@@ -474,7 +474,7 @@ function kroonShots(): Shot[] {
       name: 'kroon-inkwartiering', sky: 'storm', lines: ['intro_kroon_2'], into: 'cut', min: 6,
       focus: [326, 556],
       // quartered on the town: soldiers at a burgher's door, the woman of the house carrying their wood
-      cam: { path: [[316, 1.6, 568], [318.5, 1.7, 565]], look: [[327, 1.4, 556], [328, 1.3, 555]], fov: [42, 36], drift: 0.08 },
+      cam: { path: [[319.2, 1.6, 563.4], [320.4, 1.6, 562.2]], look: [[327, 1.2, 556], [327.5, 1.2, 555.6]], fov: [42, 36], drift: 0.06 },
       cast: (s) => {
         at(s, 'soldier', 326, 556, 0, 'sit', 2);
         const b = at(s, 'musketeer', 328.4, 554.5, 0, 'talk', 3);
@@ -494,19 +494,22 @@ function kroonShots(): Shot[] {
       // Holle Griet, the great old gun, a musketeer beside her
       cam: { path: [[160, 1.6, 65], [158.4, 1.3, 64.6]], look: [[150, 1, 62], [149.6, 1.1, 62]], fov: [42, 36] },
       cast: (s) => {
-        const m = at(s, 'musketeer', 147.6, 63.5, 0, 'idle', 6);
+        const m = at(s, 'musketeer', 152.5, 59.6, 0, 'idle', 6);
         face(m, 158, 71);
       },
       cues: [[0.3, (s) => s.sound.boom()], [0.3, (s) => s.sound.bed('drone', 0.45, 2)]],
     },
     {
       name: 'kroon-muur', sky: 'storm', lines: ['intro_kroon_4'], into: 'cut',
-      focus: [268, -721],
-      // the town wall by the Demer, a sentry on the tower, the storm coming over
-      cam: { path: [[268, 2.5, -676], [268, 4, -684]], look: [[268, 9, -721], [268, 11, -721]], fov: [48, 42] },
+      focus: [-80, 14],
+      // the bill: a soldier at the town hall door, a burgher arguing over what the town must pay
+      cam: { path: [[-89.5, 1.7, 7.8], [-88, 1.7, 9.2]], look: [[-79, 1.8, 16.5], [-78.5, 1.9, 17]], fov: [42, 36], drift: 0.05 },
       cast: (s) => {
-        const g = at(s, 'musketeer', 266, -708, 0, 'idle', 7);
-        face(g, 268, -676);
+        const g = at(s, 'musketeer', -78.4, 17.2, 0, 'idle', 7);
+        const b = at(s, WEAVER, -80.2, 16.0, 0, 'talk', 8);
+        face(g, -80.2, 16.0);
+        face(b, -78.4, 17.2);
+        s.walk(at(s, 'maid', -83, 19, 1.6, 'walk', 9), [[-76, 19.5], [-70, 20]], 0.9);
       },
       cues: [[1, (s) => s.sound.drum(5)]],
     },
@@ -519,10 +522,10 @@ function oranjeShots(): Shot[] {
       name: 'oranje-hof', sky: 'golden', lines: ['intro_oranje_1'], into: 'black', blend: 1.0, title: title('oranje'),
       focus: [307, 140],
       // the Hof van Nassau, shut; the old steward keeps a lantern at its door
-      cam: { path: [[343, 1.8, 173], [334, 2.4, 165]], look: [[306, 5, 141], [306, 5.5, 141]], fov: [46, 42] },
+      cam: { path: [[331, 1.8, 160], [325, 2.2, 155.5]], look: [[307, 4, 141.5], [306, 4.5, 141]], fov: [46, 42] },
       cast: (s) => {
         const k = at(s, { body: 'man_old', role: 'oldMan', wear: { hair_thin: 'h_grey', beard_pointed: 'h_grey', hat_wide: 'umber', doublet: 'ochre', collar_band: null, breeches: 'brown', stockings: 'grey', shoes: null }, prop: 'lantern' }, 312, 147, 0, 'idle', 2);
-        face(k, 340, 170);
+        face(k, 328, 158);
       },
       cues: [[0, (s) => { s.sound.bed('drone', 0.3, 3); s.sound.bed('wind', 0.3, 2); s.sound.bed('night', 0, 1); s.sound.bed('water', 0, 1); }]],
     },
@@ -537,7 +540,7 @@ function oranjeShots(): Shot[] {
       name: 'oranje-bericht', sky: 'night', lines: ['intro_oranje_3'], into: 'black', blend: 1.0, env: { exposure: 1.2 },
       focus: [300, 160],
       // news from The Hague by night: a rider's letter read out by lantern light
-      cam: { path: [[296, 1.6, 150], [298, 1.7, 153]], look: [[301, 1.5, 160], [301, 1.5, 160]], fov: [40, 34], drift: 0.05 },
+      cam: { path: [[306.5, 1.7, 164.5], [305.4, 1.7, 163.6]], look: [[301.6, 1.5, 160.6], [301.6, 1.5, 160.6]], fov: [40, 34], drift: 0.05 },
       cast: (s) => {
         const a = at(s, CLERK, 301, 160, 0, 'talk', 7);
         const b = at(s, { body: 'man_old', role: 'oldMan', wear: { hair_thin: 'h_grey', beard_pointed: 'h_grey', hat_wide: 'umber', doublet: 'ochre', collar_band: null, breeches: 'brown', stockings: 'grey', shoes: null }, prop: 'lantern' }, 302.5, 161.6, 0, 'idle', 8);
@@ -567,13 +570,13 @@ function vrijeShots(): Shot[] {
       name: 'vrije-weg', sky: 'golden', lines: ['intro_vrije_1'], into: 'black', blend: 1.0, title: title('vrije'),
       focus: [-150, 440],
       // the road outside the Leuvense Poort: a pedlar with his pack, a carter
-      cam: { path: [[-170, 1.4, 462], [-160, 1.6, 452]], look: [[-140, 1.7, 425], [-130, 2.5, 410]], fov: [42, 40] },
+      cam: { path: [[-164, 1.5, 456], [-161, 1.6, 451]], look: [[-149, 1.5, 438], [-146, 1.8, 432]], fov: [42, 38] },
       cast: (s) => {
-        s.walk(at(s, { body: 'man_old', role: 'peasant', wear: { hair_thin: 'h_grey', beard_full: 'h_grey', hat_wide: 'brown', smock: 'russet', belt: null, breeches: 'brown', stockings: 'grey', boots: null }, prop: 'bundle' }, -136, 418, 2.6, 'walk', 2), [[-150, 438], [-160, 452]], 1.1);
+        s.walk(at(s, { body: 'man_old', role: 'peasant', wear: { hair_thin: 'h_grey', beard_full: 'h_grey', hat_wide: 'brown', smock: 'russet', belt: null, breeches: 'brown', stockings: 'grey', boots: null }, prop: 'bundle' }, -144, 428, 2.6, 'walk', 2), [[-150, 437], [-156, 446]], 1.1);
         const c = cart();
-        const cf = s.thing(c, -128, 410, 2.6);
-        s.walk(cf, [[-142, 428], [-152, 443]], 1.1);
-        s.walk(at(s, SMUGGLER, -127, 407.5, 2.6, 'walk', 3), [[-141, 426], [-151, 441]], 1.1);
+        const cf = s.thing(c, -139, 420, 2.6);
+        s.walk(cf, [[-145, 429], [-151, 438]], 1.1);
+        s.walk(at(s, SMUGGLER, -138.2, 418.2, 2.6, 'walk', 3), [[-144.2, 427.2], [-150.2, 436.2]], 1.1);
       },
       cues: [[0, (s) => { s.sound.bed('wind', 0.4, 2); s.sound.bed('drone', 0.2, 3); s.sound.bed('night', 0, 1); s.sound.bed('water', 0, 1); }], [1, (s) => s.sound.creak()], [3.2, (s) => s.sound.creak()], [5.8, (s) => s.sound.creak()]],
     },
@@ -593,24 +596,6 @@ function vrijeShots(): Shot[] {
         s.group.add(b2);
         s.walk(at(s, 'peasant_woman', 874, 90, 1.2, 'walk', 4), [[884, 94], [894, 96]], 0.9);
       },
-    },
-    {
-      name: 'vrije-herberg', sky: 'golden', into: 'cut', min: 4, env: { exposure: 0.9 },
-      focus: [-14, -112],
-      // the inn: talk at the door, a barrel for a table
-      cam: { path: [[-20, 1.6, -118], [-19, 1.5, -117]], look: [[-14.5, 1.1, -111], [-14.5, 1.1, -111]], fov: [42, 38], drift: 0.05 },
-      cast: (s) => {
-        const a = at(s, SMUGGLER, -16, -109, 0, 'talk', 5);
-        const b = at(s, 'journeyman', -13.8, -110.4, 0, 'idle', 6);
-        const c2 = at(s, 'peasant_man', -15.8, -111.6, 0, 'sit', 7);
-        face(a, -13.8, -110.4);
-        face(b, -16, -109);
-        face(c2, -14, -110);
-        const br = barrel();
-        br.position.set(-14.8, 0, -110.5);
-        s.group.add(br);
-      },
-      cues: [[0, (s) => s.sound.bed('murmur', 0.5, 2)], [-1, (s) => s.sound.bed('murmur', 0, 1.5)]],
     },
     {
       name: 'vrije-smokkel', sky: 'night', lines: ['intro_vrije_3'], into: 'black', blend: 1.0, env: { exposure: 1.3 },
@@ -639,7 +624,7 @@ function vrijeShots(): Shot[] {
       cast: (s) => {
         const g = gallows();
         g.position.set(-1745, 0, 2112);
-        g.rotation.y = 0.5;
+        g.rotation.y = -0.96;
         s.group.add(g);
       },
       cues: [[0, (s) => { s.sound.bed('wind', 0.8, 2); s.sound.bed('night', 0, 1); }], [0.5, (s) => s.sound.creak()]],

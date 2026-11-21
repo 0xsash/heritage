@@ -838,7 +838,9 @@ async function boot() {
     guide.update(dt, rig.camera, px, pz, (x, z) => world.collision.heightAt(x, z));
     sound.wind(filming || player.onFoot ? 0 : player.speed, player.boostTime > 0);
     hud.update(dt, rig.yaw, px, pz);
-    if (filming) {
+    // a prologue beat has the camera: the objective and the marks step aside too
+    uiRoot.classList.toggle('beat', cine.beating);
+    if (filming || cine.beating) {
       // no signs of the game in a film: beacons, rings, markers, street icons
       const signs = [guide.group, rings.group, ...readables.signs(), ...actors.npcs.map((n) => n.marker), ...life.signs()];
       const was = signs.map((o) => o.visible);
