@@ -15,6 +15,7 @@ import type { Combat } from '../combat/combat';
 import { FACTIONS, type FactionId } from '../rpg/factions';
 import type { Role } from '../rpg/folk';
 import { addEntries, READABLES, TRUTH, type Kroniek } from '../rpg/kroniek';
+import { stuivers } from '../rpg/money';
 import type { QuestEngine } from '../rpg/quests';
 import type { Crowd, Walker } from '../rpg/crowd';
 import type { TownsfolkKit } from '../rpg/townsfolk';
@@ -1242,12 +1243,12 @@ export class Life {
       const choices: Ch[] = jobs.map((j) => {
         const taken = this.board.taken(j.id);
         const st = q.s.quests[j.id]?.status;
-        const tag = st === 'done' ? ' (gedaan)' : taken ? ' (aangenomen)' : ` · ${j.def.reward?.florins ?? 0} stuivers`;
+        const tag = st === 'done' ? ' (gedaan)' : taken ? ' (aangenomen)' : ` · ${stuivers(j.def.reward?.florins ?? 0)}`;
         return {
           text: `${j.def.title}${tag}`,
           reply: (): Spec => ({
             who: BOARD.id,
-            text: `${j.notice} (Niveau ${j.def.level}. Beloning: ${j.def.reward?.florins} stuivers, ${j.def.reward?.xp} ervaring, en aanzien bij ${FACTIONS[this.factionOf(j.client) ?? 'gilden'].name}.)`,
+            text: `${j.notice} (Niveau ${j.def.level}. Beloning: ${stuivers(j.def.reward?.florins ?? 0)}, ${j.def.reward?.xp} ervaring, en aanzien bij ${FACTIONS[this.factionOf(j.client) ?? 'gilden'].name}.)`,
             choices: [
               ...(taken ? [] : [{ text: 'Ik neem het aan.', reply: (): Spec => {
                 this.board.pinLevel(j.id);

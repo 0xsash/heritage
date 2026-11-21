@@ -2,6 +2,7 @@
 // pays rewards, and tells the UI what happened.
 
 import { type Gear, Sheet, uniqueGear } from './character';
+import { stuivers } from './money';
 import type { Cond, Content, Effect, ItemDef, NpcDef, Objective, QuestDef, Stage } from './types';
 import { type SaveData, loadSave, writeSave } from './state';
 
@@ -218,7 +219,7 @@ export class QuestEngine {
     const r = q.reward;
     const lines: string[] = [];
     if (r?.xp) lines.push(`+${r.xp} ervaring`);
-    if (r?.florins) lines.push(`+${r.florins} florijnen`);
+    if (r?.florins) lines.push(`+${stuivers(r.florins)}`);
     for (const [town, n] of r?.renown ?? []) lines.push(`${town} +${n} aanzien`);
     for (const id of r?.gear ?? []) {
       const g = uniqueGear(id);

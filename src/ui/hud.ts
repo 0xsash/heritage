@@ -51,14 +51,14 @@ export class Hud {
     this.help = el(
       'help',
       `<h3>BESTURING</h3><table>
-      <tr><td>Muis</td><td>Sturen en kijken (klik om de muis te vangen)</td></tr>
-      <tr><td>W / S · wiel</td><td>Sneller / trager vliegen (de draak houdt het tempo)</td></tr>
-      <tr><td>Spatie / C</td><td>Stijgen / dalen · te voet: springen, in gevecht: rollen</td></tr>
-      <tr><td>Shift</td><td>Versnellen (vliegend) · lopen (te voet)</td></tr>
+      <tr><td>Muis</td><td>Sturen en rondkijken (klik eerst in het spel)</td></tr>
+      <tr><td>W / S · muiswiel</td><td>Sneller / trager vliegen (de draak houdt die snelheid aan)</td></tr>
+      <tr><td>Spatie / C</td><td>Stijgen / dalen · te voet: springen, in een gevecht: wegrollen</td></tr>
+      <tr><td>Shift</td><td>Versnellen (vliegend) · rennen (te voet)</td></tr>
       <tr><td>E</td><td>Landen · praten · oprapen · draak roepen en bestijgen</td></tr>
       <tr><td>Linkermuis</td><td>Zwaardslag (te voet) · drakenvuur (vliegend)</td></tr>
       <tr><td>Rechtermuis · R</td><td>Vaardigheden van je afkomst</td></tr>
-      <tr><td>Q</td><td>Begijnenzalf drinken</td></tr>
+      <tr><td>Q</td><td>Begijnenzalf gebruiken</td></tr>
       <tr><td>J · K · I · M</td><td>Dagboek · Kroniek · personage en zak · kaart</td></tr>
       <tr><td>P</td><td>Het Schilderij: je uitzicht als schilderij, om te bewaren of te delen</td></tr>
       <tr><td>T · H</td><td>Licht veranderen · hulp verbergen</td></tr>
@@ -67,7 +67,7 @@ export class Hud {
     );
     this.help.classList.add('hidden'); // H shows it; the tutorial teaches the rest as you go
     this.map.appendChild(this.mapCanvas);
-    this.map.appendChild(el('legend', 'DIEST &amp; HET DEMERDAL · ANNO 1650 <span class="mapzoom">· wiel: in- en uitzoomen</span>'));
+    this.map.appendChild(el('legend', 'DIEST &amp; HET DEMERDAL · ANNO 1650 <span class="mapzoom">· muiswiel: in- en uitzoomen</span>'));
     window.addEventListener('wheel', (e) => {
       if (!this.map.classList.contains('show')) return;
       this.mapScale = Math.max(1, Math.min(8, this.mapScale * (e.deltaY < 0 ? 1.25 : 0.8)));
@@ -98,7 +98,7 @@ export class Hud {
   ready(onStart: () => void) {
     this.overlay.querySelector('.loading')?.remove();
     const cta = el('cta', 'KLIK OM TE BEGINNEN');
-    const small = el('small', 'Best met muis en toetsenbord of een gamepad · met koptelefoon<br><span class="credit">Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)</span>');
+    const small = el('small', 'Je speelt het best met muis en toetsenbord of een gamepad, en met een koptelefoon<br><span class="credit">Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)</span>');
     this.overlay.append(cta, small);
     this.overlay.addEventListener(
       'click',
@@ -117,7 +117,7 @@ export class Hud {
 
   pauseOverlay(show: boolean) {
     if (show) {
-      this.overlay.innerHTML = '<h2>GEPAUZEERD</h2><div class="cta">KLIK OM VERDER TE SPELEN</div>';
+      this.overlay.innerHTML = '<h2>PAUZE</h2><div class="cta">KLIK OM VERDER TE SPELEN</div>';
       this.overlay.classList.remove('hidden');
     } else this.overlay.classList.add('hidden');
   }
