@@ -4,7 +4,14 @@
 
 export class Sound {
   ctx: AudioContext | null = null;
+  /** everything goes out through here: the volume (and mute) */
+  private out!: GainNode;
+  /** the game's sounds (wind, wings, blows, bells): the effects level */
   private master!: GainNode;
+  /** the films' beds (drone, water, murmur): the background level */
+  private amb!: GainNode;
+  /** the levels from the settings (src/core/settings.ts), 0..1 */
+  private levels = { volume: 0.8, effects: 1, ambience: 1 };
   private windGain!: GainNode;
   private windFilter!: BiquadFilterNode;
   private noise!: AudioBuffer;
@@ -15,9 +22,13 @@ export class Sound {
     const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return;
     this.ctx = new Ctx();
+    this.out = this.ctx.createGain();
+    this.out.connect(this.ctx.destination);
     this.master = this.ctx.createGain();
-    this.master.gain.value = 0.7;
-    this.master.connect(this.ctx.destination);
+    this.master.connect(this.out);
+    this.amb = this.ctx.createGain();
+    this.amb.connect(this.out);
+    this.applyLevels();
 
     // shared white-noise buffer
     const len = this.ctx.sampleRate * 2;
@@ -40,7 +51,22 @@ export class Sound {
 
   setMuted(m: boolean) {
     this.muted = m;
-    if (this.master) this.master.gain.value = m ? 0 : 0.7;
+    this.applyLevels();
+  }
+
+  /** Volume, effects and background from the settings (0..1 each); applied at once, also before the sound has started. */
+  setLevels(volume: number, effects: number, ambience: number) {
+    this.levels = { volume, effects, ambience };
+    this.applyLevels();
+  }
+
+  private applyLevels() {
+    if (!this.out) return;
+    const L = this.levels;
+    // 0.7 was the old fixed master level: a full slider is what the game always sounded like, plus a little
+    this.out.gain.value = this.muted ? 0 : 0.875 * L.volume;
+    this.master.gain.value = L.effects;
+    this.amb.gain.value = L.ambience;
   }
 
   /** speed in m/s, 0 when on foot */
@@ -261,7 +287,7 @@ export class Sound {
     const ctx = this.ctx;
     const out = ctx.createGain();
     out.gain.value = 0;
-    out.connect(this.master);
+    out.connect(this.amb);
     const nodes: AudioScheduledSourceNode[] = [];
     const osc = (type: OscillatorType, f: number, g: number, dest: AudioNode, detune = 0) => {
       const o = ctx.createOscillator();

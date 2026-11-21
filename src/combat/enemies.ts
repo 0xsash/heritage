@@ -33,6 +33,8 @@ export interface EnemyType {
   weapon?: 'sword' | 'musket';
   /** lunges forward this far when it strikes */
   lunge?: number;
+  /** answers a dragon in the air: a howl that flies up at him (within `range` metres, straight line), after a long tell */
+  sky?: { range: number; windup: number; cooldown: number; speed: number };
 }
 
 export const TYPES: Record<string, EnemyType> = {
@@ -58,6 +60,8 @@ export const TYPES: Record<string, EnemyType> = {
   kludde: {
     id: 'kludde', name: 'De Kludde', body: 'hound', hp: (l) => 130 + l * 40, dmg: (l) => 11 + l * 4, speed: 8.5, reach: 3.2,
     windup: 0.7, recover: 1.0, cooldown: 1.4, xp: (l) => 160 + l * 40, scale: 2.1, poise: 6, aggro: 30, lunge: 4,
+    // he does not let himself be burned from the sky: he lifts his head and howls at the dragon
+    sky: { range: 64, windup: 1.4, cooldown: 4.5, speed: 30 },
   },
 };
 

@@ -80,6 +80,10 @@ class Enemy {
   calm = 0;
   /** let go instead of killed: it runs off and fades */
   spared = false;
+  /** the last blow came from the dragon in the air (fire, a wing beat): its kill teaches less */
+  byAir = false;
+  /** winding up a howl at the dragon in the air (the Kludde) */
+  howling = false;
 
   constructor(public type: EnemyType, public level: number, public name: string, public elite: boolean, public camp: CampState, public body: Body, home: [number, number]) {
     this.maxHp = this.hp = Math.round(type.hp(level) * (elite ? 2.6 : 1));
@@ -107,7 +111,7 @@ interface CampState {
 }
 
 interface Projectile {
-  kind: 'fire' | 'orb' | 'tone';
+  kind: 'fire' | 'orb' | 'tone' | 'howl';
   pos: THREE.Vector3;
   vel: THREE.Vector3;
   dmg: number;
@@ -152,6 +156,8 @@ const DESPAWN_R = 460;
 const MAX_TOKENS = 2;
 /** how far (in multiples of their range, straight-line) guns and wisps shoot at a dragon flying too high for anyone else */
 const SKY_REACH = 2;
+/** a kill from the air (dragon fire, a wing beat) gives this share of the experience of one on foot */
+const AIR_XP = 0.5;
 
 export class Combat {
   group = new THREE.Group();
@@ -197,7 +203,7 @@ export class Combat {
   dmgTakenMul = 1;
   inCombat = false;
   /** things the player has done (the tutorial watches these) */
-  tally = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0, spares: 0, dskills: 0 };
+  tally = { hits: 0, rolls: 0, skills: 0, potions: 0, breaths: 0, telegraphs: 0, spares: 0, dskills: 0, airKills: 0 };
   /** the elite you are fighting, for the bar at the top of the screen */
   bossTarget: Enemy | null = null;
 
@@ -373,7 +379,8 @@ export class Combat {
     // high up, only guns and wisps can answer: within their reach (as the crow flies) they shoot at the dragon
     const high = this.deadT < 0 && flying && !target ? p.pos : null;
     for (const e of this.enemies) {
-      const t = target ?? (high && e.type.ranged && e.pos.distanceTo(high) < e.type.ranged.range * SKY_REACH ? high : null);
+      const reach = e.type.ranged ? e.type.ranged.range * SKY_REACH : e.type.sky?.range ?? 0;
+      const t = target ?? (high && reach && e.pos.distanceTo(high) < reach ? high : null);
       tokens += this.think(e, sdt, t, flying, tokens, d);
       this.moveEnemy(e, sdt);
     }
@@ -706,7 +713,7 @@ export class Combat {
       for (const e of this.enemies) {
         if (!e.alive || Math.hypot(e.pos.x - at.x, e.pos.z - at.z) > 11 + e.radius) continue;
         const dir = this.v2.copy(e.pos).sub(at).setY(0).normalize().clone();
-        this.damage(e, Math.round(dragonDmg * 0.55), true, dir);
+        this.damage(e, Math.round(dragonDmg * 0.55), true, dir, true);
         if (e.alive) this.stagger(e, dir, 9);
         n++;
       }
@@ -834,6 +841,12 @@ export class Combat {
       const pr = this.projectiles[i];
       pr.life -= dt;
       if (pr.kind === 'fire') pr.vel.y -= 6 * dt;
+      if (pr.kind === 'howl') {
+        // fast, and it bends after the dragon for a moment: a straight line or a turn shakes it off
+        const tgt = p.onFoot ? p.heroPos : p.pos;
+        this.v.copy(tgt).setY(tgt.y + 1).sub(pr.pos).normalize().multiplyScalar(pr.vel.length());
+        pr.vel.lerp(this.v, Math.min(1, dt * 1.1));
+      }
       if (pr.kind === 'orb') {
         // slow, slightly homing: you can outrun it or roll through it
         const tgt = p.onFoot ? p.heroPos : p.pos;
@@ -844,6 +857,7 @@ export class Combat {
       pr.sprite.position.copy(pr.pos);
       if (pr.kind === 'fire') this.fx.particles.emit(pr.pos, { n: 3, color: '#ff8a2a', speed: 1.5, life: 0.4, size: 0.5, gravity: -2 });
       if (pr.kind === 'orb') this.fx.particles.emit(pr.pos, { n: 1, color: '#58c8ff', speed: 0.4, life: 0.5, size: 0.25, gravity: 0 });
+      if (pr.kind === 'howl') this.fx.particles.emit(pr.pos, { n: 3, color: '#9fd8ff', speed: 1.2, life: 0.6, size: 0.45, gravity: 0 });
       const ground = this.col.heightAt(pr.pos.x, pr.pos.z);
       let end = pr.life <= 0 || pr.pos.y < ground + 0.2;
       if (pr.kind === 'fire') {
@@ -859,9 +873,9 @@ export class Combat {
           }
         }
         end = pr.life <= 0;
-      } else if (pr.kind === 'orb') {
+      } else if (pr.kind === 'orb' || pr.kind === 'howl') {
         const tgt = p.onFoot ? p.heroPos : p.pos;
-        if (this.v.copy(tgt).setY(tgt.y + 1.1).distanceToSquared(pr.pos) < (p.onFoot ? 1.1 : 3) ** 2) {
+        if (this.v.copy(tgt).setY(tgt.y + 1.1).distanceToSquared(pr.pos) < (p.onFoot ? 1.1 : pr.kind === 'howl' ? 3.8 : 3) ** 2) {
           this.hurtPlayer(pr.dmg, d);
           this.fx.particles.emit(pr.pos, { n: 20, color: '#58c8ff', speed: 5, life: 0.5, size: 0.15 });
           end = true;
@@ -893,7 +907,7 @@ export class Combat {
       const dist = e.pos.distanceTo(at);
       if (dist > R + e.radius) continue;
       const f = 1 - 0.5 * clamp(dist / R, 0, 1);
-      this.damage(e, Math.round(dmg * f * (0.9 + Math.random() * 0.2)), true, this.v2.copy(e.pos).sub(at).setY(0).normalize());
+      this.damage(e, Math.round(dmg * f * (0.9 + Math.random() * 0.2)), true, this.v2.copy(e.pos).sub(at).setY(0).normalize(), true);
       e.aggro = true;
       hits++;
     }
@@ -901,8 +915,9 @@ export class Combat {
   }
 
   // ================================================================ damage
-  private damage(e: Enemy, raw: number, heavy: boolean, dir: THREE.Vector3) {
+  private damage(e: Enemy, raw: number, heavy: boolean, dir: THREE.Vector3, air = false) {
     if (!e.alive) return;
+    e.byAir = air;
     const crit = raw < 0;
     const dmg = Math.max(1, Math.round(Math.abs(raw) * (this.lore?.weak(e.type.id) ?? 1)));
     e.hp -= dmg;
@@ -945,7 +960,9 @@ export class Combat {
     this.hitstop = Math.max(this.hitstop, e.elite ? 0.28 : 0.15);
     this.ev.trauma(e.elite ? 0.6 : 0.3);
     this.sound.kill();
-    const xp = Math.round(e.type.xp(e.level) * (e.elite ? 4 : 1) * (e.level >= this.sheet.h.level - 3 ? 1 : 0.3));
+    // burned from the air, a fight teaches you less than one on foot (the tutorial says so the first time)
+    const xp = Math.round(e.type.xp(e.level) * (e.elite ? 4 : 1) * (e.level >= this.sheet.h.level - 3 ? 1 : 0.3) * (e.byAir ? AIR_XP : 1));
+    if (e.byAir) this.tally.airKills++;
     this.floaters.add(`+${xp} ervaring`, e.pos.clone().setY(e.pos.y + e.body.top + 0.4), 'xp', 1.5, 1.2);
     const before = this.sheet.h.level;
     this.quests.addXp(xp);
@@ -1136,13 +1153,13 @@ export class Combat {
       return tokenDelta;
     }
 
-    if (!e.aggro && target && dist < t.aggro * (e.elite ? 1.3 : 1) * (this.lore?.aggro(t.id) ?? 1) && (!targetFlying || t.ranged || dist < 12)) {
+    if (!e.aggro && target && dist < t.aggro * (e.elite ? 1.3 : 1) * (this.lore?.aggro(t.id) ?? 1) && (!targetFlying || t.ranged || t.sky || dist < 12)) {
       e.aggro = true;
       if (t.body === 'hound') this.sound.howl();
       if (t.body === 'human') this.floaters.add(this.quests.fill(['Daar! Pak {hem|haar}!', 'Een {ruiter|ruiterin}!', 'Halt!', 'Voor de buit!'][Math.floor(Math.random() * 4)]), e.pos.clone().setY(e.pos.y + 2.3), 'bark', 1.6, 0.3);
       for (const o of e.camp.enemies) if (o.alive && o.pos.distanceToSquared(e.pos) < 625) o.aggro = true;
     }
-    if (e.aggro && (!target || dist > 70)) {
+    if (e.aggro && (!target || dist > (t.sky && targetFlying ? t.sky.range + 10 : 70))) {
       e.aggro = false;
       e.state = 'idle';
     }
@@ -1164,12 +1181,27 @@ export class Combat {
       }
       case 'chase':
       case 'circle': {
+        e.howling = false; // a howl cut short (a stagger, a stun) is not carried into the next blow
         if (!target) { e.state = 'idle'; break; }
         face(target.x, target.z);
         const ranged = t.ranged;
         const reach = (ranged ? ranged.range : t.reach) + (ranged ? 0 : e.radius);
         const canSwing = e.cd <= 0 && (dist < reach || (ranged && dist < ranged.range));
         const hasToken = e.token || e.elite || tokens + tokenDelta < MAX_TOKENS + (ranged ? 1 : 0);
+        if (targetFlying && t.sky && e.cd <= 0 && e.pos.distanceTo(target) < t.sky.range) {
+          // the tell: he stops, lifts his head, glows and howls; then the howl flies up at the dragon
+          e.state = 'windup';
+          e.howling = true;
+          e.t = t.sky.windup;
+          e.hitThisSwing = false;
+          e.aimAt.copy(target);
+          e.body.act('windup', t.sky.windup);
+          this.tally.telegraphs++;
+          this.sound.howl();
+          this.fx.ring(e.pos, 6, '#7cc4ff', t.sky.windup);
+          this.floaters.add('De Kludde huilt naar je', e.pos.clone().setY(e.pos.y + e.body.top + 1.2), 'bark', 1.8, 0.3);
+          break;
+        }
         if (canSwing && hasToken && (!targetFlying || ranged)) {
           if (!e.token) { e.token = true; tokenDelta++; }
           e.state = 'windup';
@@ -1228,7 +1260,8 @@ export class Combat {
         e.vel.multiplyScalar(Math.exp(-dt * 6));
         if (e.t <= 0) {
           e.state = 'chase';
-          e.cd = t.cooldown * (0.7 + Math.random() * 0.6);
+          e.cd = (e.howling && t.sky ? t.sky.cooldown : t.cooldown) * (0.7 + Math.random() * 0.6);
+          e.howling = false;
           if (e.token) { e.token = false; tokenDelta--; }
         }
         break;
@@ -1268,6 +1301,21 @@ export class Combat {
       this.group.add(s);
       const vel = (target ?? e.aimAt).clone().setY((target ?? e.aimAt).y + 1).sub(pos).normalize().multiplyScalar(9);
       this.projectiles.push({ kind: 'orb', pos, vel, dmg, life: 5, sprite: s, hit: new Set() });
+      return;
+    }
+    if (e.howling && t.sky) {
+      // the howl: a cold blue shock that flies up at the dragon and follows him a little; keep moving
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.fireTex, color: '#8fd0ff', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      s.scale.setScalar(2.6);
+      const pos = e.pos.clone().setY(e.pos.y + e.body.top);
+      s.position.copy(pos);
+      this.group.add(s);
+      const aim = target ?? e.aimAt;
+      const vel = aim.clone().setY(aim.y + 1).sub(pos).normalize().multiplyScalar(t.sky.speed);
+      this.projectiles.push({ kind: 'howl', pos, vel, dmg: Math.round(dmg * 1.3), life: 3.2, sprite: s, hit: new Set() });
+      this.fx.ring(e.pos, 9, '#9fd8ff', 0.5);
+      this.sound.boom();
+      this.ev.trauma(0.2);
       return;
     }
     if (t.lunge) {

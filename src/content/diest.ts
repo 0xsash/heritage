@@ -193,7 +193,7 @@ export const diest: Content = {
     {
       id: BELLS, title: 'De klokken die niet luiden', kind: 'main', town: 'Diest', giver: 'pieter', level: 2,
       summary: 'De klokken van Sint-Sulpitius zwijgen. Hun klepels zijn weg.',
-      reward: { xp: 220, florins: 30, renown: [['Diest', 10]] },
+      reward: { xp: 220, florins: 30, standing: [['gilden', 10]] },
       stages: [
         {
           id: 'tower',
@@ -210,7 +210,7 @@ export const diest: Content = {
           id: 'road',
           journal: 'Margriet stuurt me naar Scherpenheuvel. De pelgrims durven de weg niet meer op: bij Kaggevinne liggen deserteurs uit de Franse oorlog. Ze nemen wat je bij je hebt, en soms nemen ze jou ook mee.',
           objectives: [{ id: 'rovers', kind: 'kill', text: 'Verdrijf de wegrovers bij Kaggevinne', camp: 'kaggevinne', count: 4, at: [-2120, 560], r: 45 }],
-          onDone: [{ xp: 80 }, { renown: ['Diest', 5] }, { stage: [BELLS, 'scherpenheuvel'] }],
+          onDone: [{ xp: 80 }, { standing: ['gilden', 5] }, { stage: [BELLS, 'scherpenheuvel'] }],
         },
         {
           id: 'scherpenheuvel',
@@ -227,7 +227,7 @@ export const diest: Content = {
     {
       id: KLUDDE, title: 'Het beest van het Broek', kind: 'main', town: 'Diest', giver: 'pieter', level: 4,
       summary: 'Iets in de moerassen heeft de klepels van Diest gestolen.',
-      reward: { xp: 600, florins: 60, renown: [['Diest', 25]], gear: ['kluddevel'] },
+      reward: { xp: 600, florins: 60, standing: [['gilden', 25]], gear: ['kluddevel'] },
       stages: [
         {
           id: 'hounds',
@@ -256,7 +256,8 @@ export const diest: Content = {
     },
     {
       id: LEUVEN, title: 'De weg naar Leuven', kind: 'main', town: 'Diest', giver: 'pieter', level: 6,
-      summary: 'De Kludde zocht iets in Leuven. Volg hem.',
+      summary: 'Het beeldje zoemt naar Leuven. Vraag de drossaard om een vrijgeleide.',
+      reward: { xp: 50 },
       stages: [
         {
           id: 'pass',
@@ -265,7 +266,7 @@ export const diest: Content = {
         },
         {
           id: 'travel',
-          journal: 'Het vrijgeleide ruikt naar lak en naar de drossaard. De weg naar Leuven ligt open. (Leuven, Aarschot, Mechelen, Lier en Antwerpen komen in de volgende uitbreiding van de wereld.)',
+          journal: 'Het vrijgeleide ruikt naar lak en naar de drossaard. De weg naar Leuven ligt open. In het oosten, in het land van Loon, zwijgen de torens al een jaar. Welke weg ik ook neem, het beeldje zoemt mee.',
           objectives: [{ id: 'leuven', kind: 'flag', text: 'Reis naar Leuven (binnenkort)', flag: 'reached_leuven' }],
         },
       ],
@@ -308,7 +309,7 @@ export const diest: Content = {
     {
       id: 'side_herbs', title: 'Wondkruid uit het Broek', kind: 'side', town: 'Diest', giver: 'aleydis', level: 2,
       summary: 'De begijnen hebben kruiden nodig uit de Demerweiden.',
-      reward: { xp: 150, florins: 8, renown: [['Begijnhof', 10]], items: [['salve', 3]] },
+      reward: { xp: 150, florins: 8, standing: [['kerk', 10]], items: [['salve', 3]] },
       stages: [
         {
           id: 'gather',
@@ -343,7 +344,7 @@ export const diest: Content = {
     {
       id: 'side_roelof', title: 'Lambrecht de Rode', kind: 'side', town: 'Kaggevinne', giver: 'driesen', level: 5,
       summary: 'Een deserteurskapitein plundert de hoeves rond Kaggevinne.',
-      reward: { xp: 450, florins: 40, renown: [['Diest', 10]], gear: ['roelofs_slagzwaard'] },
+      reward: { xp: 450, florins: 40, standing: [['gilden', 10]], gear: ['roelofs_slagzwaard'] },
       stages: [
         {
           id: 'hunt',
@@ -361,7 +362,7 @@ export const diest: Content = {
     {
       id: 'side_wisps', title: 'Lichtjes in het bos', kind: 'side', town: 'Scherpenheuvel', giver: 'provost', level: 3,
       summary: 'Dwaallichten lokken pelgrims het bos in.',
-      reward: { xp: 320, florins: 20, renown: [['Scherpenheuvel', 15]], gear: ['pelgrimsmantel'] },
+      reward: { xp: 320, florins: 20, standing: [['kerk', 15]], gear: ['pelgrimsmantel'] },
       stages: [
         {
           id: 'wisps',
@@ -381,7 +382,7 @@ export const diest: Content = {
     {
       id: 'contract_letter', title: 'Een brief voor de overste', kind: 'contract', town: 'Diest', giver: 'drossaard', level: 2,
       summary: 'Breng de brief van de drossaard naar Scherpenheuvel.',
-      reward: { xp: 120, florins: 15, renown: [['Diest', 5], ['Scherpenheuvel', 5]] },
+      reward: { xp: 120, florins: 15, standing: [['gilden', 5], ['kerk', 5]] },
       stages: [
         {
           id: 'deliver',
@@ -433,10 +434,12 @@ export const diest: Content = {
       choices: [
         { text: 'Dan ga ik naar de drossaard.' },
         { text: 'Wat doen de klokken met mijn draak?', next: 'pieter_b5' },
+        { text: 'Zoemt het beeldje alleen naar het westen?', next: 'pieter_b_loon' },
         { text: 'De vroedvrouw zegt dat de klokken hem in slaap houden.', if: { flag: 'ov_found' }, next: 'pieter_b_ov' },
       ],
     },
     pieter_b5: { who: 'pieter', text: 'Ik ben koster, geen profeet. Ik weet alleen dat hij sliep zolang de klokken luidden, honderden jaren lang. Misschien vond hij dat niet erg.', next: 'pieter_b4' },
+    pieter_b_loon: { who: 'pieter', text: 'Het beeldje wel. Maar door de Maastrichtsepoort komen nu karren uit het land van Loon, voorbij Halen. Daar zwijgen de torens al een jaar, zeggen de voerlui, en meer zeggen ze niet.', next: 'pieter_b4' },
     pieter_after: { who: 'pieter', text: 'Hoor je dat? Ze slaan weer elk uur. Ik heb in mijn hele leven nog nooit zo graag naar klokken geluisterd. Je draak hoort ze minder graag, zie ik.' },
 
     // ================================================================ Marieke
@@ -473,8 +476,8 @@ export const diest: Content = {
         { text: 'Het spoor liep dood. De vervalser is weg.', if: { flag: 'seals_warned' }, next: 'joos_r_warned' },
       ],
     },
-    joos_r_reported: { who: 'joos', text: 'Een weduwe? Toch niet die van Vranckx? God sta haar bij. Maar het zegel is de eer van de stad. Hier is je loon: het ambacht betaalt zijn schulden, ook als het pijn doet.', effects: [{ complete: 'side_seals', outcome: 'reported' }, { florins: 30 }, { renown: ['Diest', 10] }, { gear: 'zegelring' }] },
-    joos_r_begijnhof: { who: 'joos', text: 'Je hebt haar naar de begijnen laten gaan? Die verkopen laken onder hun eigen zegel en betalen geen duit aan het ambacht. Hm. Ze vervalst tenminste het onze niet meer. Hier is je geld, en zeg niet tegen de anderen dat ik betaald heb.', effects: [{ complete: 'side_seals', outcome: 'begijnhof' }, { florins: 15 }, { renown: ['Diest', 3] }, { renown: ['Begijnhof', 10] }] },
+    joos_r_reported: { who: 'joos', text: 'Een weduwe? Toch niet die van Vranckx? God sta haar bij. Maar het zegel is de eer van de stad. Hier is je loon: het ambacht betaalt zijn schulden, ook als het pijn doet.', effects: [{ complete: 'side_seals', outcome: 'reported' }, { florins: 30 }, { standing: ['gilden', 10] }, { gear: 'zegelring' }] },
+    joos_r_begijnhof: { who: 'joos', text: 'Je hebt haar naar de begijnen laten gaan? Die verkopen laken onder hun eigen zegel en betalen geen duit aan het ambacht. Hm. Ze vervalst tenminste het onze niet meer. Hier is je geld, en zeg niet tegen de anderen dat ik betaald heb.', effects: [{ complete: 'side_seals', outcome: 'begijnhof' }, { florins: 15 }, { standing: ['gilden', 3] }, { standing: ['kerk', 10] }] },
     joos_r_warned: { who: 'joos', text: 'Hij is dus weg. Dan vervalst hij nu ergens anders het zegel van een andere stad. Dat is ook al iets, veronderstel ik. Voor half werk betaal ik half loon.', effects: [{ complete: 'side_seals', outcome: 'warned' }, { florins: 12 }] },
     joos_after: { who: 'joos', text: 'Antwerpen stuurt voorlopig geen balen meer terug. In Antwerpen is alles voorlopig.' },
 
@@ -530,7 +533,7 @@ export const diest: Content = {
     dross_s2: { who: 'you', text: 'Het is Lijsbet Vranckx, de weduwe van een wever. Ze woont in het huisje voorbij de oude Koepoort. Dit zijn haar zegels.', next: 'dross_s3' },
     dross_s3: { who: 'drossaard', text: 'Vranckx. Ik heb haar man gekend. De wet is duidelijk, en ik dien de wet. Ze wordt uit de baronie verbannen, en ze mag van geluk spreken dat ze niet aan de kaak moet staan. De wevers zullen dankbaar zijn.', effects: [{ set: 'seals_reported' }, { done: ['side_seals', 'dross'] }, { stage: ['side_seals', 'report'] }] },
     dross_pass: { who: 'drossaard', text: 'De klokken luiden weer, en dat heb ik aan u te danken. Een vrijgeleide naar Leuven, met een draak? De wachters aan de Mechelse Poort gaan het in hun broek doen.', next: 'dross_pass2' },
-    dross_pass2: { who: 'drossaard', text: 'Hier is hij, met mijn zegel erop. En als u in Leuven bent, vraagt u dan naar professor Fromondus. Hij weet alles over de hemel en de aarde, en hij praat er graag over. Veel te graag.', effects: [{ give: 'pass' }, { xp: 50 }, { stage: [LEUVEN, 'travel'] }] },
+    dross_pass2: { who: 'drossaard', text: 'Hier is hij, met mijn zegel erop. En als u in Leuven bent, vraagt u dan naar professor Fromondus. Hij weet alles over de hemel en de aarde, en hij praat er graag over. Veel te graag.', effects: [{ give: 'pass' }, { stage: [LEUVEN, 'travel'] }, { complete: LEUVEN, outcome: 'pass' }, { toast: 'Leuven en het land van Loon komen in het volgende hoofdstuk' }] },
     dross_idle: { who: 'drossaard', text: 'De baronie heeft een afwezige heer, een lege schatkist en een heleboel mensen die in allebei een kans zien.' },
 
     // ================================================================ Wouter
@@ -553,9 +556,9 @@ export const diest: Content = {
         { text: 'Ik heb zijn brandewijn in beslag genomen. Die is nu van de stad.', if: { flag: 'toll_seized' }, next: 'wouter_r_seized' },
       ],
     },
-    wouter_r_paid: { who: 'wouter', text: 'Gielis heeft betaald? Gielis? Jij hebt van de Ton een eerlijk man gemaakt. De stad dankt je, en ik ook.', effects: [{ complete: 'side_toll', outcome: 'paid' }, { florins: 10 }, { renown: ['Diest', 8] }] },
-    wouter_r_lie: { who: 'wouter', text: 'Hij is ontsnapt aan een draak? Hm. ...Je ruikt naar zijn brandewijn, {vriend|vriendin}. Laat maar zitten. Wat de drossaard niet weet, deert hem niet.', effects: [{ complete: 'side_toll', outcome: 'bribed' }, { renown: ['Diest', -3] }] },
-    wouter_r_seized: { who: 'wouter', text: 'Twee hele vaten! De drossaard zal voor één keer goedgezind zijn. Hier is jouw deel.', effects: [{ take: 'brandy' }, { complete: 'side_toll', outcome: 'seized' }, { florins: 18 }, { renown: ['Diest', 5] }] },
+    wouter_r_paid: { who: 'wouter', text: 'Gielis heeft betaald? Gielis? Jij hebt van de Ton een eerlijk man gemaakt. De stad dankt je, en ik ook.', effects: [{ complete: 'side_toll', outcome: 'paid' }, { florins: 10 }, { standing: ['gilden', 8] }] },
+    wouter_r_lie: { who: 'wouter', text: 'Hij is ontsnapt aan een draak? Hm. ...Je ruikt naar zijn brandewijn, {vriend|vriendin}. Laat maar zitten. Wat de drossaard niet weet, deert hem niet.', effects: [{ complete: 'side_toll', outcome: 'bribed' }, { standing: ['gilden', -3] }] },
+    wouter_r_seized: { who: 'wouter', text: 'Twee hele vaten! De drossaard zal voor één keer goedgezind zijn. Hier is jouw deel.', effects: [{ take: 'brandy' }, { complete: 'side_toll', outcome: 'seized' }, { florins: 18 }, { standing: ['gilden', 5] }] },
     wouter_wink: { who: 'wouter', text: '*tikt tegen zijn neus* Het ruikt hier naar een plezante avond, hé?' },
     wouter_idle: { who: 'wouter', text: 'Er is tol op wijn, zout, brandewijn, laken en alles wat op wielen rijdt. Over draken wordt nog vergaderd.' },
 

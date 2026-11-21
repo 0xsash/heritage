@@ -22,7 +22,7 @@ export type Effect =
   | { give: string; n?: number }
   | { take: string; n?: number }
   | { florins: number }
-  | { renown: [town: string, amount: number] }
+  | { standing: [faction: string, amount: number] } // standing with a party (src/rpg/factions.ts)
   | { note: [quest: string, text: string] } // add a journal entry
   | { toast: string }
   | { xp: number }
@@ -94,7 +94,7 @@ export interface QuestDef {
   giver?: string;
   summary: string;
   stages: Stage[];
-  reward?: { xp?: number; florins?: number; renown?: [string, number][]; items?: [string, number][]; gear?: string[] };
+  reward?: { xp?: number; florins?: number; standing?: [faction: string, amount: number][]; items?: [string, number][]; gear?: string[] };
   /** the level the quest is meant for (shown in the journal and on markers) */
   level?: number;
 }

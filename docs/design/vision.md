@@ -7,7 +7,7 @@
 | Topic | Decision |
 |---|---|
 | Look | **Stylised, painterly** (Flemish Masters colour and light, Bosch for corrupted zones), smooth sculpted forms. Moodboard: `docs/art/moodboard.webp`. |
-| Genre | **Open-world action RPG.** Third-person flight and combat; quests with branching choices and lasting consequences; a journal; factions and per-town renown; rider and dragon progression. See `docs/design/gameplay.md`. |
+| Genre | **Open-world action RPG.** Third-person flight and combat; quests with branching choices and lasting consequences; a journal; factions and standing with them; rider and dragon progression. See `docs/design/gameplay.md`. |
 | World | **Real Brabant and Mechelen, 1650.** Diest, Scherpenheuvel, Aarschot, Leuven, Mechelen, Lier and Antwerp at full scale and walkable, with the countryside between them compressed. Street plans and land use from OpenStreetMap plus the Ferraris and Villaret maps. |
 | Starting region | **Diest and Scherpenheuvel** (Act I), then the road west to Aarschot and Leuven. |
 | Mount | **The gilded dragon** (see the alternatives below). |

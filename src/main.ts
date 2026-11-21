@@ -9,6 +9,7 @@ import { Combat } from './combat/combat';
 import { diest } from './content/diest';
 import { Input } from './core/input';
 import { clamp } from './core/math';
+import { loadSettings, type Settings } from './core/settings';
 import { Player } from './player/player';
 import { Post } from './render/post';
 import { loadModel } from './render/models';
@@ -41,6 +42,11 @@ import { ShareCard, publicUrl } from './ui/share';
 import { paintPicture } from './ui/painting';
 import { RingCourse, FIRST_FLIGHT, dayCourse, dayKey, dayNumber } from './world/rings';
 import { DialogueUI, JournalUI } from './ui/rpgui';
+import { GameMenu } from './ui/menu';
+import { ChapterCard } from './ui/chapter';
+import { makeChapterEnd } from './story/chapterend';
+import { ROADS, endRows } from './content/diest_end';
+import { FACTIONS } from './rpg/factions';
 import { Atmosphere } from './world/sky';
 import { loadTreeAtlas } from './world/trees';
 import type { WorldData } from './world/types';
@@ -55,7 +61,9 @@ type Quality = 'low' | 'medium' | 'high';
 
 async function boot() {
   const params = new URLSearchParams(location.search);
-  const quality: Quality = params.has('lowq') ? 'low' : ((params.get('q') as Quality) ?? 'high');
+  // the settings screen chooses the picture quality; ?lowq and ?q= still win (tests, screenshots)
+  const settings = loadSettings();
+  const quality: Quality = params.has('lowq') ? 'low' : ((params.get('q') as Quality) ?? settings.quality);
   const lowQ = quality === 'low';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: lowQ, powerPreference: 'high-performance', logarithmicDepthBuffer: true });
   const maxRatio = lowQ ? 0.8 : Math.min(window.devicePixelRatio, 1.5);
@@ -70,6 +78,28 @@ async function boot() {
   const scene = new THREE.Scene();
   const input = new Input(canvas);
   const sound = new Sound();
+  sound.setLevels(settings.volume, settings.effects, settings.ambience);
+  // the settings screen (src/ui/menu.ts): reachable from the title screen at once, and from Escape in the game.
+  // What it changes is put to work here; the camera joins in once it exists.
+  let applyLive: (s: Settings) => void = () => {};
+  let saveGame: () => void = () => {};
+  const menu = new GameMenu(uiRoot, {
+    settings,
+    bootQuality: lowQ ? 'low' : 'high',
+    apply: (s) => {
+      sound.setLevels(s.volume, s.effects, s.ambience);
+      applyLive(s);
+    },
+    reload: () => {
+      saveGame();
+      // the setting decides from now on, not a quality flag in the address
+      const p = new URLSearchParams(location.search);
+      p.delete('lowq');
+      p.delete('q');
+      const q = p.toString();
+      location.href = location.pathname + (q ? '?' + q : '') + location.hash;
+    },
+  });
 
   // --- the front end runs while the world loads behind it
   const loading = document.createElement('div');
@@ -105,7 +135,7 @@ async function boot() {
   const dragonP = kitP.then(() => loadModel('models/dragon.glb'));
   const front = skipFront
     ? Promise.resolve({ mode: 'continue' as const })
-    : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, origin: peek.hero.origin, sex: peek.hero.sex, background: peek.hero.background } : null, () => sound.start(), kitP, dragonP);
+    : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, origin: peek.hero.origin, sex: peek.hero.sex, background: peek.hero.background } : null, () => sound.start(), kitP, dragonP, () => menu.openSettings('title'));
 
   // --- load everything
   const [data, meta] = await Promise.all([
@@ -130,6 +160,12 @@ async function boot() {
 
   const atmo = new Atmosphere(scene, renderer, quality === 'high' ? 4096 : quality === 'medium' ? 2048 : 0);
   const rig = new CameraRig(window.innerWidth / window.innerHeight, world.collision);
+  const baseSens = rig.sensitivity;
+  applyLive = (s) => {
+    rig.sensitivity = baseSens * s.sens;
+    rig.invertY = s.invert;
+  };
+  applyLive(settings);
   const post = new Post(renderer, scene, rig.camera, quality);
   atmo.onChange = (look) => {
     post.setLook(look);
@@ -221,11 +257,20 @@ async function boot() {
       if (panel === 'shop') pendingShop = true;
       else late.chars?.toggle(true);
     },
-    // everyday life in town (src/life): dialogue hooks, standing that follows renown and quests
+    // everyday life in town (src/life): dialogue hooks, and the standing quests give
     call: (id) => late.life?.call(id),
-    renown: (town, n) => late.life?.renown(town, n),
+    standing: (f, n) => late.life?.questStanding(f, n),
     completed: (id, outcome) => late.life?.completed(id, outcome),
   });
+  {
+    // main_leuven used to end on a journey that cannot be made yet ('travel'): a save left there is done now
+    const ml = quests.s.quests.main_leuven;
+    if (ml?.status === 'active' && ml.stage === 'travel') {
+      ml.status = 'done';
+      ml.outcome = 'pass';
+      if (quests.s.tracked === 'main_leuven') quests.s.tracked = null;
+    }
+  }
   const d0 = quests.sheet.derived();
   if (quests.s.hero.hp > d0.maxHp || quests.s.hero.hp <= 0) quests.s.hero.hp = d0.maxHp;
   if (isNew && !quests.s.hero.gear.wapen) {
@@ -373,6 +418,7 @@ async function boot() {
   scene.add(guide.group);
   const frame = new PlayerFrame(uiRoot);
   const banner = (late.banner = new Banner(uiRoot));
+  const chapterCard = new ChapterCard(uiRoot);
   const dialogue = new DialogueUI(uiRoot, quests);
   const journal = (late.journal = new JournalUI(uiRoot, quests));
   const chars = (late.chars = new CharacterPanel(uiRoot, quests, () => player.hero.setCloak(quests.s.hero.cloak), () => sound.coins()));
@@ -417,7 +463,7 @@ async function boot() {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-book]');
     if (b && !b.classList.contains('on')) book(b.dataset.book as 'journal' | 'kroniek' | 'character');
   });
-  const uiOpen = () => dialogue.open || journal.open || chars.open || kroniekUI.open || kroniekUI.reading || shareCard.open;
+  const uiOpen = () => dialogue.open || journal.open || chars.open || kroniekUI.open || kroniekUI.reading || shareCard.open || chapterCard.open;
   let bellsRang = !!quests.s.flags.bells_ring;
   let bellTimer = 30;
 
@@ -442,6 +488,14 @@ async function boot() {
   // spoken lines, where recordings exist (see src/audio/voice.ts)
   const voice = new Voice();
   void voice.load();
+  voice.volume = settings.volume;
+  {
+    const cam = applyLive;
+    applyLive = (s) => {
+      cam(s);
+      voice.volume = s.volume;
+    };
+  }
   dialogue.onLine = (id) => void voice.play(`dlg_${id}`);
   const beginChapter = () => {
     quests.start('main_arrive');
@@ -554,18 +608,65 @@ async function boot() {
   window.addEventListener('keydown', () => {
     if (uiOpen()) keyToUi = true;
   }, { capture: true });
+  // Pause. Escape lets go of the mouse (the browser's own key): for mouse players that opens the pause
+  // menu, with the settings and the way back to the title screen. Start on a gamepad opens it too, and
+  // so does Escape where the mouse is not captured (an embedded page, a gamepad player at a keyboard).
+  /** waiting for a click to capture the mouse again (the browser refused right after Escape) */
+  let waitLock = false;
+  const openMenu = () => {
+    if (!running || menu.open || uiOpen() || cine.active || chapterCard.open) return;
+    paused = true;
+    waitLock = false;
+    hud.pauseOverlay(false);
+    menu.openPause();
+  };
+  const resume = () => {
+    paused = false;
+    if (input.device === 'kbm' && input.lockSupported) {
+      input.requestLock();
+      // still not captured a moment later: the old pause screen asks for one click in the game
+      setTimeout(() => {
+        if (running && !menu.open && !paused && document.pointerLockElement !== canvas && input.device === 'kbm' && input.lockSupported && !uiOpen()) {
+          paused = waitLock = true;
+          hud.pauseOverlay(true);
+        }
+      }, 400);
+    }
+  };
+  menu.attach({
+    resume,
+    helpHtml: () => hud.helpHtml(),
+    toTitle: () => {
+      quests.save();
+      running = false;
+      // the front end again, without the flags that skip it
+      const p = new URLSearchParams(location.search);
+      for (const k of ['autostart', 'prologue', 'intro', 'nointro']) p.delete(k);
+      const q = p.toString();
+      location.href = location.pathname + (q ? '?' + q : '') + location.hash;
+    },
+  });
+  saveGame = () => quests.save();
   document.addEventListener('pointerlockchange', () => {
     if (!running) return;
     const locked = document.pointerLockElement === canvas;
+    if (locked) {
+      if (waitLock) hud.pauseOverlay(false);
+      if (!menu.open) paused = waitLock = false;
+      return;
+    }
     // Gamepad players don't need pointer lock; only pause for mouse users,
     // and only where pointer lock actually works (embedded pages fall back to drag-look).
-    paused = !locked && input.device === 'kbm' && input.lockSupported && !uiOpen();
-    hud.pauseOverlay(paused);
+    if (input.device === 'kbm' && input.lockSupported && !uiOpen() && !waitLock) openMenu();
   });
-  // every click on the pause screen asks again: browsers refuse a re-lock for a moment after Esc,
+  window.addEventListener('keydown', (e) => {
+    // before the panels' own Escape (capture): Escape that closes a panel does not also open the menu
+    if (e.code === 'Escape' && !e.repeat && !menu.open && !waitLock && document.pointerLockElement !== canvas) openMenu();
+  }, { capture: true });
+  // every click on the "click to go on" screen asks again: browsers refuse a re-lock for a moment after Esc,
   // and a one-off listener left the game stuck on PAUZE after one refused click
   hud.overlay.addEventListener('click', () => {
-    if (running && paused) input.requestLock();
+    if (running && paused && waitLock) input.requestLock();
   });
 
   if (params.has('autostart')) uiRoot.querySelector('.frontend')?.remove();
@@ -595,7 +696,58 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, courses: { dayCourse, FIRST_FLIGHT }, shareCard, prologue, cine, makeIntro, script: STORY_LINES, voice, kit: townsfolk, dragonModel, life, hud, guide };
+  // ------------------------------------------------------------ the end of chapter 1
+  // After the bells ring again and you have spoken with Pieter: the bells over Diest, the dragon's eyes
+  // falling shut (src/story/chapterend.ts), then a card with what you chose and what it cost, and the two
+  // roads out of Diest. The flag ch1_end is set once the card is closed: a save that missed it (an older
+  // one, or a reload in the middle) gets it the next time Pieter is spoken to. Diest stays open to play.
+  let ending = false;
+  async function endChapter(force = false) {
+    const f = quests.s.flags;
+    if (ending || (!force && (f.ch1_end || !f.bells_ring)) || cine.active || prologue.active) return;
+    ending = true;
+    try {
+      combat.quiet = true;
+      tutorial.enabled = false;
+      const sky = (['golden', 'day', 'night', 'storm'].includes(atmo.current) ? atmo.current : 'golden') as 'golden';
+      // the dragon on open ground on the market, near you, facing the tower
+      const hx = player.heroPos.x, hz = player.heroPos.z;
+      const c = world.collision;
+      let at = { x: hx + 8, z: hz };
+      search: for (let r = 9; r < 40; r += 2)
+        for (let a = 0; a < 6.28; a += 0.4) {
+          const tx = hx + Math.cos(a) * r, tz = hz + Math.sin(a) * r;
+          if (c.heightAround(tx, tz, 3.5) < 0.2) { at = { x: tx, z: tz }; break search; }
+        }
+      const yaw = Math.atan2(-26 - at.x, 30 - at.z);
+      await cine.play(makeChapterEnd({ dragon: player.dragon, at: { ...at, y: c.heightAt(at.x, at.z), yaw }, sky }));
+      await atmo.setPreset(sky);
+      rig.snap();
+      kroniek.unlock('tijd:klank');
+      // the card: what you chose, what it cost, where it goes from here
+      const fill = (t: string) => quests.fill(t);
+      const { rows, open } = endRows(f);
+      const passFirst = quests.test({ quest: 'main_leuven', state: 'active', stage: 'pass' });
+      await chapterCard.show({
+        kicker: 'EINDE VAN HOOFDSTUK 1',
+        title: 'De klokken van Diest',
+        rows: rows.map((r) => ({ what: fill(r.what), cost: fill(r.cost) })),
+        open,
+        standing: life.standing.ids().map((id) => ({ name: FACTIONS[id].name, tier: life.standing.tier(id).name, color: FACTIONS[id].color })),
+        roads: { west: fill(ROADS.west), east: fill(ROADS.east), next: (passFirst ? 'Vraag de drossaard nog om een vrijgeleide voor de weg naar Leuven. ' : '') + ROADS.next },
+      });
+      f.ch1_end = true;
+      quests.save();
+      toasts.push(`DAGBOEK · ${ROADS.title}`);
+    } finally {
+      ending = false;
+      combat.quiet = false;
+      tutorial.enabled = true;
+      closeUi();
+    }
+  }
+
+  (window as unknown as { belfort: object }).belfort = { endChapter, chapterCard, menu, settings, input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, courses: { dayCourse, FIRST_FLIGHT }, shareCard, prologue, cine, makeIntro, script: STORY_LINES, voice, kit: townsfolk, dragonModel, life, hud, guide };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -619,6 +771,7 @@ async function boot() {
         if (!cine.manual) cine.update(dt);
       }
       if (input.consume('help')) hud.toggleHelp();
+      if (input.consume('menu') && performance.now() - menu.closedAt > 400) openMenu();
       if (input.consume('time')) {
         atmo.advance();
         setTimeout(() => hud.flash(LIGHT[atmo.look.label] ?? atmo.look.label.toUpperCase()), 400);
@@ -924,6 +1077,8 @@ async function boot() {
         if (mapOpen) mapOpen = hud.toggleMap();
         dialogue.start(near.npc.id, start, () => {
           closeUi();
+          // the bells ring again and Pieter has said his piece: the chapter ends at the tower
+          if (near.npc!.id === 'pieter') void endChapter();
           if (pendingShop) {
             pendingShop = false;
             chars.toggle(true, true, life.shopFor(near.npc!.id));

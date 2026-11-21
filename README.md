@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open the printed URL. Append `?lowq` for weak GPUs, or `?t=0.92` to start at night.
+Open the printed URL. For weak GPUs choose Beeldkwaliteit Laag under Instellingen (title screen, or Escape in the game), or append `?lowq`; `?t=0.92` starts at night.
 
 ## Controls
 

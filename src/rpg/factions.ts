@@ -74,5 +74,5 @@ export function tierOf(points: number) {
   return { index: t, name: TIERS[t].name, next: TIERS[t + 1]?.at ?? null };
 }
 
-/** Older saves kept renown per place; those places belong to a party. */
-export const RENOWN_TO_FACTION: Record<string, FactionId> = { Diest: 'gilden', Begijnhof: 'kerk', Scherpenheuvel: 'kerk' };
+/** Older saves kept renown per place; those places belong to a party (state.ts carries it over when it loads one). */
+export const RENOWN_TO_FACTION: Record<string, FactionId> = { Diest: 'gilden', Begijnhof: 'kerk', Scherpenheuvel: 'kerk', Kaggevinne: 'vrije' };

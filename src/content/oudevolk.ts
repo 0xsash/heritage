@@ -274,7 +274,7 @@ export const OV_DIALOGUE: Record<string, Line> = {
   heyl_wait: { who: 'heylwich', text: 'Ik ga je niet vragen de klepels in het Broek te laten liggen. Breng ze terug als je dat moet, en kom daarna nog eens langs. Dan praten we over de klokken.' },
 
   heyl_dof: { who: 'heylwich', text: 'De klokken luiden weer. Kijk naar {dragon} als ze slaan: zijn ogen vallen dicht, en hij vecht ertegen.', next: 'heyl_dof2' },
-  heyl_dof2: { who: 'heylwich', text: 'Mijn moeder zei het me zo, en ik zeg het jou: als alle klokken van Brabant weer samen luiden, gaat alles slapen wat wakker is geworden. De Kludde. En hij.', next: 'heyl_dof3' },
+  heyl_dof2: { who: 'heylwich', text: 'Mijn moeder zei het me zo, en ik zeg het jou: als alle klokken van het land weer samen luiden, gaat alles slapen wat wakker is geworden. De Kludde. En hij.', next: 'heyl_dof3' },
   heyl_dof3: {
     who: 'heylwich', text: 'Ik vraag je één ding, en daarna nooit meer iets. Bind een knoop riet om de klepel van het kleinste klokje van Sint-Sulpitius: dan klinkt het dof, en slaapt wat wakker werd maar half.',
     choices: [

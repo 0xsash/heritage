@@ -182,6 +182,8 @@ export interface Gear {
   text?: string;
   /** what you paid for it at a shop: a merchant never buys it back for more than half of that */
   paid?: number;
+  /** the party of the merchant it was bought from: selling it again takes back the standing that purchase earned */
+  from?: string;
 }
 
 interface Base { id: string; name: string; slot: Slot; ilvl: number; dmg?: [number, number]; armor?: number }

@@ -24,6 +24,8 @@ export class CameraRig {
   private fov = 62;
   private initialised = false;
   sensitivity = 0.0022;
+  /** up and down turned round, for the mouse and the right stick (the settings screen) */
+  invertY = false;
 
   constructor(aspect: number, private col: WorldCollision) {
     this.camera = new THREE.PerspectiveCamera(62, aspect, 0.3, 16000);
@@ -46,10 +48,11 @@ export class CameraRig {
 
     // --- aim
     this.yaw -= input.mouseDX * this.sensitivity;
-    this.pitch -= input.mouseDY * this.sensitivity;
+    const up = this.invertY ? -1 : 1;
+    this.pitch -= input.mouseDY * this.sensitivity * up;
     if (input.device === 'pad') {
       this.yaw -= input.lookX * 2.6 * dt;
-      this.pitch -= input.lookY * 1.8 * dt;
+      this.pitch -= input.lookY * 1.8 * dt * up;
       if (!onFoot && player.mode === 'fly') {
         // auto-follow behind the dragon when the right stick is idle
         const idle = Math.abs(input.lookX) < 0.05 && Math.abs(input.lookY) < 0.05;
