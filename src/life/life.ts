@@ -708,9 +708,10 @@ export class Life {
     if (id === 'walk_diest') this.useGood(GOODS.drukker[0], 'omroeper');
   }
 
-  /** Renown with a place moved: its party follows. */
-  renown(town: string, n: number) {
-    this.standing.renown(town, n, !this.d.quests.completing?.startsWith('main_'));
+  /** A quest moved standing with a party (the main story never costs you with a rival). */
+  questStanding(f: string, n: number) {
+    if (!FACTIONS[f as FactionId]) return;
+    this.standing.add(f as FactionId, n, '', !this.d.quests.completing?.startsWith('main_'));
   }
 
   /** You read something: it counts for a "read the notices" job. */

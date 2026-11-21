@@ -134,6 +134,11 @@ export class Hud {
     this.help.classList.toggle('hidden');
   }
 
+  /** The controls table, for the pause menu's BESTURING page. */
+  helpHtml() {
+    return this.help.innerHTML;
+  }
+
   discover(d: Discovery) {
     this.cardQueue.push({ kicker: d.major ? 'ONTDEKT' : 'GEZIEN', title: d.title, text: d.text });
   }

@@ -2,6 +2,7 @@
 // pays rewards, and tells the UI what happened.
 
 import { type Gear, Sheet, uniqueGear } from './character';
+import { FACTIONS, type FactionId } from './factions';
 import { stuivers } from './money';
 import type { CampDef, Cond, Content, Effect, ItemDef, NpcDef, Objective, QuestDef, Stage } from './types';
 import { type SaveData, claimSave, fromEarlierVisit, loadSave, writeSave } from './state';
@@ -16,10 +17,16 @@ export interface QuestEvents {
   open(panel: 'shop' | 'character'): void;
   /** a `{call}` effect (src/life) */
   call?(id: string): void;
-  /** renown with a place changed (standing follows it, src/life/standing.ts) */
-  renown?(town: string, n: number): void;
+  /** standing with a party changed by a quest (src/life/standing.ts) */
+  standing?(faction: string, n: number): void;
   /** a quest was finished (standing, jobs) */
   completed?(id: string, outcome?: string): void;
+}
+
+/** "+10 aanzien bij De Gilden": a reward of standing, in words. */
+export function standingLine(f: string, n: number) {
+  const name = FACTIONS[f as FactionId]?.name ?? f;
+  return `${n >= 0 ? '+' : ''}${n} aanzien bij ${name.replace(/^De /, 'de ').replace(/^Het /, 'het ')}`;
 }
 
 export interface Target {
@@ -166,10 +173,8 @@ export class QuestEngine {
       this.ev.toast(e.florins >= 0 ? 'GEKREGEN' : 'BETAALD', stuivers(Math.abs(e.florins)));
       return;
     }
-    if ('renown' in e) {
-      const [town, n] = e.renown;
-      this.s.renown[town] = (this.s.renown[town] ?? 0) + n;
-      this.ev.renown?.(town, n);
+    if ('standing' in e) {
+      this.ev.standing?.(e.standing[0], e.standing[1]);
       return;
     }
     if ('call' in e) return this.ev.call?.(e.call);
@@ -250,7 +255,7 @@ export class QuestEngine {
     const lines: string[] = [];
     if (r?.xp) lines.push(`+${r.xp} ervaring`);
     if (r?.florins) lines.push(`+${stuivers(r.florins)}`);
-    for (const [town, n] of r?.renown ?? []) lines.push(`${town} +${n} faam`);
+    for (const [f, n] of r?.standing ?? []) lines.push(standingLine(f, n));
     for (const id of r?.gear ?? []) {
       const g = uniqueGear(id);
       if (g) lines.push(g.name);
@@ -258,10 +263,7 @@ export class QuestEngine {
     this.ev.banner('done', q.title, lines);
     this.completing = id;
     if (r?.florins) this.s.florins += r.florins;
-    for (const [town, n] of r?.renown ?? []) {
-      this.s.renown[town] = (this.s.renown[town] ?? 0) + n;
-      this.ev.renown?.(town, n);
-    }
+    for (const [f, n] of r?.standing ?? []) this.ev.standing?.(f, n);
     for (const [item, n] of r?.items ?? []) this.applyOne({ give: item, n });
     for (const id of r?.gear ?? []) this.applyOne({ gear: id });
     if (r?.xp) this.addXp(r.xp);

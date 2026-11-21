@@ -129,9 +129,41 @@ export class Shops {
       wares,
       sellRate: 0.8 + tier * 0.05,
       buy: (key) => this.buy(seller, f, goods, key),
+      sold: (g, price) => this.sold(seller, g, price),
+      buyback: this.buyback(seller),
+      buyBack: () => this.buyBack(seller),
       // the same shop again, as it is now (prices, tiers, what is left, what you wear), with the same greeting
       refresh: () => this.view(seller, f, title, goods, greet),
     };
+  }
+
+  /**
+   * You sold a piece here. Standing it earned when you bought it is taken back (whichever merchant
+   * buys it: you did not keep it), and it is remembered until the end of the day, so you can buy it
+   * back for what you got.
+   */
+  private sold(seller: string, g: Gear, price: number) {
+    const s = this.h.q.s;
+    if (g.from && g.paid) this.h.standing.unspend(g.from as FactionId, g.paid);
+    s.life.sold = { day: today(), at: seller, price, gear: g };
+  }
+
+  /** Your last sale of the day, if it was to this seller. */
+  private buyback(seller: string) {
+    const b = this.h.q.s.life.sold;
+    return b && b.day === today() && b.at === seller ? { gear: b.gear, price: b.price } : null;
+  }
+
+  private buyBack(seller: string) {
+    const s = this.h.q.s;
+    const b = this.buyback(seller);
+    if (!b || s.florins < b.price) return false;
+    s.florins -= b.price;
+    s.hero.bag.push(b.gear);
+    s.life.sold = null;
+    // back as you bought it: so is what it earned you
+    if (b.gear.from && b.gear.paid) this.h.standing.spend(b.gear.from as FactionId, b.gear.paid);
+    return true;
   }
 
   private buy(seller: string, f: FactionId, goods: Good[], key: string) {
@@ -142,8 +174,11 @@ export class Shops {
       if (!g) return false;
       const price = st.price(g.price, f);
       if (s.florins < price || (g.tier ?? 0) > st.level(f) || this.h.spent(g)) return false;
+      const had = s.hero.bag.length;
       if (!this.h.use(g, seller, price)) return false;
       s.florins -= price;
+      // a talisman you bought: what it earned with the party goes back if you sell it again
+      for (const x of s.hero.bag.slice(had)) if (x.paid !== undefined) x.from = f;
       st.spend(f, price);
       return true;
     }
@@ -157,6 +192,7 @@ export class Shops {
       if (s.florins < price) return false;
       s.florins -= price;
       g.paid = price;
+      g.from = f;
       s.hero.bag.push(g);
       items.splice(i, 1);
       st.spend(f, price);

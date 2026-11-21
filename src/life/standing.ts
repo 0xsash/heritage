@@ -4,7 +4,7 @@
 // buying, helping, quests and jobs; a few acts cost points with a rival.
 
 import * as F from '../rpg/factions';
-import { FACTIONS, HIDDEN_FACTIONS, RENOWN_TO_FACTION, TIERS, type FactionId, tierOf } from '../rpg/factions';
+import { FACTIONS, HIDDEN_FACTIONS, TIERS, type FactionId, tierOf } from '../rpg/factions';
 import type { SaveData } from '../rpg/state';
 
 /** The public parties (iterate, never assume how many). The hidden one is added by Standing.ids() once found. */
@@ -21,24 +21,12 @@ const RIVAL_PAIRS: [FactionId, FactionId][] = ((F as unknown as { RIVALS?: [Fact
 /** Price multiplier per tier: Vreemde pays full price, a Vertrouweling a fifth less. */
 const PRICE = [1, 0.95, 0.9, 0.85, 0.8];
 
-/** Every place that ever had renown belongs to a party (older saves, quest rewards). */
-export const PLACE_FACTION: Record<string, FactionId> = { ...RENOWN_TO_FACTION, Kaggevinne: 'vrije' };
-
 export class Standing {
   /** a party's tier may have moved (src/life/oudevolk.ts listens: a new tier there means something to learn) */
   onChange?: (f: FactionId, before: number, after: number) => void;
 
-  constructor(private s: SaveData, private toast: (text: string) => void) {
-    // older saves kept renown per place: carry it over once (a value already set, e.g. by the
-    // character-creation screen, is kept and added to)
-    if (!s.life.migrated) {
-      for (const [town, n] of Object.entries(s.renown)) {
-        const f = PLACE_FACTION[town];
-        if (f && n) s.standing[f] = (s.standing[f] ?? 0) + n;
-      }
-      s.life.migrated = true;
-    }
-  }
+  // (older saves kept renown per place as well: state.ts carries it over into standing when it loads them)
+  constructor(private s: SaveData, private toast: (text: string) => void) {}
 
   /** Every party the player knows of: the five, and the hidden one once found. */
   ids(): FactionId[] {
@@ -104,10 +92,19 @@ export class Standing {
     }
   }
 
-  /** Renown with a place moved (a quest effect): the place's party follows. */
-  renown(town: string, n: number, rival = true) {
-    const f = PLACE_FACTION[town];
-    if (f) this.add(f, n, '', rival);
+  /**
+   * Gear bought here was sold again: the standing that purchase earned is taken back, exactly (the
+   * florins go out of the ledger again, and every ten that are missing cost a point). Buying cheap and
+   * selling back earns nothing; what you keep, counts.
+   */
+  unspend(f: FactionId, florins: number) {
+    if (!FACTIONS[f] || florins <= 0) return;
+    const sp = this.s.life.spent;
+    sp[f] = (sp[f] ?? 0) - florins;
+    if (sp[f] >= 0) return;
+    const pts = Math.ceil(-sp[f] / 10);
+    sp[f] += pts * 10;
+    this.add(f, -pts, 'je verkocht terug wat je kocht', false);
   }
 
   /** Bars with the tier name, for the character panel. */

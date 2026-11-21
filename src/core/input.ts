@@ -18,7 +18,8 @@ export type Action =
   | 'potion' // Q / d-pad down — drink a salve
   | 'dragon' // G / d-pad left — call the dragon to your side in a fight (once Het Oude Volk taught it)
   | 'character' // I / C(on foot) — character and bag
-  | 'help'; // H / Start
+  | 'help' // H — the controls
+  | 'menu'; // Start — the pause menu (Escape is the browser's own: it lets go of the mouse, see main.ts)
 
 const KEYMAP: Record<string, Action> = {
   KeyE: 'interact',
@@ -204,7 +205,7 @@ export class Input {
         [13, 'potion'],
         [14, 'dragon'],
         [1, 'skill2'],
-        [9, 'help'],
+        [9, 'menu'],
         [12, 'time'],
       ];
       // triggers as buttons: RT attacks, LT uses the skill (both also drive flight speed).

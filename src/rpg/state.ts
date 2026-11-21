@@ -1,9 +1,9 @@
 // The player's progress: who they are, quests, flags, inventory, money and
-// renown. Saved to this browser's local storage (a per-player convenience for
+// standing with the parties. Saved to this browser's local storage (a per-player convenience for
 // the prototype; accounts and cloud saves come later).
 
 import type { BackgroundId, Gear, OriginId, Slot } from './character';
-import type { FactionId } from './factions';
+import { RENOWN_TO_FACTION, type FactionId } from './factions';
 import type { QuestStatus } from './types';
 
 export interface QuestState {
@@ -74,7 +74,7 @@ export interface HeroData {
 
 export interface SaveData {
   /** the format's version (SAVE_VERSION); loadSave walks an older one up through MIGRATE */
-  v: 2;
+  v: 3;
   /** false until the character has been made */
   created: boolean;
   hero: HeroData;
@@ -82,7 +82,6 @@ export interface SaveData {
   flags: Record<string, string | number | boolean>;
   inv: Record<string, number>;
   florins: number;
-  renown: Record<string, number>;
   tracked: string | null;
   /** pickups already taken, as "quest:objective:index" */
   taken: string[];
@@ -116,7 +115,7 @@ export interface LifeSave {
   reads: string[];
   /** florins spent per party, not yet turned into standing */
   spent: Record<string, number>;
-  /** renown already carried over into standing (old saves) */
+  /** the old per-place renown has been carried over into standing (see MIGRATE[2]) */
   migrated: boolean;
   /** stops of the town walk reached */
   walk: number;
@@ -124,6 +123,8 @@ export interface LifeSave {
   dice: [number, number];
   /** golden weathercocks taken */
   cocks: string[];
+  /** the last piece of gear sold today, so it can be bought back at the price you got (absent: none) */
+  sold?: { day: string; at: string; price: number; gear: Gear } | null;
 }
 
 export function freshLife(): LifeSave {
@@ -137,7 +138,7 @@ const BROKEN_KEY = 'belfort-save-v2-broken';
 const OWNER_KEY = 'belfort-save-v2-owner';
 
 /** The save format's version. A change to the format adds a step to MIGRATE and raises this by one. */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 /**
  * Numbered steps that bring an older save up to date: MIGRATE[n] turns a version-n save into version n+1,
@@ -145,12 +146,26 @@ export const SAVE_VERSION = 2;
  * (There is no step from 1: version 1 lived under another key and never reaches loadSave.)
  */
 const MIGRATE: Record<number, (d: Record<string, unknown>) => void> = {
-  // 2: (d) => { ...turn a version-2 save into version 3... },
+  // 2 -> 3: one reputation. Renown per place ("faam") is gone; what a save still holds of it goes to the
+  // party that owns the place, unless an earlier build already carried it over (life.migrated).
+  2: (d) => {
+    const renown = isObj(d.renown) ? d.renown : {};
+    const life = isObj(d.life) ? d.life : (d.life = {});
+    const standing = isObj(d.standing) ? d.standing : (d.standing = {});
+    if (!life.migrated) {
+      for (const [place, n] of Object.entries(renown)) {
+        const f = RENOWN_TO_FACTION[place];
+        if (f && typeof n === 'number' && n) standing[f] = Math.max(0, (Number(standing[f]) || 0) + n);
+      }
+    }
+    life.migrated = true;
+    delete d.renown;
+  },
 };
 
 export function freshSave(): SaveData {
   return {
-    v: 2,
+    v: SAVE_VERSION,
     created: false,
     hero: {
       name: 'Lieven', origin: 'schutter', cloak: '#8c2a1e', dragon: 'Gloed', level: 1, xp: 0, hp: 100, gear: {}, bag: [],
@@ -161,7 +176,6 @@ export function freshSave(): SaveData {
     flags: {},
     inv: { salve: 3 },
     florins: 12,
-    renown: {},
     tracked: null,
     taken: [],
     discovered: [],
@@ -210,7 +224,6 @@ export function migrate(raw: unknown): SaveData | null {
     quests,
     flags: obj(d.flags, {}),
     inv: obj(d.inv, f.inv),
-    renown: obj(d.renown, {}),
     standing: obj(d.standing, {}),
     taken: arr(d.taken, []),
     discovered: arr(d.discovered, []),

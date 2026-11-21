@@ -94,7 +94,7 @@ Real history is the frame; the fantasy explains what history cannot.
   - the full entry, newest first, written in the first person, as a diary of 1650;
   - **Track / untrack**.
 - The tracked objective appears on the compass, the map and the on-screen tracker.
-- The journal also shows your purse, your renown per town and what you are carrying.
+- The journal also shows your purse and what you are carrying. Standing with the parties is in the character panel.
 
 There are no distance markers, no minimap arrows inside buildings, and no modern units. People give directions the way they did in 1650: "past the Cow Gate", "west along the Aarschot road; you will see the dome".
 
@@ -102,7 +102,7 @@ There are no distance markers, no minimap arrows inside buildings, and no modern
 
 ## 5. Factions and reputation
 
-Reputation is tracked **per town** (renown, built) and **per faction** (next). They pull against each other on purpose.
+Reputation is tracked **per faction** only ("aanzien", src/life/standing.ts). Per-town renown ("faam") was dropped: quest rewards that gave renown to a place now give standing to the party that owns it (Diest to De Gilden, the Begijnhof and Scherpenheuvel to De Kerk), and older saves carry their renown over when they load.
 
 | Faction | Wants | Gives |
 |---|---|---|

@@ -4,7 +4,8 @@
 import { bookTabs } from './kroniekui';
 import { gloss } from '../rpg/kroniek';
 import { stuivers } from '../rpg/money';
-import type { QuestEngine } from '../rpg/quests';
+import { type QuestEngine, standingLine } from '../rpg/quests';
+import { ROADS } from '../content/diest_end';
 import type { Line } from '../rpg/types';
 
 const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
@@ -106,6 +107,9 @@ export class DialogueUI {
   }
 }
 
+/** the journal's page for the roads out of Diest, after chapter 1 (not a quest: nothing to finish) */
+const NEXT = '__next';
+
 export class JournalUI {
   el = document.createElement('div');
   open = false;
@@ -137,7 +141,9 @@ export class JournalUI {
     const quests = this.q.allQuests().filter((x) => s.quests[x.id]);
     const by = (kind: string, status: string) =>
       quests.filter((x) => x.kind === kind && s.quests[x.id].status === status).sort((a, b) => s.quests[b.id].started - s.quests[a.id].started);
-    if (!this.sel || !s.quests[this.sel]) this.sel = quests[0]?.id ?? null;
+    // once chapter 1 is over, a page on top points along the two roads out of Diest (src/content/diest_end.ts)
+    const next = !!s.flags.ch1_end;
+    if (!this.sel || (!s.quests[this.sel] && !(next && this.sel === NEXT))) this.sel = next && !s.tracked ? NEXT : quests[0]?.id ?? null;
     const section = (title: string, list: typeof quests) =>
       list.length
         ? `<h3>${title}</h3>` +
@@ -146,11 +152,17 @@ export class JournalUI {
             .join('')
         : '';
     const list =
+      (next ? `<h3>VOLGEND HOOFDSTUK</h3><button data-q="${NEXT}" class="${this.sel === NEXT ? 'sel' : ''}">${esc(ROADS.title)}</button>` : '') +
       section('HOOFDVERHAAL', by('main', 'active')) + section('ZIJVERHALEN', by('side', 'active')) + section('OPDRACHTEN', by('contract', 'active')) +
       section('VOLTOOID', [...by('main', 'done'), ...by('side', 'done'), ...by('contract', 'done'), ...quests.filter((x) => s.quests[x.id].status === 'failed')]);
     let detail = '<div class="empty">Nog geen opdrachten. Spreek met de mensen van Diest: zoek het gouden ! boven hun hoofd.</div>';
     const cur = this.sel ? this.q.quest(this.sel) : null;
-    if (cur) {
+    if (next && this.sel === NEXT) {
+      detail = `<h1>${esc(ROADS.title)}</h1>
+        <div class="meta">Hoofdstuk 2 · binnenkort</div>
+        <div class="reward">${esc(ROADS.next)}</div>
+        <div class="entries"><p>${esc(this.q.fill(ROADS.west))}</p><p>${esc(this.q.fill(ROADS.east))}</p></div>`;
+    } else if (cur) {
       const st = s.quests[cur.id];
       const stage = this.q.stageOf(cur);
       const giver = cur.giver ? this.q.npcs.get(cur.giver)?.name : null;
@@ -165,7 +177,7 @@ export class JournalUI {
           : `<div class="obj ok">${st.status === 'done' ? 'Voltooid' : 'Mislukt'}</div>`;
       const r = cur.reward;
       const reward = r
-        ? [r.xp ? `${r.xp} ervaring` : '', r.florins ? stuivers(r.florins) : '', ...(r.renown ?? []).map(([t, n]) => `${t} +${n} faam`), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`), ...(r.gear?.length ? ['een uniek voorwerp'] : [])].filter(Boolean).join(' · ')
+        ? [r.xp ? `${r.xp} ervaring` : '', r.florins ? stuivers(r.florins) : '', ...(r.standing ?? []).map(([f, n]) => standingLine(f, n)), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`), ...(r.gear?.length ? ['een uniek voorwerp'] : [])].filter(Boolean).join(' · ')
         : '';
       detail = `<h1>${esc(cur.title)}</h1>
         <div class="meta">${cur.kind === 'main' ? 'Hoofdverhaal' : cur.kind === 'contract' ? 'Opdracht' : 'Zijverhaal'} · ${esc(cur.town)}${cur.level ? ' · niveau ' + cur.level : ''}${giver ? ' · van ' + esc(giver) : ''}</div>
@@ -175,8 +187,7 @@ export class JournalUI {
         <div class="entries">${[...st.log].reverse().map((p) => `<p>${gloss(esc(this.q.fill(p)))}</p>`).join('')}</div>`;
     }
     const inv = Object.entries(s.inv).filter(([, n]) => n > 0).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`).join(' · ');
-    const fame = Object.entries(s.renown).map(([t, n]) => `${t} ${n}`).join(' · ');
-    this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${stuivers(s.florins)}${fame ? ' · Faam: ' + esc(fame) : ''}</span></header>
+    this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${stuivers(s.florins)}</span></header>
       <div class="list">${list || '<div class="empty">Je hebt nog geen opdrachten.</div>'}</div>
       <div class="detail">${detail}</div>
       <div class="inv">Op zak: ${inv ? esc(inv) : 'niets bijzonders'}</div>`;

@@ -309,6 +309,12 @@ export interface ShopView {
   buy(key: string): boolean;
   /** what the merchant pays for gear, as a share of its value (default 1) */
   sellRate?: number;
+  /** a piece of gear was sold here, for this much */
+  sold?(g: Gear, price: number): void;
+  /** your last sale of the day to this merchant, which you can buy back for what you got */
+  buyback?: { gear: Gear; price: number } | null;
+  /** true when it was bought back */
+  buyBack?(): boolean;
   /** the same shop rebuilt as it is now (after a purchase, a sale or a change of gear) */
   refresh?(): ShopView;
 }
@@ -326,6 +332,8 @@ export class CharacterPanel {
   private waresLevel = 0;
   /** clicks are ignored until then (ms): the panel is rebuilt after each action, so the second click of a double click would land on the next card */
   private busyUntil = 0;
+  /** a rare or unique piece you pressed VERKOPEN on once: the second press sells it */
+  private confirmSell: string | null = null;
 
   constructor(root: HTMLElement, private q: QuestEngine, private onChange: () => void, private coins: () => void) {
     this.el.hidden = true;
@@ -339,6 +347,7 @@ export class CharacterPanel {
     this.open = force ?? !this.open;
     this.shop = this.open && shop;
     this.vendor = this.shop ? vendor : null;
+    this.confirmSell = null;
     this.el.hidden = !this.open;
     if (this.open) {
       document.exitPointerLock?.();
@@ -371,12 +380,20 @@ export class CharacterPanel {
       .join('');
     const bag = h.bag.length
       ? h.bag
-          .map((g) => gearCard(g, `<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ beter</span>' : ''}<button data-eq="${g.uid}">DRAGEN</button>${this.shop ? `<button data-sell="${g.uid}">VERKOPEN · ${sellValue(g, this.vendor?.sellRate ?? 1)}</button>` : ''}</div>`))
+          .map((g) => {
+            const price = sellValue(g, this.vendor?.sellRate ?? 1);
+            const sure = this.shop && this.confirmSell === g.uid;
+            // a rare or unique piece asks once more; what you sell can be bought back today (from a merchant)
+            const warn = sure ? `<div class="gsure">Een ${RARITY[g.rarity].name.toLowerCase()} stuk. Wil je het echt verkopen? ${this.vendor?.sold ? 'Je kunt het vandaag nog terugkopen voor dezelfde prijs.' : 'Verkocht is verkocht.'}</div>` : '';
+            const sell = this.shop ? `<button data-sell="${g.uid}"${sure ? ' class="warn"' : ''}>${sure ? 'JA, VERKOPEN' : 'VERKOPEN'} · ${price}</button>` : '';
+            return gearCard(g, `${warn}<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ beter</span>' : ''}<button data-eq="${g.uid}">DRAGEN</button>${sell}</div>`);
+          })
           .join('')
       : '<div class="empty">Je zak is leeg. Verslagen vijanden laten soms iets vallen.</div>';
     const v = this.vendor;
     const shopHtml = this.shop && v
       ? `<div class="shop vshop"><h3>${esc(v.title)}</h3>${v.greet ? `<p class="vgreet">${esc(v.greet)}</p>` : ''}${v.note ? `<p class="vnote">${esc(v.note)}</p>` : ''}
+          ${v.buyback ? gearCard(v.buyback.gear, `<div class="gsure back">Vandaag aan mij verkocht. Je kunt het terugkopen voor wat je ervoor kreeg.</div><div class="gb"><button data-back="1"${this.q.s.florins < v.buyback.price ? ' class="poor"' : ''}>TERUGKOPEN · ${v.buyback.price}</button></div>`) : ''}
           ${v.wares.map((w) => {
             const btn = w.locked ? `<span class="vlock">${esc(w.locked)}</span>` : `<button data-vbuy="${esc(w.key)}"${this.q.s.florins < w.price ? ' class="poor"' : ''}>KOPEN · ${w.price}</button>`;
             if (w.gear) return gearCard(w.gear, `<div class="gb">${w.tag ? `<span class="up">${esc(w.tag)}</span>` : ''}${btn}</div>`);
@@ -436,13 +453,32 @@ export class CharacterPanel {
       act(b, () => {
         const i = h.bag.findIndex((g) => g.uid === b.dataset.sell);
         if (i < 0) return;
-        this.q.s.florins += sellValue(h.bag[i], sellRate);
+        const g = h.bag[i];
+        if (g.rarity >= 2 && this.confirmSell !== g.uid) {
+          this.confirmSell = g.uid;
+          this.render();
+          return;
+        }
+        this.confirmSell = null;
+        const price = sellValue(g, sellRate);
+        this.q.s.florins += price;
         h.bag.splice(i, 1);
+        this.vendor?.sold?.(g, price);
         this.q.save();
         this.coins();
         redraw();
       }),
     );
+    const back = this.el.querySelector<HTMLButtonElement>('button[data-back]');
+    if (back) act(back, () => {
+      if (!this.vendor?.buyBack?.()) return this.poor(back);
+      this.q.save();
+      this.coins();
+      this.onChange();
+      redraw();
+    });
+    // any other press puts a waiting "are you sure?" away
+    if (this.confirmSell) this.el.querySelectorAll<HTMLButtonElement>('button:not([data-sell])').forEach((b) => b.addEventListener('click', () => (this.confirmSell = null), { capture: true }));
     const buyOne = this.el.querySelector<HTMLButtonElement>('button[data-buy]');
     if (buyOne) act(buyOne, () => {
       if (this.q.s.florins < 6) return;

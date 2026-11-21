@@ -106,7 +106,7 @@ export function heroLine(h: { sex?: string; background?: string; origin: string 
   return bg ? `${bg.name[h.sex === 'f' ? 1 : 0]} · ${cls}` : cls;
 }
 
-export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirstGesture: () => void, kitP: Promise<TownsfolkKit | null> = Promise.resolve(null), dragonP: Promise<GLTF | null> = Promise.resolve(null)): Promise<FrontEndResult> {
+export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirstGesture: () => void, kitP: Promise<TownsfolkKit | null> = Promise.resolve(null), dragonP: Promise<GLTF | null> = Promise.resolve(null), openSettings?: () => void): Promise<FrontEndResult> {
   const el = document.createElement('div');
   el.className = 'frontend';
   root.appendChild(el);
@@ -151,11 +151,12 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
               <p><b>Een afgewerkt spel.</b> Dit is het eerste hoofdstuk. Je bent er ongeveer een uur mee bezig.</p>
             </div>
           </div>
-          <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN'}</button></div>
+          <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN'}</button>${!back && openSettings ? '<button data-go="settings">INSTELLINGEN</button>' : ''}</div>
           <div class="fe-small">Je speelt met muis en toetsenbord of met een gamepad. Zet het geluid aan. Je voortgang wordt op dit toestel bewaard.</div>
         </div>
       </div>`;
       el.querySelector('[data-go="ok"]')!.addEventListener('click', () => (back ? title() : create()));
+      el.querySelector('[data-go="settings"]')?.addEventListener('click', () => openSettings?.());
     };
 
     // ---------------------------------------------------------------- title
@@ -168,6 +169,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
           <div class="fe-menu">
             ${save ? `<button data-go="continue">VERDER SPELEN<small>${esc(save.name)} · ${esc(heroLine(save))} · niveau ${save.level}</small></button>` : ''}
             <button data-go="new">NIEUW SPEL</button>
+            ${openSettings ? '<button data-go="settings">INSTELLINGEN</button>' : ''}
           </div>
           <div class="fe-small">Je speelt het best met muis en toetsenbord of met een gamepad, en met het geluid aan · <button class="fe-link" data-go="what">wat is dit?</button></div>
         </div>
@@ -175,6 +177,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
       </div>`;
       el.querySelector('[data-go="continue"]')?.addEventListener('click', () => done({ mode: 'continue' }));
       el.querySelector('[data-go="what"]')!.addEventListener('click', () => promise(true));
+      el.querySelector('[data-go="settings"]')?.addEventListener('click', () => openSettings?.());
       el.querySelector('[data-go="new"]')!.addEventListener('click', () => {
         if (save && !confirm('Wil je een nieuw spel beginnen? Je huidige personage gaat dan verloren.')) return;
         create(); // the story is told in the prologue, which you play

@@ -149,7 +149,7 @@ export const NPC_FACTION: Record<string, FactionId> = {
 };
 export const MARIEKE = { id: 'marieke', shop: 'marieke', glyph: '⚖', label: 'Marskraamster' };
 
-/** What finishing a quest does for your standing, beyond the renown it pays (by outcome). */
+/** What finishing a quest does for your standing, beyond the standing its reward names (by outcome). */
 export const QUEST_STANDING: Record<string, [FactionId, number][] | Record<string, [FactionId, number][]>> = {
   main_bells: [['kerk', 8]],
   main_kludde: [['kerk', 10], ['gilden', 6]],

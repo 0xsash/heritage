@@ -112,5 +112,5 @@ The prologue (`PROLOGUE_LINES` in `src/story/prologue.ts`), the hero remembering
 | pro_n7 | | De klokken hadden alles in slaap gehouden wat ouder was dan de stad. Het ergste. En, zo bleek, niet alleen het ergste. |
 | pro_n8 | | Hij rook naar riet en naar een smidse. Hij keek me aan zoals je iemand aankijkt op wie je lang hebt gewacht. |
 | pro_n9 | | Ik heb hem {dragon} genoemd. Hij heeft het toegelaten. |
-| pro_n10 | | Later zou een oude vrouw het me zeggen: als alle klokken van Brabant weer samen luiden, gaat alles slapen wat wakker is geworden. De Kludde. En hij. |
+| pro_n10 | | Later zou een oude vrouw het me zeggen: als alle klokken van het land weer samen luiden, gaat alles slapen wat wakker is geworden. De Kludde. En hij. |
 | pro_n11 | | Dat was later. Die ochtend wist ik maar één ding. Wat het water neemt, geeft het soms terug. Ik zou het gaan halen. |

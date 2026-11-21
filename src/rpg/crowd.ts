@@ -476,8 +476,9 @@ export class Crowd {
     const q = this.quests;
     const s = q.s;
     const pool: string[] = [...GREET];
-    const fame = (s.renown.Diest ?? 0) + (s.renown.Begijnhof ?? 0);
-    if (fame >= 15) pool.push(...FAMOUS, ...FAMOUS);
+    // known in town: the bells are found, or the guilds and the church both think well of you
+    const fame = q.test({ quest: 'main_bells', state: 'done' }) || (s.standing.gilden ?? 0) + (s.standing.kerk ?? 0) >= 40;
+    if (fame) pool.push(...FAMOUS, ...FAMOUS);
     if (q.test({ quest: 'main_bells', state: 'active' }) || q.test({ quest: 'main_bells', state: 'none' })) pool.push(...BELLS);
     if (q.test({ flag: 'seals_reported' })) pool.push('Lijsbet Vranckx is weg. Haar getouw staat nu bij de buren.', 'De wevers drinken op jou. De weduwe drinkt niet mee.');
     if (q.test({ flag: 'seals_begijnhof' })) pool.push('Lijsbet weeft nu bij de begijnen. Meester Joos is er ziek van.');

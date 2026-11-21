@@ -30,7 +30,7 @@ export interface TutorialCtx {
   inCombat: boolean;
   hpFrac: number;
   salves: number;
-  tally: { hits: number; rolls: number; skills: number; potions: number; breaths: number; telegraphs: number; spares?: number; dskills?: number };
+  tally: { hits: number; rolls: number; skills: number; potions: number; breaths: number; telegraphs: number; spares?: number; dskills?: number; airKills?: number };
   dragon: string;
   skill: string;
   uiOpen: boolean;
@@ -70,6 +70,8 @@ const STEPS: Step[] = [
   { id: 'salve', keys: (p) => (p ? ['▼'] : ['Q']), text: 'Begijnenzalf geneest je', when: (c) => c.hpFrac < 0.5 && c.salves > 0, done: (c, t) => c.tally.potions > t.base.potions, stall: 1 },
   { id: 'skill', keys: () => ['RMB'], text: '{skill}', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.skills > t.base.skills, stall: 5 },
   { id: 'breath', keys: (p) => (p ? ['LB'] : ['LMB']), text: '{dragon} spuwt vuur', when: (c) => c.mode === 'fly' && c.inCombat, done: (c) => c.tally.breaths > 0, stall: 2 },
+  // the first kill from the air: why it gave so little (combat.ts AIR_XP), and what to do about it
+  { id: 'airxp', keys: (p) => (p ? ['Y'] : ['E']), text: 'Land: te voet verdien je meer ervaring', when: (c) => c.mode === 'fly' && (c.tally.airKills ?? 0) > 0, done: (c) => c.mode !== 'fly', stall: 0.8, patience: 9 },
   // what Het Oude Volk teaches (only ever seen by someone who found them)
   { id: 'spare', keys: (p) => (p ? ['Y'] : ['E']), text: 'Laat het beest gaan', when: (c) => c.mode === 'walk' && !!c.spare, done: (c, t) => (c.tally.spares ?? 0) > (t.base.spares ?? 0), stall: 0.3, patience: 8 },
   { id: 'dskill', keys: () => ['RMB', 'R'], text: 'De gaven van {dragon}', when: (c) => c.mode === 'fly' && !!c.dragonFly && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
@@ -144,6 +146,8 @@ export class Tutorial {
     // what is the thing to do right now?
     const next = STEPS.find((s) => !this.seen(s.id) && s.when(c, this)) ?? null;
     if (next !== this.cur) {
+      // the situation ended because the player did the thing (landed while the hint said so): learned
+      if (this.cur && this.cur.done(c, this)) this.learn(this.cur, c);
       this.hide(false);
       this.cur = next;
       this.waited = 0;
