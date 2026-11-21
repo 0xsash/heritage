@@ -335,17 +335,17 @@ export const BLESS_AGAIN = ['Ik heb je net gezegend. Gods zegen slijt niet zo sn
 
 export const PILGRIM_TALES = [
   'In Scherpenheuvel stond vroeger een eik met een beeldje van Maria. Een herdersjongen wilde het meenemen en kon niet meer bewegen, tot zijn meester het terugzette. Zo vertellen ze het. Sindsdien komen de mensen.',
-  'De aartshertogen lieten er een kerk bouwen met zeven zijden, en een stad eromheen als een ster. Het is het mooiste wat ik ooit gezien heb. En ik ben in Mechelen geweest.',
-  'Ze gaan driemaal rond de kerk. Biddend. Sommigen op hun knieën. Ik heb het één keer op mijn knieën gedaan. Nooit meer. Mijn knieën zijn nu ook pelgrims.',
-  'Binnen hangen krukken, wassen armen, wassen benen en zelfs een wassen hart. Allemaal van mensen die genezen zijn. Of die het hoopten.',
-  'Westwaarts, langs de weg naar Aarschot. Bij Kaggevinne opletten voor de wegrovers. Daarna zie je de koepel boven de bomen. Dan weet je dat je er bijna bent.',
-  'De koepel is van binnen blauw, met gouden sterren. Als je lang genoeg kijkt, denk je dat ze bewegen. Dat komt van de wierook, zegt de proost.',
-  'Truyken verkoopt beeldjes bij de kerk. Echte, van de eik, zegt ze. Ik heb er drie gekocht. Ze zoemen niet. Dat is goed, denk ik.',
+  'De aartshertogen lieten er een kerk bouwen met zeven zijden, in een stad met zeven hoeken. Het is het mooiste wat ik ooit gezien heb. En ik ben in Mechelen geweest.',
+  'Ze gaan driemaal biddend rond de kerk, sommigen op hun knieën. Ik heb het één keer op mijn knieën gedaan en daarna nooit meer. Mijn knieën zijn nu ook pelgrims.',
+  'Binnen hangen krukken, wassen armen, wassen benen en zelfs een wassen hart. Ze komen allemaal van mensen die genezen zijn, of die erop hoopten.',
+  'Je gaat naar het westen, langs de weg naar Aarschot. Bij Kaggevinne moet je opletten voor de wegrovers. Daarna zie je de koepel boven de bomen, en dan ben je er bijna.',
+  'De koepel is van binnen blauw, met gouden sterren. Als je lang genoeg kijkt, denk je dat ze bewegen. Dat komt van de wierook, zegt de overste.',
+  'Truyken verkoopt beeldjes bij de kerk. Het zijn echte, uit het hout van de eik, zegt ze. Ik heb er drie gekocht. Ze zoemen niet. Dat is goed, denk ik.',
   'In het eikenbos ten oosten van Scherpenheuvel zie je \'s avonds lichtjes. Volg ze niet. Twee van onze groep hebben het gedaan. We hebben gebeden. Ze kwamen niet terug.',
   'De herbergen zitten vol, rond de grote bedevaartsdagen. Dan slapen de pelgrims in de schuren, in de kerk, en in de gracht als het moet.',
   'Mijn grootvader liep naar Scherpenheuvel toen er nog geen kerk was, alleen een kapelletje en de eik. Hij zei dat het toen stiller was. Hij zei ook dat hij toen jonger was.',
   'Je koopt een tinnen teken en speldt het op je hoed. Dan weet iedereen onderweg waar je geweest bent. Dan krijg je soms een bord soep. Pelgrims helpen pelgrims.',
-  'Ze zeggen dat de basiliek \'s nachts zoemt, sinds kort. De proost zegt dat het de wind is. De wind zoemt niet, zeg ik.',
+  'Ze zeggen dat de kerk van Scherpenheuvel\'s nachts zoemt, sinds kort. De overste zegt dat het de wind is. De wind zoemt niet, zeg ik.',
   'De Spanjaarden, de Brabanders, de Walen, zelfs Fransen komen er. In de kerk zijn we allemaal hetzelfde. Buiten niet: de Walen zingen luider.',
   'Het hout van de eik is in stukken gezaagd en tot beeldjes gesneden. Die staan nu in kerken over heel de wereld. In Spanje en nog verder, zegt men. Een eik uit Brabant, overal ter wereld.',
 ];
@@ -353,12 +353,12 @@ export const PILGRIM_TALES = [
 export const DARES = {
   race: [
     'Ik daag je uit! Wie het eerst bij {what} is, {dir}! Ik tel tot {n}!', 'Wedden dat je niet bij {what} bent voor ik tot {n} heb geteld? {dir}! Lopen!',
-    'Race! Tot aan {what}, {dir}. Ik tel tot {n}. Een, twee...', 'Kun jij lopen zonder je draak? Bewijs het! Naar {what}, {dir}, voor ik tot {n} tel!',
-    'Ik ben de snelste van de straat. Jij? Tot {what}! {dir}! Ik tel tot {n}!',
+    'Wie eerst! Tot aan {what}, {dir}. Ik tel tot {n}. Een, twee...', 'Kun jij lopen zonder je draak? Bewijs het! Naar {what}, {dir}, voor ik tot {n} tel!',
+    'Ik ben de snelste van de straat. En jij? Tot {what}! {dir}! Ik tel tot {n}!',
   ],
   win: ['Je was er! Je bent snel. Voor een grote mens. Ik weet een geheim: {what}, {dir}. Niet verder vertellen!', 'Gewonnen! Hier, mijn mooiste knikker. Nee, die krijg je niet. Maar ik vertel je iets: {what}, {dir}.', 'Oei, je was er! Mijn broer gaat lachen. Hier, een appel. Hij is maar een beetje aangebeten.'],
   lose: ['Te laat! Ik heb gewonnen! Ik heb gewonnen van de drakenrijder!', 'Ha! Je bent traag! Zelfs mijn grootmoeder is sneller, en die heeft een stok!', 'Te laat, te laat! Wil je nog eens? Morgen. Nu moet ik eten.'],
-  guess: ['In welke hand zit de knikker? Raad!', 'Raad! Links of rechts? Als je wint, krijg je hem. Als je verliest, krijg ik een florijn. Nee, grapje.', 'Kies een hand. Snel!'],
+  guess: ['In welke hand zit de knikker? Raad!', 'Raad! Links of rechts? Als je wint, krijg je hem. Als je verliest, krijg ik een stuiver. Nee, het is om te lachen.', 'Kies een hand. Snel!'],
   guessWin: ['Hoe wist je dat?! Hier. Hij is van glas. Uit Antwerpen. Bijna.', 'Juist! Je hebt gespiekt. Ik weet het zeker. Hier, je mag hem houden. Even.'],
   guessLose: ['Mis! Hij zat in de andere! Ik ben de beste goochelaar van Diest.', 'Fout! Mijn broer raadt het altijd. Mijn broer is slimmer dan jij. Hij is zes.'],
 };
@@ -366,7 +366,7 @@ export const DARES = {
 /** Old folks' tales: what people told each other (volksverhaal), or what we made up in that spirit (verzonnen). */
 export const TALES: { t: string; truth: 'volksverhaal' | 'verzonnen' }[] = [
   { truth: 'verzonnen', t: 'Lang geleden woonde er een reus in de Demer, die de schippers tol liet betalen. Een vrouw van Diest kookte hem pap met spijkers erin. Hij at het en zonk. Zo vertelt men het. Ik zeg: met spijkers kun je niet koken.' },
-  { truth: 'volksverhaal', t: 'De Kludde, kind. Hij is wat hij wil: een mager paard, een hond, een kat, een vleermuis. Twee blauwe vlammetjes, dat zijn zijn ogen. Hij springt je op de rug en wordt zwaarder bij elke stap, tot aan het water. Hoor je kettingen: niet omkijken, bidden.' },
+  { truth: 'volksverhaal', t: 'De Kludde, kind. Hij is wat hij wil: een mager paard, een hond, een kat, een vleermuis. Twee blauwe vlammetjes, dat zijn zijn ogen. Hij springt je op de rug en wordt zwaarder bij elke stap, tot aan het water. Als je kettingen hoort, kijk dan niet om en bid.' },
   { truth: 'volksverhaal', t: 'In de Demer woont de Nekker. Hij trekt kinderen die aan de rand spelen het water in. Mijn moeder vertelde het me elke dag. Ik ben nooit in het water gevallen. Het werkt dus.' },
   { truth: 'volksverhaal', t: 'Op de Tafelronde, die ronde heuvel, wonen alvermannekes. Als je een kom pap buiten zet, maken ze \'s nachts je werk af. Maar als je ze bespiedt, maken ze alles kapot. Mijn grootvader bespiedde ze. Hij had daarna nooit meer een heel bord.' },
   { truth: 'volksverhaal', t: 'Een smid in een dorp hier vlakbij sloeg op een nacht een wolf met zijn hamer. De volgende morgen liep zijn buurman met een verbonden arm. Weerwolf, zei het dorp. De buurman verhuisde. Wat moest hij anders?' },
@@ -374,7 +374,7 @@ export const TALES: { t: string; truth: 'volksverhaal' | 'verzonnen' }[] = [
   { truth: 'volksverhaal', t: 'Sint-Maarten deelde zijn mantel met een bedelaar. Daarom krijgen de kinderen op zijn feest appels en noten. Wij delen onze appels. De appels zijn wel van de buren.' },
   { truth: 'verzonnen', t: 'Ze zeggen dat de stenen van de grote kerk uit de heuvels komen, waar het ijzer in de grond zit. Daarom is de kerk bruin, en daarom slaat de bliksem er nooit in. Dat laatste is niet waar. Hij is er twee keer ingeslagen.' },
   { truth: 'verzonnen', t: 'In de oorlog, lang geleden, verstopten de mensen van Diest hun zilver in de Warande. Niet iedereen kwam terug om het op te halen. Er ligt nog zilver onder de bomen, zeggen ze. Er hebben al veel mensen gegraven. Ze vonden wortels.' },
-  { truth: 'volksverhaal', t: 'Wie op Goede Vrijdag een ei legt, dat ei bederft nooit. Mijn moeder had er een, twintig jaar oud. Niemand durfde het open te breken. Het ligt nog in de kast.' },
+  { truth: 'volksverhaal', t: 'Een ei dat op Goede Vrijdag gelegd is, bederft nooit. Mijn moeder had er een, twintig jaar oud. Niemand durfde het open te breken. Het ligt nog in de kast.' },
   { truth: 'volksverhaal', t: 'De dwaallichten in het moeras zijn de zielen van wie de weg kwijt is. Ze zoeken gezelschap. Volg ze niet. Als je ze ziet, keer je je jas binnenstebuiten. Dan herkennen ze je niet.' },
   { truth: 'verzonnen', t: 'Een ekster op het dak: er komt nieuws. Twee eksters: er komt een bruiloft. Drie: er komt een begrafenis. Vier: er komen te veel eksters, en dan moet je een kat nemen.' },
   { truth: 'verzonnen', t: 'Wie op oudejaarsavond onder de appelboom luistert, hoort wie er volgend jaar trouwt. Ik heb het gedaan. Ik hoorde niets. Ik ben ook nooit getrouwd. Het klopt dus.' },
@@ -386,16 +386,16 @@ export const TALES: { t: string; truth: 'volksverhaal' | 'verzonnen' }[] = [
 export const TALE_PAGES: Record<number, string> = { 1: 'wezen:kludde', 2: 'wezen:nekker', 3: 'wezen:alvermannekes', 4: 'wezen:weerwolf', 10: 'wezen:dwaallicht' };
 
 export const TOWN_VIEW: { t: string; if?: string }[] = [
-  { t: 'Slecht. De lakenhandel gaat achteruit, het garnizoen eet ons de oren van het hoofd, en de baron ligt in de wieg. Maar het bier is goed.' },
+  { t: 'Het gaat slecht. De lakenhandel ligt zo goed als stil, het garnizoen eet ons de oren van het hoofd, en de baron ligt in de wieg. Maar het bier is goed.' },
   { t: 'De stad houdt zich recht, zoals een oude man op een stok. Het gaat. Maar vraag het niet aan de stok.' },
   { t: 'De schepenen hebben de belasting op het bier verhoogd, om de muren te herstellen. Dus drinken we meer, voor de muren.' },
-  { t: 'De weefgetouwen staan stiller dan vroeger. De brouwerijen niet. Diest gaat van laken naar bier. Het had erger gekund.' },
-  { t: 'Sinds de vrede met de Republiek is het rustiger. Sinds de oorlog met Frankrijk is het onrustiger. Gemiddeld: hetzelfde.' },
-  { t: 'Te veel soldaten, te weinig werk, te veel praatjes. Zoals altijd, eigenlijk.' },
+  { t: 'De weefgetouwen staan bijna allemaal stil, maar de brouwerijen niet. Diest is van het laken naar het bier gegaan. Het had erger gekund.' },
+  { t: 'Sinds de vrede met de Republiek is het rustiger. Sinds de oorlog met Frankrijk is het onrustiger. Alles samen blijft het dus hetzelfde.' },
+  { t: 'Er zijn te veel soldaten, te weinig werk en te veel praatjes. Zo is het eigenlijk altijd geweest.' },
   { if: 'bells_silent', t: 'Zonder klokken is het een stad zonder hart. De mensen komen te laat, de poorten gaan dicht wanneer het uitkomt, en \'s nachts staan er kaarsen voor de ramen.' },
-  { if: 'bells_ring', t: 'De klokken luiden weer. Je merkt het overal: de mensen lopen rechter. Belachelijk, maar waar.' },
+  { if: 'bells_ring', t: 'De klokken luiden weer. Je merkt het overal: de mensen lopen rechter. Het klinkt belachelijk, maar het is waar.' },
   { if: 'gilden_low', t: 'De gilden kennen je nog niet. Doe zaken op de markt, help eens iemand, en ze leren je kennen. Zo gaat dat hier.' },
-  { if: 'gilden_mid', t: 'De gilden beginnen je te kennen. Je krijgt al betere prijzen, heb ik gemerkt. Dat is het begin van burgerschap.' },
+  { if: 'gilden_mid', t: 'De gilden beginnen je te kennen. Je krijgt al betere prijzen, heb ik gemerkt. Zo begin je een poorter te worden.' },
   { if: 'gilden_high', t: 'De gilden noemen je al bijna een van hen. Pas op: straks moet je mee vergaderen.' },
   { if: 'kroon_high', t: 'Het garnizoen is tevreden over je. De drossaard ook. Dat is goed voor jou, en voor de stad. Voor de smokkelaars minder.' },
   { if: 'vrije_high', t: 'Ze zeggen dat je goed staat bij de voerlui en de marskramers. Dat is handig, maar zeg het niet te luid bij de tollenaar.' },
@@ -404,19 +404,19 @@ export const TOWN_VIEW: { t: string; if?: string }[] = [
 
 /** What people say about you, per party and tier (src/life/talk.ts). */
 export const REP: Partial<Record<FactionId, string[]>> = {
-  oranje: ['Het Hof van Nassau weet niet wie je bent.', 'De drossaard heeft je naam in zijn boek gezet. Nog zonder oordeel.', 'Ze zeggen dat het Hof je goedgezind is. Stilletjes.', 'De mannen van de prins groeten je als een van hen.', 'Ze zeggen dat ze in Den Haag je naam kennen.'],
+  oranje: ['Het Hof van Nassau weet niet wie je bent.', 'De drossaard heeft je naam in zijn boek gezet, voorlopig zonder oordeel.', 'Ze zeggen stilletjes dat het Hof je goedgezind is.', 'De mannen van de prins groeten je als een van hen.', 'Ze zeggen dat ze in Den Haag je naam kennen.'],
   gilden: ['De gilden kennen je niet.', 'De gilden hebben je naam al eens gehoord.', 'De gilden zeggen dat je goed volk bent.', 'De dekens van de gilden spreken met respect over je.', 'De gilden noemen je een vriend van de stad. Dat zeggen ze over bijna niemand.'],
-  kerk: ['De Kerk weet niet wie je bent.', 'De begijnen hebben over je gehoord.', 'De begijnen bidden voor je, af en toe.', 'De Kerk spreekt goed over je, van de koster tot de proost.', 'Ze zeggen in de kerk dat je door God gestuurd bent. Of door de draak. Ze zijn er nog niet uit.'],
-  kroon: ['Het garnizoen kent je niet. Dat is misschien maar goed ook.', 'De drossaard heeft je naam laten noteren. Neutraal.', 'De soldaten zeggen dat je te vertrouwen bent.', 'De Kroon is je dankbaar. De sergeant groet je zelfs.', 'Ze zeggen dat de landvoogd zelf van je gehoord heeft.'],
+  kerk: ['De Kerk weet niet wie je bent.', 'De begijnen hebben over je gehoord.', 'De begijnen bidden voor je, af en toe.', 'De Kerk spreekt goed over je, van de koster tot de deken.', 'Ze zeggen in de kerk dat je door God gestuurd bent. Of door de draak. Ze zijn er nog niet uit.'],
+  kroon: ['Het garnizoen kent je niet. Dat is misschien maar goed ook.', 'De drossaard heeft je naam laten opschrijven, zonder er iets bij te zetten.', 'De soldaten zeggen dat je te vertrouwen bent.', 'De Kroon is je dankbaar. De sergeant groet je zelfs.', 'Ze zeggen dat de landvoogd zelf van je gehoord heeft.'],
   vrije: ['De voerlui en de marskramers weten niet wie je bent.', 'De voerlui hebben je zien vliegen. Ze vragen zich af wat je vervoert.', 'De marskramers zeggen dat je een van hen bent, half en half.', 'De smokkelaars noemen je een vriend. Zeg het niet tegen de tollenaar.', 'Elke voerman tussen hier en Antwerpen kent je naam, en houdt zijn mond.'],
 };
 export const REP_DEEDS: { t: string; if: string }[] = [
   { if: 'bells_ring', t: 'Iedereen weet dat jij de klokken weer hebt doen luiden.' },
-  { if: 'seals_reported', t: 'Ze weten dat jij de weduwe van Vranckx hebt aangegeven. Sommigen vinden dat goed. Niet iedereen.' },
+  { if: 'seals_reported', t: 'Ze weten dat jij de weduwe van Vranckx hebt aangegeven. Sommigen vinden dat goed, maar niet iedereen.' },
   { if: 'seals_begijnhof', t: 'Ze weten dat jij Lijsbet Vranckx naar de begijnen hebt gestuurd. Dat vinden ze menselijk.' },
   { if: 'seals_warned', t: 'Ze fluisteren dat jij de vervalster hebt laten lopen.' },
-  { if: 'toll_bribe', t: 'En iedereen weet van de brandewijn. Iedereen.' },
-  { if: 'roelof_done', t: 'In Kaggevinne noemen ze je naam aan tafel, sinds Roelof de Rode.' },
+  { if: 'toll_bribe', t: 'En van de brandewijn weet iedereen, echt iedereen.' },
+  { if: 'roelof_done', t: 'In Kaggevinne noemen ze je naam aan tafel, sinds dat met Lambrecht de Rode.' },
   { if: 'kludde_done', t: 'En dat van de Kludde, dat vertellen ze aan de kinderen.' },
 ];
 
@@ -429,15 +429,15 @@ export const WORK = [
 ];
 
 export const FOOD = {
-  open: ['Appels, kaas, en een stuk brood. Vers van de hoeve, of bijna.', 'Wat heb ik in mijn mand? Alles wat een mens nodig heeft, behalve geld.', 'Kijk maar. Mijn kaas is de beste van de markt. Zegt mijn man. Hij is kaasboer.', 'Voor een vreemdeling: dezelfde prijs als voor een poorter. Voor een draak: het dubbele.'],
+  open: ['Ik heb appels, kaas en een stuk brood. Alles komt vers van de hoeve, of toch bijna.', 'Wat heb ik in mijn mand? Alles wat een mens nodig heeft, behalve geld.', 'Kijk maar. Mijn kaas is de beste van de markt, zegt mijn man. Hij is kaasboer.', 'Een vreemdeling betaalt hier evenveel als een poorter. Een draak betaalt het dubbele.'],
 };
 export const FOOD_GOODS = [
-  { id: 'appel', name: 'Een appel', text: 'Meteen een beetje beter.', price: 1, use: { heal: 0.15 } },
-  { id: 'kaas', name: 'Een stuk kaas', text: 'Herstelt in een gevecht langzaam je leven. Gaat in je tas.', price: 2, use: { regen: 0.018, secs: 30 } },
-  { id: 'eieren', name: 'Twee gekookte eieren', text: 'Meteen een flink stuk beter.', price: 2, use: { heal: 0.35 } },
+  { id: 'appel', name: 'Een appel', text: 'Je voelt je meteen een beetje beter.', price: 1, use: { heal: 0.15 } },
+  { id: 'kaas', name: 'Een stuk kaas', text: 'De kaas herstelt langzaam je leven tijdens een gevecht. Je bewaart hem in je tas.', price: 2, use: { regen: 0.018, secs: 30 } },
+  { id: 'eieren', name: 'Twee gekookte eieren', text: 'Je voelt je meteen een flink stuk beter.', price: 2, use: { heal: 0.35 } },
 ] as const;
 
 /** After an answer: the way back to the menu. */
-export const MORE = ['Nog iets.', 'Nog een vraag.', 'En verder?'];
+export const MORE = ['Ik wil nog iets vragen.', 'Ik heb nog een vraag.', 'Wat weet je nog meer?'];
 export const BYE = ['Dank je. Tot ziens.', 'Dank je wel. Ik ga verder.', 'Goed. Dag.'];
 export const BYE_REPLY = ['Dag. Pas op voor de karren.', 'Tot ziens. En hou dat beest van je in toom.', 'Goeiendag.', 'God zij met je.', 'Allee, salut.', 'Ga in vrede.'];

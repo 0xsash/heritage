@@ -1,6 +1,6 @@
 // Diest en omstreken, 1650: de mensen, de opdrachten, de vijanden en de
 // gesprekken. In hedendaags Vlaams Nederlands: iedereen zegt "je", behalve de
-// drossaard en de proost, die de held met "u" aanspreken.
+// drossaard en de overste, die de held met "u" aanspreken.
 // Historische achtergrond: de Spaanse Nederlanden na de Vrede van Munster
 // (1648); Diest is een baronie van de (afwezige) prinsen van Oranje; de
 // basiliek van Scherpenheuvel (ingewijd 1627) trekt pelgrims uit heel Brabant.
@@ -17,13 +17,13 @@ const LEUVEN = 'main_leuven';
 export const diest: Content = {
   items: [
     { id: 'pilgrim_badge', name: 'Pelgrimsinsigne van Scherpenheuvel', text: 'Een tinnen insigne van Onze-Lieve-Vrouw van Scherpenheuvel, verstrikt in rivierwier.', quest: true },
-    { id: 'humming_statuette', name: 'Zoemend eikenbeeldje', text: 'Gesneden uit de gevelde eik. Het zoemt als er klokken in de buurt zijn, en ook als er geen zijn.', quest: true },
+    { id: 'humming_statuette', name: 'Zoemend eikenbeeldje', text: 'Het is gesneden uit het hout van de gevelde eik. Het zoemt als er klokken in de buurt zijn, en ook als er geen zijn.', quest: true },
     { id: 'forged_seal', name: 'Vals lakenzegel', text: 'Een loden zegel met het wapen van Diest. De leeuw heeft te veel tanden.', quest: true },
-    { id: 'seal_mould', name: 'Zegelvorm', text: 'De gietvorm van een weduwe, om de zegels van de stad na te maken.' },
-    { id: 'marsh_herb', name: 'Moeraswondkruid', text: 'Groeit in de natte weiden langs de Demer. De begijnen koken er koortsdrank van.', quest: true },
-    { id: 'salve', name: 'Begijnenzalf', text: 'Geneest wonden. Ruikt naar de tuin van het Begijnhof.' },
-    { id: 'sealed_letter', name: 'Verzegelde brief', text: 'Gericht aan de proost van Scherpenheuvel, onder het zegel van de drossaard.', quest: true },
-    { id: 'brandy', name: 'Vaatje brandewijn', text: 'Onbelast. Zeer onbelast.' },
+    { id: 'seal_mould', name: 'Zegelvorm', text: 'Met deze gietvorm maakte een weduwe de zegels van de stad na.' },
+    { id: 'marsh_herb', name: 'Moeraswondkruid', text: 'Het groeit in de natte weiden langs de Demer. De begijnen koken er een drank tegen de koorts van.', quest: true },
+    { id: 'salve', name: 'Begijnenzalf', text: 'Deze zalf geneest wonden. Ze ruikt naar de tuin van het Begijnhof.' },
+    { id: 'sealed_letter', name: 'Verzegelde brief', text: 'Een brief voor de overste van Scherpenheuvel, gesloten met het zegel van de drossaard.', quest: true },
+    { id: 'brandy', name: 'Vaatje brandewijn', text: 'Voor dit vaatje heeft niemand tol betaald, en dat was ook de bedoeling.' },
     { id: 'klepel', name: 'Klepel van Sint-Sulpitius', text: 'Een ijzeren klepel, nat en vol modder. Hij is zwaarder dan hij eruitziet.', quest: true },
     { id: 'pass', name: 'Vrijgeleide naar Leuven', text: 'Een reisbrief van de drossaard, met zegel en al.', quest: true },
   ],
@@ -38,8 +38,8 @@ export const diest: Content = {
       elite: { type: 'kludde', level: 5, name: 'De Kludde' }, if: { any: [{ quest: KLUDDE, state: 'active', stage: 'lair' }, { quest: KLUDDE, state: 'active', stage: 'clappers' }] },
     },
     {
-      id: 'galgeberg', name: 'Kamp van Roelof', at: [-1700, 2060], r: 35, enemies: [['deserteur', 4, 3], ['musketier', 4, 1]], respawn: 300,
-      elite: { type: 'deserteur', level: 5, name: 'Roelof de Rode' }, if: { not: { quest: 'side_roelof', state: 'done' } },
+      id: 'galgeberg', name: 'Kamp van Lambrecht', at: [-1700, 2060], r: 35, enemies: [['deserteur', 4, 3], ['musketier', 4, 1]], respawn: 300,
+      elite: { type: 'deserteur', level: 5, name: 'Lambrecht de Rode' }, if: { not: { quest: 'side_roelof', state: 'done' } },
     },
     { id: 'eikenbos', name: 'Dwaallichten', at: [-4460, 960], r: 50, enemies: [['dwaallicht', 3, 4]], respawn: 240 },
   ],
@@ -75,7 +75,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'aleydis', name: 'Zuster Aleydis', role: 'begijn en ziekenverzorgster', at: [680, -316], facing: -1.4, tint: '#2a2a2e',
+      id: 'aleydis', name: 'Zuster Margriet', role: 'begijn en ziekenverzorgster', at: [680, -316], facing: -1.4, tint: '#2a2a2e',
       look: { body: 'woman', wear: { hair_bun: 'h_brown', habit: 'beguine', beguine_veil: null, shoes: null }, prop: 'rosary' },
       offers: ['side_herbs'],
       talk: [
@@ -98,7 +98,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'wouter', name: 'Wouter Claes', role: 'tollenaar aan de Leuvense Poort', at: [-95, 340], facing: 2.6, tint: '#4a4a2a',
+      id: 'wouter', name: 'Wouter Claes', role: 'tollenaar aan de Putterstraatpoort', at: [-95, 340], facing: 2.6, tint: '#4a4a2a',
       look: { body: 'man_stout', wear: { hair_crop: 'h_black', moustache: 'h_black', hat_wide: 'umber', doublet: 'moss', collar_band: null, breeches: 'umber', stockings: 'grey', shoes: null } },
       offers: ['side_toll'],
       talk: [
@@ -144,7 +144,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'provost', name: 'Proost Jan Cools', role: 'proost van Scherpenheuvel', at: [-5085, 470], facing: 0.8, tint: '#e8e0d0',
+      id: 'provost', name: 'Pater Jan Cools', role: 'overste van Scherpenheuvel', at: [-5085, 470], facing: 0.8, tint: '#e8e0d0',
       look: { body: 'man_old', wear: { hair_thin: 'h_white', skullcap: 'black', habit: 'black', bands: null, shoes: null } },
       offers: ['side_wisps'],
       talk: [
@@ -165,7 +165,7 @@ export const diest: Content = {
       stages: [
         {
           id: 'land',
-          journal: '{dragon} volgde de Demer tot Diest, laag over het water, alsof hij de weg kende. Van boven zag ik de muren, de markt, de kerk met haar platte toren. Geen klok. Ergens onder die daken weet iemand waar het water Neelke heeft gelaten.',
+          journal: '{dragon} volgde de Demer tot Diest, laag over het water, alsof hij de weg kende. Van boven zag ik de muren, de markt en de kerk met haar stompe toren. Er luidde geen enkele klok. Ergens onder die daken weet iemand waar het water Neelke heeft gelaten.',
           objectives: [{ id: 'land', kind: 'reach', text: 'Land op de Grote Markt van Diest', at: [40, 45], r: 70, onFoot: true }],
           onDone: [{ stage: [ARRIVE, 'pieter'] }],
         },
@@ -183,29 +183,29 @@ export const diest: Content = {
       stages: [
         {
           id: 'tower',
-          journal: 'Zeven slagen, zegt Pieter, en toen niets. De klepels zijn weg, alle drie, uit een toren die op slot zat. Op de klokkenstoel lag nat wier. Met {dragon} kom ik boven.',
+          journal: 'De klok gaf zeven slagen, zegt Pieter, en daarna bleef het stil. De drie klepels zijn weg, uit een toren die op slot zat. Op de klokkenstoel lag nat wier. Met {dragon} geraak ik tot boven.',
           objectives: [{ id: 'climb', kind: 'reach', text: 'Vlieg naar de top van de toren van Sint-Sulpitius', at: [-26, 30], r: 30, minY: 28 }],
           onDone: [{ give: 'pilgrim_badge' }, { xp: 60 }, { stage: [BELLS, 'badge'] }],
         },
         {
           id: 'badge',
-          journal: 'In het wier op de klokkenstoel zat een tinnen insigne van Onze-Lieve-Vrouw van Scherpenheuvel, het gezichtje nog scherp. Zuster Aleydis in het Begijnhof kent elk pelgrimsteken van Brabant.',
-          objectives: [{ id: 'show', kind: 'talk', text: 'Toon het insigne aan zuster Aleydis in het Begijnhof', npc: 'aleydis' }],
+          journal: 'In het wier op de klokkenstoel zat een tinnen insigne van Onze-Lieve-Vrouw van Scherpenheuvel, het gezichtje nog scherp. Zuster Margriet in het Begijnhof kent elk pelgrimsteken van Brabant.',
+          objectives: [{ id: 'show', kind: 'talk', text: 'Toon het insigne aan zuster Margriet in het Begijnhof', npc: 'aleydis' }],
         },
         {
           id: 'road',
-          journal: 'Aleydis stuurt me naar Scherpenheuvel. De pelgrims durven de weg niet meer op: bij Kaggevinne liggen deserteurs uit de Franse oorlog. Ze nemen wat je bij je hebt. Soms ook jou.',
+          journal: 'Margriet stuurt me naar Scherpenheuvel. De pelgrims durven de weg niet meer op: bij Kaggevinne liggen deserteurs uit de Franse oorlog. Ze nemen wat je bij je hebt, en soms nemen ze jou ook mee.',
           objectives: [{ id: 'rovers', kind: 'kill', text: 'Verdrijf de wegrovers bij Kaggevinne', camp: 'kaggevinne', count: 4, at: [-2120, 560], r: 45 }],
           onDone: [{ xp: 80 }, { renown: ['Diest', 5] }, { stage: [BELLS, 'scherpenheuvel'] }],
         },
         {
           id: 'scherpenheuvel',
-          journal: 'De weg is vrij, voor wie de kraaien niet telt. Westwaarts ligt Scherpenheuvel, waar het altaar staat op de plek van de oude eik. Truyken verkoopt er pelgrimstekens en hoort alles.',
-          objectives: [{ id: 'truyken', kind: 'talk', text: 'Zoek Truyken bij de basiliek van Scherpenheuvel', npc: 'truyken' }],
+          journal: 'De weg is vrij, als je de kraaien bij de doden niet meetelt. In het westen ligt Scherpenheuvel, waar het altaar staat op de plek van de oude eik. Truyken verkoopt er pelgrimstekens en ze hoort alles.',
+          objectives: [{ id: 'truyken', kind: 'talk', text: 'Zoek Truyken bij de kerk van Scherpenheuvel', npc: 'truyken' }],
         },
         {
           id: 'report',
-          journal: 'Truyken verkocht eikenbeeldjes aan een lange man "die naar de Demer rook en betaalde met natte munten". Ze gaf me er een. Het zoemt, en het zoemt luider naar het Broek, de moerassen ten zuidoosten van Diest. Daar ligt water genoeg.',
+          journal: 'Truyken verkocht eikenbeeldjes aan een lange man "die naar de Demer rook en betaalde met natte munten". Ze gaf me er een. Het zoemt, en het zoemt luider als ik het in de richting van het Broek houd, het moeras ten zuidoosten van Diest. Daar staat water genoeg.',
           objectives: [{ id: 'pieter', kind: 'talk', text: 'Breng verslag uit bij Pieter in Diest', npc: 'pieter' }],
         },
       ],
@@ -217,25 +217,25 @@ export const diest: Content = {
       stages: [
         {
           id: 'hounds',
-          journal: 'Een man die naar de Demer ruikt, door gesloten deuren komt en met nat geld betaalt. Pieter zegt het nu hardop: de Kludde. Aan de rivier was hij geen man. Zijn honden zwerven door het Broek, voorbij de Koepoort. Ze brengen me naar hem.',
+          journal: 'Een man die naar de Demer ruikt, door gesloten deuren komt en met nat geld betaalt: Pieter zegt nu hardop dat het de Kludde is. Aan de rivier zag hij er niet uit als een man. Zijn honden zwerven door het Broek, voorbij de oude Koepoort. Als ik hen volg, kom ik bij hem uit.',
           objectives: [{ id: 'honden', kind: 'kill', text: 'Volg het spoor: versla de broekhonden in het Broek', enemy: 'broekhond', count: 5, at: [1220, 680], r: 220 }],
           onDone: [{ xp: 100 }, { stage: [KLUDDE, 'lair'] }],
         },
         {
           id: 'lair',
-          journal: 'De sporen lopen naar het moeras bij Webbekom. Tussen het riet sleept iets een ketting over de grond. Het beeldje zoemt zo hard dat mijn hand ervan tintelt. Als ze ergens is, dan hier.',
+          journal: 'De sporen lopen naar het moeras bij Webbekom. Tussen het riet sleept iets een ketting over de grond. Het beeldje zoemt zo hard dat mijn hand ervan tintelt. Als Neelke ergens is, dan is het hier.',
           objectives: [{ id: 'kludde', kind: 'kill', text: 'Versla de Kludde in zijn nest bij Webbekom', camp: 'kluddenest', enemy: 'kludde', count: 1, at: [1680, 1060], r: 40 }],
           onDone: [{ stage: [KLUDDE, 'clappers'] }],
         },
         {
           id: 'clappers',
-          journal: 'De Kludde is het water in, in stoom en kettinggerinkel. Dood? Met hem weet je het nooit. In zijn nest liggen de klepels, half in de modder. In de paal ernaast staan kerven, in groepjes van vijf.',
+          journal: 'De Kludde is in het water verdwenen, met stoom en kettinggerinkel. Of hij dood is, weet je bij hem nooit. In zijn nest liggen de klepels, half in de modder. In de paal ernaast staan kerven, in groepjes van vijf.',
           objectives: [{ id: 'klepels', kind: 'collect', text: 'Raap de klepels op in het nest', item: 'klepel', count: 3, spawns: [[1672, 1048], [1694, 1070], [1662, 1078]] }],
           onDone: [{ stage: [KLUDDE, 'return'] }],
         },
         {
           id: 'return',
-          journal: 'Drie klepels, zwaar als een kind, koud als de rivier. Aan één ervan kleeft nog wier. Pieter zal huilen.',
+          journal: 'Ik heb de drie klepels. Ze zijn zwaar als een kind en koud als de rivier. Aan één ervan kleeft nog wier. Pieter gaat ervan wenen.',
           objectives: [{ id: 'pieter', kind: 'talk', text: 'Breng de klepels naar Pieter de koster', npc: 'pieter' }],
         },
       ],
@@ -246,7 +246,7 @@ export const diest: Content = {
       stages: [
         {
           id: 'pass',
-          journal: 'De klokken van Diest luiden weer. Bij elke slag vielen de ogen van {dragon} dicht, en Pieter zag het ook. Het beeldje zoemt nu naar het westen, naar Leuven. Voor die reis heb ik een vrijgeleide nodig van de drossaard.',
+          journal: 'De klokken van Diest luiden weer. Bij elke slag vielen de ogen van {dragon} dicht, en Pieter zag het ook. Het beeldje zoemt nu het hardst als ik het naar het westen houd, naar Leuven. Voor die reis heb ik een vrijgeleide nodig van de drossaard.',
           objectives: [{ id: 'dross', kind: 'talk', text: 'Vraag de drossaard om een vrijgeleide', npc: 'drossaard' }],
         },
         {
@@ -265,8 +265,8 @@ export const diest: Content = {
       stages: [
         {
           id: 'find',
-          journal: 'Meester Joos zegt dat Antwerpen balen vodden terugstuurt onder het zegel van Diest. Eén vals zegel kost de hele stad haar naam, en die naam is ouder dan Joos. De vervalser werkt bij de bleekvelden buiten de Koepoort.',
-          objectives: [{ id: 'seals', kind: 'collect', text: 'Zoek valse zegels bij de bleekvelden buiten de Koepoort', item: 'forged_seal', count: 3, spawns: [[870, 40], [905, 125], [858, 185]] }],
+          journal: 'Meester Joos zegt dat Antwerpen balen vodden terugstuurt onder het zegel van Diest. Eén vals zegel kost de hele stad haar naam, en die naam is ouder dan Joos. De vervalser werkt bij de bleekvelden voorbij de oude Koepoort.',
+          objectives: [{ id: 'seals', kind: 'collect', text: 'Zoek valse zegels bij de bleekvelden voorbij de oude Koepoort', item: 'forged_seal', count: 3, spawns: [[870, 40], [905, 125], [858, 185]] }],
           onDone: [{ stage: ['side_seals', 'widow'] }],
         },
         {
@@ -282,7 +282,7 @@ export const diest: Content = {
         {
           id: 'shelter',
           journal: 'Ik heb Lijsbet naar het Begijnhof gestuurd. De begijnen nemen weduwen op, en ze weven onder hun eigen zegel.',
-          objectives: [{ id: 'aleydis', kind: 'talk', text: 'Vraag zuster Aleydis om Lijsbet op te nemen', npc: 'aleydis' }],
+          objectives: [{ id: 'aleydis', kind: 'talk', text: 'Vraag zuster Margriet om Lijsbet op te nemen', npc: 'aleydis' }],
         },
         {
           id: 'report',
