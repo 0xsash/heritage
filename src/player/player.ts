@@ -46,6 +46,7 @@ export class Player {
   thrust = 0;
   /** the speed the dragon holds when you let go of the controls */
   cruise = CRUISE;
+  private boostHeld = false;
   climbRate = 0;
 
   // Hero on-foot state
@@ -175,8 +176,10 @@ export class Player {
     let target = Math.min(this.cruise, lowCap);
     if (boost && this.boostTime <= 0 && this.speed > 8) {
       this.boostTime = 1.4;
-      this.ev.trauma(0.32);
+      // the kick is felt when the boost starts, not every 1.4 s while it is held
+      if (!this.boostHeld) this.ev.trauma(0.32);
     }
+    this.boostHeld = boost;
     if (this.boostTime > 0) {
       this.boostTime -= dt;
       target = BOOST_SPEED;

@@ -26,7 +26,12 @@ export interface Job {
   item?: string;
   /** read: how many */
   n?: number;
+  /** the choices the job was made from (template, client, camp / sender / spot), kept in the save once taken */
+  pin: Pin;
 }
+
+/** What a taken job was made of, so a change to the templates never changes a job someone is doing. */
+interface Pin { t: string; c: string; x?: string }
 
 /** Where each camp is, in words (camps without a place here are not posted). */
 const CAMP_WHERE: Record<string, string> = {
@@ -90,8 +95,13 @@ export class Board {
     const kinds: JobTemplate['kind'][] = [Number(day) % 2 ? 'bounty' : 'delivery', Number(day) % 2 ? 'delivery' : 'bounty', Number(day) % 3 ? 'read' : 'fetch', Number(day) % 3 ? 'fetch' : 'read'];
     const kind = kinds[slot % kinds.length];
     const pool = JOBS.filter((t) => t.kind === kind);
-    const t = pool[Math.floor(r() * pool.length)];
-    const client = t.clients[Math.floor(r() * t.clients.length)];
+    const pin = this.pinOf(id);
+    let t = pool[Math.floor(r() * pool.length)];
+    let client = t.clients[Math.floor(r() * t.clients.length)];
+    if (pin) {
+      t = pool.find((x) => x.id === pin.t) ?? t;
+      if (svc(pin.c)) client = pin.c;
+    }
     const vars: Record<string, string> = { client: who(client) };
     let job: Job | null = null;
     const base = { id, kind: 'contract' as const, town: 'Diest', giver: client, level };
@@ -101,7 +111,8 @@ export class Board {
       const ok = this.camps.filter((c) => CAMP_WHERE[c.id] && c.respawn > 0 && !c.if);
       const fits = ok.filter((c) => Math.max(...c.enemies.map((e) => e[1])) <= level + 1);
       const list = fits.length ? fits : ok;
-      const camp = list[Math.floor(r() * list.length)];
+      let camp = list[Math.floor(r() * list.length)];
+      if (pin?.x) camp = ok.find((c) => c.id === pin.x) ?? camp;
       if (!camp) return null;
       const lv = Math.max(...camp.enemies.map((e) => e[1]));
       const count = Math.min(4, camp.enemies.reduce((s, e) => s + e[2], 0));
@@ -115,11 +126,11 @@ export class Board {
           { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Haal je premie bij ${short(client)}`, npc: client }] },
         ],
       };
-      job = { id, template: t, def, notice: def.summary, client };
+      job = { id, template: t, def, notice: def.summary, client, pin: { t: t.id, c: client, x: camp.id } };
     } else if (t.kind === 'delivery') {
       const froms = (t.from ?? []).filter((f) => f !== client);
       const fi = Math.floor(r() * froms.length);
-      const from = froms[fi];
+      const from = pin?.x && froms.includes(pin.x) ? pin.x : froms[fi];
       const what = (t.goods ?? [])[Math.min((t.goods ?? []).length - 1, (t.from ?? []).indexOf(from))] ?? 'een pakje';
       Object.assign(vars, { from: who(from), to: who(client), what });
       const item = `${id}_goods`;
@@ -132,7 +143,7 @@ export class Board {
           { id: 'bring', journal: fill(t.journal[1], vars), objectives: [{ id: 'bring', kind: 'talk', text: `Breng ${what} naar ${short(client)}`, npc: client }] },
         ],
       };
-      job = { id, template: t, def, notice: def.summary, client, from, item };
+      job = { id, template: t, def, notice: def.summary, client, from, item, pin: { t: t.id, c: client, x: from } };
     } else if (t.kind === 'read') {
       const n = 3;
       vars.n = String(n);
@@ -144,9 +155,11 @@ export class Board {
           { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Vertel het aan ${short(client)}`, npc: client }] },
         ],
       };
-      job = { id, template: t, def, notice: def.summary, client, n };
+      job = { id, template: t, def, notice: def.summary, client, n, pin: { t: t.id, c: client } };
     } else {
-      const spot = FETCH_SPOTS[Math.floor(r() * FETCH_SPOTS.length)];
+      const si = Math.floor(r() * FETCH_SPOTS.length);
+      const pinned = pin?.x ? FETCH_SPOTS.findIndex((f) => f.where === pin.x) : -1;
+      const spot = FETCH_SPOTS[pinned >= 0 ? pinned : si];
       Object.assign(vars, { where: spot.where, what: spot.what });
       const item = `${id}_lost`;
       this.q.addItem({ id: item, name: spot.what[0].toUpperCase() + spot.what.slice(1), text: `Verloren ${spot.where}. Van ${short(client)}.`, quest: true });
@@ -158,7 +171,7 @@ export class Board {
           { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Breng alles terug naar ${short(client)}`, npc: client }] },
         ],
       };
-      job = { id, template: t, def, notice: def.summary, client, item };
+      job = { id, template: t, def, notice: def.summary, client, item, pin: { t: t.id, c: client, x: spot.where } };
     }
     if (!job) return null;
     this.q.addQuest(job.def);
@@ -169,7 +182,20 @@ export class Board {
   /** Remember the level a job was made for, once it is taken (so its rewards do not change). */
   pinLevel(id: string) {
     const j = this.job(id);
-    if (j) this.q.s.flags[`${id}_lv`] = j.def.level ?? this.q.s.hero.level;
+    if (!j) return;
+    this.q.s.flags[`${id}_lv`] = j.def.level ?? this.q.s.hero.level;
+    this.q.s.flags[`${id}_pin`] = JSON.stringify(j.pin);
+  }
+
+  private pinOf(id: string): Pin | null {
+    const v = this.q.s.flags[`${id}_pin`];
+    if (typeof v !== 'string') return null;
+    try {
+      const p = JSON.parse(v) as Pin;
+      return p && typeof p.t === 'string' && typeof p.c === 'string' ? p : null;
+    } catch {
+      return null;
+    }
   }
 
   /** The job (and its current stage) that wants this person now, if any. */

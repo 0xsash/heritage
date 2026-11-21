@@ -132,7 +132,9 @@ export function dayNumber(d = new Date()) {
 /** Today's Klokkenronde: a start ring over the market and seven bells, the same for everyone. `par[i]` is the time by which bell i should ring. */
 export function dayCourse(key = dayKey()): { rings: RingDef[]; length: number; par: number[]; gold: number; silver: number; bronze: number } {
   const r = rng(key * 7 + 13);
-  const pool = ANCHORS.map((a) => a.slice() as [number, number, number]);
+  // no bell right next to the start or the finish (Sint-Sulpitius): a ring 50 m behind the one you just
+  // flew through is a hairpin nobody can make at speed
+  const pool = ANCHORS.filter(([x, z]) => Math.hypot(x - DAY_START.x, z - DAY_START.z) > 150).map((a) => a.slice() as [number, number, number]);
   const picks: [number, number, number][] = [];
   for (let i = 0; i < 6; i++) picks.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
   // nearest-neighbour order from the start, so the course is a tour and not a zigzag
@@ -157,8 +159,10 @@ export function dayCourse(key = dayKey()): { rings: RingDef[]; length: number; p
   const par = [0];
   for (let i = 1; i < rings.length; i++) {
     length += Math.hypot(rings[i].x - rings[i - 1].x, rings[i].y - rings[i - 1].y, rings[i].z - rings[i - 1].z);
-    par.push(length / 34);
+    par.push(length / 42);
   }
-  // medal times from the length: a clean line at speed is gold
-  return { rings, length, par, gold: length / 40, silver: length / 34, bronze: length / 27 };
+  // medal times from the length, measured by flying the courses with the real flight model (review, Nov 2026):
+  // a clean line holding W averages ~46-50 m/s, a clean line that also boosts on the straights ~67-74 m/s.
+  // Gold asks for boosting on the straights, silver for a clean line, bronze for getting round.
+  return { rings, length, par, gold: length / 56, silver: length / 42, bronze: length / 30 };
 }

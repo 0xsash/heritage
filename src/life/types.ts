@@ -6,7 +6,9 @@ import type { FactionId } from '../rpg/factions';
 import type { Truth } from '../rpg/kroniek';
 
 /** What stands at a service: a market stall with goods, or a door in a wall. */
-export type StallKind = 'bread' | 'herbs' | 'books' | 'cloth' | 'iron' | 'beer' | 'salves' | 'badges' | 'army' | 'crier' | 'door';
+export type StallKind = 'bread' | 'herbs' | 'books' | 'cloth' | 'iron' | 'beer' | 'salves' | 'badges' | 'army' | 'crier' | 'door'
+  // market-day stalls with no merchant to deal with (they fill the Grote Markt)
+  | 'fish' | 'cheese' | 'pots' | 'veg' | 'poultry';
 
 export interface ServiceDef {
   id: string;

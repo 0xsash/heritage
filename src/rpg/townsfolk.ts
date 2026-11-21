@@ -48,6 +48,8 @@ export interface HeroKit {
   hair?: Partial<Record<'m' | 'f', (string | null)[]>>;
   beards?: (string | null)[];
   outfits?: Record<string, { wear: Record<string, string | null>; prop?: string | null }>;
+  /** the hero's travelling mantle: not part of any outfit, the game adds it (and dyes it the chosen colour) */
+  mantle?: { piece: string; dyes?: string[] };
 }
 
 export interface KitArchetype {

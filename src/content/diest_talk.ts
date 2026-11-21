@@ -27,7 +27,7 @@ export const ROLE_INFO: Record<Role, { label: (female: boolean, i: number) => st
 
 export const NAMES = {
   m: ['Jan', 'Pieter', 'Hendrik', 'Gillis', 'Adriaan', 'Willem', 'Lucas', 'Cornelis', 'Steven', 'Jacob', 'Lenaert', 'Gooris', 'Merten', 'Andries', 'Rombout', 'Thijs', 'Wouter', 'Arnold', 'Claes', 'Peeter', 'Jooris', 'Frans', 'Gerard', 'Matthijs', 'Laureys', 'Gommaar', 'Huybrecht', 'Daneel', 'Aert', 'Sander'],
-  f: ['Maria', 'Anna', 'Catharina', 'Margriet', 'Elisabeth', 'Barbara', 'Josine', 'Machteld', 'Geertrui', 'Lysken', 'Kathelijne', 'Magdalena', 'Joanna', 'Clara', 'Adriana', 'Digna', 'Heylwich', 'Marten', 'Tanneken', 'Grietje', 'Lijne', 'Beatrijs', 'Hendrikske', 'Agnes', 'Cornelia', 'Mayken', 'Neeltje', 'Wivina', 'Gertrudis', 'Aleid'],
+  f: ['Maria', 'Anna', 'Catharina', 'Margriet', 'Elisabeth', 'Barbara', 'Josine', 'Machteld', 'Geertrui', 'Lysken', 'Kathelijne', 'Magdalena', 'Joanna', 'Clara', 'Adriana', 'Digna', 'Heylwich', 'Janneke', 'Tanneken', 'Grietje', 'Lijne', 'Beatrijs', 'Hendrikske', 'Agnes', 'Cornelia', 'Mayken', 'Neeltje', 'Wivina', 'Gertrudis', 'Aleid'],
   boy: ['Jantje', 'Pietje', 'Kobe', 'Tijske', 'Wout', 'Lowie', 'Staf', 'Remke'],
   girl: ['Mieke', 'Trees', 'Lieske', 'Ankske', 'Fientje', 'Leen', 'Griet', 'Saar'],
   beguine: ['Zuster Agnes', 'Zuster Beatrijs', 'Zuster Clara', 'Zuster Digna', 'Zuster Heylwich', 'Zuster Ida', 'Zuster Josine', 'Zuster Mechtild'],

@@ -265,7 +265,9 @@ export class Hero {
     this.time += dt;
     this.play('ride_idle');
     this.mixer.update(dt);
-    this.blowCloak(dt, speed, 1.1);
+    // ride_idle already lays the fall back over the dragon; the wind only lifts it a little more
+    // (a full swing on top stood the mantle up behind the rider like a board)
+    this.blowCloak(dt, speed, 0.3);
     // sit the pelvis on the saddle point, whatever height the clip puts it at
     if (this.pelvis) {
       this.root.updateWorldMatrix(true, true);

@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import type { FolkSpec, TownsfolkKit } from '../rpg/townsfolk';
 import { cloakPiece } from '../rpg/look';
+import { darkenLeather } from '../player/herokit';
 
 export class HeroPreview {
   readonly canvas = document.createElement('canvas');
@@ -104,6 +105,7 @@ export class HeroPreview {
     if (!this.kit || !this.renderer) return;
     const folk = this.kit.buildSpec(spec);
     if (!folk) return;
+    darkenLeather(folk.root); // as the hero in the game
     const time = this.mixer ? this.mixer.time : 0;
     if (this.figure) this.turntable.remove(this.figure);
     this.mixer?.stopAllAction();

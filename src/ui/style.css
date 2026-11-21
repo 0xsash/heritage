@@ -474,8 +474,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 
 /* ---------- glossary: period words explain themselves on hover ---------- */
 .gl { position: relative; border-bottom: 1px dotted rgba(214, 173, 87, 0.8); cursor: help; outline: none; }
-.gl::after { content: attr(data-g); position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translate(-50%, 4px); width: max-content; max-width: 300px; padding: 8px 12px; font-family: var(--serif); font-size: 16px; font-style: normal; line-height: 1.4; letter-spacing: 0; text-align: left; color: #2a1c0e; background: #e6d6ac; border: 1px solid #8a6a34; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); opacity: 0; pointer-events: none; transition: opacity var(--t-2) var(--ease-out) 0.25s, transform var(--t-2) var(--ease-out) 0.25s; z-index: 9; white-space: normal; }
-.gl:hover::after, .gl:focus::after { opacity: 1; transform: translate(-50%, 0); }
+.gl::after { content: none; position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translate(calc(-50% + var(--gx, 0px)), 0); width: max-content; max-width: 300px; padding: 8px 12px; font-family: var(--serif); font-size: 16px; font-style: normal; line-height: 1.4; letter-spacing: 0; text-align: left; color: #2a1c0e; background: #e6d6ac; border: 1px solid #8a6a34; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); pointer-events: none; z-index: 9; white-space: normal; animation: gl-in var(--t-2, 160ms) var(--ease-out, ease-out) 0.25s both; }
+/* the explanation exists only while asked for, so it never widens the box it sits in; main.ts keeps it on screen (--gx) */
+.gl:hover::after, .gl:focus::after { content: attr(data-g); }
+@keyframes gl-in { from { opacity: 0; margin-bottom: -4px; } to { opacity: 1; margin-bottom: 0; } }
 /* gear cards: the button row wraps instead of pushing out of the card */
 .gcard .gb { flex-wrap: wrap; gap: 6px; }
 .gcard .up { font-size: 13px; flex-basis: 100%; }
@@ -492,6 +494,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .pc-sub { font-family: var(--display); font-size: 14px; letter-spacing: 0.4em; color: var(--ink-dim); }
 .pc-big { font-family: var(--display); font-weight: 700; font-size: clamp(54px, 10vw, 128px); letter-spacing: 0.32em; margin-right: -0.32em; color: #e9c56a; }
 .pro-card.title { justify-content: flex-start; padding-top: 16vh; }
+/* over the bright dawn sky the dim subtitle vanished: light ink on a dark halo */
+.pro-card.title .pc-sub { color: #f3e8cc; font-size: 15px; text-shadow: 0 1px 3px #000, 0 0 18px rgba(0, 0, 0, 0.85); }
 .cine { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
 .cine::before, .cine::after { content: ''; position: absolute; left: 0; right: 0; height: 9vh; background: #050403; }
 .cine::before { top: 0; }
@@ -560,9 +564,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .cc-derived span { white-space: nowrap; }
 .cc-derived b { color: var(--ink); font-weight: 600; }
 .cc-list { display: flex; flex-direction: column; gap: 3px; }
-.cc-opt { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 3px 9px; border: 1px solid rgba(214, 173, 87, 0.16); background: rgba(0, 0, 0, 0.28); border-left: 3px solid transparent; }
+.cc-opt { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 9px; border: 1px solid rgba(214, 173, 87, 0.16); background: rgba(0, 0, 0, 0.28); border-left: 3px solid transparent; }
 .cc-opt b { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: 0.03em; color: #e9dcc0; white-space: nowrap; }
-.cc-opt small { min-width: 0; font-size: 13px; color: var(--ink-dim); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* the subtitle wraps onto a second line rather than lose its end (faction taglines, origin perks) */
+.cc-opt small { min-width: 0; font-size: 13px; line-height: 1.2; color: var(--ink-dim); text-align: right; text-wrap: balance; }
 .cc-opt.on { border-color: rgba(214, 173, 87, 0.6); border-left-color: var(--gold); background: rgba(214, 173, 87, 0.13); }
 .cc-opt.on b { color: var(--gold); }
 .cc-diff { color: var(--gold); letter-spacing: 0.05em; margin-left: 4px; }
@@ -585,6 +590,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
   .cc-row { min-height: 29px; }
   .cc-left, .cc-right { padding-top: 10px; }
   .cc-right h3:not(:first-child), .cc-left h3:not(:first-child) { margin-top: 9px; }
+  /* the subtitles wrap now (nothing is cut off): win the room back from the padding */
+  .cc-list { gap: 2px; }
+  .cc-opt { padding-top: 1px; padding-bottom: 1px; }
+  .cc-opt small { line-height: 1.12; }
 }
 /* ---------- everyday life: notes in the street, buffs, standing, merchants (src/life) ---------- */
 .lifenote { position: absolute; left: 50%; bottom: 206px; transform: translate(-50%, 6px); width: max-content; max-width: min(560px, calc(100% - 32px)); padding: 10px 18px 12px; background: var(--shade); border: 1px solid rgba(214, 173, 87, 0.35); text-align: center; opacity: 0; transition: opacity var(--t-3, 260ms) var(--ease-out, ease-out), transform var(--t-3, 260ms) var(--ease-out, ease-out); pointer-events: none; }

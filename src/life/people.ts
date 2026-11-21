@@ -135,13 +135,14 @@ export class People {
     for (const p of this.list) {
       const d = Math.hypot(p.x - px, p.z - pz);
       const want = mark(p.def.id) ?? p.def.glyph;
+      if (!want) p.sign.visible = false; // no trade sign (a market-day seller)
       if (want !== p.shown) {
         p.shown = want;
         (p.sign.material as THREE.SpriteMaterial).map = glyphTexture(want);
       }
       const job = want === '?' || want === '!';
       // the trade sign shows within 70 m; a job mark is seen from further, like a quest giver's
-      const show = d < (job ? 600 : 70);
+      const show = !!want && d < (job ? 600 : 70);
       p.sign.visible = show;
       if (show) {
         const sc = job ? Math.min(12, Math.max(0.75, d * 0.024)) : Math.min(1.6, Math.max(0.5, d * 0.02));

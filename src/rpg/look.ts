@@ -113,7 +113,14 @@ const HATS = new Set(['hat_wide', 'hat_pilgrim', 'cap_flat', 'morion', 'coif', '
 
 /** Does this class's outfit have a hat to take off? */
 export function outfitHasHat(kit: TownsfolkKit | null, origin: OriginId, sex: Sex) {
-  return Object.keys(outfitOf(kit, origin, sex).wear).some((p) => HATS.has(p));
+  return Object.keys(outfitOf(kit, origin, sex).wear).some((p) => HATS.has(p)) || (sex === 'f' && !!kit?.fits('coif', 'woman'));
+}
+
+/** What the hat row says: a class hat (Op / Af), a woman's coif (Muts / Af), or nothing to take off (—). */
+export function hatLabel(kit: TownsfolkKit | null, origin: OriginId, sex: Sex, on: boolean) {
+  if (!outfitHasHat(kit, origin, sex)) return '—';
+  if (!on) return 'Af';
+  return Object.keys(outfitOf(kit, origin, sex).wear).some((p) => HATS.has(p)) ? 'Op' : 'Muts';
 }
 
 function outfitOf(kit: TownsfolkKit | null, origin: OriginId, sex: Sex) {
@@ -133,6 +140,12 @@ export function heroSpec(kit: TownsfolkKit, h: HeroData): FolkSpec {
     if (!h.hat && HATS.has(p)) continue;
     wear[p] = dye;
   }
+  // a woman whose class wears no hat covers her hair with a linen coif, as almost every woman did in 1650
+  // (the hat row takes it off again)
+  if (sex === 'f' && h.hat && !Object.keys(outfit.wear).some((p) => HATS.has(p)) && kit.fits('coif', body)) wear.coif = null;
+  // the kit's hero outfits leave the mantle out on purpose: the game adds it (it is the hero's signature)
+  const mantle = kit.m.hero?.mantle?.piece ?? (kit.m.hero?.outfits ? 'mantle' : null);
+  if (mantle && kit.fits(mantle, body) && !(mantle in wear)) wear[mantle] = '';
   // the cloak takes the chosen colour
   const cloak = CLOAK_PIECES.find((p) => p in wear && kit.fits(p, body));
   if (cloak) wear[cloak] = h.cloak;

@@ -58,10 +58,25 @@ export async function dressHero(hero: Hero, kit: TownsfolkKit, h: HeroData, ride
   const r = missing.length ? await rider() : null;
   const extra = r ? borrowClips(r, folk, missing) : [];
   const piece = cloakPiece(spec);
+  darkenLeather(folk.root);
   hero.useFolk(folk, extra, (color) => {
     if (piece) kit.redye(folk.root, piece, color);
   });
   return { folk, rider: r };
+}
+
+/**
+ * The kit paints boots in a light tan leather that reads as bare skin at play distance (the hero looked
+ * barefoot from behind). Darken the hero's boots to a worn brown; the rest of the figure is untouched.
+ */
+export function darkenLeather(root: THREE.Object3D) {
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || o.userData.folk?.piece !== 'boots') return;
+    const mat = (m.material as THREE.MeshStandardMaterial).clone();
+    mat.color.multiplyScalar(0.32);
+    m.material = mat;
+  });
 }
 
 /** A plain person from the kit, for code that clones "the hero's model" as a generic figure. */

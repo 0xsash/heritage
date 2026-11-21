@@ -36,6 +36,8 @@ export interface PrologueDeps {
   /** fire and sparks where the dragon's breath lands */
   blast(at: THREE.Vector3): void;
   finish(skipped: boolean): void;
+  /** turn the rider and the view towards the town (while the screen is dark, before dawn) */
+  faceTown?(): void;
 }
 
 /** Every spoken line, by id: [speaker, text]. {name} and {dragon} are filled in. */
@@ -101,6 +103,8 @@ export class Prologue {
   private kPos = new THREE.Vector3();
   private kYaw = 0;
   private wisps: Body[] = [];
+  /** the lights on the water light the reeds and the bank around them */
+  private wispLights: THREE.PointLight[] = [];
   private tolls = 0;
   private tollT = 0;
   private fired = false;
@@ -184,14 +188,15 @@ export class Prologue {
     this.skipHeld = this.skipDown ? this.skipHeld + dt : 0;
     this.cine.classList.toggle('skipping', this.skipHeld > 0.1);
     if (this.skipHeld > 0.8 && this.stage !== 'done') return this.end(true);
-    if (!this.allowMount) input.consume('interact');
+    if (!this.allowMount || this.stage === 'dawn') input.consume('interact'); // no landing during the dawn titles
 
     this.updateSubtitles(dt);
     this.updateSister(dt, hero);
     for (const w of this.wisps) {
       w.update(dt);
-      w.root.position.y = 1.1 + Math.sin(performance.now() / 700 + w.root.position.x) * 0.25;
+      w.root.position.y = -1.2 + Math.sin(performance.now() / 700 + w.root.position.x) * 0.25;
     }
+    for (const [i, l] of this.wispLights.entries()) l.intensity = Math.min(9, l.intensity + dt * 4) * (0.85 + Math.sin(performance.now() / 260 + i * 2) * 0.15);
     if (this.kludde) {
       this.kludde.root.position.copy(this.kPos);
       this.kludde.root.rotation.y = this.kYaw;
@@ -246,7 +251,11 @@ export class Prologue {
         if (t > 8 && !this.wisps.length) {
           for (const [x, z] of WISPS) {
             const w = makeBody(TYPES.dwaallicht, null, false);
-            w.root.position.set(x, 1.1, z);
+            w.root.position.set(x, -1.2, z); // just over the water (the body floats its light 2.6 m up)
+            const light = new THREE.PointLight('#9fe0ff', 0, 26, 1.6);
+            light.position.y = 2.4;
+            w.root.add(light);
+            this.wispLights.push(light);
             this.group.add(w.root);
             this.wisps.push(w);
           }
@@ -261,8 +270,10 @@ export class Prologue {
       case 'lure': {
         if (this.sis) this.target = { x: this.sis.x, z: this.sis.z };
         if (t > 4) this.say('pro_n4');
+        // she waits at the edge of the water, counting, until you are close enough to see what comes
         const there = this.sis ? Math.hypot(this.sis.x - BANK.x, this.sis.z - BANK.z) < 3 : t > 8;
-        if ((there && t > 5) || t > 22) {
+        const near = Math.hypot(hero.x - BANK.x, hero.z - BANK.z) < 26;
+        if ((there && near && t > 5) || t > 60) {
           // it comes up out of the river between you and her
           this.kludde = makeBody(TYPES.kludde, null, false);
           this.kPos.set(WATER.x - 3, -3.2, WATER.z);
@@ -288,6 +299,7 @@ export class Prologue {
           this.sis = null;
           for (const w of this.wisps) this.group.remove(w.root);
           this.wisps = [];
+          this.wispLights = [];
           this.kPos.set(BANK.x, 0, BANK.z);
         }
         if (t > 1.5) {
@@ -313,6 +325,7 @@ export class Prologue {
         if (dist < 2.6 || t > 9) {
           p.lock = 60; // down, until help comes
           p.push(dx / (dist || 1) * 4, dz / (dist || 1) * 4);
+          p.hero.act('death', 99); // thrown to the ground: you stay there until something else comes out of the reeds
           d.hurt(0.9);
           d.trauma(0.9);
           this.kludde?.act('strike', 0.5);
@@ -358,6 +371,8 @@ export class Prologue {
         if (this.fired) this.say('pro_n7');
         if (p.mode === 'walk' && t > 2 && !this.kludde) {
           p.lock = 0;
+          p.hero.revive();
+          p.hero.act('land', 0.9); // getting up
           this.go('meet');
         }
         break;
@@ -382,6 +397,7 @@ export class Prologue {
       case 'dawn':
         if (t > 1.8 && !this.said.has('sky')) {
           this.said.add('sky');
+          d.faceTown?.();
           void d.setSky('golden').then(() => {
             this.card.innerHTML = '<div class="pc-big">BELFORT</div><div class="pc-sub">Het hertogdom Brabant · anno 1650</div>';
             this.card.classList.add('show', 'title');
@@ -429,7 +445,7 @@ export class Prologue {
     const gx = this.sisGoal ? this.sisGoal.x : hero.x - Math.sin(p.heroYaw) * 1.1 - Math.cos(p.heroYaw) * 1.5;
     const gz = this.sisGoal ? this.sisGoal.z : hero.z - Math.cos(p.heroYaw) * 1.1 + Math.sin(p.heroYaw) * 1.5;
     const dx = gx - s.x, dz = gz - s.z, dist = Math.hypot(dx, dz);
-    const sp = this.sisGoal ? Math.min(2.6, dist * 2) : dist > 0.5 ? Math.min(7, dist * 2.2) : 0;
+    const sp = this.sisGoal ? Math.min(3.2, dist * 2) : dist > 0.5 ? Math.min(7, dist * 2.2) : 0;
     if (sp > 0.15) {
       s.x += (dx / dist) * sp * dt;
       s.z += (dz / dist) * sp * dt;

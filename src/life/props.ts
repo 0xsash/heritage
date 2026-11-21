@@ -74,6 +74,7 @@ export class PropKit {
 const AWNINGS: Record<string, [string, string]> = {
   bread: ['#b8862e', '#e2d6bc'], herbs: ['#56663e', '#d8ccb0'], books: ['#2c4260', '#d8ccb0'], cloth: ['#6e2219', '#c49a3a'],
   iron: ['#3a3634', '#7a756c'], beer: ['#9a3226', '#e2d6bc'], salves: ['#e2d6bc', '#1f1c1e'], badges: ['#41618a', '#e2d6bc'], army: ['#9a3226', '#c49a3a'],
+  fish: ['#41618a', '#c8c0a8'], cheese: ['#b8862e', '#6e2219'], pots: ['#86522e', '#e2d6bc'], veg: ['#56663e', '#b89040'], poultry: ['#e2d6bc', '#7a5634'],
 };
 
 /** A market stall: a trestle table under an awning, with goods by kind. The seller stands at z = -1.2. */
@@ -146,6 +147,46 @@ export function stall(k: PropKit, kind: StallKind, seed: number) {
     k.box(1.6, 0.9, 0.05, C('#5a4430'), 0, 1.35, -0.38, -0.2);
     for (let i = 0; i < 12; i++) k.cyl(0.06, 0.06, 0.02, C(i % 4 ? '#b8b2a8' : '#d8c070'), -0.6 + (i % 6) * 0.24, 1.2 + Math.floor(i / 6) * 0.3, -0.33, Math.PI / 2 - 0.2);
     for (let i = 0; i < 4; i++) k.box(0.1, 0.22, 0.08, C('#7a5634'), -0.8 + i * 0.5, top + 0.11, 0.25);
+  } else if (kind === 'fish') {
+    // eel and herring on a wet board, a herring cask, a tub of water
+    k.box(2.0, 0.04, 0.8, C('#4a4038'), 0, top + 0.02, 0);
+    for (let i = 0; i < 8; i++) k.box(0.36, 0.05, 0.09, C(i % 3 ? '#9aa4a8' : '#5a5a4a'), -0.75 + (i % 4) * 0.48, top + 0.07, -0.2 + Math.floor(i / 4) * 0.36, 0, rnd(i) * 0.5 - 0.25);
+    k.cyl(0.3, 0.3, 0.75, WOOD, 1.65, 0.38, 0.4, 0, 0, 10);
+    k.cyl(0.31, 0.31, 0.05, IRON, 1.65, 0.62, 0.4, 0, 0, 10);
+    k.cyl(0.42, 0.36, 0.3, WOOD_LT, -1.7, 0.15, 0.45, 0, 0, 10);
+    k.cyl(0.38, 0.38, 0.02, C('#3e5058'), -1.7, 0.29, 0.45, 0, 0, 10);
+  } else if (kind === 'cheese') {
+    for (let i = 0; i < 5; i++) k.cyl(0.24, 0.24, 0.13, C(i % 2 ? '#d8a840' : '#c89030'), -0.85 + i * 0.42, top + 0.07, 0.05 + (i % 2) * 0.12, 0, 0, 12);
+    for (let i = 0; i < 3; i++) k.cyl(0.2, 0.2, 0.12, C('#c89030'), 0.6, top + 0.2 + i * 0.12, -0.25, 0, 0, 12);
+    k.box(0.3, 0.14, 0.2, C('#ecd890'), -0.4, top + 0.08, -0.3);
+    k.cyl(0.3, 0.26, 0.5, WOOD_LT, 1.7, 0.25, 0.4, 0, 0, 10);
+  } else if (kind === 'pots') {
+    const clay = ['#9a5a34', '#7a4a2a', '#b07848', '#5a5048'];
+    for (let i = 0; i < 6; i++) {
+      const x = -0.9 + i * 0.36, h = 0.22 + rnd(i) * 0.2;
+      k.cyl(0.08, 0.13, h, C(clay[i % 4]), x, top + h / 2, 0.1 + (i % 2) * 0.15, 0, 0, 10);
+      k.cyl(0.06, 0.08, 0.08, C(clay[i % 4]), x, top + h + 0.04, 0.1 + (i % 2) * 0.15, 0, 0, 10);
+    }
+    for (let i = 0; i < 5; i++) k.cyl(0.22, 0.12, 0.12, C(clay[(i + 1) % 4]), -1.8 + (i % 2) * 0.1, 0.06 + i * 0.12, 0.3, 0, 0, 12);
+    k.cyl(0.2, 0.26, 0.55, C('#86522e'), 1.7, 0.28, 0.5, 0, 0, 12);
+  } else if (kind === 'veg') {
+    const veg = ['#5e7a3a', '#8a5a7a', '#c8a050', '#d07830', '#e6dcc0'];
+    for (let b = 0; b < 3; b++) {
+      k.cyl(0.32, 0.26, 0.2, C('#8a6a3a'), -0.75 + b * 0.75, top + 0.1, 0, 0, 0, 10);
+      for (let i = 0; i < 5; i++) k.ball(0.1 + (b === 0 ? 0.04 : 0), C(veg[(b * 2 + (i % 2)) % 5]), -0.75 + b * 0.75 + (i % 3 - 1) * 0.14, top + 0.24 + Math.floor(i / 3) * 0.06, (i % 2 - 0.5) * 0.18, 0.85);
+    }
+    for (let i = 0; i < 2; i++) k.ball(0.32, LINEN, 1.65 + i * 0.25, 0.3, 0.55 - i * 0.6, 1.15);
+  } else if (kind === 'poultry') {
+    // wicker cages with hens, a basket of eggs
+    for (let i = 0; i < 2; i++) {
+      const x = -0.55 + i * 1.1;
+      k.box(0.8, 0.45, 0.6, C('#8a6a3a'), x, top + 0.23, 0);
+      k.box(0.82, 0.04, 0.62, WOOD_DK, x, top + 0.47, 0);
+      for (let h = 0; h < 2; h++) k.ball(0.13, C(h + i ? '#f0e8d8' : '#9a5a2a'), x - 0.16 + h * 0.32, top + 0.2, 0.18, 0.85);
+    }
+    k.cyl(0.24, 0.18, 0.16, C('#8a6a3a'), 1.55, 0.5, 0.35, 0, 0, 10);
+    for (let i = 0; i < 6; i++) k.ball(0.05, C('#f4ecd8'), 1.5 + (i % 3) * 0.06, 0.6, 0.3 + Math.floor(i / 3) * 0.08, 1.3);
+    k.box(0.9, 0.5, 0.6, C('#7a5634'), 1.6, 0.25, -0.4);
   } else if (kind === 'army') {
     for (let i = 0; i < 3; i++) {
       k.box(0.06, 1.3, 0.06, WOOD_DK, -1.9 + i * 0.0, 0.65, -0.4 + i * 0.5);
@@ -174,15 +215,39 @@ export function sign(k: PropKit, color: string) {
   k.box(0.05, 0.6, 0.76, WOOD_DK, 0, 2.95, 0.65);
 }
 
-/** A shrine: in a wall niche (onWall) or on a post. */
+/**
+ * A wayside shrine (kapelletje): a little house with a pitched roof and an iron cross, the Virgin in a
+ * blue niche, a candle and a few flowers. In a wall (onWall, local z = 0 is the wall) or on a post.
+ */
 export function shrine(k: PropKit, onWall: boolean) {
-  const y = onWall ? 2.1 : 1.5;
-  if (!onWall) k.box(0.14, 1.5, 0.14, WOOD, 0, 0.75, 0);
-  k.box(0.55, 0.7, 0.32, onWall ? STONE : WOOD_LT, 0, y + 0.35, onWall ? 0.16 : 0);
-  k.box(0.42, 0.55, 0.05, C('#2c4260'), 0, y + 0.36, onWall ? 0.33 : 0.17);
-  k.cyl(0.06, 0.09, 0.36, C('#ece6d6'), 0, y + 0.3, onWall ? 0.36 : 0.2);
-  k.box(0.65, 0.06, 0.42, onWall ? STONE : WOOD_DK, 0, y + 0.72, onWall ? 0.18 : 0, 0.0);
-  k.cyl(0.04, 0.04, 0.1, C('#f0e0a0'), 0.17, y + 0.06, onWall ? 0.38 : 0.2);
+  const y = onWall ? 1.95 : 1.4;
+  const z0 = onWall ? 0.17 : 0;
+  const body = onWall ? STONE : WOOD_LT, dark = onWall ? C('#6e6a60') : WOOD_DK;
+  if (!onWall) {
+    k.box(0.36, 0.14, 0.36, STONE, 0, 0.07, 0);
+    k.cyl(0.07, 0.085, y, WOOD, 0, y / 2, 0, 0, 0, 6);
+    k.box(0.5, 0.06, 0.4, WOOD_DK, 0, y + 0.02, 0);
+  } else k.box(0.62, 0.08, 0.4, STONE, 0, y - 0.02, z0 + 0.02);
+  // the house: a back, two side posts and a lintel round a blue niche
+  k.box(0.5, 0.66, 0.06, body, 0, y + 0.36, z0 - 0.12);
+  for (const x of [-0.22, 0.22]) k.box(0.07, 0.66, 0.3, body, x, y + 0.36, z0);
+  k.box(0.5, 0.09, 0.3, body, 0, y + 0.66, z0);
+  k.box(0.37, 0.5, 0.02, C('#2c4260'), 0, y + 0.32, z0 - 0.085);
+  for (let i = 0; i < 5; i++) k.box(0.02, 0.02, 0.02, C('#e8c860'), -0.12 + i * 0.06, y + 0.5 - (i % 2) * 0.08, z0 - 0.07);
+  // the roof: two slopes and a ridge, and the cross
+  for (const sd of [-1, 1]) k.box(0.36, 0.035, 0.42, dark, sd * 0.15, y + 0.79, z0, 0, 0, -sd * 0.6);
+  k.box(0.05, 0.05, 0.44, dark, 0, y + 0.88, z0);
+  k.box(0.03, 0.26, 0.03, IRON, 0, y + 1.02, z0);
+  k.box(0.15, 0.03, 0.03, IRON, 0, y + 1.07, z0);
+  // Our Lady: a white robe, a head, a gilt crown
+  k.cyl(0.045, 0.1, 0.3, C('#ece6d6'), 0, y + 0.2, z0 - 0.02, 0, 0, 8);
+  k.cyl(0.07, 0.05, 0.06, C('#5a7ab0'), 0, y + 0.32, z0 - 0.02, 0, 0, 8);
+  k.ball(0.045, C('#e8cfb0'), 0, y + 0.39, z0 - 0.02);
+  k.cyl(0.04, 0.035, 0.03, C('#e8b83a'), 0, y + 0.44, z0 - 0.02, 0, 0, 6);
+  // a candle and flowers on the sill
+  k.cyl(0.018, 0.018, 0.09, C('#f4ecd8'), 0.15, y + 0.1, z0 + 0.08, 0, 0, 6);
+  k.ball(0.014, C('#ffd070'), 0.15, y + 0.16, z0 + 0.08, 1.6);
+  for (let i = 0; i < 3; i++) k.ball(0.028, C(['#c8402a', '#e8d060', '#f0e8d8'][i]), -0.16 + i * 0.035, y + 0.09 + (i % 2) * 0.02, z0 + 0.09);
 }
 
 /** A well with a roof and a bucket. */
@@ -226,4 +291,25 @@ export function weathercock(): THREE.Group {
   const g = new THREE.Group();
   g.add(mesh);
   return g;
+}
+
+/** Market clutter: a barrel, a crate, a stack of sacks or a handcart (local frame as a stall). */
+export function clutter(k: PropKit, kind: number) {
+  if (kind === 0) {
+    k.cyl(0.34, 0.34, 0.85, WOOD, 0, 0.43, 0, 0, 0, 10);
+    for (const y of [0.15, 0.7]) k.cyl(0.355, 0.355, 0.05, IRON, 0, y, 0, 0, 0, 10);
+  } else if (kind === 1) {
+    k.box(0.7, 0.5, 0.55, WOOD_LT, 0, 0.25, 0);
+    k.box(0.6, 0.4, 0.5, WOOD, 0.1, 0.7, 0.02, 0, 0.3);
+  } else if (kind === 2) {
+    for (let i = 0; i < 3; i++) k.ball(0.3, i === 2 ? C('#c8b890') : LINEN, (i - 1) * 0.45, 0.28, 0, 1.1);
+    k.ball(0.28, LINEN, 0, 0.72, 0.05, 1.05);
+  } else {
+    // a two-wheeled handcart, shafts on the ground
+    k.box(1.3, 0.08, 0.9, WOOD_LT, 0, 0.62, 0, 0.12);
+    for (const z of [-0.47, 0.47]) k.box(1.3, 0.25, 0.05, WOOD, 0, 0.78, z, 0.12);
+    for (const z of [-0.55, 0.55]) k.cyl(0.42, 0.42, 0.06, WOOD_DK, 0.15, 0.42, z, Math.PI / 2, 0, 12);
+    for (const z of [-0.3, 0.3]) k.box(1.4, 0.07, 0.07, WOOD_DK, -1.2, 0.3, z, 0, 0, 0.4);
+    k.ball(0.28, LINEN, 0.1, 0.9, 0, 1.1);
+  }
 }

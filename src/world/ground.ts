@@ -120,8 +120,9 @@ vec3 gNrm; float gRough; float gAO;`,
       float ph = pq.x / (0.7 + 0.5 * fract(h * 13.0));
       float fade = 1.0 - smoothstep(0.08, 0.45, fwidth(ph));
       float rows = 0.5 + 0.5 * sin(ph * 6.28318);
-      diffuseColor.rgb *= 1.0 - 0.28 * rows * fade;
-      gNrm = normalize(gNrm + vec3(ca, -sa, 0.0) * cos(ph * 6.28318) * 0.3 * fade);
+      // kept soft: at walking height, under a low sun, strong rows read as corrugated iron
+      diffuseColor.rgb *= 1.0 - 0.15 * rows * fade;
+      gNrm = normalize(gNrm + vec3(ca, -sa, 0.0) * cos(ph * 6.28318) * 0.14 * fade);
     }
     // hedges, ditches and headlands between parcels
     float e = min(min(f.x, 1.0 - f.x) * size.x, min(f.y, 1.0 - f.y) * size.y);

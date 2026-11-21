@@ -289,7 +289,7 @@ class HoundBody implements Body {
       ear.rotation.set(-0.3, 0, -0.35 * s);
       const e = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), eyeM);
       e.position.set(0.09 * s, 0.04, 0.16);
-      const glow = new THREE.Sprite(new THREE.SpriteMaterial({ color: eye, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending }));
+      const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: eye, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending }));
       glow.scale.setScalar(0.18);
       glow.position.copy(e.position);
       this.head.add(ear, e, glow);
@@ -374,6 +374,24 @@ class HoundBody implements Body {
   }
 }
 
+/** A soft round glow (shared): a sprite without a map is drawn as a hard square. */
+let glowTex: THREE.CanvasTexture | null = null;
+function glowTexture() {
+  if (glowTex) return glowTex;
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d')!;
+  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.25, 'rgba(255,255,255,0.55)');
+  grad.addColorStop(0.6, 'rgba(255,255,255,0.12)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 64, 64);
+  glowTex = new THREE.CanvasTexture(c);
+  return glowTex;
+}
+
 class WispBody implements Body {
   root = new THREE.Group();
   top = 3.6;
@@ -386,7 +404,7 @@ class WispBody implements Body {
   constructor() {
     this.mat = new THREE.MeshBasicMaterial({ color: '#b8f0ff' });
     this.core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 2), this.mat);
-    this.halo = new THREE.Sprite(new THREE.SpriteMaterial({ color: '#58c8ff', transparent: true, opacity: 0.7, depthWrite: false, blending: THREE.AdditiveBlending }));
+    this.halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: '#58c8ff', transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }));
     this.halo.scale.setScalar(1.6);
     this.core.position.y = this.halo.position.y = 2.6;
     this.root.add(this.core, this.halo);

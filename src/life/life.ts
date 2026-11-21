@@ -34,11 +34,11 @@ import {
 import { Board } from './board';
 import { direction, farness, fill, hash, LinePicker, seeded, today, type Pool } from './lines';
 import { People, type Person } from './people';
-import { board as boardProp, door as doorProp, PropKit, shrine as shrineProp, sign as signProp, stall, well as wellProp, weathercock } from './props';
+import { board as boardProp, clutter, door as doorProp, PropKit, shrine as shrineProp, sign as signProp, stall, well as wellProp, weathercock } from './props';
 import { Shops, talismanGear } from './shop';
 import { FACTION_IDS, Standing } from './standing';
 import { Talk, type Ch, type Spec } from './talk';
-import type { Good, ServiceDef, SpotKind } from './types';
+import type { Good, ServiceDef, SpotKind, StallKind } from './types';
 
 addEntries(PAGES);
 
@@ -90,10 +90,35 @@ export type Near =
   | { kind: 'spot'; spot: Spot }
   | { kind: 'cock'; i: number };
 
-interface Pointer { x: number; z: number; label: string; until: number }
+interface Pointer { x: number; z: number; label: string; until: number; since: number }
 
 const BUFF_NAMES: Record<string, string> = { zegen: 'Gezegend', moed: 'Moed', uitgerust: 'Uitgerust', eten: 'Gegeten' };
 const R_COVER = 37;
+const FEMALE_ROLES = new Set<Role>(['peasantWoman', 'huik', 'beguine', 'oldWoman']);
+const MALE_ROLES = new Set<Role>(['peasant', 'soldier', 'friar', 'oldMan']);
+
+/**
+ * Market day on the Grote Markt: stalls with no merchant to deal with, each with a seller who calls out
+ * when you pass. They fill the square between the merchants you can trade with.
+ */
+const MARKET_DAY: { kind: StallKind; look: NonNullable<ServiceDef['look']>; calls: string[] }[] = [
+  { kind: 'fish', look: { body: 'woman_stout', wear: { hair_bun: 'h_dark', coif: null, bodice: 'woad_dk', kerchief: null, skirt: 'grey', apron: 'linen', clogs: null } },
+    calls: ['Paling uit de Demer, vanmorgen nog levend.', 'Haring uit Zeeland. Gezouten, niet gesmokkeld.', 'Ruik maar. Dat is vers.'] },
+  { kind: 'cheese', look: { body: 'man_stout', wear: { hair_crop: 'h_brown', cap_flat: 'umber', smock: 'linen', belt: null, breeches: 'brown', stockings: 'grey', clogs: null } },
+    calls: ['Kaas uit de Kempen. Proeven kost niets.', 'Boter van gisteren. Morgen is ze van eergisteren.', 'Drie stuivers het pond. Voor jou ook.'] },
+  { kind: 'veg', look: { body: 'woman_old', wear: { hair_bun: 'h_grey', coif: null, bodice: 'brown', kerchief: null, skirt: 'moss', apron: 'grey', clogs: null } },
+    calls: ['Kolen en rapen. De soldaten hebben de rest al.', 'Ajuin uit het Hageland. Je huilt ervan, niet van mij.', 'Koop iets, kind. Je ziet bleek.'] },
+  { kind: 'pots', look: { body: 'man', wear: { hair_long: 'h_chestnut', moustache: 'h_chestnut', hat_wide: 'brown', doublet: 'russet', collar_band: null, breeches: 'umber', stockings: 'grey', shoes: null } },
+    calls: ['Kannen en kruiken. Gebakken, niet gebarsten.', 'Een pot voor de soep, een pot voor de nacht.', 'Laat vallen en je betaalt. Zo gaat dat.'] },
+  { kind: 'poultry', look: { body: 'woman', wear: { hair_bun: 'h_blond', coif: null, bodice: 'madder', kerchief: null, skirt: 'woad', apron: 'linen', clogs: null } },
+    calls: ['Een hen voor drie stuivers. Ze legt nog.', 'Eieren, vers. De hen staat ervoor in.', 'Pas op voor de haan. Hij is van de koster.'] },
+  { kind: 'cloth', look: { body: 'man_old', wear: { hair_thin: 'h_white', beard_full: 'h_white', cap_flat: 'black', doublet: 'black', collar_band: null, breeches: 'black', stockings: 'black', shoes: null } },
+    calls: ['Diests laken. Gemeten met de el van de halle.', 'Voel maar. Zo weven ze het in Leiden niet.', 'Laken voor een mantel. Of voor een lijkwade.'] },
+  { kind: 'bread', look: { body: 'woman', wear: { hair_bun: 'h_brown', coif: null, bodice: 'ochre', kerchief: null, skirt: 'russet', apron: 'linen', shoes: null } },
+    calls: ['Mik en roggebrood, nog warm van de oven.', 'Krentenbrood voor wie iets te vieren heeft.', 'Brood van vanmorgen. Het gewicht klopt.'] },
+  { kind: 'herbs', look: { body: 'woman_stout', wear: { hair_bun: 'h_red', coif: null, bodice: 'green_dk', kerchief: null, skirt: 'brown', apron: 'grey', clogs: null } },
+    calls: ['Salie, rozemarijn, alsem. Tegen alles behalve armoe.', 'Kamille voor de slaap. Die heb je nodig.', 'Wijnruit tegen de pest. Zegt mijn moeder.'] },
+];
 
 /** Golden weathercocks on towers and gates, taken in flight (x, z, height of the top). */
 const COCKS: [string, number, number, number][] = [
@@ -119,6 +144,8 @@ export class Life {
   private spotAlpha: THREE.BufferAttribute | null = null;
   private spotUniforms = { uPlayer: { value: new THREE.Vector3() }, uScale: { value: 30 }, uMap: { value: null as THREE.Texture | null } };
   private cocks: { g: THREE.Group; x: number; y: number; z: number; key: string; name: string }[] = [];
+  /** the market-day sellers (no trade: they call out as you pass) */
+  private hawkers: { x: number; z: number; y: number; calls: string[]; next: number; n: number }[] = [];
   private time = 0;
   private note: HTMLElement;
   private noteT = 0;
@@ -239,6 +266,7 @@ export class Life {
       this.talk.speaker(BOARD.id, BOARD.name, 'op de Grote Markt', [x, z]);
       this.d.quests.npcPos.set(BOARD.id, [x, z]);
     }
+    this.placeMarket(k);
     this.placeSpots(k);
     const mesh = k.build();
     if (mesh) this.group.add(mesh);
@@ -251,6 +279,46 @@ export class Life {
       g.visible = !this.d.quests.s.life.cocks.includes(key);
       this.group.add(g);
       this.cocks.push({ g, x, y: h + 1.5, z, key, name });
+    }
+  }
+
+  /**
+   * Market day: fill the open square around the merchants with more stalls (each with a seller), and with
+   * barrels, crates, sacks and a handcart between them. Deterministic, on open ground only, and clear of
+   * everything you can talk to or read.
+   */
+  private placeMarket(k: PropKit) {
+    const col = this.d.world.collision;
+    const taken: [number, number, number][] = this.fixedPoints().map(([x, z]) => [x, z, 5.5]);
+    const free = (x: number, z: number, r: number) => taken.every(([tx, tz, tr]) => Math.hypot(tx - x, tz - z) > Math.max(r, tr));
+    const cands: [number, number, number][] = [];
+    for (let gx = -48; gx <= 48; gx += 3)
+      for (let gz = -48; gz <= 48; gz += 3) {
+        const x = MARKET_CENTRE[0] + gx, z = MARKET_CENTRE[1] + gz, d = Math.hypot(gx, gz);
+        if (d < 9 || d > 48 || !this.d.world.inTown(x, z)) continue;
+        cands.push([x, z, d + (hash(`${gx},${gz}`) % 100) / 25]);
+      }
+    cands.sort((a, b) => a[2] - b[2]);
+    let n = 0;
+    for (const [x, z] of cands) {
+      if (n >= MARKET_DAY.length) break;
+      if (col.heightAround(x, z, 2.6) > 0.08 || !free(x, z, 7.5)) continue;
+      const m = MARKET_DAY[n++];
+      const yaw = Math.atan2(MARKET_CENTRE[0] - x, MARKET_CENTRE[1] - z) + ((hash(m.kind) % 40) - 20) / 100;
+      const y = col.heightAt(x, z);
+      k.at(x, y, z, yaw);
+      stall(k, m.kind, hash(m.kind) % 1000);
+      const px = x - Math.sin(yaw) * 1.25, pz = z - Math.cos(yaw) * 1.25;
+      this.people.add({ id: `markt_${m.kind}`, glyph: '', look: m.look }, px, col.heightAt(px, pz), pz, yaw);
+      this.hawkers.push({ x: px, z: pz, y: col.heightAt(px, pz), calls: m.calls, next: 0, n: hash(m.kind) % m.calls.length });
+      taken.push([x, z, 7.5]);
+      // something beside it: a barrel, a crate, sacks or a handcart
+      const side = hash(`${m.kind}s`) % 2 ? 1 : -1, c = hash(`${m.kind}c`) % 4;
+      const cx = x + Math.cos(yaw) * side * 2.4 + Math.sin(yaw) * 0.6, cz = z - Math.sin(yaw) * side * 2.4 + Math.cos(yaw) * 0.6;
+      if (col.heightAround(cx, cz, 0.9) < 0.08) {
+        k.at(cx, col.heightAt(cx, cz), cz, yaw + side * 0.4);
+        clutter(k, c);
+      }
     }
   }
 
@@ -348,7 +416,10 @@ export class Life {
         } else {
           // a shrine on a post at the side of the street
           if (col.heightAround(x, z, 0.6) > 0.08) continue;
-          k.at(x, y, z, (h % 628) / 100);
+          // its open niche looks along the street, at whoever comes walking
+          const [x2, z2] = pointOn(line.p, line.seg, Math.min(line.len, ss + 1.5));
+          const [x0, z0] = pointOn(line.p, line.seg, Math.max(0, ss - 1.5));
+          k.at(x, y, z, Math.atan2(x2 - x0, z2 - z0) + (h % 2 ? Math.PI : 0));
           shrineProp(k, false);
         }
         const name = kind === 'sign' ? SIGN_NAMES[n % SIGN_NAMES.length] : '';
@@ -408,7 +479,7 @@ export class Life {
           float d = distance(position.xz, uPlayer.xz);
           vAlpha = aAlpha * (1.0 - smoothstep(20.0, 32.0, d)) * smoothstep(1.8, 3.6, d);
           vKind = aKind;
-          gl_PointSize = clamp(uScale * 9.0 / max(1.0, -mv.z), 10.0, 40.0);
+          gl_PointSize = clamp(uScale * 9.0 / max(1.0, -mv.z), 15.0, 40.0);
         }`,
       fragmentShader: `uniform sampler2D uMap; varying float vKind; varying float vAlpha;
         void main() {
@@ -461,6 +532,15 @@ export class Life {
       for (const p of this.people.list) this.marks.set(p.def.id, this.markFor(p.def.id));
     }
     this.people.update(dt, px, pz, this.talkingTo, this.markOf);
+    // market-day sellers call out to whoever passes close by (now and then, never over each other)
+    for (const h of this.hawkers) {
+      const d = Math.hypot(h.x - px, h.z - pz);
+      if (d < 7 && d > 1.2 && this.time > h.next && !this.talk.open && py < h.y + 4) {
+        h.next = this.time + 14 + (h.n % 3) * 4;
+        for (const o of this.hawkers) o.next = Math.max(o.next, this.time + 3.5);
+        this.d.combat.floaters.add(h.calls[h.n++ % h.calls.length], new THREE.Vector3(h.x, h.y + 2.2, h.z), 'bark', 3.4, 0.35);
+      }
+    }
     if (this.talk.open) this.d.crowd?.tickChat(dt);
     // markers in the street
     this.spotUniforms.uPlayer.value.set(px, 0, pz);
@@ -645,9 +725,14 @@ export class Life {
     return out;
   }
 
+  /** Seconds since someone pointed the way (the guide gives it back to the tracked quest after a while). */
+  get pointerAge() {
+    return this.pointer ? this.time - this.pointer.since : Infinity;
+  }
+
   /** Mark a place for a while (on the map, and with the guide's pillar). */
   point(x: number, z: number, label: string, secs = 150) {
-    this.pointer = { x, z, label, until: this.time + secs };
+    this.pointer = { x, z, label, until: this.time + secs, since: this.time };
   }
 
   // ================================================================ people in the street
@@ -655,13 +740,15 @@ export class Life {
     const i = this.d.crowd?.indexOf(w) ?? 0;
     const r = seeded(i * 7717 + 3);
     const info = ROLE_INFO[w.role];
-    const label = info.label(w.female, i);
+    // the role decides where it can (an old woman is a woman whatever body the crowd gave her); the body decides the rest
+    const female = FEMALE_ROLES.has(w.role) ? true : MALE_ROLES.has(w.role) ? false : w.female;
+    const label = info.label(female, i);
     let name: string;
     if (w.role === 'beguine') name = NAMES.beguine[Math.floor(r() * NAMES.beguine.length)];
     else if (w.role === 'friar') name = NAMES.friar[Math.floor(r() * NAMES.friar.length)];
-    else if (w.role === 'child') name = (w.female ? NAMES.girl : NAMES.boy)[Math.floor(r() * 8)];
+    else if (w.role === 'child') name = (female ? NAMES.girl : NAMES.boy)[Math.floor(r() * 8)];
     else {
-      const list = w.female ? NAMES.f : NAMES.m;
+      const list = female ? NAMES.f : NAMES.m;
       name = list[Math.floor(r() * list.length)];
     }
     const article = label === 'meisje' ? 'het' : 'de';
@@ -1371,8 +1458,9 @@ function spotAtlas() {
     g.lineWidth = 7;
     g.strokeStyle = 'rgba(30, 18, 6, 0.85)';
     g.stroke();
+    // ivory, not gold: gold belongs to the ! and ? of people with work, and a small door arch in gold reads as a "!"
     g.lineWidth = 3;
-    g.strokeStyle = '#f2c35a';
+    g.strokeStyle = '#ece2c6';
     g.stroke();
     g.restore();
   };

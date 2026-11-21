@@ -13,6 +13,8 @@ export interface TutorialCtx {
   turned: number;
   walked: number;
   throttle: number; // -1..1 this frame
+  /** the dragon's airspeed (m/s) */
+  airspeed?: number;
   climbing: boolean;
   boosting: boolean;
   canLand: boolean;
@@ -65,7 +67,8 @@ const STEPS: Step[] = [
   { id: 'breath', keys: () => ['LMB'], text: '{dragon} spuwt vuur', when: (c) => c.mode === 'fly' && c.inCombat, done: (c) => c.tally.breaths > 0, stall: 2 },
   { id: 'mount', keys: (p) => (p ? ['Y'] : ['E']), text: 'Ver weg? Roep {dragon} en vlieg', when: (c) => c.mode === 'walk' && c.toGoal > 300 && c.toGoal < 1e8 && !c.inCombat, done: (c) => c.mode === 'fly', stall: 6 },
   // the second flight: now speed matters
-  { id: 'speed', keys: (p) => (p ? ['RT', 'LT'] : ['W', 'S']), text: 'Sneller en trager', when: (c, t) => c.mode === 'fly' && t.learned('land'), done: (c, t) => (t.acc.speed += Math.abs(c.throttle) > 0.3 ? t.dt : 0) > 0.8, stall: 5 },
+  // (or at once, when the dragon hangs in the air and the rider does not know how to send him on)
+  { id: 'speed', keys: (p) => (p ? ['RT', 'LT'] : ['W', 'S']), text: 'Sneller en trager', when: (c, t) => c.mode === 'fly' && (t.learned('land') || (c.airspeed ?? 99) < 6), done: (c, t) => (t.acc.speed += Math.abs(c.throttle) > 0.3 ? t.dt : 0) > 0.8, stall: 5 },
   { id: 'book', keys: () => ['J', 'K'], text: 'Je dagboek en de Kroniek', when: (c) => c.quests >= 2 && !c.talking && !c.inCombat, done: (c) => c.bookOpen, patience: 14, stall: 8 },
 ];
 

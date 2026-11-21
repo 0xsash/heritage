@@ -97,6 +97,8 @@ async function boot() {
   void kitP.then((k) => {
     if (!k || HERO_CLIPS.some((c) => !k.hasClip(c))) void rider();
   });
+  // the dragon next, while the player is still making a character and the town is being built
+  const dragonP = kitP.then(() => loadModel('models/dragon.glb'));
   const front = skipFront
     ? Promise.resolve({ mode: 'continue' as const })
     : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, origin: peek.hero.origin, sex: peek.hero.sex, background: peek.hero.background } : null, () => sound.start(), kitP);
@@ -140,7 +142,7 @@ async function boot() {
   });
   scene.add(player.group);
   setLoading('De draak wordt gewekt…');
-  const dragonModel = await loadModel('models/dragon.glb');
+  const dragonModel = await dragonP;
   if (dragonModel) player.dragon.useModel(dragonModel.scene);
   setLoading('De stad komt tot leven…');
   const townsfolk = await kitP;
@@ -395,6 +397,16 @@ async function boot() {
     else if (which === 'kroniek') kroniekUI.toggle();
     else chars.toggle(true);
   };
+  // a word's explanation (the glossary) opens above it; near the edge of the screen it moves inwards
+  const glossShift = (e: Event) => {
+    const g = (e.target as HTMLElement).closest?.<HTMLElement>('.gl');
+    if (!g) return;
+    const r = g.getBoundingClientRect(), half = Math.min(300, window.innerWidth - 24) / 2, mid = r.left + r.width / 2;
+    const shift = Math.min(0, window.innerWidth - 12 - (mid + half)) + Math.max(0, 12 - (mid - half));
+    g.style.setProperty('--gx', `${Math.round(shift)}px`);
+  };
+  uiRoot.addEventListener('mouseover', glossShift);
+  uiRoot.addEventListener('focusin', glossShift);
   uiRoot.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-book]');
     if (b && !b.classList.contains('on')) book(b.dataset.book as 'journal' | 'kroniek' | 'character');
@@ -438,6 +450,15 @@ async function boot() {
     boom: () => sound.boom(),
     trauma: (t) => rig.addTrauma(t),
     hurt: (f) => frame.hurt(f),
+    faceTown: () => {
+      // dawn finds you facing Diest, the first ring of light ahead
+      const r = FIRST_FLIGHT[0];
+      // and high enough to see it: over the meadows, the town on the skyline
+      player.pos.y = Math.max(player.pos.y, world.collision.heightAt(player.pos.x, player.pos.z) + 34);
+      rig.yaw = player.yaw = Math.atan2(r.x - player.pos.x, r.z - player.pos.z);
+      rig.pitch = -0.05;
+      rig.snap();
+    },
     blast: (at) => {
       combat.fx.flash(at, 9, '#ffb060', 0.5);
       combat.fx.ring(at, 7, '#ff9040', 0.7);
@@ -450,6 +471,9 @@ async function boot() {
       if (skipped) {
         player.debugPlaceFlying(sx, 95, sz, Math.atan2(-sx, -sz));
         rig.yaw = player.yaw;
+      } else if (player.mode === 'fly') {
+        // dawn: he does not wait to be told. He flies on, towards the town; W and S change his pace
+        player.cruise = Math.max(player.cruise, 22);
       }
       kroniek.unlock('mens:neelke', true);
       startFirstFlight();
@@ -509,7 +533,7 @@ async function boot() {
     rig.snap();
     uiRoot.style.display = s.ui ? '' : 'none';
   };
-  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, shareCard, prologue, voice, kit: townsfolk, dragonModel, life, hud, guide };
+  (window as unknown as { belfort: object }).belfort = { input, player, rig, world, atmo, scene, renderer, post, pose, quests, actors, dialogue, journal, combat, crowd, chars, banner, kroniek, kroniekUI, readables, tutorial, rings, courses: { dayCourse, FIRST_FLIGHT }, shareCard, prologue, voice, kit: townsfolk, dragonModel, life, hud, guide };
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
@@ -607,7 +631,7 @@ async function boot() {
       tut.lastZ = pz;
       tutorial.update(dt, {
         mode: player.mode, pad: input.device === 'pad', turned: tut.turned, walked: tut.walked,
-        throttle: input.throttle - (input.held('brake') ? 1 : 0), climbing: input.held('jump') || input.held('descend'), boosting: input.held('boost'),
+        throttle: input.throttle - (input.held('brake') ? 1 : 0), airspeed: player.speed, climbing: input.held('jump') || input.held('descend'), boosting: input.held('boost'),
         canLand: player.canLand(), gate: tutGate(), toGoal: tut.goal, goalIsHere: tut.goal < 30,
         talking: dialogue.open, bookOpen: journal.open || kroniekUI.open, nearGiver: false,
         quests: Object.keys(quests.s.quests).length, inCombat: combat.inCombat,
@@ -642,12 +666,13 @@ async function boot() {
       }));
       // a standing invitation, once a day
       if (course === 'day' && quests.s.flags.dv_day !== dayKey() && list.length < 3) list.push({ title: 'Klokkenronde', kind: 'contract', level: undefined, tracked: false, objectives: [rings.running ? 'Luid de zeven klokken, ring na ring' : 'Vlieg door de blauwe ring boven de Grote Markt'] });
-      if (life.pointer) {
-        // someone in town pointed the way: show it for a while
+      if (life.pointer && (!t || life.pointerAge < 45)) {
+        // someone in town pointed the way: show it for a while (the map keeps the pin); with a quest
+        // tracked, the pillar goes back to the quest after 45 seconds, so the story never gets lost
         guide.target = { x: life.pointer.x, z: life.pointer.z, r: 0, title: life.pointer.label, text: life.pointer.label, person: false };
       }
       if (prologue.active) {
-        guide.target = prologue.target ? { x: prologue.target.x, z: prologue.target.z, r: 0, title: '', text: '', person: false } : null;
+        guide.target = prologue.target ? { x: prologue.target.x, z: prologue.target.z, r: 0, title: '', text: '', person: false, pillar: false } : null;
         hud.questTarget = null;
       }
       hud.trackerList = list.length ? list : [{ title: 'Op zoek naar werk', kind: 'side', objectives: ['Zoek iemand met een gouden ! boven het hoofd'], tracked: true }];

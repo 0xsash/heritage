@@ -8,7 +8,7 @@
 import { BACKGROUNDS, type BackgroundId, ORIGINS, type OriginId, STAT_NAMES, type Stat, Sheet, uniqueGear, gearLines } from '../rpg/character';
 import { FACTIONS, type FactionId, tierOf } from '../rpg/factions';
 import {
-  CLOAKS, DRAGONS, FACES, HAIR_COLORS, NAMES, type Sex, beardName, buildName, faceName, hairName, heroOptions, heroSpec, outfitHasHat,
+  CLOAKS, DRAGONS, FACES, HAIR_COLORS, NAMES, type Sex, beardName, buildName, faceName, hairName, hatLabel, heroOptions, heroSpec, outfitHasHat,
 } from '../rpg/look';
 import type { HeroData } from '../rpg/state';
 import type { TownsfolkKit } from '../rpg/townsfolk';
@@ -297,7 +297,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         { id: 'hair', label: 'Haar', value: () => hairName(h.hair), step: (d) => (h.hair = cycle(opts.hair[h.sex], h.hair, d)) },
         { id: 'hairColor', label: 'Haarkleur', value: () => HAIR_COLORS.find(([k]) => k === h.hairColor)?.[1] ?? '', step: (d) => (h.hairColor = cycle(HAIR_COLORS.map(([k]) => k), h.hairColor, d)), swatch: () => kit?.m.palette[h.hairColor] ?? '#5e4028' },
         { id: 'beard', label: 'Baard', value: () => (h.sex === 'f' ? '—' : beardName(h.beard)), step: (d) => (h.beard = cycle(opts.beards, h.beard, d)), off: () => h.sex === 'f' },
-        { id: 'hat', label: 'Hoed', value: () => (!outfitHasHat(kit, h.origin, h.sex) ? '—' : h.hat ? 'Op' : 'Af'), step: () => (h.hat = !h.hat), off: () => !outfitHasHat(kit, h.origin, h.sex) },
+        { id: 'hat', label: 'Hoed', value: () => hatLabel(kit, h.origin, h.sex, h.hat), step: () => (h.hat = !h.hat), off: () => !outfitHasHat(kit, h.origin, h.sex) },
       ];
       const tones = (): [number, number, number][] => kit?.m.skinTones ?? new Array(8).fill([1, 1, 1]);
       const renderRows = () => {

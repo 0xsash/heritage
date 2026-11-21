@@ -30,6 +30,8 @@ export interface GuideTarget {
   text: string;
   /** a person to talk to: the waypoint sits above their head */
   person?: boolean;
+  /** false: only the on-screen mark, no column of light (the prologue keeps its night dark) */
+  pillar?: boolean;
 }
 
 export class Guide {
@@ -84,6 +86,7 @@ export class Guide {
     // fade the pillar out when you are there, so it never blocks the view
     (this.pillar.material as THREE.MeshBasicMaterial).opacity = Math.min(0.55, Math.max(0, (dist - (t.r || 6)) / 60)) * (0.85 + Math.sin(this.time * 2) * 0.15);
     this.pillar.scale.set(1 + dist / 900, 1, 1 + dist / 900);
+    this.pillar.visible = t.pillar !== false;
     this.ring.visible = t.r > 0;
     this.ring.position.set(t.x, gy + 0.5, t.z);
     this.ring.scale.setScalar(t.r);
