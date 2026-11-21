@@ -82,7 +82,7 @@ export class Shops {
       const w: ShopWare = { key: `g:${g.id}`, name: g.name, text: g.text, price: st.price(g.price, f) };
       if ('cloak' in g.use) {
         w.swatch = g.use.cloak;
-        if (this.h.q.s.hero.cloak.toLowerCase() === g.use.cloak.toLowerCase()) w.tag = 'gedragen';
+        if (this.h.q.s.hero.cloak.toLowerCase() === g.use.cloak.toLowerCase()) w.tag = 'draag je al';
       }
       if ('salve' in g.use || 'regen' in g.use) {
         const id = 'salve' in g.use ? 'salve' : g.id;

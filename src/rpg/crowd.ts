@@ -478,30 +478,30 @@ export class Crowd {
     const fame = (s.renown.Diest ?? 0) + (s.renown.Begijnhof ?? 0);
     if (fame >= 15) pool.push(...FAMOUS, ...FAMOUS);
     if (q.test({ quest: 'main_bells', state: 'active' }) || q.test({ quest: 'main_bells', state: 'none' })) pool.push(...BELLS);
-    if (q.test({ flag: 'seals_reported' })) pool.push('Lijsbet Vranckx is weg. Haar kinderen eten nu bij de buren.', 'De wevers drinken op jou. De weduwe niet.');
+    if (q.test({ flag: 'seals_reported' })) pool.push('Lijsbet Vranckx is weg. Haar kinderen eten nu bij de buren.', 'De wevers drinken op jou. De weduwe drinkt niet mee.');
     if (q.test({ flag: 'seals_begijnhof' })) pool.push('Lijsbet weeft nu bij de begijnen. Meester Joos is er ziek van.');
-    if (q.test({ flag: 'toll_bribe' })) pool.push('Lekker, die azijn van Gielis? Zeg maar niets.');
-    if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push('Roelof de Rode dood? Ik geloof het als ik zijn laarzen zie.', 'In Kaggevinne slapen ze weer. Met de deur dicht, niet op slot.');
-    if (q.test({ quest: 'main_kludde', state: 'done' })) pool.push('Jij hebt de Kludde verjaagd. Grootmoeder zegt: verjaagd is niet dood.', 'Hoor je de klokken? Mijn man huilde bij de eerste slag.', 'Ze luiden weer. Je draak slaapt er staand bij, zie ik.');
+    if (q.test({ flag: 'toll_bribe' })) pool.push('Was hij lekker, die azijn van Gielis? Zeg maar niets.');
+    if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push('Lambrecht de Rode dood? Dat geloof ik pas als ik zijn laarzen zie.', 'In Kaggevinne slapen ze weer met de deur dicht, maar niet meer op slot.');
+    if (q.test({ quest: 'main_kludde', state: 'done' })) pool.push('Jij hebt de Kludde verjaagd. Grootmoeder zegt: verjaagd is niet dood.', 'Hoor je de klokken? Mijn man weende bij de eerste slag.', 'Ze luiden weer. Je draak slaapt er staand bij, zie ik.');
     if (s.hero.level >= 5) pool.push('Dat is een stevig zwaard, {name}. Hou het in de schede.');
     return pool[Math.floor(Math.random() * pool.length)];
   }
 }
 
 const GREET = [
-  'Goeiendag.', 'Dag, vreemdeling. Hou je beest uit mijn moestuin.', 'Allee, kijk uit waar je loopt.', 'Droog weer, hé. Dat duurt niet.', 'Goeiemorgen. Zag jij een geit?',
-  'Al gegeten? De wafels aan de Lakenhalle zijn goed.', 'De tol is weer omhoog. Altijd omhoog.', 'Mijn koe is ziek. Weet jij iets van koeien?',
-  'Ze zeggen dat de Fransen in Henegouwen zitten.', 'Amai, wat een mantel. Wie heeft die betaald?', 'Pas op voor de zakkenrollers aan de markt.',
+  'Goeiendag.', 'Dag, vreemdeling. Hou je beest uit mijn moestuin.', 'Allee, kijk uit waar je loopt.', 'Droog weer, hé. Dat blijft niet duren.', 'Goeiemorgen. Heb jij een geit gezien?',
+  'Heb je al gegeten? De wafels aan de Lakenhalle zijn goed.', 'De tol is alweer verhoogd. Zakken doet hij nooit.', 'Mijn koe is ziek. Ken jij iets van koeien?',
+  'Ze zeggen dat de Fransen in Henegouwen zitten.', 'Amai, wat een mantel. Wie heeft die betaald?', 'Pas op voor de zakkenrollers op de markt.',
   'De Demer staat hoog dit jaar. Ze wil iets.', 'Jij bent niet van hier, hé?', 'Het bier van Diest is beter dan dat van Leuven. Zeg het voort.',
 ];
 const BELLS = [
-  'Zeven slagen, en toen niets. Ik lag nog wakker.', 'Zonder klokken gaan de poorten dicht wanneer de wachter er zin in heeft.',
-  'Die nacht was hij een hond, zegt de veerman. Zo groot als een kalf.', 'Pieter de koster loopt rond als een kip zonder kop.',
-  'Mijn man ging die nacht vissen. Zijn netten zijn teruggekomen.', 'Ik weet niet meer hoe laat het is. Mijn deeg ook niet.',
+  'Ik hoorde zeven slagen en daarna niets meer. Ik lag nog wakker.', 'Zonder klokken gaan de poorten dicht wanneer de wachter er goesting in heeft.',
+  'Die nacht was hij een hond zo groot als een kalf, zegt de veerman.', 'Pieter de koster loopt rond als een kip zonder kop.',
+  'Mijn man ging die nacht vissen. Zijn netten zijn teruggekomen.', 'Ik weet niet meer hoe laat het is, en mijn deeg weet het ook niet.',
 ];
 const FAMOUS = [
-  'Daar is {name}. Die van de draak.', 'Goeiendag, {name}. Eet {dragon} ook vis?', '{name}! Mijn zoon wil later ook een draak.',
-  'Iedereen praat over jou, {name}. Niet altijd goed.', 'Kijk, daar gaat {name}. Ze zeggen dat die de Kludde niet vreest.',
+  'Daar is {name}, die van de draak.', 'Goeiendag, {name}. Eet {dragon} ook vis?', '{name}! Mijn zoon wil later ook een draak.',
+  'Iedereen praat over jou, {name}, maar niet altijd goed.', 'Kijk, daar gaat {name}. Ze zeggen dat die niet bang is van de Kludde.',
 ];
 interface Anchor { x: number; z: number; r: number; p: number }
 /** Where each kind of person tends to be (p: how often they stick to it). */
@@ -513,4 +513,4 @@ const ANCHORS: Partial<Record<Role, Anchor[]>> = {
   burgher: [{ x: 40, z: 10, r: 150, p: 0.4 }], // the Grote Markt and the Lakenhalle
 };
 
-const FLEE = ['Een draak! Een DRAAK!', 'Jezus Maria!', 'Weg! Weg!', 'Mijn kippen!', 'Niet opeten, niet opeten!'];
+const FLEE = ['Een draak! Een DRAAK!', 'Jezus Maria!', 'Weg hier! Weg!', 'Mijn kippen!', 'Eet me niet op!'];

@@ -319,15 +319,15 @@ export function dress(root: THREE.Object3D, role: Role, r: () => number): Dresse
 }
 
 export const LINES: Record<Role, string[]> = {
-  peasant: ['De haver staat goed. Als de soldaten haar laten staan.', 'Weer tol betalen. Aan elke brug een hand.', 'Heb je mijn koe gezien? Een bruine, met één horen.'],
-  peasantWoman: ['Verse eieren, nog warm. Wie wil er?', 'Mijn man zit weer in de herberg. Op mijn eieren.', 'Pas op, de kasseien zijn glad van de mest.'],
-  burgher: ['Goeiedag. Ik heb het druk.', 'De lakenhandel gaat slecht. Mijn vader verkocht nog in Keulen.', 'Een draak in de stad. Wie betaalt de schade?'],
-  huik: ['Goedendag, {heer|juffrouw}.', 'Mijn man is schepen. Je hebt vast van hem gehoord.', 'Zo\'n beest in de stad. En niemand die iets zegt.'],
-  beguine: ['God zegen je.', 'Kom eens naar onze kapel. Onze klok loopt voor.', 'Wij bidden voor de klokken. En voor wie ze stilzette.'],
-  soldier: ['¡Hola! Pas op, {ruiter|ruiterin}.', 'Halt. Ah, de drakenrijder. Ga maar.', 'De soldij is drie maanden te laat. Weer.'],
-  friar: ['Pax tecum.', 'Een aalmoes voor de kapucijnen? God telt mee.', 'Ook draken zijn schepselen van God. Denk ik.'],
-  pilgrim: ['Op weg naar Scherpenheuvel. Mijn moeder ging ook, blootsvoets.', 'Onze-Lieve-Vrouw zal mijn knie genezen. Ik heb al betaald.', 'Nog zeven dagen stappen.'],
-  child: ['Een draak! Mag ik hem aaien?', 'Mijn vader zegt dat jij een tovenaar bent.', 'Kun je vuurspuwen? Toe, één keer!', 'Ik heb zijn tanden geteld. Aan één kant elf.'],
-  oldMan: ['In mijn tijd hadden we geen draken. Wel Fransen.', 'Mijn rug, mijn rug.', 'Vroeger luidden ze altijd. Door de pest heen.'],
-  oldWoman: ['Ach {jongen|meisje}, je bent veel te mager.', 'De Kludde heb ik gezien, als kind. Die nacht was hij een kat.', 'God zegen je, en je beest ook. Vooral je beest.'],
+  peasant: ['De haver staat goed, als de soldaten haar tenminste laten staan.', 'Aan elke brug houdt er een zijn hand op voor tol.', 'Heb je mijn koe gezien? Het is een bruine met één horen.'],
+  peasantWoman: ['Verse eieren, nog warm. Wie wil er?', 'Mijn man zit weer in de herberg, met mijn eiergeld.', 'Pas op, de kasseien zijn glad van de mest.'],
+  burgher: ['Goeiedag. Ik heb het druk.', 'Van laken leeft hier bijna niemand meer. Vroeger kwamen de kopers van ver.', 'Een draak in de stad! Wie gaat de schade betalen?'],
+  huik: ['Goedendag, {heer|juffrouw}.', 'Mijn man is schepen. Je hebt zeker al van hem gehoord.', 'Zo\'n beest in de stad, en niemand zegt er iets van.'],
+  beguine: ['God zegene je.', 'Kom eens naar onze kapel. Onze klok loopt voor.', 'Wij bidden voor de klokken, en ook voor wie ze deed zwijgen.'],
+  soldier: ['¡Hola! Pas op, {ruiter|ruiterin}.', 'Halt! Ah, jij bent het. Loop maar door.', 'De soldij is alweer drie maanden te laat.'],
+  friar: ['Pax tecum.', 'Een aalmoes voor de minderbroeders? God telt mee.', 'Ook draken zijn schepselen van God, denk ik toch.'],
+  pilgrim: ['Ik ben op weg naar Scherpenheuvel. Mijn moeder ging ook, op blote voeten.', 'Onze-Lieve-Vrouw zal mijn knie genezen. Ik heb al betaald.', 'Ik moet nog zeven dagen stappen.'],
+  child: ['Een draak! Mag ik hem aaien?', 'Mijn vader zegt dat jij een tovenaar bent.', 'Kan je draak vuur spuwen? Toe, één keer!', 'Ik heb zijn tanden geteld. Aan één kant zijn er elf.'],
+  oldMan: ['In mijn tijd hadden we geen draken, maar wel Fransen.', 'Mijn rug, mijn rug.', 'Vroeger luidden ze altijd, zelfs toen de pest hier was.'],
+  oldWoman: ['Ach {jongen|meisje}, je bent veel te mager.', 'Als kind heb ik de Kludde gezien. Die nacht was hij een kat.', 'God zegene je, en je beest ook. Vooral je beest.'],
 };
