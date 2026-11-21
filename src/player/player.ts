@@ -48,6 +48,8 @@ export class Player {
   cruise = CRUISE;
   private boostHeld = false;
   climbRate = 0;
+  /** seconds until a wall hit shakes the camera again */
+  private bumpT = 0;
 
   // Hero on-foot state
   heroPos = new THREE.Vector3();
@@ -147,7 +149,8 @@ export class Player {
       targetYaw = this.yaw - input.moveX * 1.6;
       targetPitch = clamp(this.pitch + input.moveY * 0.9, -1.2, 1.1);
     } else {
-      targetYaw = aimYaw - input.moveX * 0.35;
+      // A/D turn the aim itself (CameraRig); this small offset only leans the dragon into the turn
+      targetYaw = aimYaw - input.moveX * 0.15;
       targetPitch = clamp(aimPitch, -1.2, 1.1);
     }
     if (input.held('jump')) targetPitch = Math.max(targetPitch, 0.55);
@@ -182,7 +185,8 @@ export class Player {
     this.boostHeld = boost;
     if (this.boostTime > 0) {
       this.boostTime -= dt;
-      target = BOOST_SPEED;
+      // the boost is held back low over the roofs too, only less: no 80 m/s along the cobbles
+      target = Math.min(BOOST_SPEED, Math.max(lowCap * 1.8, 30));
     }
     // energy: diving gains speed and climbing spends it, less so close to the ground
     const lowFactor = clamp(alt / 45, 0.25, 1);
@@ -206,7 +210,8 @@ export class Player {
 
     // --- integrate
     const f = this.forward;
-    const prevY = this.pos.y;
+    const prevY = this.pos.y, prevX = this.pos.x, prevZ = this.pos.z;
+    const floorPrev = this.col.heightAround(prevX, prevZ, 2.2) + CLEARANCE;
     this.pos.addScaledVector(f, this.speed * dt);
     this.pos.y += this.vy * dt;
     this.climbRate = (this.pos.y - prevY) / Math.max(dt, 1e-4);
@@ -218,7 +223,22 @@ export class Player {
       this.pitch = lerp(this.pitch, 0.35, damp(0.12, dt)); // pull up before impact
     }
     const floor = this.col.heightAround(this.pos.x, this.pos.z, 2.2) + CLEARANCE;
-    if (this.pos.y < floor) {
+    this.bumpT -= dt;
+    if (floor - this.pos.y > 2 && floor - floorPrev > 2) {
+      // flown into a wall or tower (the surface ahead stands far above the one just left):
+      // stop at it and claw up the face, instead of popping onto the roof in one frame
+      if (this.speed > 6 && this.bumpT <= 0) {
+        this.ev.trauma(clamp(this.speed / 30, 0.15, 0.45));
+        this.ev.land(0.6);
+        this.bumpT = 0.8;
+      }
+      this.speed *= 0.4;
+      this.pos.x = prevX;
+      this.pos.z = prevZ;
+      this.pos.y = Math.max(this.pos.y, floorPrev);
+      this.pos.y += Math.min(12 * dt, floor - this.pos.y);
+      this.pitch = Math.max(this.pitch, lerp(this.pitch, 0.6, damp(0.2, dt)));
+    } else if (this.pos.y < floor) {
       const impact = Math.max(0, -this.climbRate);
       this.pos.y = floor;
       if (this.pitch < 0) this.pitch *= 0.4;
@@ -233,12 +253,14 @@ export class Player {
   private beginLanding() {
     this.mode = 'landing';
     this.tTimer = 0;
+    this.boostTime = 0;
+    this.boostHeld = false;
     this.tFrom.copy(this.pos);
     const f = this.forward;
     const glide = Math.min(this.speed * 0.7, 22);
-    const x = this.pos.x + f.x * glide, z = this.pos.z + f.z * glide;
-    const surf = this.col.heightAround(x, z, 2);
-    this.tTo.set(x, surf + 0.05, z);
+    // stand on the ground there, clear of walls (not on the roof edge next to it)
+    const [x, z] = this.col.openSpot(this.pos.x + f.x * glide, this.pos.z + f.z * glide);
+    this.tTo.set(x, this.col.heightAt(x, z) + 0.05, z);
   }
 
   private updateLanding(dt: number) {
@@ -269,13 +291,19 @@ export class Player {
     const right = new THREE.Vector3(-Math.cos(this.yaw), 0, Math.sin(this.yaw));
     this.heroPos.copy(this.pos).addScaledVector(right, 3.2);
     this.heroPos.y = this.col.heightAt(this.heroPos.x, this.heroPos.z);
-    if (this.heroPos.y > this.pos.y + 0.6) this.heroPos.copy(this.pos); // blocked: stand by the dragon
+    if (this.heroPos.y > this.pos.y + 0.6) {
+      // blocked: the left side, else stand by the dragon
+      this.heroPos.copy(this.pos).addScaledVector(right, -3.2);
+      this.heroPos.y = this.col.heightAt(this.heroPos.x, this.heroPos.z);
+      if (this.heroPos.y > this.pos.y + 0.6) this.heroPos.copy(this.pos);
+    }
     this.heroYaw = this.yaw;
     this.heroVy = 0;
     this.heroGrounded = true;
     this.group.add(this.hero.root); // re-parents off the dragon
     this.hero.root.position.copy(this.heroPos);
     this.hero.root.scale.setScalar(1);
+    this.hero.act('land', 0.35);
   }
 
   // ---------------------------------------------------------------- on foot
@@ -324,6 +352,7 @@ export class Player {
     if (!locked && input.consume('jump') && this.heroGrounded) {
       this.heroVy = 5.2;
       this.heroGrounded = false;
+      if (!this.hero.acting) this.hero.act('jump', 0.25);
     }
     this.heroVy -= 18 * dt;
 
@@ -345,6 +374,7 @@ export class Player {
     this.heroPos.y += this.heroVy * dt;
     if (this.heroPos.y <= floor) {
       if (!this.heroGrounded && this.heroVy < -9) this.ev.trauma(clamp(-this.heroVy / 40, 0.05, 0.4));
+      if (!this.heroGrounded && this.heroVy < -4 && !this.hero.acting && !this.dead) this.hero.act('land', 0.2);
       this.heroPos.y = floor;
       this.heroVy = 0;
       this.heroGrounded = true;
@@ -386,6 +416,8 @@ export class Player {
     this.hero.sit();
     this.mode = 'fly';
     this.grounded = 0;
+    this.boostTime = 0;
+    this.boostHeld = false;
     // leap up and hang in the air; the rider chooses when to fly off (W)
     this.speed = 2;
     this.cruise = 0;
@@ -399,28 +431,49 @@ export class Player {
   summonFrom(x: number, y: number, z: number) {
     this.pos.set(x, y, z);
     this.dragon.root.visible = true;
-    this.beginCall();
+    this.beginCall(true);
   }
 
-  private beginCall() {
+  private callT = 1.6;
+  private callArc = 15;
+  private callRaw = new THREE.Vector3(Infinity, 0, 0);
+  private callSpot = new THREE.Vector3();
+
+  /** @param story the prologue's summoning keeps its long, high arc */
+  private beginCall(story = false) {
     this.mode = 'calling';
     this.tTimer = 0;
+    this.boostTime = 0;
+    this.boostHeld = false;
     this.tFrom.copy(this.pos);
+    const hx = this.pos.x - this.heroPos.x, hz = this.pos.z - this.heroPos.z, hd = Math.hypot(hx, hz);
+    if (!story && hd > 400) {
+      // from far away he comes down out of the sky nearby, instead of streaking across the map
+      this.tFrom.set(this.heroPos.x + (hx / hd) * 300, Math.max(this.pos.y, this.heroPos.y + 60), this.heroPos.z + (hz / hd) * 300);
+    }
+    // the length and height of the flight are set once, so walking about does not make it jump
+    const d = this.tFrom.distanceTo(this.heroPos);
+    this.callT = story ? clamp(d / 30, 1.6, 6) : clamp(d / 30, Math.min(1.6, 0.9 + d / 40), 6);
+    this.callArc = story ? clamp(d * 0.25, 15, 80) : clamp(d * 0.25, 1.5, 80); // from close by: a hop, not a 15 m leap
   }
 
   private updateCall(dt: number) {
     // The dragon flies to you in a lazy arc and lands beside you.
     this.tTimer += dt;
-    const d = this.tFrom.distanceTo(this.heroPos);
-    const T = clamp(d / 30, 1.6, 6);
-    const t = clamp(this.tTimer / T, 0, 1);
+    const t = clamp(this.tTimer / this.callT, 0, 1);
     const behind = new THREE.Vector3(Math.sin(this.heroYaw), 0, Math.cos(this.heroYaw)).multiplyScalar(-4);
     const right = new THREE.Vector3(-Math.cos(this.heroYaw), 0, Math.sin(this.heroYaw)).multiplyScalar(3.5);
     const to = this.heroPos.clone().add(behind).add(right);
-    to.y = this.col.heightAround(to.x, to.z, 2) + 0.05;
+    if (to.distanceToSquared(this.callRaw) > 0.5) {
+      // on the ground beside you, clear of walls (looked up again only when you have moved)
+      this.callRaw.copy(to);
+      const [sx, sz] = this.col.openSpot(to.x, to.z);
+      this.callSpot.set(sx, this.col.heightAt(sx, sz) + 0.05, sz);
+    }
+    to.copy(this.callSpot);
     const prev = this.pos.clone();
     this.pos.lerpVectors(this.tFrom, to, t * t * (3 - 2 * t));
-    this.pos.y += Math.sin(t * Math.PI) * clamp(d * 0.25, 15, 80);
+    this.pos.y += Math.sin(t * Math.PI) * this.callArc;
     const v = this.pos.clone().sub(prev);
     const hv = Math.hypot(v.x, v.z);
     if (hv > 0.01) {
@@ -477,8 +530,10 @@ export class Player {
     this.heroVy = 0;
     this.heroGrounded = true;
     // dragon behind and to the right of the rider
-    const bx = x - Math.sin(yaw) * 9 - Math.cos(yaw) * 5, bz = z - Math.cos(yaw) * 9 + Math.sin(yaw) * 5;
-    this.pos.set(bx, this.col.heightAround(bx, bz, 2) + 0.05, bz);
+    const [bx, bz] = this.col.openSpot(x - Math.sin(yaw) * 9 - Math.cos(yaw) * 5, z - Math.cos(yaw) * 9 + Math.sin(yaw) * 5);
+    this.pos.set(bx, this.col.heightAt(bx, bz) + 0.05, bz);
+    this.boostTime = 0;
+    this.boostHeld = false;
     this.yaw = yaw + 0.5;
     this.pitch = 0;
     this.roll = 0;
@@ -497,6 +552,8 @@ export class Player {
       this.hero.sit();
     }
     this.mode = 'fly';
+    this.boostTime = 0;
+    this.boostHeld = false;
     this.pos.set(x, y, z);
     this.yaw = yaw;
     this.pitch = 0;

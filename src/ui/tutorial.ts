@@ -69,7 +69,7 @@ const STEPS: Step[] = [
   { id: 'attack', keys: () => ['LMB'], text: 'Sla toe. Drie slagen vormen een reeks', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.hits - t.base.hits >= 3, stall: 2 },
   { id: 'salve', keys: (p) => (p ? ['▼'] : ['Q']), text: 'Begijnenzalf geneest je', when: (c) => c.hpFrac < 0.5 && c.salves > 0, done: (c, t) => c.tally.potions > t.base.potions, stall: 1 },
   { id: 'skill', keys: () => ['RMB'], text: '{skill}', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.skills > t.base.skills, stall: 5 },
-  { id: 'breath', keys: () => ['LMB'], text: '{dragon} spuwt vuur', when: (c) => c.mode === 'fly' && c.inCombat, done: (c) => c.tally.breaths > 0, stall: 2 },
+  { id: 'breath', keys: (p) => (p ? ['LB'] : ['LMB']), text: '{dragon} spuwt vuur', when: (c) => c.mode === 'fly' && c.inCombat, done: (c) => c.tally.breaths > 0, stall: 2 },
   // what Het Oude Volk teaches (only ever seen by someone who found them)
   { id: 'spare', keys: (p) => (p ? ['Y'] : ['E']), text: 'Laat het beest gaan', when: (c) => c.mode === 'walk' && !!c.spare, done: (c, t) => (c.tally.spares ?? 0) > (t.base.spares ?? 0), stall: 0.3, patience: 8 },
   { id: 'dskill', keys: () => ['RMB', 'R'], text: 'De gaven van {dragon}', when: (c) => c.mode === 'fly' && !!c.dragonFly && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },

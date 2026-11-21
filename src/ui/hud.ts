@@ -62,7 +62,7 @@ export class Hud {
       <tr><td>J · K · I · M</td><td>Dagboek · Kroniek · personage en zak · kaart</td></tr>
       <tr><td>P</td><td>Het Schilderij: je uitzicht als schilderij, om te bewaren of te delen</td></tr>
       <tr><td>T · H</td><td>Licht veranderen · hulp verbergen</td></tr>
-      <tr><td>Gamepad</td><td>LS sturen · RS camera · RT/LT snelheid en aanvallen · A stijgen · B dalen · Y landen/praten</td></tr>
+      <tr><td>Gamepad</td><td>LS sturen · RS camera · RT/LT snelheid en aanvallen · LB vuur in de lucht · A stijgen · B dalen · Y landen/praten</td></tr>
       </table>`,
     );
     this.help.classList.add('hidden'); // H shows it; the tutorial teaches the rest as you go

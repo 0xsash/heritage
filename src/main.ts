@@ -386,6 +386,8 @@ async function boot() {
   scene.add(life.group);
   chars.extra = () => life.standing.html();
   let uiClosedAt = 0;
+  /** a key went down while a panel was open (seen before the panel's own listener can close it) */
+  let keyToUi = false;
   // one book, three sections: opening one closes the others
   const book = (which: 'journal' | 'kroniek' | 'character') => {
     if (dialogue.open || kroniekUI.reading || shareCard.open) return;
@@ -497,6 +499,9 @@ async function boot() {
   canvas.addEventListener('click', () => {
     if (running && !uiOpen()) input.requestLock();
   });
+  window.addEventListener('keydown', () => {
+    if (uiOpen()) keyToUi = true;
+  }, { capture: true });
   document.addEventListener('pointerlockchange', () => {
     if (!running) return;
     const locked = document.pointerLockElement === canvas;
@@ -504,7 +509,11 @@ async function boot() {
     // and only where pointer lock actually works (embedded pages fall back to drag-look).
     paused = !locked && input.device === 'kbm' && input.lockSupported && !uiOpen();
     hud.pauseOverlay(paused);
-    if (paused) hud.overlay.addEventListener('click', () => input.requestLock(), { once: true });
+  });
+  // every click on the pause screen asks again: browsers refuse a re-lock for a moment after Esc,
+  // and a one-off listener left the game stuck on PAUZE after one refused click
+  hud.overlay.addEventListener('click', () => {
+    if (running && paused) input.requestLock();
   });
 
   if (params.has('autostart')) uiRoot.querySelector('.frontend')?.remove();
@@ -548,6 +557,7 @@ async function boot() {
   function frameLoop() {
     requestAnimationFrame(frameLoop);
     const dt = clamp(clock.getDelta(), 0, 1 / 20);
+    input.flying = player.mode === 'fly';
     input.poll();
     let sdt = dt;
     if (running && !paused) {
@@ -581,11 +591,14 @@ async function boot() {
       const blocked = uiOpen() || mapOpen;
       combat.update(blocked ? 0 : dt, input, rig.yaw, rig.camera, !blocked && !prologue.active && performance.now() - uiClosedAt > 250);
       sdt = blocked ? 0 : dt * combat.timeScale;
-      if (uiOpen()) {
+      if (uiOpen() || keyToUi) {
         // the world waits while you read; keys belong to the open panel
+        // (also the key that closed it: the E or Space on the last line must not call the dragon or jump)
         input.consume('interact');
         input.consume('jump');
-      } else if (!mapOpen) {
+      }
+      keyToUi = false;
+      if (!uiOpen() && !mapOpen) {
         prologue.update(dt, input);
         if (!prologue.active && player.mode === 'walk' && !player.dead && performance.now() - uiClosedAt > 250 && talkOrPickUp()) {
           // the press went to a person or a thing on the ground
@@ -746,7 +759,7 @@ async function boot() {
     const flying = !player.onFoot;
     const slots: SlotView[] = flying
       ? [
-          { key: 'LMB', name: 'Vuur', icon: 'fire', cd: combat.fire < 18 ? 1 - combat.fire / 18 : 0, ready: combat.fire >= 18 },
+          { key: input.device === 'pad' ? 'LB' : 'LMB', name: 'Vuur', icon: 'fire', cd: combat.fire < 18 ? 1 - combat.fire / 18 : 0, ready: combat.fire >= 18 },
           ...combat.dragonSlots(true), // what Het Oude Volk taught the dragon (src/player/dragonskills.ts)
           { key: 'Q', name: 'Zalf', icon: 'salve', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
         ]

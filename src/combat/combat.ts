@@ -249,13 +249,17 @@ export class Combat {
     for (const c of this.camps) {
       const d = Math.hypot(c.def.at[0] - px, c.def.at[1] - pz);
       const allowed = this.quests.test(c.def.if);
-      if (c.spawned && (d > DESPAWN_R || !allowed)) {
+      // a quest stage that needs this camp's enemies gets them, even if the camp was emptied before
+      // the stage began (kills only count while it runs): it fills once you are a little way off
+      const needed = allowed && d < SPAWN_R && d > 40 && c.enemies.every((e) => !e.alive) && this.quests.needsCamp(c.def);
+      if (c.spawned && (d > DESPAWN_R || !allowed || needed)) {
         for (const e of c.enemies) this.removeEnemy(e);
         c.enemies = [];
         c.spawned = false;
+        if (needed) this.spawnCamp(c);
       } else if (!c.spawned && allowed && d < SPAWN_R) {
         const cleared = c.clearedAt > -1e8;
-        const ready = !cleared || (c.def.respawn > 0 && this.time - c.clearedAt > c.def.respawn && d > 120);
+        const ready = needed || !cleared || (c.def.respawn > 0 && this.time - c.clearedAt > c.def.respawn && d > 120);
         if (ready) this.spawnCamp(c);
       }
     }

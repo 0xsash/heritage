@@ -51,7 +51,8 @@ export const diest: Content = {
     {
       id: 'pieter', name: 'Pieter Vandenbempt', role: 'koster van Sint-Sulpitius', at: [30, 55], facing: Math.PI, tint: '#3a3330',
       look: { body: 'man_old', wear: { hair_thin: 'h_grey', skullcap: 'black', habit: 'umber', rope_belt: null, shoes: null }, prop: 'lantern' },
-      offers: [BELLS],
+      // the road to Leuven, for a save that lost it after the Kludde (see the talk entry below)
+      offers: [BELLS, { quest: LEUVEN, if: { quest: KLUDDE, state: 'done' } }],
       talk: [
         { if: { any: [{ quest: ARRIVE, state: 'active' }, { quest: BELLS, state: 'none' }] }, start: 'pieter_intro' },
         { if: { quest: BELLS, state: 'active', stage: 'report' }, start: 'pieter_report' },
@@ -60,6 +61,8 @@ export const diest: Content = {
         // Het Oude Volk: a warning about the small bell, or what he found on its clapper
         { if: { quest: 'ov_dof', state: 'active', stage: 'nee' }, start: 'pieter_ov' },
         { if: { all: [{ flag: 'ov_choice', is: 'volk' }, { not: { flag: 'ov_pieter_dof' } }] }, start: 'pieter_dof' },
+        // a save from before main_leuven started on the klepel line (Escape on the last lines lost it): give it again
+        { if: { all: [{ quest: KLUDDE, state: 'done' }, { quest: LEUVEN, state: 'none' }] }, start: 'pieter_b3' },
         { if: { quest: KLUDDE, state: 'done' }, start: 'pieter_after' },
         { start: 'pieter_busy' },
       ],
@@ -423,12 +426,12 @@ export const diest: Content = {
     pieter_r5: { who: 'pieter', text: 'Als ze ergens is, dan is het daar. Ik ga niet tegen je liegen: de Kludde geeft niets terug. Maar hij heeft ook nog nooit klepels gestolen.', next: 'pieter_r4' },
     pieter_kludde: { who: 'pieter', text: 'Het Broek ligt ten zuidoosten van de stad, voorbij de oude Koepoort. Neem zalf mee en neem je draak mee. En kijk niet naar de lichtjes.' },
     pieter_bells: { who: 'pieter', text: 'Zijn dat... Heilige Sulpitius. Dat zijn ze, alle drie.', next: 'pieter_b2', effects: [{ take: 'klepel', n: 3 }] },
-    pieter_b2: { who: 'pieter', text: 'Help me ze ophangen. Nee, laat maar, je draak kan dat sneller. Luister. LUISTER.', next: 'pieter_b3', effects: [{ set: 'bells_ring' }, { complete: KLUDDE }] },
-    pieter_b3: { who: 'pieter', text: 'Diest weet weer hoe laat het is. Kijk naar je draak: bij elke slag vallen zijn ogen dicht. En dat beeldje zoemt nog altijd, maar nu naar het westen, naar Leuven.', next: 'pieter_b4' },
+    pieter_b2: { who: 'pieter', text: 'Help me ze ophangen. Nee, laat maar, je draak kan dat sneller. Luister. LUISTER.', next: 'pieter_b3', effects: [{ set: 'bells_ring' }, { complete: KLUDDE }, { start: LEUVEN }] },
+    pieter_b3: { who: 'pieter', text: 'Diest weet weer hoe laat het is. Kijk naar je draak: bij elke slag vallen zijn ogen dicht. En dat beeldje zoemt nog altijd, maar nu naar het westen, naar Leuven.', next: 'pieter_b4', effects: [{ start: LEUVEN }] },
     pieter_b4: {
       who: 'pieter', text: 'Als iemand de opschriften op oud brons en ouder hout kan lezen, zijn het de meesters van de universiteit. Ga naar de drossaard: zonder vrijgeleide kom je met een draak geen stadspoort binnen.',
       choices: [
-        { text: 'Dan ga ik naar de drossaard.', effects: [{ start: LEUVEN }] },
+        { text: 'Dan ga ik naar de drossaard.' },
         { text: 'Wat doen de klokken met mijn draak?', next: 'pieter_b5' },
         { text: 'De vroedvrouw zegt dat de klokken hem in slaap houden.', if: { flag: 'ov_found' }, next: 'pieter_b_ov' },
       ],

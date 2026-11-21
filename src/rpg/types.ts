@@ -62,8 +62,8 @@ export interface NpcDef {
   look?: { body: string; wear: Record<string, string | null>; prop?: string | null };
   /** which conversation to start: the first entry whose condition holds */
   talk: { if?: Cond; start: string }[];
-  /** quests this NPC gives (drives the "!" marker) */
-  offers?: string[];
+  /** quests this NPC gives (drives the "!" marker); with a condition, only while it holds */
+  offers?: (string | { quest: string; if: Cond })[];
   /** sells potions and gear */
   shop?: boolean;
   /** a small walk around their spot, so the square does not look like a waxworks */

@@ -5,14 +5,14 @@ export type Action =
   | 'interact' // E / Y   — land, dismount, call the dragon
   | 'jump' // Space / A — climb (flight) or jump (on foot)
   | 'descend' // Ctrl/C / B — dive down (flight)
-  | 'boost' // Shift / X(LB) — boost (flight) or run (on foot)
+  | 'boost' // Shift / X, L3 (and LB on foot) — boost (flight) or run (on foot)
   | 'brake' // S held in flight, LT
   | 'time' // T — advance time of day
   | 'map' // M / Back — toggle map
   | 'journal' // J / RB — quest journal
   | 'kroniek' // K — the chronicle
   | 'paint' // P — the view as a painting
-  | 'attack' // left mouse / RT on foot — sword (on foot), fire (flying)
+  | 'attack' // left mouse / RT on foot, LB flying — sword (on foot), fire (flying; RT is the throttle there)
   | 'skill' // right mouse / LT — origin skill
   | 'skill2' // R / B on foot — second skill
   | 'potion' // Q / d-pad down — drink a salve
@@ -41,12 +41,14 @@ const KEYMAP: Record<string, Action> = {
   KeyH: 'help',
 };
 
+const clamp1 = (v: number) => Math.max(-1, Math.min(1, v));
+
 export class Input {
   private keys = new Set<string>();
   private pressed = new Set<Action>();
   private padPrev: boolean[] = [];
   private mouse = new Set<number>();
-  private trigPrev = [false, false];
+  private trigPrev = [false, false, false];
   mouseDX = 0;
   mouseDY = 0;
   private wheel = 0;
@@ -57,6 +59,8 @@ export class Input {
   private everLocked = false;
   /** last device used: affects steering model & prompts */
   device: 'kbm' | 'pad' = 'kbm';
+  /** set by the game each frame: in flight RT is the throttle, so the pad breathes fire with LB */
+  flying = false;
 
   // Analog state, refreshed each frame by poll().
   moveX = 0; // strafe / yaw  (-1..1)
@@ -136,9 +140,9 @@ export class Input {
       const b = (i: number) => !!pad.buttons[i]?.pressed;
       if (a === 'jump' && b(0)) return true;
       if (a === 'descend' && b(1)) return true;
-      if (a === 'boost' && (b(2) || b(4) || b(10))) return true;
+      if (a === 'boost' && (b(2) || b(10) || (!this.flying && b(4)))) return true;
       if (a === 'interact' && b(3)) return true;
-      if (a === 'attack' && (pad.buttons[7]?.value ?? 0) > 0.5) return true;
+      if (a === 'attack' && (this.flying ? b(4) : (pad.buttons[7]?.value ?? 0) > 0.5)) return true;
     }
     return false;
   }
@@ -173,14 +177,19 @@ export class Input {
     const pad = this.pad();
     if (pad) {
       const dz = (v: number) => (Math.abs(v) < 0.15 ? 0 : (v - Math.sign(v) * 0.15) / 0.85);
-      const ax = pad.axes.map((v) => dz(v ?? 0));
+      // only the two sticks of a standard pad: other layouts (wheels, joysticks, Firefox on Linux)
+      // put their triggers on axes that rest at -1, which would look like a stick held over
+      const raw = pad.mapping === 'standard' ? pad.axes.slice(0, 4) : [];
+      const ax = raw.map((v) => dz(v ?? 0));
       const rt = pad.buttons[7]?.value ?? 0;
       const lt = pad.buttons[6]?.value ?? 0;
-      const active = ax.some((v) => v !== 0) || rt > 0.1 || lt > 0.1 || pad.buttons.some((b) => b.pressed);
+      // taking the pad up means a real push, not a worn stick drifting past the dead zone
+      const active = raw.some((v) => Math.abs(v ?? 0) > 0.35) || rt > 0.2 || lt > 0.2 || pad.buttons.some((b) => b.pressed);
       if (active) this.device = 'pad';
       if (this.device === 'pad') {
-        mx = ax[0] ?? 0;
-        my = -(ax[1] ?? 0);
+        // added to the keys, not instead of them: a held key always works
+        mx = clamp1(mx + (ax[0] ?? 0));
+        my = clamp1(my - (ax[1] ?? 0));
         lx = ax[2] ?? 0;
         ly = ax[3] ?? 0;
         thr = Math.max(thr, rt);
@@ -198,10 +207,12 @@ export class Input {
         [9, 'help'],
         [12, 'time'],
       ];
-      // triggers as buttons: RT attacks, LT uses the skill (both also drive flight speed)
-      const trig = [(pad.buttons[7]?.value ?? 0) > 0.5, (pad.buttons[6]?.value ?? 0) > 0.5];
-      if (trig[0] && !this.trigPrev[0]) this.pressed.add('attack');
+      // triggers as buttons: RT attacks, LT uses the skill (both also drive flight speed).
+      // In flight RT is the throttle, so fire is LB there.
+      const trig = [(pad.buttons[7]?.value ?? 0) > 0.5, (pad.buttons[6]?.value ?? 0) > 0.5, !!pad.buttons[4]?.pressed];
+      if (trig[0] && !this.trigPrev[0] && !this.flying) this.pressed.add('attack');
       if (trig[1] && !this.trigPrev[1]) this.pressed.add('skill');
+      if (trig[2] && !this.trigPrev[2] && this.flying) this.pressed.add('attack');
       this.trigPrev = trig;
       for (const [i, a] of map) {
         const now = !!pad.buttons[i]?.pressed;

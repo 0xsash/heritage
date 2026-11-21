@@ -61,6 +61,8 @@ export class CameraRig {
         }
       }
     }
+    // in flight A/D turn the aim (and the dragon with it), so the keyboard alone can steer (trackpads, drag-look)
+    if (player.mode === 'fly' && input.device === 'kbm') this.yaw -= input.moveX * 1.3 * dt;
     this.pitch = clamp(this.pitch, onFoot ? -1.2 : -1.35, onFoot ? 0.9 : 1.2);
 
     // --- focus & distance

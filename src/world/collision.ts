@@ -65,6 +65,22 @@ export class WorldCollision {
     );
   }
 
+  /**
+   * The nearest spot to (x,z) with flat ground under a body of radius ~1.5 m: (x,z) itself when it is
+   * open, else the first open point on rings out to `maxR`. A dragon or a rider stands there on the
+   * surface, not on the edge of a roof or wall that heightAround would reach.
+   */
+  openSpot(x: number, z: number, maxR = 12): [number, number] {
+    const open = (tx: number, tz: number) => this.heightAround(tx, tz, 1.5) - this.heightAt(tx, tz) < 0.3;
+    if (this.heightAround(x, z, 2) - this.heightAt(x, z) <= 0.5) return [x, z];
+    for (let r = 1.5; r <= maxR; r += 1.5)
+      for (let a = 0; a < 6.28; a += 0.3) {
+        const tx = x + Math.cos(a) * r, tz = z + Math.sin(a) * r;
+        if (open(tx, tz)) return [tx, tz];
+      }
+    return [x, z];
+  }
+
   nearbyFootprints(x: number, z: number): Footprint[] {
     return this.cells.get(this.key(Math.floor(x / CELL), Math.floor(z / CELL))) ?? [];
   }

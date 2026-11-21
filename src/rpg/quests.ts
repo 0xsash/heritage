@@ -3,7 +3,7 @@
 
 import { type Gear, Sheet, uniqueGear } from './character';
 import { stuivers } from './money';
-import type { Cond, Content, Effect, ItemDef, NpcDef, Objective, QuestDef, Stage } from './types';
+import type { CampDef, Cond, Content, Effect, ItemDef, NpcDef, Objective, QuestDef, Stage } from './types';
 import { type SaveData, loadSave, writeSave } from './state';
 
 export interface QuestEvents {
@@ -306,6 +306,22 @@ export class QuestEngine {
     }
   }
 
+  /** Does an active, unfinished kill objective need the enemies of this camp? (Kills only count while
+   * their stage runs, so a camp emptied earlier has to fill again.) Matches the way onKill counts. */
+  needsCamp(c: CampDef): boolean {
+    const types = c.enemies.map((e) => e[0]);
+    for (const [id, st] of Object.entries(this.s.quests)) {
+      if (st.status !== 'active') continue;
+      for (const o of this.stageOf(this.quests.get(id)!)?.objectives ?? []) {
+        if (o.kind !== 'kill' || st.done.includes(o.id)) continue;
+        if (o.enemy === 'elite' ? !c.elite : o.enemy && o.enemy !== c.elite?.type && !types.includes(o.enemy)) continue;
+        if (o.camp ? o.camp !== c.id : (c.at[0] - o.at[0]) ** 2 + (c.at[1] - o.at[1]) ** 2 > (o.r + 60) ** 2) continue;
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Progress text for an objective, e.g. "(2/4)". */
   progress(questId: string, o: Objective) {
     const st = this.s.quests[questId];
@@ -394,7 +410,7 @@ export class QuestEngine {
       if (stage?.objectives.some((o) => o.kind === 'talk' && o.npc === npcId && !st.done.includes(o.id))) return '?';
     }
     const n = this.npcs.get(npcId);
-    if (n?.offers?.some((q) => !this.s.quests[q])) return '!';
+    if (n?.offers?.some((o) => (typeof o === 'string' ? !this.s.quests[o] : !this.s.quests[o.quest] && this.test(o.if)))) return '!';
     return null;
   }
 

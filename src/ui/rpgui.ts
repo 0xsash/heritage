@@ -75,7 +75,11 @@ export class DialogueUI {
       const starts = c.effects?.find((e) => 'start' in e) as { start: string } | undefined;
       const tag = starts ? '<span class="qtag">opdracht</span>' : '';
       b.innerHTML = `<span class="n">${i + 1}</span>${esc(this.q.fill(c.text))}${tag}`;
-      b.addEventListener('click', () => this.choose(i));
+      b.addEventListener('click', (e) => {
+        // the box's own click (advance) would otherwise get this same click and skip the reply
+        e.stopPropagation();
+        this.choose(i);
+      });
       box?.appendChild(b);
     });
     if (!choices.length) this.el.onclick = () => this.advance();
