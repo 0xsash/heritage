@@ -81,7 +81,7 @@ export class World {
   }
 
   build(onProgress: (msg: string) => void) {
-    onProgress('De polders worden opgehoogd…');
+    onProgress('De dijken langs de Demer worden opgehoogd…');
     this.buildGround();
     onProgress('Het Hageland wordt geploegd…');
     this.buildLand();

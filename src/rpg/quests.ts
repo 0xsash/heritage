@@ -250,7 +250,7 @@ export class QuestEngine {
     const lines: string[] = [];
     if (r?.xp) lines.push(`+${r.xp} ervaring`);
     if (r?.florins) lines.push(`+${stuivers(r.florins)}`);
-    for (const [town, n] of r?.renown ?? []) lines.push(`${town} +${n} aanzien`);
+    for (const [town, n] of r?.renown ?? []) lines.push(`${town} +${n} faam`);
     for (const id of r?.gear ?? []) {
       const g = uniqueGear(id);
       if (g) lines.push(g.name);

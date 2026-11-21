@@ -165,7 +165,7 @@ export class JournalUI {
           : `<div class="obj ok">${st.status === 'done' ? 'Voltooid' : 'Mislukt'}</div>`;
       const r = cur.reward;
       const reward = r
-        ? [r.xp ? `${r.xp} ervaring` : '', r.florins ? stuivers(r.florins) : '', ...(r.renown ?? []).map(([t, n]) => `${t} +${n} aanzien`), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`), ...(r.gear?.length ? ['een uniek voorwerp'] : [])].filter(Boolean).join(' · ')
+        ? [r.xp ? `${r.xp} ervaring` : '', r.florins ? stuivers(r.florins) : '', ...(r.renown ?? []).map(([t, n]) => `${t} +${n} faam`), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`), ...(r.gear?.length ? ['een uniek voorwerp'] : [])].filter(Boolean).join(' · ')
         : '';
       detail = `<h1>${esc(cur.title)}</h1>
         <div class="meta">${cur.kind === 'main' ? 'Hoofdverhaal' : cur.kind === 'contract' ? 'Opdracht' : 'Zijverhaal'} · ${esc(cur.town)}${cur.level ? ' · niveau ' + cur.level : ''}${giver ? ' · van ' + esc(giver) : ''}</div>
@@ -176,7 +176,7 @@ export class JournalUI {
     }
     const inv = Object.entries(s.inv).filter(([, n]) => n > 0).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`).join(' · ');
     const fame = Object.entries(s.renown).map(([t, n]) => `${t} ${n}`).join(' · ');
-    this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${stuivers(s.florins)}${fame ? ' · Aanzien: ' + esc(fame) : ''}</span></header>
+    this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${stuivers(s.florins)}${fame ? ' · Faam: ' + esc(fame) : ''}</span></header>
       <div class="list">${list || '<div class="empty">Je hebt nog geen opdrachten.</div>'}</div>
       <div class="detail">${detail}</div>
       <div class="inv">Op zak: ${inv ? esc(inv) : 'niets bijzonders'}</div>`;

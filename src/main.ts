@@ -445,7 +445,7 @@ async function boot() {
   dialogue.onLine = (id) => void voice.play(`dlg_${id}`);
   const beginChapter = () => {
     quests.start('main_arrive');
-    setTimeout(() => hud.announce('BRABANT · ANNO 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, 'Onder je ligt Diest. De klokken zwijgen.'), 2600);
+    setTimeout(() => hud.announce('BRABANT · ANNO 1650', `${quests.s.hero.name} en ${quests.s.hero.dragon}`, 'Vier dagen zocht je langs de Demer. Nu ligt Diest onder je, en de klokken zwijgen nog.'), 2600);
   };
   // the cinematic player: the faction intro after creation, and the prologue's directed beats
   const cine = new Cine({

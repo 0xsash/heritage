@@ -208,7 +208,7 @@ export class OudeVolk implements CombatLore {
       this.d.kroniek.unlock('tijd:oudevolk');
       this.d.kroniek.unlock('mens:heylwich');
       this.sync();
-      this.d.hud.announce('HET OUDE VOLK', 'Een zesde partij', 'Geen gilde en geen kerk: gewone mensen die nog doen wat hun grootouders deden. Ze staan nu bij je aanzien.');
+      this.d.hud.announce('HET OUDE VOLK', 'Een zesde partij', 'Geen gilde en geen kerk: gewone mensen die nog doen wat hun grootouders deden. Je ziet nu ook je aanzien bij hen.');
       this.d.sound.chime(false);
     } else if (what === 'learn' && arg === 'spare') {
       this.d.kroniek.unlock('tijd:ontzien');

@@ -57,7 +57,7 @@ export class Hud {
       <tr><td>Shift</td><td>Versnellen (vliegend) · rennen (te voet)</td></tr>
       <tr><td>E</td><td>Landen · praten · oprapen · draak roepen en bestijgen</td></tr>
       <tr><td>Linkermuis</td><td>Zwaardslag (te voet) · drakenvuur (vliegend)</td></tr>
-      <tr><td>Rechtermuis · R</td><td>Vaardigheden van je afkomst</td></tr>
+      <tr><td>Rechtermuis · R</td><td>Vaardigheden van je klasse</td></tr>
       <tr><td>Q</td><td>Begijnenzalf gebruiken</td></tr>
       <tr><td>J · K · I · M</td><td>Dagboek · Kroniek · personage en zak · kaart</td></tr>
       <tr><td>P</td><td>Het Schilderij: je uitzicht als schilderij, om te bewaren of te delen</td></tr>

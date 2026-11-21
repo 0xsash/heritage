@@ -16,7 +16,7 @@ export interface LoreEntry {
 export const LORE: Record<string, LoreEntry> = {
   Diest: {
     title: 'Diest',
-    text: 'Een ommuurde stad aan de Demer, in Brabant, onder de koning van Spanje. Haar laken was ooit beroemd; nu brouwt ze vooral bier. Haar baron is de Prins van Oranje, en die woont bij de opstandelingen in het noorden. Zijn drossaard is hier niet geliefd.',
+    text: 'Een ommuurde stad aan de Demer, in Brabant, onder de koning van Spanje. Haar laken was ooit beroemd; nu brouwt ze vooral bier. Haar baron is de Prins van Oranje, die bij de opstandelingen in het noorden woont, en zijn drossaard is hier niet geliefd.',
     r: 700,
     major: true,
   },
@@ -38,7 +38,7 @@ export const LORE: Record<string, LoreEntry> = {
   },
   'Ingang Begijnhof': {
     title: 'Het Begijnhof',
-    text: 'Een stad in de stad, waar al sinds 1245 begijnen wonen. Ze leggen geen eeuwige geloften af: wie wil, mag gaan. Bijna niemand gaat. De poort sluit bij valavond.',
+    text: 'Een stad in de stad, waar al sinds 1245 begijnen wonen. Ze leggen geen eeuwige geloften af: wie wil, mag gaan, maar bijna niemand gaat. De poort sluit bij valavond.',
     r: 80,
     major: true,
   },
@@ -156,14 +156,14 @@ export const LORE: Record<string, LoreEntry> = {
     major: true,
   },
   'Basiliek van Onze-Lieve-Vrouw van Scherpenheuvel': {
-    title: 'De Basiliek van Onze-Lieve-Vrouw',
+    title: 'De kerk van Scherpenheuvel',
     text: 'De kerk is gebouwd in opdracht van de aartshertogen en ingewijd in 1627. Ze heeft zeven zijden, voor de zeven smarten en de zeven vreugden van Maria, en een koepel vol gouden sterren. Het hoogaltaar staat waar de eik stond.',
     r: 90,
     major: true,
   },
   'De Heilige Eik': {
-    title: 'De Wortels van de Eik',
-    text: 'De eik werd kort na 1600 geveld op bevel van de bisschop. Uit zijn hout zijn beeldjes van Onze-Lieve-Vrouw gesneden, die pelgrims mee naar huis nemen. De wortels zijn nooit uitgegraven. Ze liggen onder het altaar, en sommigen zeggen dat ze nog groeien.',
+    title: 'De Heilige Eik',
+    text: 'Hier stond de eik met het Mariabeeldje, waar de zieken kwamen bidden. Kort na 1600 werd hij geveld op bevel van de bisschop, en uit zijn hout sneed men beeldjes van Onze-Lieve-Vrouw, die pelgrims mee naar huis nemen.',
     r: 60,
     major: true,
   },

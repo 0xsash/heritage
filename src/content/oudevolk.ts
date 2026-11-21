@@ -209,7 +209,7 @@ export const OV_QUESTS: QuestDef[] = [
       },
       {
         id: 'poort',
-        journal: 'Een knoop van Gooris voor een man in Leuven, en van Aert een raad: ga ook naar het oosten, naar het land van Loon, waar de torens al een jaar zwijgen. Eerst de weg naar Leuven, aan de zuidwestkant van de stad. (Leuven en Loon komen in de volgende uitbreidingen van de wereld.)',
+        journal: 'Een knoop van Gooris voor een man in Leuven, en van Aert een raad: ga ook naar het oosten, naar het land van Loon, waar de torens al een jaar zwijgen. Eerst de weg naar Leuven, door de Putterstraatpoort. (Leuven en Loon komen in de volgende uitbreidingen van de wereld.)',
         objectives: [{ id: 'poort', kind: 'reach', text: 'Ga de stad uit langs de weg naar Leuven', at: [-150, 420], r: 30 }],
         onDone: [{ call: 'ov:talisman:knoop' }, { complete: 'ov_leuven' }],
       },
@@ -420,10 +420,10 @@ export const OV_TEACH: Record<string, string> = {
 // ===================================================================== her basket
 export const OV_GOODS: Good[] = [
   { id: 'ov_vlier', name: 'Vlierdrank', text: 'Een halve minuut lang herstel in een gevecht. Gaat in je tas.', price: 2, use: { regen: 0.018, secs: 30 } },
-  { id: 'ov_zalf', name: 'Smeerwortelzalf', text: 'Zalf zonder zegen, wel met smeerwortel. Met Q.', price: 5, use: { salve: 1 } },
+  { id: 'ov_zalf', name: 'Smeerwortelzalf', text: 'Zalf zonder zegen, maar met smeerwortel. Je smeert ze met Q.', price: 5, use: { salve: 1 } },
   { id: 'ov_talisman_knoop', name: 'Knoop van riet', text: 'Een talisman. Wie hem draagt, vindt zijn weg terug, zegt Heylwich.', price: 12, tier: 1, use: { talisman: 'ov_knoop' } },
-  { id: 'ov_talisman_eikel', name: 'Eikel in een lapje', text: 'Een talisman van de heuvel. Voor wie het volk goed kent.', price: 30, tier: 2, use: { talisman: 'ov_eikel' } },
-  { id: 'ov_talisman_stenen', name: 'Snoer van Demerstenen', text: 'Vijf stenen met een gat dat het water er zelf in sleet. Voor wie het volk vertrouwt.', price: 60, tier: 3, use: { talisman: 'ov_stenen' } },
+  { id: 'ov_talisman_eikel', name: 'Eikel in een lapje', text: 'Een talisman van de heuvel. Ze verkoopt hem alleen aan wie het volk goed kent.', price: 30, tier: 2, use: { talisman: 'ov_eikel' } },
+  { id: 'ov_talisman_stenen', name: 'Snoer van Demerstenen', text: 'Vijf stenen met een gat dat het water er zelf in sleet. Ze verkoopt het alleen aan wie het volk vertrouwt.', price: 60, tier: 3, use: { talisman: 'ov_stenen' } },
 ];
 export const OV_TALISMANS: Record<string, { name: string; rarity: 0 | 1 | 2; mods: Record<string, number>; text: string }> = {
   ov_knoop: { name: 'Knoop van riet', rarity: 0, mods: { list: 2, hp: 8 }, text: 'Drie keer omgeslagen en strak getrokken. Hij ruikt naar de Demer.' },
@@ -488,12 +488,12 @@ export const OV_REACTIVE: { t: string; if: string; roles?: string[] }[] = [
   { if: 'ov_named', t: 'Ze hebben de vroedvrouw Coninckx voor het kapittel geroepen. Wie gaat er nu de kinderen halen?' },
 ];
 export const OV_TOWN_VIEW: { t: string; if: string }[] = [
-  { if: 'ov_choice_volk', t: 'Het kleine klokje klinkt dof sinds kort, en de mensen slapen slechter. Of beter. Daar zijn ze het niet over eens.' },
+  { if: 'ov_choice_volk', t: 'Het kleine klokje klinkt dof sinds kort, en de mensen slapen slechter, of beter. Daar zijn ze het niet over eens.' },
 ];
 export const OV_REP = ['Het Oude Volk weet niet wie je bent.', 'Een paar oude mensen kennen je naam. Ze zeggen hem niet hardop.', 'Ze zeggen dat je met de vroedvrouw praat. Niet iedereen vindt dat goed.', 'De oude mensen zetten een kom melk voor je bij de put.', 'Ze zeggen dat het Oude Volk je als een van hen ziet. Zeg dat niet in de kerk.'];
 export const OV_REP_DEEDS: { t: string; if: string }[] = [
   { if: 'ov_choice_volk', t: 'Ze fluisteren dat jij aan de klokken hebt gezeten.' },
-  { if: 'ov_named', t: 'Ze weten dat jij de vroedvrouw hebt aangegeven. De Kerk dankt je. De moeders niet.' },
+  { if: 'ov_named', t: 'Ze weten dat jij de vroedvrouw hebt aangegeven. De Kerk dankt je, de moeders doen dat niet.' },
 ];
 /** What the crowd calls out as you pass (12 words at most). */
 export const OV_BARKS: { if: string; t: string }[] = [

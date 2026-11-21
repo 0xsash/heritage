@@ -39,8 +39,9 @@ export interface Readable {
   kind?: 'board' | 'stone' | 'cannon' | 'pillory';
 }
 
-// Places whose card tells a legend or something we made up (the rest is history).
-const PLACE_TRUTH: Record<string, Truth> = { Tafelrondmotte: 'volksverhaal', 'De Heilige Eik': 'verzonnen' };
+// Places whose card tells a legend or something we made up (the rest is history). Every place card is
+// history now: the Tafelronde card says what the folk call it, and the roots of the oak have their own page.
+const PLACE_TRUTH: Record<string, Truth> = {};
 
 const places: Entry[] = Object.entries(LORE).map(([key, l]) => ({
   id: `plaats:${key}`,
@@ -73,7 +74,7 @@ const tijd: Entry[] = [
   { id: 'tijd:bier', cat: 'tijd', truth: 'geschiedenis', title: 'Het bier van Diest', hint: 'Lees het uithangbord bij het brouwershuis, ten noorden van de markt.',
     text: 'Diest is van oudsher een brouwersstad, en ze drinkt veel van haar bier zelf op. De rest gaat in vaten de Demer af, zeggen de brouwers, tot in Mechelen en Antwerpen. Ze zeggen ook dat de accijns de stadsmuren betaalt, zodat elke pint een daad van burgerzin is.' },
   { id: 'tijd:demer', cat: 'tijd', truth: 'geschiedenis', title: 'De Demer', hint: 'Lees de peilsteen bij de waterpoort op de Demer.',
-    text: 'De rivier is de weg, de molenaar en de riool van de stad. In natte jaren staat het broek blank tot aan de muren, en vertellen de mensen elkaar wat er dan uit het water komt, en wat er niet meer uit komt.' },
+    text: 'De rivier is de weg, de molenaar en de riool van de stad. In natte jaren staat het Broek blank tot aan de muren, en vertellen de mensen elkaar wat er dan uit het water komt, en wat er niet meer uit komt.' },
   { id: 'tijd:garnizoen', cat: 'tijd', truth: 'geschiedenis', title: 'Het garnizoen', hint: 'Lees het inkwartieringsbevel bij de Beverenpoort.',
     text: 'De soldaten van de koning liggen ingekwartierd bij de burgers, die hun een bed, vuur, licht en zout moeten geven. De soldij komt maanden te laat of nooit. Een soldaat zonder soldij wordt eerst een dief en dan een deserteur.' },
   { id: 'tijd:baron', cat: 'tijd', truth: 'geschiedenis', title: 'De baron in de wieg', hint: 'Lees het bericht aan de deur van het Hof van Nassau.',
@@ -82,6 +83,8 @@ const tijd: Entry[] = [
     text: 'Pelgrims komen te voet uit heel Brabant en gaan biddend rond de kerk, zoals hun grootouders driemaal rond de oude eik liepen. Ze nemen een pelgrimsteken of een papieren vaantje mee naar huis. Wie genezen is, laat zijn krukken achter. De waard, de kaarsenmaker en de schoenlapper worden er niet armer van.' },
   { id: 'tijd:zeven', cat: 'tijd', truth: 'geschiedenis', title: 'De stad van zeven', hint: 'Lees de gedenksteen aan de kerk van Scherpenheuvel.',
     text: 'De aartshertogen lieten Scherpenheuvel aanleggen met zeven hoeken, rond een kerk met zeven zijden, naar een plan van Wenceslas Cobergher. Rond de kerk staan de bomen in een ster met zeven punten. De hele stad is bedoeld als een gebed. Het is nog maar de vraag of er ooit genoeg mensen komen wonen.' },
+  { id: 'tijd:wortels', cat: 'tijd', truth: 'verzonnen', title: 'De wortels van de eik', hint: 'Vraag de pelgrimsgids of de kerk echt zoemt.',
+    text: 'De wortels van de eik zijn nooit uitgegraven, en ze groeien nog, onder het altaar van Scherpenheuvel. Wie \'s nachts in de kerk blijft, voelt ze zoemen door de vloer. Dat hebben wij verzonnen: in geen enkele kroniek staat dat de kerk zoemt.' },
   { id: 'tijd:draken', cat: 'tijd', truth: 'verzonnen', title: 'Draken in Brabant', hint: 'Je zit erop.',
     text: 'Draken zul je in geen enkel archief vinden. Het land zelf is zoals het was: de straten, de muren, de kerken, de oorlog. De draak hebben wij erbij bedacht. De mensen van 1650 zouden er minder van opgekeken hebben dan je denkt.' },
   { id: 'tijd:klank', cat: 'tijd', truth: 'verzonnen', title: 'De macht van brons', hint: 'Laat de klokken van Diest weer luiden.',
@@ -104,13 +107,13 @@ const mensen: Entry[] = [
   { id: 'mens:wouter', cat: 'mens', truth: 'verzonnen', title: 'Wouter Claes', hint: 'Spreek met de tollenaar aan de Putterstraatpoort.',
     text: 'Wouter is tollenaar aan de Putterstraatpoort. Hij telt vaten, karren en ossen, en hij telt ze graag in zijn eigen voordeel.' },
   { id: 'mens:lijsbet', cat: 'mens', truth: 'verzonnen', title: 'Lijsbet Vranckx', hint: 'Spreek met de weversweduwe.',
-    text: 'Lijsbet is de weduwe van een wever. Het ambacht heeft haar het getouw van haar man afgenomen; nu weeft ze op een oud getouw, achter in het huis. Ze heeft drie kinderen en een schuld: zo ziet armoede eruit in een lakenstad.' },
+    text: 'Lijsbet is de weduwe van een wever. Het ambacht heeft haar het getouw van haar man afgenomen; nu weeft ze op een oud getouw, achter in het huis. Haar kinderen zijn al lang het huis uit, haar schulden niet: zo ziet armoede eruit in een lakenstad.' },
   { id: 'mens:gielis', cat: 'mens', truth: 'verzonnen', title: 'Gielis "de Ton"', hint: 'Spreek met de voerman buiten de westpoort.',
     text: 'Hij is voerman, zegt hij zelf. Zijn kar rijdt vooral \'s nachts en zijn vaten staan op geen enkele tollijst.' },
   { id: 'mens:driesen', cat: 'mens', truth: 'verzonnen', title: 'Boer Jan Driesen', hint: 'Spreek met de boer in Kaggevinne.',
     text: 'Driesen boert in Kaggevinne. Hij heeft in dertig jaar drie legers over zijn akker zien trekken, en hij heeft van alle drie evenveel gehouden.' },
   { id: 'mens:truyken', cat: 'mens', truth: 'verzonnen', title: 'Truyken', hint: 'Spreek met de verkoopster in Scherpenheuvel.',
-    text: 'Ze verkoopt pelgrimstekens aan de voet van de bedevaartskerk en onthoudt elk gezicht dat er een koopt.' },
+    text: 'Ze verkoopt beeldjes van eikenhout aan de voet van de bedevaartskerk en onthoudt elk gezicht dat er een koopt.' },
   { id: 'mens:provost', cat: 'mens', truth: 'verzonnen', title: 'Pater Jan Cools', hint: 'Spreek met de overste van Scherpenheuvel.',
     text: 'Jan Cools is de overste van de oratorianen, de paters van Scherpenheuvel. Hij is een geleerd man die het bedevaartsoord bestuurt zoals een veldheer: met lijsten.' },
 ];
@@ -124,8 +127,8 @@ const wezens: Entry[] = [
     text: 'Ze zijn zwart, nat en mager, met ogen als lantaarns. De Kludde kon een hond zijn als hij dat wou, maar een meute hebben de mensen hem nooit gegeven. Die hebben wij erbij bedacht. Ze zijn snel maar zwak: hou ze voor je zwaard en nooit achter je rug.' },
   { id: 'wezen:dwaallicht', cat: 'wezen', truth: 'volksverhaal', title: 'Dwaallichten', hint: 'Versla er een.',
     text: 'Het zijn blauwe vlammetjes boven het moeras. De mensen zeiden dat het de zielen van ongedoopte kinderen waren, die reizigers het broek in lokten. Wie er een volgde, kwam niet meer thuis. Ze werpen vuur van ver, dus ga er dicht naartoe.' },
-  { id: 'wezen:kludde', cat: 'wezen', truth: 'volksverhaal', title: 'De Kludde', hint: 'Vind hem in het broek.',
-    text: 'Brabant en Vlaanderen kenden hem, maar de meeste verhalen zijn opgetekend langs Dender en Schelde: in Lebbeke, Wichelen, Herdersem en Aalst. Hij is wat hij wil: een uitgehongerd paard, een hond, een kat, een vleermuis, met twee blauwe vlammetjes die voor hem uit dansen. Hij kwelt reizigers en verdwijnt in het water. Dat hij in de Demer woont, hebben wij bedacht.' },
+  { id: 'wezen:kludde', cat: 'wezen', truth: 'volksverhaal', title: 'De Kludde', hint: 'Vind hem in het Broek.',
+    text: 'Brabant en Vlaanderen kenden hem, maar de meeste verhalen zijn opgetekend langs Dender en Schelde: in Lebbeke, Wichelen, Herdersem en Aalst. Hij is wat hij wil: een uitgehongerd paard, een hond of een kat, met twee blauwe vlammetjes die voor hem uit dansen. Hij kwelt reizigers en verdwijnt in het water. Dat hij in de Demer woont, hebben wij bedacht.' },
   { id: 'wezen:roelof', cat: 'wezen', truth: 'verzonnen', title: 'Lambrecht de Rode', hint: 'Zoek hem op de Galgenberg.',
     text: 'Hij was kapitein in het leger van de koning, zegt hij zelf. Zijn mannen zeggen dat hij vaandrig was. Toen de soldij uitbleef, begon hij zijn eigen belasting te heffen op de weg naar Scherpenheuvel. Hem hebben wij verzonnen, maar mannen als hij waren er genoeg.' },
 ];
@@ -226,8 +229,8 @@ export const GLOSSARY: Record<string, string> = {
   florijnen: 'Guldens: twintig stuivers elk. Een dagloon is tien à twaalf stuivers.',
   stuiver: 'De munt van elke dag. Twintig stuivers maken een gulden; een dagloon is tien à twaalf stuivers.',
   stuivers: 'De munt van elke dag. Twintig stuivers maken een gulden; een dagloon is tien à twaalf stuivers.',
-  proost: 'De geestelijke die aan het hoofd van een kapittel of een klooster staat.',
-  baljuw: 'De ambtenaar van de heer. In Diest heet hij de drossaard.',
+  overste: 'De geestelijke die aan het hoofd van een klooster of een orde staat.',
+  oratorianen: 'Priesters die samen leven zonder kloostergeloften. Ze bedienen Scherpenheuvel sinds 1624.',
   waardijn: 'De keurder die laken meet en zegelt.',
   huik: 'Een lange zwarte mantel met kap, gedragen door deftige vrouwen.',
   landvoogd: 'Hij bestuurt de Nederlanden in naam van de koning van Spanje.',
@@ -241,15 +244,20 @@ export const GLOSSARY: Record<string, string> = {
   tollenaar: 'Hij int de tol aan de poort.',
 };
 
+/** Words that also have an everyday meaning: glossed only right after these words (het broek: the marsh, not trousers). */
+const GLOSS_AFTER: Record<string, RegExp> = { broek: /(^|[^\p{L}])het\s+$/iu };
+
 const GLOSS_RE = new RegExp(`(^|[^\\p{L}])(${Object.keys(GLOSSARY).sort((a, b) => b.length - a.length).join('|')})(?![\\p{L}])`, 'giu');
 
 /** Mark the period words in a piece of (already escaped) text, once each. */
 export function gloss(html: string) {
   const seen = new Set<string>();
-  return html.replace(GLOSS_RE, (m, pre: string, word: string) => {
+  return html.replace(GLOSS_RE, (m, pre: string, word: string, at: number, all: string) => {
     const k = word.toLowerCase();
     if (seen.has(k)) return m;
+    const after = GLOSS_AFTER[k];
+    if (after && !after.test(all.slice(Math.max(0, at - 12), at + pre.length))) return m;
     seen.add(k);
-    return `${pre}<span class="gl" tabindex="0" data-g="${GLOSSARY[k]}">${word}</span>`;
+    return `${pre}<span class="gl" tabindex="0" data-g="${GLOSSARY[k].replace(/"/g, '&quot;')}">${word}</span>`;
   });
 }

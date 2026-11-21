@@ -61,13 +61,13 @@ const LOOK: Record<string, [string, string]> = {
   skin: ['Huid', 'Van bleek tot verweerd. Wie op het veld werkt, draagt het weer op zijn gezicht.'],
   mark: ['Kenmerk', 'Een litteken van een messengevecht, sproeten van de zon, een ooglap of een gezicht dat veel wind heeft gezien.'],
   face: ['Gezicht', 'Neus, kaak, kin, wangen, ogen, mond. Uit dezelfde trekken komt elk gezicht in Diest.'],
-  eyes: ['Ogen', 'Bruin, blauw, grijs of groen. Of zoals de schilder ze zag.'],
+  eyes: ['Ogen', 'Bruin, blauw, grijs of groen. Je kunt ze ook laten zoals de schilder ze maakte.'],
   fine: ['Fijn afstellen', 'Schuif aan elke trek van je gezicht tot je jezelf herkent. Je ziet het meteen op je personage.'],
   hair: ['Kapsel', 'Mannen dragen het haar in 1650 vaak lang, tot op de schouders. Vrouwen steken het op, vlechten het of laten de krullen langs hun gezicht vallen.'],
-  hairColor: ['Haarkleur', 'Ook voor de baard.'],
+  hairColor: ['Haarkleur', 'Die kleur krijgt ook je baard.'],
   beard: ['Baard', 'Een snor of een puntbaard is in 1650 de mode. Kijk maar naar de portretten van Van Dyck.'],
   hat: ['Hoofddeksel', 'Hoed, muts of niets. Wie in 1650 zonder hoed buiten komt, is arm, haastig of iets van plan.'],
-  outfit: ['Kledij', 'Elke klasse heeft drie soorten kleren, voor mannen en voor vrouwen elk hun eigen snit.'],
+  outfit: ['Kleren', 'Elke klasse heeft drie soorten kleren, voor mannen en voor vrouwen elk hun eigen snit.'],
   main: ['Hoofdkleur', 'Verf kost geld. Meekrap geeft rood, wede blauw, wouw geel. Wie niet betaalt, draagt de kleur van het schaap.'],
   accent: ['Bijkleur', 'De kleur van de onderrok, de omslagen, de linten en de broek. Kies iets dat bij je hoofdkleur past, of juist niet.'],
   mantle: ['Mantel', 'Lang tot op de kuiten, kort tot op de heupen, of lang met een kap op je rug. Op de draak waait hij achter je aan.'],
@@ -75,14 +75,14 @@ const LOOK: Record<string, [string, string]> = {
   dragonScales: ['Schubben', 'Draken zijn in dit spel verzonnen, hun kleuren ook. Kies wat je de hele reis onder je wilt zien.'],
   dragonBelly: ['Buik en vlies', 'De buikplaten en het vlies tussen de vingers van zijn vleugels. Als hij over je heen vliegt, zie je vooral deze kleur.'],
   dragonEyes: ['Ogen', 'Zijn ogen gloeien in het donker. Kies welke kleur je ’s nachts boven de Demer ziet.'],
-  dragonHorns: ['Hoorns', 'Een draak uit het riet heeft hoorns zoals een oude ram, of een kroon van stekels. Niemand die het hem vraagt.'],
+  dragonHorns: ['Hoorns', 'Een draak uit het riet heeft hoorns zoals een oude ram, of een kroon van stekels. Niemand durft hem te vragen waarom.'],
   random: ['Willekeurig', 'Een ander uiterlijk, in één klik. Klasse, herkomst, partij en je draak blijven wat ze zijn.'],
 };
 const OUTFIT_LORE: Record<string, string> = {
   Buffelkolder: 'Een kolder van buffelleer over het wambuis, en de rode sjerp van het Spaanse leger. Zo loopt een schutter in 1650 erbij.',
   Musketier: 'Een wambuis met een witte kraag en een bandelier met kruitladingen over de schouder.',
   Ruiterskazak: 'Een ruime kazak tot op de dijen, met brede omslagen aan de mouwen. Ruiters dragen hem over het wambuis.',
-  Rijjak: 'Een getailleerde jak met een korte schoot, een opgeschorte rok over de onderrok en laarzen. Om te rijden en te lopen.',
+  Rijjak: 'Een getailleerde jak met een korte schoot, een opgeschorte rok over de onderrok en laarzen. Je kunt erin rijden en lopen.',
   'Lijfje en sjerp': 'Een geregen lijfje met een witte kraag, de rok opgeschort over de onderrok, en de rode sjerp om het middel.',
   'Jak en lange rok': 'Een jak met een brede kraag over een lange rok tot op de enkels. Netjes genoeg voor de kerk, stevig genoeg voor de weg.',
   Wambuis: 'Een wambuis met een witte kraag en een platte muts. De kleren van een ambachtsman met een vaste plaats in de stad.',
@@ -297,7 +297,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         if (kind === 'name')
           return `<div class="k">JE NAAM</div><h4>${esc(nameIn.value || '…')}</h4>
             <p>Zo zullen ze je roepen in Diest: op de markt, in de herberg, en later, als er iets misgaat.</p>
-            <div class="m">Typ een eigen naam, of neem er een uit de lijst. Allemaal namen die je in 1650 in Brabant hoort.</div>`;
+            <div class="m">Typ een eigen naam, of neem er een uit de lijst. Het zijn allemaal namen die je in 1650 in Brabant hoort.</div>`;
         if (kind === 'tab') {
           const t = TAB_LORE[id as Tab];
           return `<div class="k">UITERLIJK</div><h4>${esc(t[0])}</h4><p>${esc(t[1])}</p>`;
@@ -381,7 +381,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
           } },
         ],
         clothes: () => [
-          { id: 'outfit', label: 'Kledij', value: () => outfit()?.name ?? '', step: (d) => {
+          { id: 'outfit', label: 'Kleren', value: () => outfit()?.name ?? '', step: (d) => {
             h.outfit = ((h.outfit ?? 0) + d + outfits().length) % outfits().length;
             h.headwear = undefined;
             h.hat = true;

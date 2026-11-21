@@ -479,10 +479,10 @@ export class Crowd {
     const fame = (s.renown.Diest ?? 0) + (s.renown.Begijnhof ?? 0);
     if (fame >= 15) pool.push(...FAMOUS, ...FAMOUS);
     if (q.test({ quest: 'main_bells', state: 'active' }) || q.test({ quest: 'main_bells', state: 'none' })) pool.push(...BELLS);
-    if (q.test({ flag: 'seals_reported' })) pool.push('Lijsbet Vranckx is weg. Haar kinderen eten nu bij de buren.', 'De wevers drinken op jou. De weduwe drinkt niet mee.');
+    if (q.test({ flag: 'seals_reported' })) pool.push('Lijsbet Vranckx is weg. Haar getouw staat nu bij de buren.', 'De wevers drinken op jou. De weduwe drinkt niet mee.');
     if (q.test({ flag: 'seals_begijnhof' })) pool.push('Lijsbet weeft nu bij de begijnen. Meester Joos is er ziek van.');
     if (q.test({ flag: 'toll_bribe' })) pool.push('Was hij lekker, die azijn van Gielis? Zeg maar niets.');
-    if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push('Lambrecht de Rode dood? Dat geloof ik pas als ik zijn laarzen zie.', 'In Kaggevinne slapen ze weer met de deur dicht, maar niet meer op slot.');
+    if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push('Lambrecht dood? Dat geloof ik pas als ik zijn laarzen zie.', 'In Kaggevinne gaan de deuren weer dicht, maar niet meer op slot.');
     if (q.test({ quest: 'main_kludde', state: 'done' })) pool.push('Jij hebt de Kludde verjaagd. Grootmoeder zegt: verjaagd is niet dood.', 'Hoor je de klokken? Mijn man weende bij de eerste slag.', 'Ze luiden weer. Je draak slaapt er staand bij, zie ik.');
     if (s.hero.level >= 5) pool.push('Dat is een stevig zwaard, {name}. Hou het in de schede.');
     // Het Oude Volk (src/content/oudevolk.ts): a rumour now and then before you find them, talk after
@@ -497,16 +497,16 @@ const GREET = [
   'Goeiendag.', 'Dag, vreemdeling. Hou je beest uit mijn moestuin.', 'Allee, kijk uit waar je loopt.', 'Droog weer, hé. Dat blijft niet duren.', 'Goeiemorgen. Heb jij een geit gezien?',
   'Heb je al gegeten? De wafels aan de Lakenhalle zijn goed.', 'De tol is alweer verhoogd. Zakken doet hij nooit.', 'Mijn koe is ziek. Ken jij iets van koeien?',
   'Ze zeggen dat de Fransen in Henegouwen zitten.', 'Amai, wat een mantel. Wie heeft die betaald?', 'Pas op voor de zakkenrollers op de markt.',
-  'De Demer staat hoog dit jaar. Ze wil iets.', 'Jij bent niet van hier, hé?', 'Het bier van Diest is beter dan dat van Leuven. Zeg het voort.',
+  'De Demer staat hoog dit jaar. Ze wil iets.', 'Jij komt niet veel in de stad, hé?', 'Diests bier is beter dan dat van Leuven. Zeg het voort.',
 ];
 const BELLS = [
-  'Ik hoorde zeven slagen en daarna niets meer. Ik lag nog wakker.', 'Zonder klokken gaan de poorten dicht wanneer de wachter er goesting in heeft.',
-  'Die nacht was hij een hond zo groot als een kalf, zegt de veerman.', 'Pieter de koster loopt rond als een kip zonder kop.',
-  'Mijn man ging die nacht vissen. Zijn netten zijn teruggekomen.', 'Ik weet niet meer hoe laat het is, en mijn deeg weet het ook niet.',
+  'Ik hoorde zeven slagen en daarna niets meer. Ik lag nog wakker.', 'Zonder klokken sluit de wachter de poort wanneer hij goesting heeft.',
+  'Hij was een hond zo groot als een kalf, zegt de veerman.', 'Pieter de koster loopt rond als een kip zonder kop.',
+  'Mijn man ging die nacht vissen. Zijn netten zijn teruggekomen.', 'Niemand weet nog hoe laat het is, mijn deeg ook niet.',
 ];
 const FAMOUS = [
   'Daar is {name}, die van de draak.', 'Goeiendag, {name}. Eet {dragon} ook vis?', '{name}! Mijn zoon wil later ook een draak.',
-  'Iedereen praat over jou, {name}, maar niet altijd goed.', 'Kijk, daar gaat {name}. Ze zeggen dat die niet bang is van de Kludde.',
+  'Iedereen praat over jou, {name}, maar niet altijd goed.', 'Daar gaat {name}. Die is niet bang van de Kludde, zeggen ze.',
 ];
 interface Anchor { x: number; z: number; r: number; p: number }
 /** Where each kind of person tends to be (p: how often they stick to it). */

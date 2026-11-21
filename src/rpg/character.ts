@@ -54,8 +54,8 @@ export const ORIGINS: Record<OriginId, OriginDef> = {
     id: 'schutter',
     name: 'Schutter',
     tagline: 'Zwaard en staal',
-    text: 'Je bent van de Sint-Jorisgilde. Je slaat hard en staat stevig.',
-    lore: 'De Sint-Jorisgilde schiet al in haar schuttershof sinds de tijd van de hertogen. Voor je eed heb je een jaar gespaard. Je naam staat op het bord in de gildekamer, onder de namen van de doden.',
+    text: 'Je bent van de gilde van Sint-Sebastiaan. Je slaat hard en staat stevig.',
+    lore: 'De gilde van Sint-Sebastiaan schiet al in haar schuttershof sinds de tijd van de hertogen. Voor je eed heb je een jaar gespaard. Je naam staat op het bord in de gildekamer, onder de namen van de doden.',
     role: 'van dichtbij, kan veel hebben',
     difficulty: 1,
     base: { kracht: 8, klank: 3, list: 4, taaiheid: 7 },
@@ -118,8 +118,8 @@ export interface BackgroundDef {
 
 export const BACKGROUNDS: Record<BackgroundId, BackgroundDef> = {
   diest: {
-    id: 'diest', name: ['Diestenaar', 'Diestse'], place: 'Diest, binnen de muren',
-    lore: 'Je bent geboren binnen de muren, onder Sint-Sulpitius. Diest verkocht ooit laken op alle grote markten; nu brouwt het vooral bier. In het koor ligt een prins van Oranje begraven. De levende prinsen komen hier nooit.',
+    id: 'diest', name: ['Diestenaar', 'Diestse'], place: 'Diest en de Demerweiden',
+    lore: 'Je bent geboren op een hoeve net buiten de muren, in het zicht van Sint-Sulpitius. Diest verkocht ooit laken op alle grote markten; nu brouwt het vooral bier. In het koor ligt een prins van Oranje begraven. De levende prinsen komen hier nooit.',
     perkName: 'Klokkenkind', perk: '+5% kracht van klokkenmagie en drakenvuur.',
     said: ['Van hier? Dan wist je altijd hoe laat het was, tot zondag.', 'Een Diestenaar met een draak. Mijn moeder gaat dat niet geloven.'],
     bonus: { power: 0.05 },
@@ -215,7 +215,7 @@ const RARE_NAMES = ['Demerdoorn', 'Klokkenhart', 'Weversdank', 'Galgenrust', 'To
 
 /** Named pieces: starting gear and quest rewards. */
 const UNIQUE: Record<string, Omit<Gear, 'uid'>> = {
-  gildezwaard: { base: 'korte_degen', name: 'Gildezwaard', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [4, 7], mods: {}, text: 'Het oefenzwaard van de Sint-Jorisgilde. Het is bot, maar eerlijk.' },
+  gildezwaard: { base: 'korte_degen', name: 'Gildezwaard', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [4, 7], mods: {}, text: 'Het oefenzwaard van de gilde van Sint-Sebastiaan. Het is bot, maar eerlijk.' },
   klepelstaf: { base: 'roestig_zwaard', name: 'Klepelstaf', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [3, 6], mods: { klank: 2 }, text: 'Een oude klepel aan een essenhouten steel.' },
   ponjaard: { base: 'korte_degen', name: 'Ponjaard', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [3, 6], mods: { crit: 3 }, text: 'Kort, scherp en makkelijk te verbergen.' },
   pelgrimsmantel: { base: 'linnen_wambuis', name: 'Pelgrimsmantel', slot: 'harnas', rarity: 1, ilvl: 2, armor: 6, mods: { taaiheid: 2 }, text: 'Gezegend in Scherpenheuvel. Hij ruikt nog naar wierook.' },

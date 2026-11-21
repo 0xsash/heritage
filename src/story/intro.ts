@@ -33,7 +33,7 @@ export const INTRO_LINES: Record<string, [string, string]> = {
   // De Gilden
   intro_gilden_1: ['', 'Diest is een stad van ambachten. Brouwers, smeden, kleermakers: elk ambacht heeft zijn eigen deken.'],
   intro_gilden_2: ['', 'Ooit lag het laken van Diest op alle grote markten. Nu staat de Lakenhalle half leeg.'],
-  intro_gilden_3: ['', 'De schutters bewaken de muren als het moet. Anders schieten ze op de gaai en drinken ze op hun koning.'],
+  intro_gilden_3: ['', 'De schutters bewaken de muren als het moet. Anders schieten ze op de gaai, en wie hem afschiet, is een jaar hun koning.'],
   intro_gilden_4: ['', 'De gilden vinden dat Diest van hen is. Zij houden de wacht, zij betalen, en de heer komt nooit.'],
 
   // De Kerk
@@ -376,7 +376,7 @@ function gildenShots(): Shot[] {
     {
       name: 'gilden-schutters', sky: 'golden', lines: ['intro_gilden_3'], into: 'cross', blend: 1.2,
       focus: [530, -570],
-      // the shooting ground by the Schaffense Poort: the guild aims at the wooden bird on its pole
+      // the shooting ground by the Schaffensepoort: the guild aims at the wooden bird on its pole
       cam: { path: [[509.5, 1.8, -550.5], [512, 2.2, -553]], look: [[531, 5, -575], [533, 6.5, -577]], fov: [46, 42] },
       cast: (s) => {
         const pole = popinjay(13);
@@ -462,7 +462,7 @@ function kroonShots(): Shot[] {
     {
       name: 'kroon-poort', sky: 'storm', lines: ['intro_kroon_1'], into: 'black', blend: 1.0, title: title('kroon'),
       focus: [345, 610],
-      // the Maastrichtse Poort under a heavy sky, a sentry on the road
+      // the Beverenpoort under a heavy sky, a sentry on the road
       cam: { path: [[336, 1.7, 662], [338, 3, 648]], look: [[344, 8, 616], [344, 7, 617]], fov: [46, 42] },
       cast: (s) => {
         face(at(s, 'musketeer', 347, 624, 0.3, 'idle', 2), 337, 660);
@@ -569,7 +569,7 @@ function vrijeShots(): Shot[] {
     {
       name: 'vrije-weg', sky: 'golden', lines: ['intro_vrije_1'], into: 'black', blend: 1.0, title: title('vrije'),
       focus: [-150, 440],
-      // the road outside the Leuvense Poort: a pedlar with his pack, a carter
+      // the road outside the Putterstraatpoort: a pedlar with his pack, a carter
       cam: { path: [[-164, 1.5, 456], [-161, 1.6, 451]], look: [[-149, 1.5, 438], [-146, 1.8, 432]], fov: [42, 38] },
       cast: (s) => {
         s.walk(at(s, { body: 'man_old', role: 'peasant', wear: { hair_thin: 'h_grey', beard_full: 'h_grey', hat_wide: 'brown', smock: 'russet', belt: null, breeches: 'brown', stockings: 'grey', boots: null }, prop: 'bundle' }, -144, 428, 2.6, 'walk', 2), [[-150, 437], [-156, 446]], 1.1);
@@ -600,7 +600,7 @@ function vrijeShots(): Shot[] {
     {
       name: 'vrije-smokkel', sky: 'night', lines: ['intro_vrije_3'], into: 'black', blend: 1.0, env: { exposure: 1.3 },
       focus: [-150, 360],
-      // night: the brandy cart goes round the Leuvense Poort, a shuttered lantern, the town wall black beside it
+      // night: the brandy cart goes round the Putterstraatpoort, a shuttered lantern, the town wall black beside it
       cam: { path: [[-170, 1.2, 350], [-166, 1.4, 354]], look: [[-150, 1.2, 365], [-146, 1.4, 368]], fov: [42, 38] },
       cast: (s) => {
         const cf = s.thing(cart(), -158, 356, 1.9);

@@ -3,7 +3,7 @@
 // drossaard en de overste, die de held met "u" aanspreken.
 // Historische achtergrond: de Spaanse Nederlanden na de Vrede van Munster
 // (1648); Diest is een baronie van de (afwezige) prinsen van Oranje; de
-// basiliek van Scherpenheuvel (ingewijd 1627) trekt pelgrims uit heel Brabant.
+// kerk van Scherpenheuvel (ingewijd 1627) trekt pelgrims uit heel Brabant.
 //
 // Positions are local metres from the Grote Markt (x east, z south).
 
@@ -68,7 +68,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'marieke', name: 'Marieke Smets', role: 'marskramer', at: [55, 95], facing: 0.3, tint: '#6a3a5a',
+      id: 'marieke', name: 'Marieke Smets', role: 'marskraamster', at: [55, 95], facing: 0.3, tint: '#6a3a5a',
       look: { body: 'woman', wear: { hair_bun: 'h_chestnut', coif: null, bodice: 'madder', kerchief: null, skirt: 'woad_dk', apron: 'linen', shoes: null }, prop: 'basket' }, shop: true,
       talk: [{ start: 'marieke_hi' }],
     },
@@ -147,7 +147,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'truyken', name: 'Truyken', role: 'verkoopster van pelgrimstekens', at: [-5005, 545], facing: -2.0, tint: '#5a3f2a',
+      id: 'truyken', name: 'Truyken', role: 'verkoopster van eikenbeeldjes', at: [-5005, 545], facing: -2.0, tint: '#5a3f2a',
       look: { body: 'woman_stout', wear: { hair_bun: 'h_blond', coif: null, bodice: 'ochre', kerchief: null, pelerine: 'russet', skirt: 'umber', clogs: null }, prop: 'basket' },
       talk: [
         { if: { quest: BELLS, state: 'active', stage: 'scherpenheuvel' }, start: 'truyken_main' },
@@ -173,7 +173,7 @@ export const diest: Content = {
   quests: [
     // ================================================================ hoofdverhaal
     {
-      id: ARRIVE, title: 'Een vreemdeling in Diest', kind: 'main', town: 'Diest', level: 1,
+      id: ARRIVE, title: 'Diest zonder klokken', kind: 'main', town: 'Diest', level: 1,
       summary: 'Land in Diest en zoek uit waarom de klokken zwijgen.',
       reward: { xp: 60 },
       stages: [
@@ -214,7 +214,7 @@ export const diest: Content = {
         },
         {
           id: 'scherpenheuvel',
-          journal: 'De weg is vrij, als je de kraaien bij de doden niet meetelt. In het westen ligt Scherpenheuvel, waar het altaar staat op de plek van de oude eik. Truyken verkoopt er pelgrimstekens en ze hoort alles.',
+          journal: 'De weg is vrij, als je de kraaien bij de doden niet meetelt. In het westen ligt Scherpenheuvel, waar het altaar staat op de plek van de oude eik. Truyken verkoopt er beeldjes en ze hoort alles.',
           objectives: [{ id: 'truyken', kind: 'talk', text: 'Zoek Truyken bij de kerk van Scherpenheuvel', npc: 'truyken' }],
         },
         {
@@ -411,7 +411,7 @@ export const diest: Content = {
     pieter_weed: { who: 'pieter', text: 'Mijn grootmoeder zou zeggen dat het de Kludde was. Die wordt wat hij wil, zei ze: een hond, een paard, een kat. Ik ben koster, dus ik zeg dat het dieven zijn, dieven die naar de rivier ruiken.', next: 'pieter_3' },
     pieter_sister: { who: 'pieter', text: 'Dan ben jij niet de enige. De veerman zoekt zijn jongen, en achter de Lakenhalle staat een wieg leeg. Wat het water die nacht genomen heeft, heeft het nog niet teruggegeven.', next: 'pieter_3' },
     pieter_why: { who: 'pieter', text: 'Een stad zonder klokken weet niet wanneer ze moet opstaan, bidden of haar poorten sluiten. En de oude mensen zeggen dat de klokken ook iets in slaap houden. Ik weet niet wat, en ik wil het niet weten.', next: 'pieter_3' },
-    pieter_accept: { who: 'pieter', text: 'De toren is die platte aan de westkant. Ze hebben hem nooit afgewerkt, want het geld was op. Pas op voor de duiven. Die zijn eigendom van de Kerk.' },
+    pieter_accept: { who: 'pieter', text: 'De toren is die platte aan de westkant. Ze hebben hem nooit afgewerkt; de mensen zeggen dat het geld op was. Pas op voor de duiven. Die zijn eigendom van de Kerk.' },
     pieter_busy: { who: 'pieter', text: 'Ga naar boven, alsjeblieft, voor de deken van het kapittel er mij nog eens naar vraagt.' },
     pieter_report: { who: 'pieter', text: 'Je bent in Scherpenheuvel geweest. Dat zie ik aan je schoenen. En, wat heb je gevonden?', next: 'pieter_r2' },
     pieter_r2: { who: 'you', text: 'Een man die naar de Demer ruikt, koopt daar eikenhouten beeldjes. Dit beeldje zoemt, en het zoemt luider in de richting van het Broek.', next: 'pieter_r3' },
@@ -495,7 +495,7 @@ export const diest: Content = {
     lijsbet_idle: { who: 'lijsbet', text: 'De bleekvelden zijn goed dit jaar. Het laken komt er wit als gebeente vanaf.' },
 
     // ================================================================ Margriet
-    aleydis_intro: { who: 'aleydis', text: 'Je laat de tocht binnen, en de schapen vluchten voor die draak van jou mee naar binnen. Wat wil je?', next: 'aleydis_2' },
+    aleydis_intro: { who: 'aleydis', text: 'Doe de deur toe, je laat de tocht binnen. En hou die draak van jou buiten, de schapen zijn er bang van. Wat wil je?', next: 'aleydis_2' },
     aleydis_2: {
       who: 'aleydis', text: 'Nu je hier toch bent: er heerst koorts in de ziekenzaal en mijn wondkruid is op. Het groeit in de natte weiden langs de Demer, ten zuidoosten van de stad. Jij bent daar al voor ik mijn klompen gevonden heb.',
       choices: [
@@ -511,7 +511,7 @@ export const diest: Content = {
     aleydis_badge: { who: 'aleydis', text: 'Laat eens zien. Onze-Lieve-Vrouw van Scherpenheuvel, en dit jaar gegoten: de gietvormen slijten en elk jaar wordt het gezichtje vager. Waar heb je dat gevonden?', next: 'aleydis_b2' },
     aleydis_b2: { who: 'you', text: 'Het lag in nat wier, op de klokkenstoel van Sint-Sulpitius.', next: 'aleydis_b3' },
     aleydis_b3: { who: 'aleydis', text: 'Hm. De pelgrims die hier passeren zeggen dat de nieuwe kerk van Scherpenheuvel \'s nachts zoemt. Het altaar staat waar de oude eik stond, en ze zeggen dat ze de wortels nooit uitgegraven hebben.', next: 'aleydis_b4' },
-    aleydis_b4: { who: 'aleydis', text: 'Ga naar Scherpenheuvel. Zoek Truyken, die tekens verkoopt bij de bedevaartskerk. Maar pas op: bij Kaggevinne liggen deserteurs langs de weg op de loer. Ze beroven de pelgrims, en soms doen ze erger.', effects: [{ done: [BELLS, 'show'] }, { stage: [BELLS, 'road'] }] },
+    aleydis_b4: { who: 'aleydis', text: 'Ga naar Scherpenheuvel. Zoek Truyken, die beeldjes verkoopt bij de bedevaartskerk. Maar pas op: bij Kaggevinne liggen deserteurs langs de weg op de loer. Ze beroven de pelgrims, en soms doen ze erger.', effects: [{ done: [BELLS, 'show'] }, { stage: [BELLS, 'road'] }] },
     aleydis_lijsbet: { who: 'aleydis', text: 'Er staat een weversweduwe aan de poort, met niets dan haar handen. Jij hebt haar gestuurd, natuurlijk.', next: 'aleydis_l2' },
     aleydis_l2: { who: 'aleydis', text: 'Het Begijnhof heeft getouwen en geen ambacht dat haar het weven verbiedt. Ze mag blijven. Ze zal werken, en bidden, en nooit meer iets vervalsen, of ik kom het te weten.', effects: [{ done: ['side_seals', 'aleydis'] }, { stage: ['side_seals', 'report'] }] },
     aleydis_idle: { who: 'aleydis', text: 'Als de grote klokken zwijgen, luiden wij onze eigen. Kleine klokken tellen ook.' },
@@ -595,7 +595,7 @@ export const diest: Content = {
     truyken_2: { who: 'you', text: 'Heeft er iemand vreemds beeldjes gekocht?', next: 'truyken_3' },
     truyken_3: { who: 'truyken', text: 'Vreemd? Iedereen is hier vreemd, het is een bedevaartsoord. Maar ja, er komt een lange man in een lange jas, elke week sinds Pasen. Hij koopt alleen de eikenhouten beeldjes en hij betaalt met natte munten. Hij ruikt naar de Demer bij laag water.', next: 'truyken_4' },
     truyken_4: { who: 'truyken', text: 'Hier, neem er een mee. Het is een echte, dat hoor je aan het zoemen. Ik hoor dat zoemen niet graag.', effects: [{ give: 'humming_statuette' }, { done: [BELLS, 'truyken'] }, { stage: [BELLS, 'report'] }] },
-    truyken_idle: { who: 'truyken', text: 'Tekens van Onze-Lieve-Vrouw! Ze zijn allemaal gezegend, of toch de meeste.' },
+    truyken_idle: { who: 'truyken', text: 'Beeldjes van de echte eik! Ze zijn allemaal gezegend, of toch de meeste.' },
     provost_letter: { who: 'provost', text: 'Een brief van de drossaard van Diest, gebracht met een draak? De aartshertogen, God hebbe hun ziel, hadden dat prachtig gevonden.', next: 'provost_l2' },
     provost_l2: { who: 'provost', text: 'Hm. Hij vraagt of de pelgrims de klokken van de bedevaartskerk \'s nachts hebben horen luiden. Dat hebben ze, en niemand luidt ze. Zegt u hem dat maar.', effects: [{ take: 'sealed_letter' }, { complete: 'contract_letter' }] },
     provost_wisps: {

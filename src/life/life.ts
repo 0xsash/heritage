@@ -133,7 +133,7 @@ const COCKS: [string, number, number, number][] = [
 const COCK_SHOWN: Record<string, string> = {
   'Sint-Sulpitius': 'de Sint-Sulpitiuskerk', Lakenhalle: 'de Lakenhalle', 'Onze-Lieve-Vrouwekerk': 'de Onze-Lieve-Vrouwekerk', 'Sint-Catharinakerk': 'de Sint-Catharinakerk',
   'Antwerpse Poort': 'de Schaluinpoort', 'Schaffense Poort': 'de Schaffensepoort', Koepoort: 'de oude Koepoort', 'Maastrichtse Poort': 'de Beverenpoort',
-  'Leuvense Poort': 'de Putterstraatpoort', Allerheiligenpoort: 'de Allerheiligenpoort', 'Sint-Trudokerk': 'de Sint-Trudokerk', 'Basiliek van Scherpenheuvel': 'de basiliek van Scherpenheuvel',
+  'Leuvense Poort': 'de Putterstraatpoort', Allerheiligenpoort: 'de Allerheiligenpoort', 'Sint-Trudokerk': 'de Sint-Trudokerk', 'Basiliek van Scherpenheuvel': 'de kerk van Scherpenheuvel',
 };
 
 export class Life {

@@ -40,7 +40,7 @@ Wrong, and how to say it:
 
 ## The rules
 
-1. **Je/jij.** Never gij/ge/uw. Only the drossaard and the proost say "u". No antique word order, no "aldus".
+1. **Je/jij.** Never gij/ge/uw. Only the drossaard and the overste of Scherpenheuvel say "u". No antique word order, no "aldus".
 2. **Everything is older than the speaker.** A place has a before: who built it, what stood there, what was lost.
    Give one fact that is older than the person telling it. (Tolkien: the world has a history you only glimpse.)
 3. **Concrete, never general.** Name the stone (ijzerzandsteen), the smell (natte klaver, lont, gist), the price
@@ -67,7 +67,7 @@ Wrong, and how to say it:
 - **The water remembers.** This land was won from water. The water has not forgotten.
 - **The bells count and hold.** They hold things asleep. They are owed twelve strokes and gave seven.
 - **Counting.** Neelke counted everything "so the world could not walk away".
-- **The oak.** Felled in 1602 so a church could stand there. Something remembers it.
+- **The oak.** Felled shortly after 1600 so a church could stand there. Something remembers it.
 - **The bill.** Debt, toll, soldij, boetes: everybody in Brabant owes somebody.
 
 ## Length (the boxes are measured)
@@ -78,14 +78,14 @@ sentences. Kroniek entry: 60 words at most. Hint: eight words. Journal entry: on
 ## Before and after
 
 - Flat: "De Lakenhalle. Hier wordt laken verkocht en gezegeld."
-  Better: "Hier werd het laken van Diest gemeten toen Diest nog iets betekende in Keulen. De ellenmaat hangt er
-  nog. De kopers niet."
+  Better: "Hier werd het laken van Diest gemeten toen het nog op alle grote markten lag, tweehonderd jaar geleden.
+  De ellenmaat hangt er nog, maar de kopers komen niet meer."
 - Flat: "Pas op voor de Kludde in het broek."
   Better: "Mijn vader ging het broek in om een kalf te zoeken. Het kalf kwam terug."
 - Flat (quest): "Dood vier deserteurs bij Kaggevinne."
   Better: "Vier man, zegt Driesen. Ze eten zijn wintervoorraad op en ze betalen met zijn eigen hooivork."
 - Flat (journal): "Ik heb de klepels gevonden."
-  Better: "Drie klepels, zwaar als een kind, koud als de rivier. Aan één ervan kleeft nog wier. Pieter zal huilen."
+  Better: "Drie klepels, zwaar als een kind, koud als de rivier. Aan één ervan kleeft nog wier. Pieter gaat ervan wenen."
 
 ## The opening lines of a campaign (fixed text: use exactly this)
 
