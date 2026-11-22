@@ -3,6 +3,8 @@
 // how well, and a streak. Copy always works; the share sheet where the
 // browser has one.
 
+import { nav } from './nav';
+
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 export interface ShareResult {
@@ -34,11 +36,13 @@ export class ShareCard {
     this.el.className = 'leeskaart sharecard';
     this.el.hidden = true;
     root.appendChild(this.el);
-    window.addEventListener('keydown', (e) => {
-      if (this.open && (e.code === 'Escape' || e.code === 'Enter')) {
-        e.preventDefault();
-        this.close();
-      }
+    // Escape / B close it; the focus starts on SLUITEN, so Enter / A does too (nav.ts)
+    nav.add({
+      layer: 40,
+      active: () => this.open,
+      root: () => this.el,
+      first: () => this.el.querySelector<HTMLElement>('[data-act="close"]'),
+      back: () => this.close(),
     });
     this.el.addEventListener('click', (e) => {
       const t = e.target as HTMLElement;

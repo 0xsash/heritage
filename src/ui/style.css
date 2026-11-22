@@ -5,6 +5,11 @@
   --shade: rgba(16, 13, 10, 0.62);
   --serif: 'EB Garamond', Georgia, serif;
   --display: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  /* one type and spacing scale, two border strengths (docs/audit/ui.md, consistency) */
+  --fs-1: 12px; --fs-2: 13px; --fs-3: 15px; --fs-4: 17px; --fs-5: 20px; --fs-6: 26px;
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
+  --line-soft: rgba(214, 173, 87, 0.25); --line: rgba(214, 173, 87, 0.5);
+  --focus: rgba(255, 215, 120, 0.85);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; color: var(--ink); font-family: var(--serif); }
@@ -58,11 +63,12 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .loc .where { font-family: var(--display); font-size: 17px; letter-spacing: 0.08em; }
 .loc .meta { font-size: 16px; color: var(--ink-dim); margin-top: 2px; }
 
-.prompt { position: absolute; left: 50%; bottom: 13%; transform: translateX(-50%); font-family: var(--display); font-size: 15px; letter-spacing: 0.12em; padding: 8px 16px; background: var(--shade); border: 1px solid rgba(214, 173, 87, 0.35); opacity: 0; transition: opacity 0.3s; white-space: nowrap; }
+.prompt { position: absolute; left: 50%; bottom: 158px; transform: translateX(-50%); font-family: var(--display); font-size: 15px; letter-spacing: 0.12em; padding: 8px 16px; background: var(--shade); border: 1px solid rgba(214, 173, 87, 0.35); opacity: 0; transition: opacity 0.3s; white-space: nowrap; }
 .prompt.show { opacity: 1; }
 .prompt kbd { font-family: var(--display); color: var(--gold); border: 1px solid rgba(214, 173, 87, 0.6); padding: 1px 7px; margin-right: 8px; border-radius: 3px; }
 
-.help { position: absolute; right: 18px; bottom: 18px; background: var(--shade); border: 1px solid rgba(214, 173, 87, 0.3); padding: 14px 18px; font-size: 16px; line-height: 1.6; max-width: 330px; transition: opacity 0.3s; }
+.help { position: absolute; left: 18px; bottom: 150px; background: rgba(16, 13, 10, 0.78); border: 1px solid var(--line-soft); padding: 10px 14px; font-size: 15px; line-height: 1.45; max-width: 340px; transition: opacity 0.3s; }
+.help .help-more { margin-top: 6px; font-size: var(--fs-2); color: var(--ink-dim); }
 .help.hidden { opacity: 0; }
 .help h3 { margin: 0 0 6px; font-family: var(--display); font-size: 13px; letter-spacing: 0.2em; color: var(--gold); font-weight: 500; }
 .help table { border-collapse: collapse; }
@@ -75,23 +81,24 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .map { position: absolute; inset: 6%; background: #1a140d; border: 1px solid rgba(214, 173, 87, 0.5); box-shadow: 0 0 60px rgba(0, 0, 0, 0.8); display: none; }
 .map.show { display: block; }
 .map canvas { width: 100%; height: 100%; display: block; }
-.map .legend { position: absolute; left: 14px; top: 10px; font-family: var(--display); letter-spacing: 0.2em; font-size: 13px; color: var(--gold); }
+.map { z-index: 4; }
+.map .legend { position: absolute; left: 14px; top: 10px; font-family: var(--display); letter-spacing: 0.16em; font-size: var(--fs-2); color: #2a1a08; background: rgba(242, 230, 204, 0.88); border: 1px solid rgba(90, 60, 20, 0.45); padding: 4px 10px; max-width: calc(100% - 28px); }
 
 @media (max-width: 640px) {
   .help { display: none; }
   .loc { left: 16px; bottom: 14px; }
 }
 
-.toast { position: absolute; left: 50%; top: 58px; transform: translateX(-50%); font-family: var(--display); font-size: 13px; letter-spacing: 0.28em; color: var(--gold); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); opacity: 0; transition: opacity 0.6s; white-space: nowrap; }
+.toast { position: absolute; left: 50%; top: 90px; transform: translateX(-50%); font-family: var(--display); font-size: var(--fs-2); letter-spacing: 0.2em; color: #f0d48a; text-shadow: 0 1px 3px #000; padding: 5px 14px; background: rgba(12, 9, 6, 0.72); border: 1px solid var(--line-soft); opacity: 0; transition: opacity 0.6s; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; }
 .toast.show { opacity: 1; }
 
-.map .map-credit { position: absolute; left: 14px; bottom: 8px; font-size: 13px; color: rgba(243, 234, 214, 0.55); }
+.map .map-credit { position: absolute; left: 14px; bottom: 8px; font-size: var(--fs-2); color: #3a2a14; background: rgba(242, 230, 204, 0.8); padding: 1px 8px; }
 .overlay .credit { font-size: 13px; opacity: 0.7; }
 
 /* ---------- quests ---------- */
 .compass .mark.quest { color: #f2c35a; font-size: 16px; top: 3px; text-shadow: 0 0 6px rgba(0, 0, 0, 0.8); }
-.tracker { position: absolute; right: 22px; top: 64px; max-width: 300px; text-align: right; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); }
-.tracker .t-title { font-family: var(--display); font-size: 14px; letter-spacing: 0.08em; color: var(--gold); }
+.tracker { position: absolute; right: 22px; top: 64px; max-width: 330px; text-align: right; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); background: linear-gradient(270deg, rgba(14, 10, 6, 0.55), rgba(14, 10, 6, 0)); padding: 6px 4px 6px 28px; }
+.tracker .t-title { font-family: var(--display); font-size: 14px; letter-spacing: 0.08em; color: #f0c870; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, 1), 0 0 10px rgba(0, 0, 0, 0.8); }
 .tracker .t-obj { font-size: 16px; margin-top: 2px; }
 
 .dialogue { position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%); width: min(760px, calc(100% - 32px)); background: linear-gradient(180deg, rgba(22, 16, 10, 0.88), rgba(14, 10, 6, 0.94)); border: 1px solid rgba(214, 173, 87, 0.45); padding: 18px 22px 16px; pointer-events: auto; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); }
@@ -132,13 +139,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 @media (max-width: 640px) { .journal { inset: 4%; grid-template-columns: 1fr; } .journal .list { border-right: 0; max-height: 30vh; } }
 
 /* while talking or reading, the world's notices step aside */
-#ui.ui-open .discovery, #ui.ui-open .help, #ui.ui-open .tracker, #ui.ui-open .toast { opacity: 0 !important; transition: opacity 0.2s; }
-.tracker { background: linear-gradient(270deg, rgba(14, 10, 6, 0.55), rgba(14, 10, 6, 0)); padding: 6px 4px 6px 28px; }
-.tracker .t-title { color: #f0c870; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, 1), 0 0 10px rgba(0, 0, 0, 0.8); }
+#ui.ui-open .discovery, #ui.ui-open .help, #ui.ui-open .tracker, #ui.ui-open .toast, #ui.ui-open .compass, #ui.ui-open .loc, #ui.ui-open .pframe, #ui.ui-open .lifebuffs, #ui.ui-open .tut { opacity: 0 !important; transition: opacity 0.2s; }
 
 /* ======================================================= game layer */
-.prompt { bottom: 158px; }
-.tracker { top: 64px; max-width: 330px; }
 .tracker .tq { margin-bottom: 10px; opacity: 0.72; }
 .tracker .tq.on { opacity: 1; }
 .tracker .tq.k-main .t-title { color: #ffd77a; }
@@ -160,7 +163,6 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .bar.res.fire i { background: linear-gradient(180deg, #ffb050, #c0400e); }
 .pf-slots { display: flex; gap: 5px; }
 .slot { position: relative; width: 56px; height: 50px; background: rgba(14, 10, 6, 0.82); border: 1px solid rgba(214, 173, 87, 0.5); overflow: hidden; text-align: center; }
-.slot .k { font-family: var(--display); font-size: 11px; color: var(--gold); margin-top: 3px; }
 .slot .n { font-size: 11.5px; line-height: 1.05; padding: 2px 2px 0; }
 .slot .c { position: absolute; right: 3px; bottom: 1px; font-size: 13px; color: #9fffb4; }
 .slot .cd { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.62); }
@@ -252,7 +254,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .charpanel button:hover { background: rgba(214, 173, 87, 0.15); }
 .charpanel .ware { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 16px; }
 .charpanel .empty { color: var(--ink-dim); font-style: italic; }
-#ui.ui-open .pframe, #ui.ui-open .waypoint, #ui.ui-open .ebars { opacity: 0.25; }
+#ui.ui-open .waypoint, #ui.ui-open .ebars { opacity: 0.25; }
 .dialogue .qtag { margin-left: 10px; font-family: var(--display); font-size: 13px; letter-spacing: 0.2em; color: #1a1006; background: #e8b84a; padding: 1px 6px; vertical-align: 2px; }
 
 /* ======================================================= front end */
@@ -261,7 +263,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 :where(.frontend) button { all: unset; cursor: pointer; }
 .fe-title, .fe-slide { position: absolute; inset: 0; background-size: cover; background-position: center; }
 .fe-shade { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(15, 10, 5, 0.35), rgba(8, 6, 4, 0.9)); }
-.fe-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px; }
+.fe-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: safe center; text-align: center; padding: 16px; overflow-y: auto; }
 .fe-center h1 { font-family: var(--display); font-weight: 700; letter-spacing: 0.32em; font-size: clamp(48px, 9vw, 110px); margin: 0; color: var(--gold); text-shadow: 0 2px 30px rgba(214, 173, 87, 0.4), 0 4px 10px #000; }
 .fe-center h2 { font-family: var(--display); font-weight: 500; letter-spacing: 0.2em; font-size: clamp(13px, 2vw, 19px); color: var(--ink-dim); margin: 10px 0 40px; text-shadow: 0 2px 8px #000; }
 .fe-menu { display: flex; flex-direction: column; gap: 14px; align-items: center; }
@@ -312,7 +314,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .fe-go { display: inline-block; margin-top: 26px; font-family: var(--display); letter-spacing: 0.22em; font-size: 16px; color: #1a1006; background: linear-gradient(180deg, #f0cf78, #c8962e); padding: 14px 34px; }
 .fe-go:hover { filter: brightness(1.1); }
 @media (max-width: 760px) { .fe-create { grid-template-columns: 1fr; grid-template-rows: 200px 1fr; } }
-.banner { top: 36%; }
+.banner { top: 22%; }
+#ui.banner-up .prompt, #ui.banner-up .tut, #ui.banner-up .discovery, #ui.banner-up .lifenote { opacity: 0 !important; transition: opacity 0.2s; }
+@media (max-width: 900px) { #ui.banner-up .tracker { opacity: 0 !important; } }
 .slot.locked .n { opacity: 0.35; }
 .slot .lk { top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.55); font-size: 11px; }
 
@@ -338,13 +342,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .banner { max-width: calc(100vw - 40px); }
 /* narrow screens: the place name moves up out of the way of the health bar */
 @media (max-width: 1180px) { .loc { bottom: 104px; } }
-/* below ~1360px the controls card would sit on the action bar: move it to the free top-left */
-@media (max-width: 1360px) {
-  .help { right: auto; bottom: auto; left: 18px; top: 64px; max-height: calc(100% - 250px); overflow: auto; font-size: 15px; line-height: 1.45; padding: 10px 14px; }
-}
+/* short screens: the card moves up beside the compass, out of the way of the place name */
+@media (max-height: 520px) { .help { bottom: auto; top: 54px; } }
 
-.slot .k .mouse { width: 11px; height: 15px; vertical-align: -3px; }
-.slot .k { height: 16px; line-height: 16px; }
 
 /* ---------- Kroniek ---------- */
 .truth { display: inline-block; font-family: var(--display); font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; padding: 2px 8px; border: 1px solid currentColor; border-radius: 2px; vertical-align: 1px; }
@@ -432,7 +432,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 /* ---------- action bar: engraved icons, key cap in the corner ---------- */
 .slot { width: 58px; height: 58px; border-radius: 3px; background: linear-gradient(180deg, rgba(30, 22, 12, 0.9), rgba(12, 9, 5, 0.92)); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4); transition: opacity 0.18s, border-color 0.18s; }
 .slot .ic { position: absolute; left: 50%; top: 9px; width: 28px; height: 28px; transform: translateX(-50%); color: #f0d9a0; }
-.slot .k { position: absolute; left: 3px; top: 2px; margin: 0; min-width: 14px; height: 14px; line-height: 14px; font-size: 10.5px; padding: 0 2px; background: rgba(0, 0, 0, 0.55); border-radius: 2px; }
+.slot .k { position: absolute; left: 3px; top: 2px; margin: 0; min-width: 14px; height: 14px; line-height: 14px; font-family: var(--display); font-size: 10.5px; color: var(--gold); padding: 0 2px; background: rgba(0, 0, 0, 0.55); border-radius: 2px; }
 .slot .k .mouse { width: 9px; height: 12px; vertical-align: -2px; }
 .slot .n { position: absolute; left: 0; right: 0; bottom: 3px; padding: 0; font-family: var(--display); font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); white-space: nowrap; overflow: hidden; }
 .slot .c { right: 4px; top: 1px; bottom: auto; font-family: var(--display); font-size: 12px; }
@@ -502,22 +502,22 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .cine::before, .cine::after { content: ''; position: absolute; left: 0; right: 0; height: 9vh; background: #050403; }
 .cine::before { top: 0; }
 .cine::after { bottom: 0; }
-.cine-sub { position: absolute; left: 50%; bottom: calc(9vh + 26px); transform: translateX(-50%); width: min(820px, calc(100% - 48px)); text-align: center; font-size: clamp(19px, 2.1vw, 25px); line-height: 1.45; color: #f3ead2; text-shadow: 0 1px 3px #000, 0 0 16px rgba(0, 0, 0, 0.95); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
+.cine-sub { position: absolute; left: 50%; bottom: calc(9vh + 26px); transform: translateX(-50%); width: max-content; max-width: min(820px, calc(100% - 48px)); background: rgba(5, 4, 3, 0.45); padding: 4px 14px; border-radius: 2px; text-align: center; font-size: clamp(19px, 2.1vw, 25px); line-height: 1.45; color: #f3ead2; text-shadow: 0 1px 3px #000, 0 0 16px rgba(0, 0, 0, 0.95); opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
 .cine-sub.show { opacity: 1; }
 .cine-sub b { display: block; font-family: var(--display); font-weight: 500; font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 2px; }
 .cine-sub .narr { font-style: italic; }
 .cine-obj { position: absolute; left: 50%; top: calc(9vh + 18px); transform: translateX(-50%); font-family: var(--display); font-size: 14px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); text-shadow: 0 1px 8px #000; opacity: 0; transition: opacity 0.5s; z-index: 1; }
 .cine-obj.show { opacity: 1; }
-.cine-skip { position: absolute; right: 22px; bottom: calc(9vh - 26px); z-index: 1; font-size: 13px; color: rgba(232, 220, 196, 0.38); transition: color 0.2s; }
+.cine-skip { position: absolute; right: 22px; bottom: calc(9vh - 26px); z-index: 1; font-size: 14px; color: rgba(232, 220, 196, 0.7); transition: color 0.2s; }
 .cine.skipping .cine-skip { color: var(--gold); }
 /* nothing of the game's furniture during the prologue */
 #ui.prologue .pframe, #ui.prologue .compass, #ui.prologue .tracker, #ui.prologue .loc, #ui.prologue .waypoint .wp-text, #ui.prologue .dv, #ui.prologue .help, #ui.prologue .toast { display: none !important; }
 #ui.prologue .prompt { bottom: calc(9vh + 110px); z-index: 7; }
 
 /* ==================== character creation (WoW-style, one screen) ==================== */
-.cc { position: absolute; inset: 0; display: grid; grid-template-columns: clamp(262px, 23vw, 330px) minmax(0, 1fr) clamp(286px, 25vw, 360px); grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: 'left stage right' 'bottom bottom bottom'; background-color: #0d0b09; background-size: cover; background-position: center; }
+.cc { position: absolute; inset: 0; display: grid; grid-template-columns: clamp(282px, 24vw, 350px) minmax(0, 1fr) clamp(286px, 25vw, 360px); grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: 'left stage right' 'bottom bottom bottom'; background-color: #0d0b09; background-size: cover; background-position: center; }
 .cc h3 { font-family: var(--display); font-weight: 500; font-size: 13px; letter-spacing: 0.3em; color: var(--gold); margin: 0 0 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(214, 173, 87, 0.28); }
-.cc-left, .cc-right { padding: 14px 16px 8px; display: flex; flex-direction: column; min-height: 0; background: linear-gradient(90deg, rgba(8, 6, 4, 0.78), rgba(8, 6, 4, 0.4)); }
+.cc-left, .cc-right { padding: 14px 16px 8px; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; background: linear-gradient(90deg, rgba(8, 6, 4, 0.78), rgba(8, 6, 4, 0.4)); }
 .cc-left { grid-area: left; }
 .cc-right { grid-area: right; background: linear-gradient(270deg, rgba(8, 6, 4, 0.78), rgba(8, 6, 4, 0.4)); }
 .cc-right h3:not(:first-child), .cc-left h3:not(:first-child) { margin-top: 12px; }
@@ -548,7 +548,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .cc-step { display: grid; grid-template-columns: 26px minmax(0, 1fr) 26px; align-items: center; border: 1px solid rgba(214, 173, 87, 0.18); background: rgba(0, 0, 0, 0.25); }
 .cc-step button { text-align: center; font-size: 20px; line-height: 24px; color: var(--gold); }
 .cc-step button:hover, .cc-seg button:hover, .cc-opt:hover { background: rgba(214, 173, 87, 0.12); }
-.cc-step span { text-align: center; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-step span { text-align: center; font-size: 15px; line-height: 1.15; padding: 2px 0; white-space: normal; overflow-wrap: anywhere; }
 .cc-step span i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(255, 255, 255, 0.25); }
 .cc-step.off { opacity: 0.4; }
 .cc-step.off button { cursor: default; }
@@ -585,11 +585,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .cc-go:hover { filter: brightness(1.1); }
 /* the second character kit: tabs, fine-tuning sliders, dye swatches */
 .cc-tabs { display: flex; gap: 2px; margin-bottom: 6px; border-bottom: 1px solid rgba(214, 173, 87, 0.28); }
-.cc-tabs button { flex: 1 1 0; min-width: 0; padding: 4px 0 5px; font-family: var(--serif); font-size: 13px; letter-spacing: 0; color: var(--ink-dim); border-bottom: 2px solid transparent; white-space: nowrap; }
+.cc-tabs button { flex: 1 1 0; min-width: 0; text-align: center; padding: 4px 0 5px; font-family: var(--serif); font-size: 13px; letter-spacing: 0; color: var(--ink-dim); border-bottom: 2px solid transparent; white-space: nowrap; }
 .cc-tabs button.on { color: var(--gold); border-bottom-color: var(--gold); }
 .cc-tabs button:hover { color: #fff3d6; }
 .cc-rows { flex: 0 0 auto; }
-.cc-left .cc-row { grid-template-columns: 98px minmax(0, 1fr); }
+.cc-left .cc-row { grid-template-columns: 102px minmax(0, 1fr); column-gap: 6px; }
 .cc-left .cc-seg button { font-size: 14px; padding: 2px 1px; }
 .cc-left .cc-row.cc-row-wide { grid-template-columns: minmax(0, 1fr); padding: 1px 0 3px; min-height: 0; }
 .cc-dyes { gap: 3px; }
@@ -647,7 +647,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .charpanel button.warn { color: #ffd6a0; border-color: rgba(230, 140, 70, 0.85); background: rgba(160, 70, 20, 0.25); }
 .charpanel .vlock { font-size: 13px; color: #c8b48a; font-style: italic; text-align: right; max-width: 150px; flex-shrink: 0; }
 .charpanel button.poor { opacity: 0.45; }
-.map .legend .mapzoom { color: var(--ink-dim); letter-spacing: 0.1em; font-family: var(--serif); text-transform: none; }
+.map .legend .mapzoom { color: #4a3418; letter-spacing: 0.04em; font-family: var(--serif); font-size: 15px; text-transform: none; }
 .map.show ~ .lifenote, .map.show ~ .lifebuffs { display: none; }
 
 /* ---------- the faction intro: an in-engine film (src/story/cine.ts) ---------- */
@@ -660,7 +660,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .film-bar.bot { bottom: 0; transform-origin: bottom; }
 .film.bars .film-bar { transform: scaleY(1); }
 .film-fade { position: absolute; inset: 0; background: #040302; opacity: 1; z-index: 4; }
-.film-sub { position: absolute; left: 50%; bottom: calc(11vh + 20px); transform: translate(-50%, 4px); width: min(780px, calc(100% - 64px)); text-align: center; font-family: var(--serif); font-size: clamp(19px, 1.95vw, 25px); line-height: 1.42; letter-spacing: 0.005em; color: #f4ead0; text-shadow: 0 1px 2px #000, 0 0 14px rgba(0, 0, 0, 0.9), 0 0 32px rgba(0, 0, 0, 0.6); opacity: 0; transition: opacity 0.7s ease, transform 0.7s ease; z-index: 3; }
+.film-sub { position: absolute; left: 50%; bottom: calc(11vh + 20px); transform: translate(-50%, 4px); width: max-content; max-width: min(780px, calc(100% - 64px)); background: rgba(5, 4, 3, 0.45); padding: 4px 14px; border-radius: 2px; text-align: center; font-family: var(--serif); font-size: clamp(19px, 1.95vw, 25px); line-height: 1.42; letter-spacing: 0.005em; color: #f4ead0; text-shadow: 0 1px 2px #000, 0 0 14px rgba(0, 0, 0, 0.9), 0 0 32px rgba(0, 0, 0, 0.6); opacity: 0; transition: opacity 0.7s ease, transform 0.7s ease; z-index: 3; }
 .film-sub.show { opacity: 1; transform: translate(-50%, 0); }
 .film-sub b { display: block; font-family: var(--display); font-weight: 500; font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
 .film-title { position: absolute; left: clamp(24px, 5vw, 72px); top: calc(11vh + clamp(18px, 4vh, 40px)); display: flex; flex-direction: column; gap: 6px; opacity: 0; transform: translateY(6px); transition: opacity 1.4s ease, transform 1.4s ease; z-index: 3; text-shadow: 0 1px 3px #000, 0 0 18px rgba(0, 0, 0, 0.85); }
@@ -668,7 +668,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .film-title i { font-style: normal; font-family: var(--display); font-size: 12px; letter-spacing: 0.42em; color: var(--gold); }
 .film-title b { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 3.4vw, 44px); letter-spacing: 0.18em; color: #f1e4c4; }
 .film-title b::after { content: ''; display: block; width: 64px; height: 1px; margin-top: 10px; background: linear-gradient(90deg, var(--gold), transparent); }
-.film-skip { position: absolute; right: 24px; bottom: calc(5.5vh - 9px); font-size: 13px; letter-spacing: 0.04em; color: rgba(232, 220, 196, 0.32); transition: color 0.2s; z-index: 3; }
+.film-skip { position: absolute; right: 24px; bottom: calc(5.5vh - 9px); font-size: 14px; letter-spacing: 0.04em; color: rgba(232, 220, 196, 0.7); transition: color 0.2s; z-index: 3; }
+.film-skip kbd, .cine-skip kbd { font-family: var(--display); font-size: 12px; border: 1px solid currentColor; border-radius: 3px; padding: 0 5px; margin: 0 2px; }
 .film.skipping .film-skip { color: var(--gold); }
 .film.gone .film-sub, .film.gone .film-title, .film.gone .film-skip { opacity: 0 !important; }
 #ui.beat .waypoint, #ui.beat .cine-obj, #ui.beat .prompt, #ui.beat .compass { opacity: 0 !important; transition: opacity 0.6s; }
@@ -724,3 +725,76 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .chc-go { all: unset; display: block; margin: 12px auto 0; cursor: pointer; font-family: var(--display); letter-spacing: 0.2em; font-size: 15px; color: var(--gold); border: 1px solid rgba(214, 173, 87, 0.6); padding: 10px 30px; background: rgba(12, 8, 4, 0.65); }
 .chc-go:hover { background: rgba(214, 173, 87, 0.18); }
 @media (max-width: 700px) { .chc-row, .chc-roads { grid-template-columns: 1fr; gap: 2px; } .gm-row { grid-template-columns: minmax(0, 1fr) 110px 42px; } }
+
+/* ======================================================= one navigation (src/ui/nav.ts) */
+/* the control the keyboard or the pad is on: the gold outline of the pause menu, on every screen */
+.nav-focus, :where(.frontend, #ui) button:focus-visible, :where(.frontend, #ui) input:focus-visible { outline: 2px solid var(--focus) !important; outline-offset: 2px; }
+html.nav-mouse .nav-focus:not(input):not(.gm-row) { outline: none !important; }
+/* hints for the device in use: keyboard words, or the pad's buttons */
+.k-pad { display: none; }
+html.dev-pad .k-pad { display: inline; }
+html.dev-pad .k-kbd { display: none; }
+:where(.dialogue, .journal, .charpanel, .chapter-card, .fe-keys, .cc-hint, .leeskaart) kbd { font-family: var(--display); font-size: 12px; letter-spacing: 0; border: 1px solid currentColor; border-radius: 3px; padding: 0 5px; margin: 0 2px; opacity: 0.85; }
+
+/* rule 1: one button. The dark frame's buttons share this look; SLUITEN sits top right in every panel */
+.bk-close, .dialogue .cont, .fe-confirm .fe-menu button, .cc-back { all: unset; box-sizing: border-box; cursor: pointer; white-space: nowrap; font-family: var(--display); font-size: var(--fs-2); letter-spacing: 0.16em; color: var(--gold); border: 1px solid rgba(214, 173, 87, 0.55); padding: 6px 14px; transition: background var(--t-1, 100ms); }
+.bk-close:hover, .dialogue .cont:hover, .cc-back:hover, .journal .detail .actions button:hover, .charpanel button:focus-visible { background: rgba(214, 173, 87, 0.18); }
+.bk-close { margin-left: auto; order: 99; align-self: center; }
+.charpanel header .bk-close, .journal header .bk-close { margin-left: auto; order: 99; align-self: center; font-size: var(--fs-2); letter-spacing: 0.16em; padding: 5px 12px; border-color: rgba(214, 173, 87, 0.55); }
+
+/* the dialogue: how to go on and how to leave, at its foot */
+.dialogue .dl-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 8px; font-size: 15px; color: var(--ink-dim); }
+.dialogue .dl-keys { margin-right: auto; letter-spacing: 0.04em; }
+.dialogue .cont { border-left: 1px solid rgba(214, 173, 87, 0.55); font-size: var(--fs-2); padding: 6px 14px; }
+
+/* the book's tabs on a pad: LB on the left, RB on the right */
+.booktabs { align-items: center; }
+.booktabs .bt-lr { font-family: var(--display); font-size: 11px; color: var(--ink-dim); border: 1px solid currentColor; border-radius: 3px; padding: 0 5px; opacity: 0.7; }
+html.dev-pad .booktabs .bt-lr { display: inline-block; }
+
+/* the Kroniek: what you know, then one line for what is still to find */
+.kroniek .list button.more { color: var(--ink-dim); font-style: italic; margin-top: 6px; border-top: 1px dotted rgba(214, 173, 87, 0.25); }
+.kroniek .list button.more.open { color: var(--gold); }
+
+/* the character panel: what Resonantie is */
+.charpanel .res-note { margin: 8px 0 2px; font-size: 14px; line-height: 1.35; color: var(--ink-dim); font-style: italic; }
+
+/* the shop: two columns, your things and the merchant's, each as tall as the panel; a fade says there is more */
+.charpanel .cols.shopcols { grid-template-columns: minmax(250px, 1fr) minmax(300px, 1.35fr); }
+.charpanel .shopcols .bag { max-height: none; overflow: visible; }
+.charpanel .shopcols .col.mine, .charpanel .shopcols .shop { max-height: calc(100vh - 170px); overflow-y: auto; padding-right: 4px; }
+.charpanel .scrolls.more { -webkit-mask-image: linear-gradient(#000 calc(100% - 44px), transparent); mask-image: linear-gradient(#000 calc(100% - 44px), transparent); }
+@media (max-width: 700px) { .charpanel .cols.shopcols { grid-template-columns: 1fr; } }
+
+/* the front end: how to use it without a mouse, and the game's own question instead of the browser's */
+.fe-keys { margin-top: 10px; font-size: 14px; color: rgba(205, 191, 159, 0.75); text-shadow: 0 1px 4px #000; }
+.fe-confirm { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(6, 4, 3, 0.72); }
+.fe-confirm-in { width: min(480px, 100%); padding: 20px 26px 18px; text-align: center; background: linear-gradient(180deg, rgba(26, 19, 12, 0.97), rgba(14, 10, 6, 0.98)); border: 1px solid var(--line); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7); }
+.fe-confirm-in h3 { margin: 0 0 8px; font-family: var(--display); font-weight: 600; letter-spacing: 0.3em; font-size: var(--fs-5); color: var(--gold); }
+.fe-confirm-in p { margin: 0 0 16px; font-size: 17px; line-height: 1.45; color: var(--ink); }
+.fe-confirm .fe-menu { flex-direction: row; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.fe-confirm .fe-menu button { min-width: 0; padding: 10px 18px; font-size: var(--fs-3); background: rgba(12, 8, 4, 0.6); }
+.cc-back { align-self: flex-end; margin-left: auto; padding: 12px 22px; font-size: var(--fs-3); background: rgba(12, 8, 4, 0.6); }
+.cc-back + .cc-go { margin-left: 0; }
+.cc-hint { font-size: 13px; padding: 0 12px; }
+.cc-hint kbd { font-size: 11px; }
+
+/* the pause menu's BESTURING page: keyboard and gamepad side by side, two columns, fits 1024 x 640 */
+.gm-panel.gm-help { width: min(980px, 100%); }
+.gm-help-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 22px; }
+.gm-help table { margin-bottom: 6px; font-size: 14px; }
+.gm-help th { text-align: left; padding: 6px 6px 2px; font-family: var(--display); font-weight: 500; font-size: 12px; letter-spacing: 0.14em; color: var(--ink-dim); border-bottom: 1px solid var(--line-soft); }
+.gm-help th:first-child { color: var(--gold); }
+.gm-help td { padding: 1px 6px; line-height: 1.3; }
+.gm-help td:first-child { font-family: var(--serif); font-size: 14px; letter-spacing: 0; color: var(--ink); white-space: normal; }
+.gm-help td:not(:first-child) { color: #f0d48a; white-space: nowrap; font-size: 13px; }
+@media (max-width: 760px) { .gm-help-cols { grid-template-columns: 1fr; } }
+
+/* falling in battle: dark, at once, with one word; you wake under it */
+.death { position: absolute; inset: 0; z-index: 7; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; background: radial-gradient(ellipse at center, rgba(30, 6, 2, 0.7), rgba(6, 2, 1, 0.94)); opacity: 0; transition: opacity 1s ease; }
+.death.show { opacity: 1; transition: opacity 1.6s ease; }
+.death .d-k { font-family: var(--display); font-weight: 700; font-size: clamp(34px, 5vw, 60px); letter-spacing: 0.3em; margin-right: -0.3em; color: #ff8a70; text-shadow: 0 2px 20px #000; }
+.death .d-t { margin-top: 12px; font-size: 19px; color: var(--ink); min-height: 1.4em; text-shadow: 0 1px 6px #000; }
+.gm-help table { table-layout: fixed; width: 100%; }
+.gm-help th:first-child { width: 46%; }
+.charpanel .shopcols .mine h3:not(:first-child) { margin-top: 14px; }

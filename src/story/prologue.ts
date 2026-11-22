@@ -17,6 +17,7 @@ import { TYPES, makeBody, type Body } from '../combat/enemies';
 import { Voice } from '../audio/voice';
 import type { Sound } from '../audio/sound';
 import { mist, softTexture, type Cine, type V3 } from './cine';
+import { hint } from '../ui/nav';
 
 export interface PrologueDeps {
   scene: THREE.Scene;
@@ -106,6 +107,7 @@ export class Prologue {
   private speaking = false;
   private said = new Set<string>();
   private skipHeld = 0;
+  private skipFrom = 0;
   private skipDown = false;
   /** a skip from the film before is still held down */
   private needRelease = false;
@@ -134,7 +136,8 @@ export class Prologue {
     this.fade.className = 'pro-fade';
     this.card.className = 'pro-card';
     this.cine.className = 'cine';
-    this.cine.innerHTML = '<div class="cine-obj"></div><div class="cine-sub"></div><div class="cine-skip">Backspace ingedrukt houden · overslaan</div>';
+    // the prologue is played, so Escape pauses it as always (and the pause menu can skip it); Backspace held skips it
+    this.cine.innerHTML = `<div class="cine-obj"></div><div class="cine-sub"></div><div class="cine-skip">${hint('Houd <kbd>Backspace</kbd> ingedrukt om over te slaan · <kbd>Esc</kbd> pauze', '<kbd>Start</kbd> pauze · daar kun je de proloog overslaan')}</div>`;
     this.sub = this.cine.querySelector('.cine-sub')!;
     this.obj = this.cine.querySelector('.cine-obj')!;
     window.addEventListener('keydown', (e) => {
@@ -216,7 +219,10 @@ export class Prologue {
     const hero = p.heroPos;
 
     // hold Backspace to skip
-    this.skipHeld = this.skipDown ? this.skipHeld + dt : 0;
+    const now = performance.now();
+    if (this.skipDown) this.skipFrom ||= now;
+    else this.skipFrom = 0;
+    this.skipHeld = this.skipFrom ? (now - this.skipFrom) / 1000 : 0;
     this.cine.classList.toggle('skipping', this.skipHeld > 0.1);
     if (this.skipHeld > 0.8 && this.stage !== 'done') return this.end(true);
     if (!this.allowMount || this.stage === 'dawn') input.consume('interact'); // no landing during the dawn titles
@@ -420,7 +426,7 @@ export class Prologue {
           this.allowMount = true;
           this.objective = `Klim op ${d.dragon}`;
           this.target = { x: p.pos.x, z: p.pos.z };
-          this.prompt = p.distanceToDragon() < 7 ? `<kbd>E</kbd>Klim op ${d.dragon}` : null;
+          this.prompt = p.distanceToDragon() < 7 ? `<kbd>${hint('E', 'Y')}</kbd>Klim op ${d.dragon}` : null;
         }
         if (p.mode === 'fly') {
           this.prompt = null;
@@ -692,6 +698,11 @@ export class Prologue {
         }
         break;
     }
+  }
+
+  /** Skip the rest (the pause menu's PROLOOG OVERSLAAN). */
+  skip() {
+    if (this.active && this.stage !== 'done') this.end(true);
   }
 
   private end(skipped: boolean) {

@@ -211,7 +211,7 @@ export const GOODS: Record<string, Good[]> = {
     { id: 'duivelsdrek', name: 'Duivelsdrek', text: 'Het stinkt zo erg dat de Kludde je niet wil, in welke gedaante hij ook komt. Dat zeggen de boeren. Je voelt je er in elk geval dapperder door.', price: 10, tier: 2, use: { buff: 'moed', secs: 420 } },
   ],
   infirmerie: [
-    { id: 'zalf', name: 'Begijnenzalf', text: 'Je krijgt er de helft van je leven mee terug. Gebruik ze met Q.', price: 6, use: { salve: 1 } },
+    { id: 'zalf', name: 'Begijnenzalf', text: 'Je krijgt er de helft van je levenskracht mee terug. Gebruik ze met Q (gamepad: kruistoets omlaag).', price: 6, use: { salve: 1 } },
     { id: 'zalf3', name: 'Drie potjes begijnenzalf', text: 'Voor wie veel vecht, of voor wie slecht vecht.', price: 15, use: { salve: 3 } },
     { id: 'verzorging', name: 'Laat je verzorgen', text: 'Een zuster verbindt je wonden. Daarna ben je helemaal hersteld.', price: 2, use: { heal: 1 } },
     { id: 'wijwater', name: 'Gewijd water', text: 'Een zegen voor onderweg: tien minuten lang komen de klappen minder hard aan.', price: 6, tier: 1, use: { buff: 'zegen', secs: 600 } },
@@ -246,7 +246,7 @@ export const GOODS: Record<string, Good[]> = {
     { id: 'gewijd', name: 'Gewijd insigne', text: 'Het heeft het altaar aangeraakt, op de plek waar de eik stond. Alleen voor de vrienden van de overste.', price: 80, tier: 3, use: { talisman: 'insigne_gewijd' } },
   ],
   marieke: [
-    { id: 'zalf', name: 'Begijnenzalf', text: 'Je krijgt er de helft van je leven mee terug. Gebruik ze met Q.', price: 6, use: { salve: 1 } },
+    { id: 'zalf', name: 'Begijnenzalf', text: 'Je krijgt er de helft van je levenskracht mee terug. Gebruik ze met Q (gamepad: kruistoets omlaag).', price: 6, use: { salve: 1 } },
     { id: 'wafel', name: 'Wafel', text: 'Ze heeft er altijd een paar in haar mand. Niemand weet waarom.', price: 1, use: { heal: 0.2 } },
   ],
   kastelein: [

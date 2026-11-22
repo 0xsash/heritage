@@ -17,7 +17,7 @@ export type Action =
   | 'skill2' // R / B on foot — second skill
   | 'potion' // Q / d-pad down — drink a salve
   | 'dragon' // G / d-pad left — call the dragon to your side in a fight (once Het Oude Volk taught it)
-  | 'character' // I / C(on foot) — character and bag
+  | 'character' // I, Tab / d-pad right — character and bag
   | 'help' // H — the controls
   | 'menu'; // Start — the pause menu (Escape is the browser's own: it lets go of the mouse, see main.ts)
 
@@ -42,6 +42,48 @@ const KEYMAP: Record<string, Action> = {
   KeyH: 'help',
 };
 
+/**
+ * The controls as the player reads them (the H card and the pause menu's BESTURING page, src/ui/hud.ts).
+ * Kept next to KEYMAP and the pad map in poll(): change a binding, change its line here.
+ */
+export interface ControlRow { what: string; kbd: string; pad: string }
+export const CONTROLS: { group: string; when: 'fly' | 'foot' | 'any' | 'screen'; rows: ControlRow[] }[] = [
+  { group: 'In de lucht', when: 'fly', rows: [
+    { what: 'Sturen', kbd: 'Muis · A / D', pad: 'Linkerstick' },
+    { what: 'Sneller / trager', kbd: 'W / S · muiswiel', pad: 'RT / LT' },
+    { what: 'Stijgen / dalen', kbd: 'Spatie / C', pad: 'A / B' },
+    { what: 'Versnellen', kbd: 'Shift', pad: 'X' },
+    { what: 'Drakenvuur', kbd: 'Linkermuis', pad: 'LB' },
+    { what: 'Gaven van je draak', kbd: 'Rechtermuis · R', pad: 'LT · B' },
+    { what: 'Landen', kbd: 'E', pad: 'Y' },
+  ] },
+  { group: 'Te voet', when: 'foot', rows: [
+    { what: 'Stappen · rondkijken', kbd: 'W A S D · muis', pad: 'Linkerstick · rechterstick' },
+    { what: 'Rennen', kbd: 'Shift', pad: 'LB · X' },
+    { what: 'Springen · in een gevecht wegrollen', kbd: 'Spatie', pad: 'A' },
+    { what: 'Praten · oprapen · lezen', kbd: 'E', pad: 'Y' },
+    { what: 'Je draak roepen en bestijgen', kbd: 'E', pad: 'Y' },
+    { what: 'Zwaardslag', kbd: 'Linkermuis', pad: 'RT' },
+    { what: 'Vaardigheden van je klasse', kbd: 'Rechtermuis · R', pad: 'LT · B' },
+    { what: 'Je draak te hulp roepen', kbd: 'G', pad: '◀ kruistoets' },
+  ] },
+  { group: 'Altijd', when: 'any', rows: [
+    { what: 'Begijnenzalf', kbd: 'Q', pad: '▼ kruistoets' },
+    { what: 'Dagboek · Kroniek · Personage', kbd: 'J · K · I', pad: 'RB · ▶ kruistoets' },
+    { what: 'Kaart', kbd: 'M', pad: 'Back' },
+    { what: 'Licht van de dag veranderen', kbd: 'T', pad: '▲ kruistoets' },
+    { what: 'Het Schilderij', kbd: 'P', pad: '–' },
+    { what: 'Besturing tonen of verbergen', kbd: 'H', pad: '–' },
+    { what: 'Pauze en instellingen', kbd: 'Esc', pad: 'Start' },
+  ] },
+  { group: 'In een scherm', when: 'screen', rows: [
+    { what: 'Kiezen', kbd: 'Pijltjes · Tab', pad: 'Kruistoetsen · linkerstick' },
+    { what: 'Bevestigen', kbd: 'Enter · Spatie', pad: 'A' },
+    { what: 'Terug of sluiten', kbd: 'Esc', pad: 'B' },
+    { what: 'Andere bladzijde van je boek', kbd: 'J · K · I', pad: 'LB / RB' },
+  ] },
+];
+
 const clamp1 = (v: number) => Math.max(-1, Math.min(1, v));
 
 export class Input {
@@ -62,6 +104,11 @@ export class Input {
   device: 'kbm' | 'pad' = 'kbm';
   /** set by the game each frame: in flight RT is the throttle, so the pad breathes fire with LB */
   flying = false;
+  /** a screen is open (a panel, the dialogue, the map, the pause menu: src/ui/nav.ts has its keys and buttons):
+   *  the pad's buttons and both sticks, the movement keys and the mouse do nothing in the game behind it */
+  ui = false;
+  /** the game has started: from now on Space, Tab and the arrows belong to it (not to the page) */
+  gameKeys = false;
 
   // Analog state, refreshed each frame by poll().
   moveX = 0; // strafe / yaw  (-1..1)
@@ -74,17 +121,21 @@ export class Input {
   constructor(private canvas: HTMLCanvasElement) {
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
+      // typing a name is not playing
+      const t = e.target as HTMLElement | null;
+      if (t && (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) && !(t instanceof HTMLInputElement && t.type === 'range')) return;
       this.device = 'kbm';
       this.keys.add(e.code);
       const a = KEYMAP[e.code];
       if (a) this.pressed.add(a);
-      if (e.code === 'Space' || e.code === 'Tab' || e.code.startsWith('Arrow')) e.preventDefault();
+      if (this.gameKeys && (e.code === 'Space' || e.code === 'Tab' || e.code.startsWith('Arrow'))) e.preventDefault();
     });
     window.addEventListener('keyup', (e) => this.keys.delete(e.code));
     window.addEventListener('blur', () => this.keys.clear());
     window.addEventListener('mousemove', (e) => {
       if (!this.pointerLocked && !this.dragging) return;
-      this.device = 'kbm';
+      // a mouse that did not move (events the browser sends on its own) does not take the controls from the pad
+      if (e.movementX || e.movementY) this.device = 'kbm';
       this.mouseDX += e.movementX;
       this.mouseDY += e.movementY;
     });
@@ -134,6 +185,7 @@ export class Input {
   }
 
   held(a: Action): boolean {
+    if (this.ui) return false;
     if (a === 'attack' && this.mouse.has(0)) return true;
     for (const [code, act] of Object.entries(KEYMAP)) if (act === a && this.keys.has(code)) return true;
     const pad = this.pad();
@@ -187,7 +239,7 @@ export class Input {
       // taking the pad up means a real push, not a worn stick drifting past the dead zone
       const active = raw.some((v) => Math.abs(v ?? 0) > 0.35) || rt > 0.2 || lt > 0.2 || pad.buttons.some((b) => b.pressed);
       if (active) this.device = 'pad';
-      if (this.device === 'pad') {
+      if (this.device === 'pad' && !this.ui) {
         // added to the keys, not instead of them: a held key always works
         mx = clamp1(mx + (ax[0] ?? 0));
         my = clamp1(my - (ax[1] ?? 0));
@@ -207,19 +259,28 @@ export class Input {
         [1, 'skill2'],
         [9, 'menu'],
         [12, 'time'],
+        [15, 'character'],
       ];
       // triggers as buttons: RT attacks, LT uses the skill (both also drive flight speed).
       // In flight RT is the throttle, so fire is LB there.
       const trig = [(pad.buttons[7]?.value ?? 0) > 0.5, (pad.buttons[6]?.value ?? 0) > 0.5, !!pad.buttons[4]?.pressed];
-      if (trig[0] && !this.trigPrev[0] && !this.flying) this.pressed.add('attack');
-      if (trig[1] && !this.trigPrev[1]) this.pressed.add('skill');
-      if (trig[2] && !this.trigPrev[2] && this.flying) this.pressed.add('attack');
+      // with a screen open the buttons belong to it (nav.ts): only remember them, so that a press
+      // that closed the screen does not also act in the game the frame after
+      const ui = this.ui;
+      if (!ui && trig[0] && !this.trigPrev[0] && !this.flying) this.pressed.add('attack');
+      if (!ui && trig[1] && !this.trigPrev[1]) this.pressed.add('skill');
+      if (!ui && trig[2] && !this.trigPrev[2] && this.flying) this.pressed.add('attack');
       this.trigPrev = trig;
       for (const [i, a] of map) {
         const now = !!pad.buttons[i]?.pressed;
-        if (now && !this.padPrev[i]) this.pressed.add(a);
+        if (!ui && now && !this.padPrev[i]) this.pressed.add(a);
         this.padPrev[i] = now;
       }
+    }
+    if (this.ui) {
+      // nothing moves behind an open screen: no walking, no camera, no throttle
+      mx = my = lx = ly = thr = brk = 0;
+      this.mouseDX = this.mouseDY = 0;
     }
     this.moveX = mx;
     this.moveY = my;

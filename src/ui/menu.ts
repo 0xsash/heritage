@@ -6,6 +6,7 @@
 // and every change is saved in this browser at once and applied where it can be.
 
 import { type Quality, type Settings, saveSettings } from '../core/settings';
+import { type NavCmd, hint, nav } from './nav';
 
 export interface MenuHost {
   settings: Settings;
@@ -23,6 +24,9 @@ export interface GameHooks {
   toTitle(): void;
   /** the controls, as a table (hud.ts) */
   helpHtml(): string;
+  /** the prologue is playing: the pause page offers to skip it */
+  canSkip?(): boolean;
+  skip?(): void;
 }
 
 type Page = 'pause' | 'settings' | 'help';
@@ -34,7 +38,7 @@ const RANGES: RangeRow[] = [
   { key: 'sens', label: 'Muisgevoeligheid', min: 0.3, max: 2.5, step: 0.1 },
   { key: 'volume', label: 'Volume', min: 0, max: 1, step: 0.05 },
   { key: 'effects', label: 'Geluidseffecten', min: 0, max: 1, step: 0.05 },
-  { key: 'ambience', label: 'Achtergrond in filmpjes', min: 0, max: 1, step: 0.05 },
+  { key: 'ambience', label: 'Sfeergeluid in filmpjes', min: 0, max: 1, step: 0.05 },
 ];
 
 export class GameMenu {
@@ -45,12 +49,13 @@ export class GameMenu {
   private from: 'pause' | 'title' = 'pause';
   private game: GameHooks | null = null;
   private focus = 0;
-  private padPrev: boolean[] = [];
-  private padHeld = 0;
-  private padDir = '';
-  /** ms a held direction waits before it repeats */
-  repeatDelay = 380;
-  private raf = 0;
+  /** ms a held direction waits before it repeats (the shared pad reading in nav.ts) */
+  get repeatDelay() {
+    return nav.repeatDelay;
+  }
+  set repeatDelay(ms: number) {
+    nav.repeatDelay = ms;
+  }
   /** the last time the menu closed (ms): the Start press that closed it must not open it again */
   closedAt = 0;
 
@@ -62,7 +67,16 @@ export class GameMenu {
     this.el.addEventListener('click', (e) => {
       if (e.target === this.el) this.back(true);
     });
-    window.addEventListener('keydown', (e) => this.key(e), { capture: true });
+    // keys and pad come through the one navigation of every screen (nav.ts); the menu keeps its own focus,
+    // because left and right change a setting here
+    nav.add({
+      layer: 100,
+      active: () => this.open,
+      root: () => this.el,
+      ownFocus: true,
+      back: () => this.back(),
+      handle: (cmd) => this.command(cmd),
+    });
   }
 
   /** The game is running: the pause page exists from now on. */
@@ -85,29 +99,15 @@ export class GameMenu {
     this.open = false;
     this.el.hidden = true;
     this.closedAt = performance.now();
-    cancelAnimationFrame(this.raf);
   }
 
   private show(page: Page) {
-    const was = this.open;
     this.page = page;
     this.focus = 0;
     this.open = true;
     this.el.hidden = false;
     document.exitPointerLock?.();
     this.render();
-    if (!was) {
-      // the press that opened the menu is not a press inside it
-      this.padPrev = this.padButtons();
-      this.padDir = '';
-      cancelAnimationFrame(this.raf);
-      const loop = () => {
-        if (!this.open) return;
-        this.pollPad();
-        this.raf = requestAnimationFrame(loop);
-      };
-      this.raf = requestAnimationFrame(loop);
-    }
   }
 
   /** B, Escape, TERUG: one step back. `outside`: a click beside the panel. */
@@ -129,6 +129,7 @@ export class GameMenu {
     if (this.page === 'pause') {
       body = `<h2>PAUZE</h2>
         <button data-nav data-do="resume">VERDER SPELEN</button>
+        ${this.game?.canSkip?.() ? '<button data-nav data-do="skip">PROLOOG OVERSLAAN</button>' : ''}
         <button data-nav data-do="settings">INSTELLINGEN</button>
         <button data-nav data-do="help">BESTURING</button>
         <button data-nav data-do="title">NAAR HET TITELSCHERM</button>
@@ -147,7 +148,7 @@ export class GameMenu {
       body = `<h2>INSTELLINGEN</h2>
         <h3>BESTURING</h3>
         ${range(RANGES[0])}
-        <div class="gm-row" data-nav data-kind="toggle" data-key="invert" tabindex="-1"><span>Op en neer omkeren</span><button class="gm-tog${s.invert ? ' on' : ''}" tabindex="-1">${s.invert ? 'AAN' : 'UIT'}</button></div>
+        <div class="gm-row" data-nav data-kind="toggle" data-key="invert" tabindex="-1"><span>Camera op en neer omkeren</span><button class="gm-tog${s.invert ? ' on' : ''}" tabindex="-1">${s.invert ? 'AAN' : 'UIT'}</button></div>
         <h3>GELUID</h3>
         ${RANGES.slice(1).map(range).join('')}
         <h3>BEELD</h3>
@@ -155,7 +156,7 @@ export class GameMenu {
         ${reloadNote}
         <button data-nav data-do="back">TERUG</button>`;
     }
-    this.el.innerHTML = `<div class="gm-panel gm-${this.page}">${body}<div class="gm-pad">Gamepad: kies met de kruistoetsen · A om te bevestigen · B om terug te gaan</div></div>`;
+    this.el.innerHTML = `<div class="gm-panel gm-${this.page}">${body}<div class="gm-pad">${hint('Kies met de pijltjes · Enter om te bevestigen · Esc om terug te gaan', 'Kies met de kruistoetsen · A om te bevestigen · B om terug te gaan')}</div></div>`;
     // mouse: buttons do what they say, sliders and switches change at once
     this.el.querySelectorAll<HTMLButtonElement>('button[data-do]').forEach((b) => b.addEventListener('click', () => this.run(b.dataset.do!)));
     this.el.querySelectorAll<HTMLInputElement>('.gm-row input[type=range]').forEach((inp) =>
@@ -216,6 +217,10 @@ export class GameMenu {
     if (what === 'resume') {
       this.close();
       this.game?.resume();
+    } else if (what === 'skip') {
+      this.close();
+      this.game?.resume();
+      this.game?.skip?.();
     } else if (what === 'settings') this.openSettings('pause');
     else if (what === 'help') this.show('help');
     else if (what === 'title') this.game?.toTitle();
@@ -241,57 +246,16 @@ export class GameMenu {
     } else if (cmd === 'ok') n.click();
   }
 
-  private key(e: KeyboardEvent) {
-    if (!this.open) return;
-    const map: Record<string, Parameters<GameMenu['nav']>[0]> = {
-      ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', Enter: 'ok', Space: 'ok', Escape: 'back', KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right',
-    };
-    const cmd = map[e.code];
-    if (!cmd) return;
-    // the menu has the keys: the game and the panels behind it do not see them
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    if (!e.repeat || cmd !== 'ok') this.nav(cmd);
-  }
-
-  private padButtons(): boolean[] {
-    const pads = navigator.getGamepads?.() ?? [];
-    const p = [...pads].find((x) => x && x.connected);
-    if (!p) return [];
-    const b = p.buttons.map((x) => !!x?.pressed);
-    // the left stick as a d-pad
-    const ax = p.mapping === 'standard' ? p.axes : [];
-    b[100] = (ax[1] ?? 0) < -0.6;
-    b[101] = (ax[1] ?? 0) > 0.6;
-    b[102] = (ax[0] ?? 0) < -0.6;
-    b[103] = (ax[0] ?? 0) > 0.6;
-    return b;
-  }
-
-  private pollPad() {
-    const b = this.padButtons();
-    if (!b.length) return;
-    const edge = (i: number) => b[i] && !this.padPrev[i];
-    if (edge(0)) this.nav('ok');
-    else if (edge(1)) this.nav('back');
-    else if (edge(9)) {
+  /** A command from the keyboard or the pad (nav.ts). */
+  private command(cmd: NavCmd): boolean {
+    if (cmd === 'start') {
       // Start again: straight back to the game
       if (this.game) {
         this.close();
         this.game.resume();
       } else this.back();
-    }
-    // directions repeat while held
-    const dir = b[12] || b[100] ? 'up' : b[13] || b[101] ? 'down' : b[14] || b[102] ? 'left' : b[15] || b[103] ? 'right' : '';
-    const now = performance.now();
-    if (dir && dir !== this.padDir) {
-      this.nav(dir as 'up');
-      this.padHeld = now + this.repeatDelay;
-    } else if (dir && now > this.padHeld) {
-      this.nav(dir as 'up');
-      this.padHeld = now + 110;
-    }
-    this.padDir = dir;
-    this.padPrev = b;
+    } else if (cmd === 'tab' || cmd === 'untab') this.nav(cmd === 'tab' ? 'down' : 'up');
+    else if (cmd === 'up' || cmd === 'down' || cmd === 'left' || cmd === 'right' || cmd === 'ok' || cmd === 'back') this.nav(cmd);
+    return true;
   }
 }

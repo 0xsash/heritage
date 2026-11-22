@@ -1,7 +1,9 @@
 // Dialogue box and journal (quest log). Both free the mouse while open; keys:
-// dialogue 1-4 / click to choose, Space or E to continue; journal J or Esc.
+// dialogue 1-4 / click / arrows and Enter / d-pad and A to choose, Space or E to continue,
+// Escape or B to walk away; journal J, Escape or B (src/ui/nav.ts has the shared keys and buttons).
 
-import { bookTabs } from './kroniekui';
+import { bookTabs, closeBtn } from './kroniekui';
+import { hint, nav } from './nav';
 import { gloss } from '../rpg/kroniek';
 import { stuivers } from '../rpg/money';
 import { type QuestEngine, standingLine } from '../rpg/quests';
@@ -23,6 +25,7 @@ export class DialogueUI {
     this.el.className = 'dialogue';
     this.el.hidden = true;
     root.appendChild(this.el);
+    // the number keys choose, E goes on; arrows, Enter, Space, Escape and the pad come through nav.ts
     window.addEventListener('keydown', (e) => {
       if (!this.open || !this.line) return;
       const choices = this.visibleChoices();
@@ -32,12 +35,12 @@ export class DialogueUI {
           e.preventDefault();
           this.choose(n - 1);
         }
-      } else if (e.code === 'Space' || e.code === 'KeyE' || e.code === 'Enter') {
+      } else if (e.code === 'KeyE' && !e.repeat) {
         e.preventDefault();
         this.advance();
       }
-      if (e.code === 'Escape') this.close();
     });
+    nav.add({ layer: 30, active: () => this.open, root: () => this.el, back: () => this.close(), wrap: true });
   }
 
   start(npcId: string, lineId: string, onClose?: () => void) {
@@ -67,14 +70,19 @@ export class DialogueUI {
     const who = line.who === 'you' ? this.q.s.hero.name : npc?.name ?? line.who;
     const role = line.who === 'you' ? '' : npc?.role ?? '';
     const choices = this.visibleChoices();
+    const keys = choices.length
+      ? hint(`<kbd>1</kbd>–<kbd>${choices.length}</kbd> of <kbd>Enter</kbd> kiezen · <kbd>Esc</kbd> weggaan`, '<kbd>A</kbd> kiezen · <kbd>B</kbd> weggaan')
+      : hint('<kbd>Esc</kbd> weggaan', '<kbd>B</kbd> weggaan');
     this.el.innerHTML = `<div class="who">${esc(who)}<span class="role">${esc(role)}</span></div>
       <div class="text${line.who === 'you' ? ' you' : ''}">${gloss(esc(this.q.fill(line.text)))}</div>
-      ${choices.length ? '<div class="choices"></div>' : '<div class="cont">SPATIE / E · VERDER</div>'}`;
+      ${choices.length ? '<div class="choices"></div>' : ''}
+      <div class="dl-foot"><span class="dl-keys">${keys}</span>${choices.length ? '' : `<button class="cont" data-cont>VERDER <kbd>${hint('Spatie', 'A')}</kbd></button>`}</div>`;
     const box = this.el.querySelector('.choices');
     choices.forEach((c, i) => {
       const b = document.createElement('button');
       const starts = c.effects?.find((e) => 'start' in e) as { start: string } | undefined;
       const tag = starts ? '<span class="qtag">opdracht</span>' : '';
+      b.dataset.c = String(i);
       b.innerHTML = `<span class="n">${i + 1}</span>${esc(this.q.fill(c.text))}${tag}`;
       b.addEventListener('click', (e) => {
         // the box's own click (advance) would otherwise get this same click and skip the reply
@@ -85,6 +93,8 @@ export class DialogueUI {
     });
     if (!choices.length) this.el.onclick = () => this.advance();
     else this.el.onclick = null;
+    // a new line: the keyboard and the pad start on its first choice (or on VERDER)
+    nav.refocus();
   }
 
   private choose(i: number) {
@@ -119,9 +129,6 @@ export class JournalUI {
     this.el.className = 'journal';
     this.el.hidden = true;
     root.appendChild(this.el);
-    window.addEventListener('keydown', (e) => {
-      if (this.open && e.code === 'Escape') this.toggle();
-    });
   }
 
   toggle() {
@@ -129,6 +136,7 @@ export class JournalUI {
     this.el.hidden = !this.open;
     if (this.open) {
       document.exitPointerLock?.();
+      nav.refocus();
       this.sel = this.q.s.tracked ?? this.sel;
       this.render();
     }
@@ -187,7 +195,7 @@ export class JournalUI {
         <div class="entries">${[...st.log].reverse().map((p) => `<p>${gloss(esc(this.q.fill(p)))}</p>`).join('')}</div>`;
     }
     const inv = Object.entries(s.inv).filter(([, n]) => n > 0).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`).join(' · ');
-    this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${stuivers(s.florins)}</span></header>
+    this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${stuivers(s.florins)}</span>${closeBtn()}</header>
       <div class="list">${list || '<div class="empty">Je hebt nog geen opdrachten.</div>'}</div>
       <div class="detail">${detail}</div>
       <div class="inv">Op zak: ${inv ? esc(inv) : 'niets bijzonders'}</div>`;

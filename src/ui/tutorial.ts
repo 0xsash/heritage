@@ -66,21 +66,21 @@ const STEPS: Step[] = [
   { id: 'walk', keys: (p) => (p ? ['L'] : ['W', 'A', 'S', 'D']), text: 'Zo stap je. Met Shift ren je', when: (c) => c.mode === 'walk', done: (c) => c.walked > 8 },
   { id: 'talk', keys: (p) => (p ? ['Y'] : ['E']), text: 'Praat met wie een gouden ! heeft', when: (c) => c.mode === 'walk' && !c.inCombat, done: (c) => c.talking, stall: 6 },
   { id: 'dodge', keys: (p) => (p ? ['A'] : ['SPATIE']), text: 'Gloeit de vijand rood? Rol weg', when: (c, t) => c.mode === 'walk' && c.inCombat && c.tally.telegraphs > t.base.telegraphs, done: (c, t) => c.tally.rolls > t.base.rolls, stall: 0.1 },
-  { id: 'attack', keys: () => ['LMB'], text: 'Sla toe. Drie slagen vormen een reeks', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.hits - t.base.hits >= 3, stall: 2 },
+  { id: 'attack', keys: (p) => (p ? ['RT'] : ['LMB']), text: 'Sla toe. Drie slagen vormen een reeks', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.hits - t.base.hits >= 3, stall: 2 },
   { id: 'salve', keys: (p) => (p ? ['▼'] : ['Q']), text: 'Begijnenzalf geneest je', when: (c) => c.hpFrac < 0.5 && c.salves > 0, done: (c, t) => c.tally.potions > t.base.potions, stall: 1 },
-  { id: 'skill', keys: () => ['RMB'], text: '{skill}', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.skills > t.base.skills, stall: 5 },
+  { id: 'skill', keys: (p) => (p ? ['LT'] : ['RMB']), text: '{skill}', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.skills > t.base.skills, stall: 5 },
   { id: 'breath', keys: (p) => (p ? ['LB'] : ['LMB']), text: '{dragon} spuwt vuur', when: (c) => c.mode === 'fly' && c.inCombat, done: (c) => c.tally.breaths > 0, stall: 2 },
   // the first kill from the air: why it gave so little (combat.ts AIR_XP), and what to do about it
   { id: 'airxp', keys: (p) => (p ? ['Y'] : ['E']), text: 'Land: te voet verdien je meer ervaring', when: (c) => c.mode === 'fly' && (c.tally.airKills ?? 0) > 0, done: (c) => c.mode !== 'fly', stall: 0.8, patience: 9 },
   // what Het Oude Volk teaches (only ever seen by someone who found them)
   { id: 'spare', keys: (p) => (p ? ['Y'] : ['E']), text: 'Laat het beest gaan', when: (c) => c.mode === 'walk' && !!c.spare, done: (c, t) => (c.tally.spares ?? 0) > (t.base.spares ?? 0), stall: 0.3, patience: 8 },
-  { id: 'dskill', keys: () => ['RMB', 'R'], text: 'De gaven van {dragon}', when: (c) => c.mode === 'fly' && !!c.dragonFly && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
-  { id: 'dcall', keys: () => ['G'], text: 'Roep {dragon} te hulp', when: (c) => c.mode === 'walk' && !!c.dragonCall && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
+  { id: 'dskill', keys: (p) => (p ? ['LT', 'B'] : ['RMB', 'R']), text: 'De gaven van {dragon}', when: (c) => c.mode === 'fly' && !!c.dragonFly && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
+  { id: 'dcall', keys: (p) => (p ? ['◀'] : ['G']), text: 'Roep {dragon} te hulp', when: (c) => c.mode === 'walk' && !!c.dragonCall && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
   { id: 'mount', keys: (p) => (p ? ['Y'] : ['E']), text: 'Is het ver? Roep {dragon} en vlieg', when: (c) => c.mode === 'walk' && c.toGoal > 300 && c.toGoal < 1e8 && !c.inCombat, done: (c) => c.mode === 'fly', stall: 6 },
   // the second flight: now speed matters
   // (or at once, when the dragon hangs in the air and the rider does not know how to send him on)
   { id: 'speed', keys: (p) => (p ? ['RT', 'LT'] : ['W', 'S']), text: 'Zo vlieg je sneller of trager', when: (c, t) => c.mode === 'fly' && (t.learned('land') || (c.airspeed ?? 99) < 6), done: (c, t) => (t.acc.speed += Math.abs(c.throttle) > 0.3 ? t.dt : 0) > 0.8, stall: 5 },
-  { id: 'book', keys: () => ['J', 'K'], text: 'Open je dagboek of de Kroniek', when: (c) => c.quests >= 2 && !c.talking && !c.inCombat, done: (c) => c.bookOpen, patience: 14, stall: 8 },
+  { id: 'book', keys: (p) => (p ? ['RB'] : ['J', 'K']), text: 'Open je dagboek of de Kroniek', when: (c) => c.quests >= 2 && !c.talking && !c.inCombat, done: (c) => c.bookOpen, patience: 14, stall: 8 },
 ];
 
 export class Tutorial {

@@ -48,5 +48,5 @@ export const ROADS = {
   west: 'Het beeldje van Truyken zoemt naar het westen, naar Leuven. Pieter zegt dat de meesters van de universiteit oud brons en ouder hout kunnen lezen.',
   east: 'Door de Beverenpoort komen karren uit het land van Loon, in het oosten. Daar zwijgen de torens al een jaar, zeggen de voerlui, en meer zeggen ze niet.',
   /** interface: what comes, and what you can do until then */
-  next: 'Leuven en het land van Loon komen in het volgende hoofdstuk. Tot dan kun je in Diest verder spelen: zijverhalen, het prikbord en de klokkenronde.',
+  next: 'Leuven en het land van Loon komen in het volgende hoofdstuk. Tot dan kun je in Diest verder spelen: zijverhalen, het aanplakbord en de Klokkenronde.',
 };

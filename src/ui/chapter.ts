@@ -4,6 +4,7 @@
 // key still held from the film does not close it unread.
 
 import type { EndRow } from '../content/diest_end';
+import { hint, nav } from './nav';
 
 export interface ChapterCardData {
   kicker: string;
@@ -22,19 +23,28 @@ export class ChapterCard {
   open = false;
   private done: (() => void) | null = null;
   private readyAt = 0;
-  private raf = 0;
-  private padPrev: boolean[] = [];
 
   constructor(root: HTMLElement) {
     this.el.className = 'chapter-card';
     this.el.hidden = true;
     root.appendChild(this.el);
+    // Enter, Space, Escape, A, B, Start (the shared navigation, nav.ts); up and down scroll the card; E as well
+    nav.add({
+      layer: 50,
+      active: () => this.open,
+      root: () => this.el,
+      back: () => this.close(),
+      handle: (cmd) => {
+        if (cmd === 'ok' || cmd === 'start') {
+          this.close();
+          return true;
+        }
+        return false;
+      },
+    });
     window.addEventListener('keydown', (e) => {
-      if (!this.open || !['Enter', 'Escape', 'Space', 'KeyE'].includes(e.code)) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      this.close();
-    }, { capture: true });
+      if (this.open && e.code === 'KeyE') this.close();
+    });
   }
 
   show(d: ChapterCardData): Promise<void> {
@@ -50,7 +60,7 @@ export class ChapterCard {
       <h3>HOE HET VERDER GAAT</h3>
       <div class="chc-roads"><p><b>Naar het westen</b>${esc(d.roads.west)}</p><p><b>Naar het oosten</b>${esc(d.roads.east)}</p></div>
       <p class="chc-next">${esc(d.roads.next)}</p>
-      <button class="chc-go">VERDER SPELEN IN DIEST</button>
+      <button class="chc-go">VERDER SPELEN IN DIEST <kbd>${hint('Enter', 'A')}</kbd></button>
     </div>`;
     this.el.querySelector('.chc-go')!.addEventListener('click', () => this.close());
     this.el.hidden = false;
@@ -58,28 +68,12 @@ export class ChapterCard {
     this.readyAt = performance.now() + 1200;
     document.exitPointerLock?.();
     requestAnimationFrame(() => this.el.classList.add('show'));
-    // a gamepad: A, B or Start
-    this.padPrev = this.pad();
-    const loop = () => {
-      if (!this.open) return;
-      const b = this.pad();
-      if ([0, 1, 9].some((i) => b[i] && !this.padPrev[i])) this.close();
-      this.padPrev = b;
-      this.raf = requestAnimationFrame(loop);
-    };
-    this.raf = requestAnimationFrame(loop);
     return new Promise((res) => (this.done = res));
-  }
-
-  private pad() {
-    const p = [...(navigator.getGamepads?.() ?? [])].find((x) => x && x.connected);
-    return p ? p.buttons.map((x) => !!x?.pressed) : [];
   }
 
   close() {
     if (!this.open || performance.now() < this.readyAt) return;
     this.open = false;
-    cancelAnimationFrame(this.raf);
     this.el.classList.remove('show');
     setTimeout(() => {
       if (!this.open) this.el.hidden = true;

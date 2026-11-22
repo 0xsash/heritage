@@ -14,6 +14,7 @@ import * as THREE from 'three';
 import { Voice } from '../audio/voice';
 import type { Sound } from '../audio/sound';
 import type { Folk, FolkSpec, TownsfolkKit } from '../rpg/townsfolk';
+import { hint, padHeld } from '../ui/nav';
 
 export type V3 = [number, number, number];
 export type SkyId = 'golden' | 'day' | 'night' | 'storm';
@@ -423,6 +424,7 @@ export class Cine {
   private speaking = false;
   private cuesDone = new Set<string>();
   private skipHeld = 0;
+  private skipFrom = 0;
   private skipDown = false;
   private resolve: (() => void) | null = null;
   private env: Required<Env> = { fog: 1, sun: 1, exposure: 1, night: -1 };
@@ -446,7 +448,8 @@ export class Cine {
   constructor(private d: CineDeps) {
     this.stage = new Stage(d);
     this.el.className = 'film';
-    this.el.innerHTML = '<div class="film-bar top"></div><div class="film-bar bot"></div><div class="film-title"></div><div class="film-sub"></div><div class="film-skip">Backspace ingedrukt houden · overslaan</div>';
+    // hold to skip: Escape or Backspace, B on a gamepad (the hint shows the device in use: nav.ts, html.dev-pad)
+    this.el.innerHTML = `<div class="film-bar top"></div><div class="film-bar bot"></div><div class="film-title"></div><div class="film-sub"></div><div class="film-skip">${hint('Houd <kbd>Esc</kbd> ingedrukt om over te slaan', 'Houd <kbd>B</kbd> ingedrukt om over te slaan')}</div>`;
     this.fadeEl = document.createElement('div');
     this.fadeEl.className = 'film-fade';
     this.snap = document.createElement('canvas');
@@ -456,10 +459,10 @@ export class Cine {
     this.sub = this.el.querySelector('.film-sub')!;
     this.titleEl = this.el.querySelector('.film-title')!;
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Backspace' && this.active) this.skipDown = true;
+      if ((e.code === 'Backspace' || e.code === 'Escape') && this.active) this.skipDown = true;
     });
     window.addEventListener('keyup', (e) => {
-      if (e.code === 'Backspace') this.skipDown = false;
+      if (e.code === 'Backspace' || e.code === 'Escape') this.skipDown = false;
     });
     // touch: hold anywhere to skip
     window.addEventListener('pointerdown', (e) => {
@@ -472,7 +475,7 @@ export class Cine {
 
   /** Is the skip key held right now? (The prologue waits for it to be let go.) */
   get skipKeyDown() {
-    return this.skipDown;
+    return this.skipDown || padHeld(1);
   }
 
   /** Seconds a line stays up. */
@@ -561,8 +564,12 @@ export class Cine {
   /** Advance the film. dt in seconds. */
   update(dt: number) {
     if (!this.active || !this.film) return;
-    // hold Backspace to skip
-    this.skipHeld = this.skipDown ? this.skipHeld + dt : 0;
+    // hold Escape, Backspace or the pad's B to skip
+    // measured on the clock, not the film's time: a held key skips after 0.8 s however slow the frames are
+    const now = performance.now();
+    if (this.skipKeyDown) this.skipFrom ||= now;
+    else this.skipFrom = 0;
+    this.skipHeld = this.skipFrom ? (now - this.skipFrom) / 1000 : 0;
     this.el.classList.toggle('skipping', this.skipHeld > 0.1);
     if (this.skipHeld > 0.8) return this.end(true);
     if (!this.ready) return;

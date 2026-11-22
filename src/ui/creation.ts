@@ -16,6 +16,7 @@ import type { TownsfolkKit } from '../rpg/townsfolk';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { BELLIES, DRAGON_EYES, HORNS, SCALES } from '../player/scales';
 import { HeroPreview } from './preview';
+import { hint, nav } from './nav';
 
 /** What creation decides; the rest of HeroData starts fresh. */
 export type NewHero = Pick<HeroData, 'name' | 'origin' | 'cloak' | 'dragon' | 'sex' | 'build' | 'face' | 'skin' | 'hair' | 'hairColor' | 'beard' | 'hat' | 'background' | 'faction' | 'scales'
@@ -122,11 +123,36 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
 
   return new Promise((resolve) => {
     let preview: HeroPreview | null = null;
-    let keys: ((e: KeyboardEvent) => void) | null = null;
+    /** which page is up, for Escape / B (and the confirm question over the title) */
+    let page: 'title' | 'promise' | 'promise-back' | 'create' = 'title';
+    let confirmEl: HTMLElement | null = null;
+    /** creation's own commands for the keyboard and the pad (set while it is up) */
+    let ccHandle: ((cmd: string, f: HTMLElement | null) => boolean) | null = null;
+    // the keyboard and the gamepad: the same navigation as every other screen (nav.ts)
+    nav.add({
+      layer: 10,
+      active: () => el.isConnected && !el.classList.contains('out'),
+      root: () => confirmEl ?? el,
+      // the safe answer first in the question; in creation the first tab (BEGIN is one press away, not the first)
+      first: () => confirmEl?.querySelector<HTMLElement>('[data-go="no"]') ?? el.querySelector<HTMLElement>('.fe-menu button, .cc-tabs button.on'),
+      back: () => {
+        if (confirmEl) return closeConfirm();
+        if (page === 'promise-back') title();
+        else if (page === 'create') (save ? title() : promise(false));
+      },
+      handle: (cmd, f) => (page === 'create' && !confirmEl && ccHandle ? ccHandle(cmd, f) : false),
+    });
+    const closeConfirm = () => {
+      confirmEl?.remove();
+      confirmEl = null;
+      nav.refocus();
+      // back on NIEUW SPEL, where the question came from
+      requestAnimationFrame(() => el.querySelector<HTMLElement>('[data-go="new"]')?.focus());
+    };
     const done = (r: FrontEndResult) => {
       preview?.dispose();
       preview = null;
-      if (keys) window.removeEventListener('keydown', keys);
+      ccHandle = null;
       el.classList.add('out');
       setTimeout(() => el.remove(), 900);
       resolve(r);
@@ -134,6 +160,8 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
 
     // ---------------------------------------------------------------- what this is (first visit)
     const promise = (back: boolean) => {
+      page = back ? 'promise-back' : 'promise';
+      ccHandle = null;
       el.innerHTML = `<div class="fe-title fe-promise" style="background-image:url(${asset('ui/intro/flight-demer-valley.jpg')})">
         <div class="fe-shade"></div>
         <div class="fe-center">
@@ -153,14 +181,18 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
           </div>
           <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN'}</button>${!back && openSettings ? '<button data-go="settings">INSTELLINGEN</button>' : ''}</div>
           <div class="fe-small">Je speelt met muis en toetsenbord of met een gamepad. Zet het geluid aan. Je voortgang wordt op dit toestel bewaard.</div>
+          <div class="fe-keys">${hint('Kies met de pijltjes of Tab · Enter om te bevestigen', 'Kies met de kruistoetsen · A om te bevestigen')}</div>
         </div>
       </div>`;
+      nav.refocus();
       el.querySelector('[data-go="ok"]')!.addEventListener('click', () => (back ? title() : create()));
       el.querySelector('[data-go="settings"]')?.addEventListener('click', () => openSettings?.());
     };
 
     // ---------------------------------------------------------------- title
     const title = () => {
+      page = 'title';
+      ccHandle = null;
       el.innerHTML = `<div class="fe-title" style="background-image:url(${asset('ui/intro/flight-demer-valley.jpg')})">
         <div class="fe-shade"></div>
         <div class="fe-center">
@@ -172,6 +204,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
             ${openSettings ? '<button data-go="settings">INSTELLINGEN</button>' : ''}
           </div>
           <div class="fe-small">Je speelt het best met muis en toetsenbord of met een gamepad, en met het geluid aan · <button class="fe-link" data-go="what">wat is dit?</button></div>
+          <div class="fe-keys">${hint('Kies met de pijltjes of Tab · Enter om te bevestigen', 'Kies met de kruistoetsen · A om te bevestigen')}</div>
         </div>
         <div class="fe-credit">Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)</div>
       </div>`;
@@ -179,9 +212,29 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
       el.querySelector('[data-go="what"]')!.addEventListener('click', () => promise(true));
       el.querySelector('[data-go="settings"]')?.addEventListener('click', () => openSettings?.());
       el.querySelector('[data-go="new"]')!.addEventListener('click', () => {
-        if (save && !confirm('Wil je een nieuw spel beginnen? Je huidige personage gaat dan verloren.')) return;
-        create(); // the story is told in the prologue, which you play
+        if (!save) return create(); // the story is told in the prologue, which you play
+        // a returning player: the game's own question, in the game's own frame (not the browser's)
+        confirmEl?.remove();
+        confirmEl = document.createElement('div');
+        confirmEl.className = 'fe-confirm';
+        confirmEl.innerHTML = `<div class="fe-confirm-in" role="dialog" aria-modal="true">
+          <h3>NIEUW SPEL</h3>
+          <p>Wil je een nieuw spel beginnen? Je huidige personage, ${esc(save.name)}, gaat dan verloren.</p>
+          <div class="fe-menu"><button data-go="yes">NIEUW SPEL BEGINNEN</button><button data-go="no">TERUG</button></div>
+        </div>`;
+        el.querySelector('.fe-title')!.appendChild(confirmEl);
+        confirmEl.querySelector('[data-go="yes"]')!.addEventListener('click', () => {
+          confirmEl?.remove();
+          confirmEl = null;
+          create();
+        });
+        confirmEl.querySelector('[data-go="no"]')!.addEventListener('click', closeConfirm);
+        confirmEl.addEventListener('click', (e) => {
+          if (e.target === confirmEl) closeConfirm();
+        });
+        nav.refocus();
       });
+      nav.refocus();
     };
 
     // ---------------------------------------------------------------- story (kept for a later trailer; creation skips it)
@@ -216,6 +269,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
 
     // ---------------------------------------------------------------- creation
     const create = () => {
+      page = 'create';
       let kit: TownsfolkKit | null = null;
       let kitState: 'loading' | 'ok' | 'none' = 'loading';
       let opts = heroOptions(null);
@@ -234,7 +288,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
       el.innerHTML = `<div class="cc" style="background-image:${back}">
         <div class="cc-stage">
           <div class="cc-view"><div class="cc-wait">De kleermaker zoekt zijn naalden…</div></div>
-          <div class="cc-hint">Sleep om te draaien</div>
+          <div class="cc-hint">${hint('Sleep om te draaien · kies met de pijltjes, Enter om te kiezen, Esc om terug te gaan', 'Kies met de kruistoetsen · A om te kiezen · LB en RB: andere tab · X: willekeurig · B om terug te gaan')}</div>
           <div class="cc-lore" aria-live="polite"></div>
         </div>
         <div class="cc-left">
@@ -253,6 +307,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
           <label class="cc-field" data-lore="name:you"><span>JE NAAM</span><div><input class="cc-name" maxlength="18" list="cc-names" value="${esc(h.name)}" spellcheck="false"><button class="cc-dice" data-dice="name" title="Een andere naam">⚄</button></div></label>
           <datalist id="cc-names"></datalist>
           <label class="cc-field" data-lore="name:dragon"><span>JE DRAAK</span><div><input class="cc-dragon" maxlength="18" value="${esc(h.dragon)}" spellcheck="false"><button class="cc-dice" data-dice="dragon" title="Een andere naam">⚄</button></div></label>
+          <button class="cc-back">TERUG</button>
           <button class="cc-go">BEGIN</button>
         </div>
       </div>`;
@@ -273,8 +328,8 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
             <h4>${esc(o.name)} <em>${esc(o.role)}</em></h4>
             <p>${esc(o.lore)}</p>
             <div class="cc-skills">
-              <div><b>Rechtermuis · ${esc(o.skill.name)}</b>${esc(o.skill.text)}</div>
-              <div><b>R · ${esc(o.skill2.name)}</b><i>vanaf niveau ${o.skill2.level}.</i> ${esc(o.skill2.text)}</div>
+              <div><b>${hint('Rechtermuis', 'LT')} · ${esc(o.skill.name)}</b>${esc(o.skill.text)}</div>
+              <div><b>${hint('R', 'B')} · ${esc(o.skill2.name)}</b><i>vanaf niveau ${o.skill2.level}.</i> ${esc(o.skill2.text)}</div>
             </div>
             ${w ? `<div class="m"><b>Begint met</b> ${esc(w.name)}, ${esc(gearLines(w).join(', '))}.</div>` : ''}`;
         }
@@ -296,7 +351,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         if (kind === 'name' && id === 'dragon')
           return `<div class="k">DE DRAAK</div><h4>${esc(dragonIn.value || '…')}</h4>
             <p>Hij kroop uit het riet van de Demer, de nacht dat de klokken zwegen, en koos jou. Waarom, weet niemand. Hij weet het misschien. Hij zegt het niet.</p>
-            <div class="m"><b>Linkermuis in de lucht</b> Drakenvuur, waar je kijkt.</div>`;
+            <div class="m"><b>${hint('Linkermuis', 'LB')} in de lucht</b> Drakenvuur, waar je kijkt.</div>`;
         if (kind === 'name')
           return `<div class="k">JE NAAM</div><h4>${esc(nameIn.value || '…')}</h4>
             <p>Zo zullen ze je roepen in Diest: op de markt, in de herberg, en later, als er iets misgaat.</p>
@@ -320,6 +375,11 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         loreEl.innerHTML = lore(key);
       };
       el.addEventListener('pointerover', (e) => {
+        const t = (e.target as HTMLElement).closest<HTMLElement>('[data-lore]');
+        showLore(t ? t.dataset.lore! : pinned);
+      });
+      // the keyboard and the pad: the panel tells about what has the focus
+      el.addEventListener('focusin', (e) => {
         const t = (e.target as HTMLElement).closest<HTMLElement>('[data-lore]');
         showLore(t ? t.dataset.lore! : pinned);
       });
@@ -556,7 +616,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         $('.cc-stats').innerHTML = (['kracht', 'klank', 'list', 'taaiheid'] as Stat[])
           .map((k) => `<div class="cc-st" data-lore="origin:${h.origin}"><span>${STAT_NAMES[k]}</span><i><em style="width:${Math.min(100, d[k] * 9)}%"></em></i><b>${d[k]}${bonus[k] ? '<sup>+</sup>' : ''}</b></div>`)
           .join('') +
-          `<div class="cc-derived"><span>Leven <b>${d.maxHp}</b></span><span>Pantser <b>${d.armor}</b></span><span>Voltreffer <b>${Math.round(d.crit)}%</b></span></div>`;
+          `<div class="cc-derived"><span>Levenskracht <b>${d.maxHp}</b></span><span>Pantser <b>${d.armor}</b></span><span>Voltreffer <b>${Math.round(d.crit)}%</b></span></div>`;
       };
 
       // ------------------------------------------------ names, begin
@@ -582,12 +642,32 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         done({ mode: 'new', hero: { ...h, face: { ...h.face } } });
       };
       $('.cc-go').addEventListener('click', begin);
-      keys = (e: KeyboardEvent) => {
-        const typing = document.activeElement === nameIn || document.activeElement === dragonIn;
-        if (e.code === 'Enter' && !e.repeat) { e.preventDefault(); begin(); }
-        else if (!typing && (e.code === 'ArrowLeft' || e.code === 'ArrowRight') && !(document.activeElement instanceof HTMLInputElement)) preview?.turn(e.code === 'ArrowLeft' ? -0.6 : 0.6);
+      // back to where you came from: the title (a returning player keeps the game they had), or the first page
+      $('.cc-back').addEventListener('click', () => (save ? title() : promise(false)));
+      // Enter presses what has the focus (nav.ts); only in a name field does it mean BEGIN.
+      // LB / RB change the appearance tab; left and right on a ‹ › stepper change its value.
+      ccHandle = (cmd, f) => {
+        if (cmd === 'ok' && (f === nameIn || f === dragonIn)) {
+          begin();
+          return true;
+        }
+        if (cmd === 'prev' || cmd === 'next') {
+          const i = TABS.findIndex(([id]) => id === tab);
+          const nt = TABS[(i + (cmd === 'next' ? 1 : -1) + TABS.length) % TABS.length][0];
+          el.querySelector<HTMLElement>(`[data-tab="${nt}"]`)?.click();
+          return true;
+        }
+        if ((cmd === 'left' || cmd === 'right') && f?.dataset.step) {
+          el.querySelector<HTMLElement>(`[data-step="${f.dataset.step}"][data-d="${cmd === 'right' ? 1 : -1}"]`)?.click();
+          return true;
+        }
+        if (cmd === 'x') {
+          randomLook();
+          return true;
+        }
+        return false;
       };
-      window.addEventListener('keydown', keys);
+      nav.refocus();
 
       // ------------------------------------------------ first paint, then the figure when the kit is in
       renderRows();

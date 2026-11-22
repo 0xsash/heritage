@@ -11,9 +11,15 @@ Screenshots: `/tmp/claude-0/-home-user-heritage/fbffb122-b5ad-5a04-9543-7e04a3e8
 
 Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was reproduced twice (two runs or two screens).
 
+**Fix pass (worktree agent-a6f2b54857f092ce6):** all 23 findings addressed; #21 partly (see its status). Each finding
+below carries a **Status** line. Re-test scripts and logs: `scratchpad/uifix/` (`t_fx_front.cjs`, `t_fx_pad.cjs`,
+`t_fx_padrun.cjs`, `t_fx_film.cjs`, plus the old `t_main2`, `t_settings`, `t_old`, `smoke`); before/after shots in
+`scratchpad/uifix/shots/before` and `shots/after`.
+
 ## Findings, ranked
 
 ### 1. BLOCKER: a gamepad cannot operate the dialogue box or any panel
+- **Status (fix pass):** FIXED. One navigation for every screen, `src/ui/nav.ts` (the pause menu's pad reading and key map moved there; the menu, the chapter card, the front end, the dialogue, the book, the shop, the reading card, the share card and the map all use it). D-pad / left stick (or arrows, WASD, Tab) move the focus by where controls lie on screen, A / Enter / Space press, B / Escape close or step back, LB / RB turn the book's page (and the creation tabs, and zoom the map). The screen on top owns its keys and buttons; `Input.ui` keeps the pad and the movement keys out of the game behind it. Each box says how to go on and leave, for the device in use (`A · verder`, `B weggaan`). D-pad right now opens Personage. Re-test (`uifix/t_fx_pad.cjs`, `t_fx_padrun.cjs`): Pieter's conversation advanced with A, choices moved with the d-pad, chosen with A, closed with B; journal → Kroniek → Personage with RB, LB back, B closes; shop by Y, A buys, B closes; reading card closed with A.
 - **Screens:** dialogue (every conversation, the board and the dice game are dialogues), shop and character panel,
   Kroniek, reading card.
 - **What happens:** Y next to a person opens the dialogue (the prompt even says `Y Spreek met …`). After that A, Y, B,
@@ -33,6 +39,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   `input.device === 'pad'`.
 
 ### 2. MAJOR: the title, first-visit screen and character creation need a mouse
+- **Status (fix pass):** FIXED. The front end is a screen of `nav.ts`: Tab, arrows and the pad move a visible gold focus (`.nav-focus`, plus `:focus-visible`), A / Enter press. `Input` no longer calls `preventDefault` before the game has started (`gameKeys`) and ignores keys typed into a text field. Each front-end page shows a key line for the device in use. Re-test (`t_fx_front.cjs`): Tab moves BEGIN → INSTELLINGEN, pad A on BEGIN opens creation, pad A on VERDER SPELEN starts the game.
 - **What happens:** Tab does not move focus (it stays on `<body>`), arrow keys do nothing, the pad's A does nothing.
   A keyboard or pad player cannot choose VERDER SPELEN, NIEUW SPEL, BEGIN or INSTELLINGEN. The front-end buttons have
   no focus style either. The screen itself says "Je speelt met muis en toetsenbord of met een gamepad".
@@ -48,6 +55,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   `:focus-visible` with the same gold outline as `.gm-panel > button.focus` (`style.css:685`).
 
 ### 3. MAJOR: Enter on the creation screen starts the game, whatever has focus
+- **Status (fix pass):** FIXED. Enter presses the focused control; only in a name field does it mean BEGIN. Creation opens with the focus on the first tab, not on BEGIN. Re-test: Enter on "Man" keeps creation open (sex set to m), Enter on the Haar tab switches the tab, Enter in the name field begins.
 - **What happens:** with a button focused (a tab, Man/Vrouw, a swatch), Enter does not press it: it runs BEGIN and the
   game starts with the old choice.
 - **Repro:** creation screen, click into it so a control has focus (or focus `.cc-seg button[data-k="f"]`), press
@@ -58,6 +66,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
 - **Fix:** begin on Enter only when focus is in a name field or on BEGIN; let a focused button take its own Enter.
 
 ### 4. MAJOR: no way back from character creation
+- **Status (fix pass):** FIXED. TERUG left of BEGIN, Escape and pad B go back to the title (or to the first page on a first visit); the save is untouched until BEGIN. The browser `confirm()` is replaced by an in-game question in the dark panel style ("Wil je een nieuw spel beginnen? Je huidige personage, …, gaat dan verloren." NIEUW SPEL BEGINNEN / TERUG, focus on TERUG, B cancels). Re-test: no browser dialog, B closes the question, TERUG returns to the title with VERDER SPELEN and the old save.
 - **What happens:** creation has no TERUG button and ignores Escape. A returning player who clicks NIEUW SPEL (and
   accepts the browser `confirm()`) cannot get back to VERDER SPELEN without reloading the page. The confirm itself is
   the browser's own dialog (browser-language buttons, not reachable by pad, out of style).
@@ -69,6 +78,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   `confirm()` with an in-style two-button question ("Je huidige personage gaat verloren. NIEUW SPEL / TERUG").
 
 ### 5. MAJOR: the map is not treated as a screen
+- **Status (fix pass):** FIXED. `mapOpen` is part of `uiOpen()` (the HUD fades under `ui-open`, Start and the pause menu are blocked, the world waits); the map lets go of the mouse like the book; Escape / B / Back close it; opening a book from the map closes the map; J, K, I and M are ignored in the prologue. Legend ends with `M of Esc: sluiten` (pad: `RB / LB: in- en uitzoomen · B: sluiten`). Re-test: M then J → `journal:true, map:false`; M then Escape → map closed, no pause menu; pad Back / RB zoom / B.
 - **What happens:** with the map open, J/K/I open a panel on top of it; Escape opens the pause menu over it and after
   VERDER SPELEN the map is still open; the compass and the action bar are drawn over the map; the map says how to zoom
   but not how to close it.
@@ -81,6 +91,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   pad B before the menu sees the key, and end the legend with `· M of Esc: sluiten`.
 
 ### 6. MAJOR: the controls card (H) is cut off, and the controls list is incomplete and partly wrong
+- **Status (fix pass):** FIXED. The key lists live next to the key maps (`CONTROLS` in `src/core/input.ts`). The H card shows only the keys of the moment (in the air or on foot, 10–11 rows) for the device in use, at the bottom left above the place name; it fits at 1280×720 (y 237–570) and 1024×640 (y 157–490). The pause menu's BESTURING page shows everything, keyboard and gamepad side by side, in two columns; it fits 1024×640 without scrolling (502/502). Corrected: B is the second skill on foot, G, Tab, F, Escape/Start, RB, Back and the d-pad are listed, "hulp verbergen" → "Besturing tonen of verbergen".
 - **What happens:** below 1360 px wide the card moves to the top left with `max-height: calc(100% - 250px)`; at
   1280×720 and 1024×640 it ends after "P", so the "T · H" and "Gamepad" rows are hidden, and it cannot be scrolled while
   the mouse is captured. It also covers the discovery card. The list itself has no Escape/Start (pause), Tab, F,
@@ -95,6 +106,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   only; the H card shows the five keys of the current situation (flying / on foot) and fits without scrolling.
 
 ### 7. MINOR: keys leak to the game behind the dialogue and panels
+- **Status (fix pass):** FIXED. T, H and the dawn-time key run only when no screen is open (and not in the prologue); with a screen open `Input.ui` zeroes both sticks, the throttle, WASD and the mouse, and the pad's buttons act only in the screen. Re-test (dialogue open): T → light unchanged, H → card unchanged, right stick → camera yaw change 0.0000.
 - **What happens:** T changes the time of day during a conversation (Gouden uur → Maannacht); H toggles the controls
   card hidden behind the panel, so it pops up after closing; the right stick turns the camera behind the dialogue.
 - **Repro:** open any dialogue, press T and H, close it. Run 1 `t_game3.log`, run 2 `t_game4.log`
@@ -104,6 +116,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
 - **Fix:** gate `help`, `time`, `paint` on `!uiOpen() && !mapOpen`; pass zero look input to the rig while a panel is open.
 
 ### 8. MINOR: book panels and the shop have no close control
+- **Status (fix pass):** FIXED. Dagboek, Kroniek, Personage and the shop have `SLUITEN Esc` (pad: `SLUITEN B`) at the top right; the button, Escape and B all go through one `closeBook()` that calls `closeUi()` (mouse taken back, `uiClosedAt` set).
 - **What happens:** Dagboek, Kroniek, Personage and the shop show no SLUITEN and no "Esc" hint (only the share card has
   SLUITEN). Closing with Escape skips `closeUi()`, so the mouse is not taken back and the click that captures it again is
   also a sword swing or a fire breath (`uiClosedAt` is not set). The last part is from reading the code.
@@ -114,6 +127,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   close (Escape, button, tab key) through one `close()` that calls `closeUi()`.
 
 ### 9. MINOR: the books and the map open during the prologue, under the film bars
+- **Status (fix pass):** FIXED. `book()` and the map ignore J/K/I/M (and Back / RB / d-pad right) while the prologue or a film runs. Re-test: J, M, K, I in the prologue → nothing opens.
 - **What happens:** J/K/I/M work during the prologue. The letterbox bars, the objective and the subtitles are drawn over
   the journal (cine layer z-index 6, panels 5), and the journal advises "Spreek met de mensen van Diest: zoek het gouden !"
   while you are on the riverbank with Neelke.
@@ -124,6 +138,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   objective and subtitle while a panel is open).
 
 ### 10. MINOR: films cannot be skipped or paused with a pad; the skip hint is barely visible
+- **Status (fix pass):** FIXED. Films: hold B on the pad, or Escape / Backspace, for 0.8 s (measured on the clock, so slow frames do not stretch it); the hint names the device's key at 70 % opacity. The prologue (which is played, not watched) keeps Escape for the pause menu, and the pause menu now has PROLOOG OVERSLAAN, so a pad skips it with Start, A; Backspace held still skips it. Re-test (`t_fx_film.cjs`): hold B → film ends; hold Escape → film ends, no pause menu; Start → PROLOOG OVERSLAAN → prologue done, main_arrive active.
 - **What happens:** holding B, Start or A for 8 s does not skip the faction film; Escape does nothing during a film (no
   pause either). "Backspace ingedrukt houden · overslaan" is grey at 32-38 % opacity on black.
 - **Repro:** `?autostart&intro=gilden`, hold each pad button (`t_film.log`: `still playing true` ×3), press Escape.
@@ -132,6 +147,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
 - **Fix:** hold B (pad) or Escape to skip, same 0.8 s hold; show the hint for the device in use at 70 % opacity.
 
 ### 11. MINOR: film subtitles lose contrast over bright water
+- **Status (fix pass):** FIXED. Film and prologue subtitles sit on a soft dark backing (`rgba(5,4,3,.45)`, sized to the line).
 - **What happens:** subtitles sit on the picture above the bottom bar, white serif with only a shadow; over the bright
   Demer at 1280 they are hard to read.
 - **Shot:** `intro-sub0-1280.png`, `intro-sub0-844.png`.
@@ -140,6 +156,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   padding 4px 12px).
 
 ### 12. MINOR: toasts are hard to read and share their place with the Klokkenronde timer
+- **Status (fix pass):** FIXED. The toast has a dark plate with a gold edge and sits at `top: 90px`, below the Klokkenronde timer (52px) and above the boss bar (118px).
 - **What happens:** the toast is 13 px gold capitals with wide spacing and only a shadow; on a bright sky it is nearly
   invisible. It sits at `top: 58px`, the Klokkenronde timer at `top: 52px`, both centred: the round's own start toast
   ("KLOKKENRONDE · luid de zeven klokken") is pushed at the moment the timer appears (overlap from the CSS geometry; the
@@ -150,6 +167,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   into the timer line.
 
 ### 13. MINOR: the centre of the screen stacks notices on top of each other
+- **Status (fix pass):** FIXED. The banner is at 22 %; while it shows (`banner.active`) the prompt, the tutorial hint, the discovery card and the street note fade (`#ui.banner-up`), below 900 px the tracker too, and the street signs, readables' signs and NPC markers are not drawn (the rings and the guide stay).
 - **What happens:** the banner sits on the waypoint ring and under world icons (a shop sign covers "NIEUWE OPDRACHT");
   at 844×390 the banner, the prompt, the tutorial hint and the tracker overlap.
 - **Shot:** `notices-1280.png`, `notices-844.png`, `hud-foot-844.png`, `hud-fly-1280.png`.
@@ -158,6 +176,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   already exists), world signs hidden under the banner like the guide (`guide.hush`).
 
 ### 14. MINOR: dying has no screen
+- **Status (fix pass):** FIXED. On death the banner queue is cleared and a dark screen with VERSLAGEN comes up at once; at respawn it adds where you woke and what the surgeon charged, then lifts after 2.6 s. No late VERSLAGEN banner any more. Re-test (`t_fx_death.cjs`, two banners queued, then `hurtPlayer(999999)`): VERSLAGEN at once, queue empty; on waking "Je komt bij in Diest. De chirurgijn rekende 1 stuiver aan.", no banner; the dark lifts 2.6 s later.
 - **What happens:** at 0 HP the game shows 0/145 and whatever was on screen for 3.4 s, then moves you to a town; the
   VERSLAGEN banner is queued behind other banners, so it can arrive late and out of context (here a level banner stayed up).
 - **Repro:** `combat.hurtPlayer(999999, …)` on foot.
@@ -166,6 +185,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
 - **Fix:** on death clear the banner queue and show VERSLAGEN at once with a dark fade; respawn after it.
 
 ### 15. MINOR: map legend unreadable, labels collide
+- **Status (fix pass):** FIXED. Legend and credit on a parchment plate in dark ink; labels are placed last, the quest title first, and a label that would overlap an earlier one is skipped; RB/LB (and up/down) zoom on a pad.
 - **What happens:** the legend (gold on parchment) and the credit (55 % ink) are near invisible; in town the labels run
   into each other ("MarkMarskraamster", the quest title over icons); no zoom on a pad.
 - **Shot:** `map-1280.png`.
@@ -173,6 +193,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
 - **Fix:** dark legend on a parchment plate; skip a label that hits an earlier one; LB/RB zoom.
 
 ### 16. MINOR: shop layout and prices
+- **Status (fix pass):** FIXED. In a shop: two columns, your bag and what you wear | the merchant, each as tall as the panel with its own scroll and a fade at the foot while there is more; every price button reads `KOPEN · 4 st.`, `VERKOPEN · 12 st.`, `TERUGKOPEN · 12 st.`. Buy, too poor, sell with the rare-piece question and buyback are unchanged in code.
 - **What happens:** the wares column is clipped inside its own scroll box with no sign that more is below
   ("Verf: Wouwgeel" cut), while IN JE ZAK and WAT JE DRAAGT stand half empty; prices read "KOPEN · 4" without a unit,
   the header says "60 stuivers", the board says "· 10 stuivers".
@@ -182,6 +203,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
   a scrolled column; `KOPEN · 4 st.` everywhere (or `stuivers(n)`).
 
 ### 17. MINOR: front end at 844×390
+- **Status (fix pass):** FIXED. `.fe-center` scrolls (`justify-content: safe center`, so BELFORT is never cut at the top); creation's side columns scroll on their own above the name bar.
 - **What happens:** first-visit screen: BELFORT cut off at the top, INSTELLINGEN below the screen. Creation: the left
   and right columns run into the name bar (WILLEKEURIG under JE NAAM, the party list hidden).
 - **Shot:** `promise-844.png`, `title-844.png`, `cc-face-844.png`, `settings-title-844.png` (settings scrolls; fine).
@@ -189,26 +211,31 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
 - **Fix:** `overflow-y: auto` on `.fe-center`; below 480 px height let `.cc-left`/`.cc-right` scroll above the bar.
 
 ### 18. MINOR: pad players are shown mouse and keyboard keys
+- **Status (fix pass):** FIXED. Tutorial hints, the action bar, the dialogue, the reading card, the character panel, creation's lore, the level-up and loot banners and the film hints show the pad's buttons when the pad is in use (`PAD_KEY` in gamehud.ts, `hint()` spans switched by `html.dev-pad`). A mouse event without movement no longer takes the device back from the pad.
 - **What happens:** tutorial hints show LMB (attack), RMB (skill), J K (book), RMB/R and G (dragon skills) whatever the
   device; the dialogue says "SPATIE / E · VERDER"; the character panel and creation say "Rechtermuis · …".
 - **Where:** `src/ui/tutorial.ts:69`, `:71`, `:77-78`, `:83`; `src/ui/rpgui.ts:72`; `src/ui/gamehud.ts:418-420`.
 - **Fix:** pass `pad` into every `keys()`; use `keyGlyph()` with a device-aware map for panels.
 
 ### 19. POLISH: compass labels collide
+- **Status (fix pass):** FIXED. Cardinals and diamonds within the named landmark's width are hidden.
 - "Sint-Sulpitiuskerk" is printed under the W and the diamonds (`hud-fly-1280.png`). `src/ui/hud.ts:175-195`: hide
   cardinals and other marks within the label's width.
 
 ### 20. POLISH: HUD shows around open panels
+- **Status (fix pass):** FIXED. Under `ui-open` the compass, location line, action bar, buffs and tutorial hint fade to 0.
 - The compass shows above the book panels and the shop, the location line under their bottom-left corner, the action
   bar through the dialogue box (`character-1280.png`, `dialogue-1280.png`). `src/ui/style.css:135`, `:255`: under
   `ui-open` fade `.compass`, `.loc`, `.pframe` to 0.
 
 ### 21. POLISH: creation text clipped
+- **Status (fix pass):** MOSTLY FIXED. The left column is 20 px wider, stepper values wrap onto two lines, the label column is wider, the tabs are centred. The face camera now frames the face in the part of the view the lore box leaves free (`preview.ts`). Not re-shot on the Gezicht tab with the full kit at 1024.
 - Stepper values cut ("Lang, met …", "Zoals geschilderd" at 1024); HOOFDDEKSEL touches its stepper; the five tabs are
   unevenly spaced; on the Gezicht tab the lore box covers the chin (`cc-hair-1024.png`, `cc-face-1024.png`).
   `src/ui/style.css:546-593`: let the stepper value wrap to two lines or widen the control column by 20 px.
 
 ### 22. POLISH: wording (voice.md rule 1 and 5)
+- **Status (fix pass):** FIXED. "het prikbord" → "het aanplakbord", "klokkenronde" → "Klokkenronde" (chapter card); reading card "E verder" → "E sluiten" (pad: "A sluiten"); "Camera op en neer omkeren"; "Sfeergeluid in filmpjes"; "Besturing tonen of verbergen"; creation says "Levenskracht", the salve text "de helft van je levenskracht"; the character panel explains Resonantie in one line.
 - "het prikbord" on the chapter card; the game everywhere else says "aanplakbord" (`src/content/diest_end.ts:51`), and
   writes "klokkenronde" there with a small k.
 - Reading card: "E verder" closes the card → "E · sluiten" (`src/ui/kroniekui.ts:66`).
@@ -220,6 +247,7 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
 - "Resonantie" under the HP bar is never explained on screen (`src/main.ts:1005`): add one line to the character panel.
 
 ### 23. POLISH: Kroniek list is mostly dots
+- **Status (fix pass):** FIXED. The Kroniek lists the known pages, then one line "Nog N bladzijden te vinden" that opens the hidden pages and their hints.
 - 80 of 84 entries are "· · ·" rows (`kroniek-1280.png`). `src/ui/kroniekui.ts:94-96`: list the known entries, then
   one line "Nog 27 bladzijden te vinden" that opens the hints.
 
@@ -244,6 +272,21 @@ Counts: 1 blocker, 5 major, 12 minor, 5 polish. Every blocker and major was repr
    no game key except the screen's own reaches the game.
 9. **The style sheet is appended in sections with later overrides** (`.prompt`, `.tracker`, `.slot .k` defined two or
    three times). Fold each into one rule when touching it.
+
+**Status of the rules (fix pass):**
+1. Partly: the new and reworked controls (SLUITEN, VERDER, TERUG, the front-end question, the dialogue foot) use the one
+   button; hover and keyboard/pad focus share the gold outline everywhere (`.nav-focus`, `:focus-visible`). The older
+   variants (share card, shop card buttons at 11.5 px so the gear cards fit) were left as they are.
+2. Partly: every panel has the same header row with SLUITEN far right; the frames themselves were not merged.
+3. Done: SLUITEN · Esc / B top right on the book and the shop, TERUG in menus and creation, Escape and B close the
+   topmost screen only (one manager decides which screen is on top).
+4. Partly: the scale is in `:root` (`--fs-*`, `--sp-*`, `--line-soft`, `--line`, `--focus`) and the new rules use it;
+   old rules were not migrated.
+5. Done for buttons (`n st.`); headers use `stuivers(n)`.
+6. Done: hints, prompts, panels, the action bar and the controls page show the device in use.
+7. Done for the words named here.
+8. Done (compass, location, action bar, tracker, buffs, hint fade under `ui-open`; no game key leaks).
+9. Done for `.prompt`, `.tracker` and `.slot .k` (each one rule now).
 
 ## What was tested
 

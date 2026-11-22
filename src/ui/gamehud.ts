@@ -6,7 +6,8 @@
 //  - Banner: quest taken / quest done / level up, centre screen
 //  - CharacterPanel (I) and ShopPanel (from a merchant's conversation)
 
-import { bookTabs } from './kroniekui';
+import { bookTabs, closeBtn } from './kroniekui';
+import { hint, nav } from './nav';
 import * as THREE from 'three';
 import { type Gear, LEVEL_CAP, RARITY, STAT_HELP, STAT_NAMES, type Stat, gearLines, gearValue, rollGear, sellValue, xpToNext } from '../rpg/character';
 import type { QuestEngine } from '../rpg/quests';
@@ -164,6 +165,9 @@ export interface SlotView {
   locked?: string;
 }
 
+/** The pad's button for a keyboard key the game shows (action bar, panels, hints). */
+export const PAD_KEY: Record<string, string> = { LMB: 'RT', RMB: 'LT', R: 'B', SPATIE: 'A', Q: '▼', G: '◀', E: 'Y', I: '▶', J: 'RB' };
+
 /** A key cap, or a little mouse with the button lit for LMB / RMB. */
 export function keyGlyph(key: string) {
   if (key === 'LMB' || key === 'RMB') {
@@ -260,6 +264,13 @@ export class Banner {
     this.queue.push({ kind, kicker, title, lines });
   }
 
+  /** Put everything away at once (you fell: what was waiting no longer matters). */
+  clear() {
+    this.queue = [];
+    this.t = -1;
+    this.el.classList.remove('show');
+  }
+
   update(dt: number) {
     this.t -= dt;
     if (this.t <= 0 && this.el.classList.contains('show')) this.el.classList.remove('show');
@@ -338,9 +349,12 @@ export class CharacterPanel {
   constructor(root: HTMLElement, private q: QuestEngine, private onChange: () => void, private coins: () => void) {
     this.el.hidden = true;
     root.appendChild(this.el);
-    window.addEventListener('keydown', (e) => {
-      if (this.open && e.code === 'Escape') this.toggle(false);
-    });
+    // a column that scrolls shows that there is more below it (a soft fade at its foot)
+    this.el.addEventListener('scroll', (e) => this.more(e.target as HTMLElement), { capture: true });
+  }
+
+  private more(c: HTMLElement) {
+    if (c.classList?.contains('scrolls')) c.classList.toggle('more', c.scrollHeight - c.scrollTop - c.clientHeight > 6);
   }
 
   toggle(force?: boolean, shop = false, vendor: ShopView | null = null) {
@@ -351,6 +365,7 @@ export class CharacterPanel {
     this.el.hidden = !this.open;
     if (this.open) {
       document.exitPointerLock?.();
+      nav.refocus();
       if (this.shop && (this.wares.length === 0 || this.waresLevel !== this.q.s.hero.level)) {
         this.waresLevel = this.q.s.hero.level;
         this.wares = [rollGear(this.waresLevel, 1, 'wapen'), rollGear(this.waresLevel, 1, 'harnas'), rollGear(this.waresLevel, 1, 'talisman'), rollGear(this.waresLevel + 1, 2)];
@@ -385,49 +400,53 @@ export class CharacterPanel {
             const sure = this.shop && this.confirmSell === g.uid;
             // a rare or unique piece asks once more; what you sell can be bought back today (from a merchant)
             const warn = sure ? `<div class="gsure">Een ${RARITY[g.rarity].name.toLowerCase()} stuk. Wil je het echt verkopen? ${this.vendor?.sold ? 'Je kunt het vandaag nog terugkopen voor dezelfde prijs.' : 'Verkocht is verkocht.'}</div>` : '';
-            const sell = this.shop ? `<button data-sell="${g.uid}"${sure ? ' class="warn"' : ''}>${sure ? 'JA, VERKOPEN' : 'VERKOPEN'} · ${price}</button>` : '';
+            const sell = this.shop ? `<button data-sell="${g.uid}"${sure ? ' class="warn"' : ''}>${sure ? 'JA, VERKOPEN' : 'VERKOPEN'} · ${price} st.</button>` : '';
             return gearCard(g, `${warn}<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ beter</span>' : ''}<button data-eq="${g.uid}">DRAGEN</button>${sell}</div>`);
           })
           .join('')
       : '<div class="empty">Je zak is leeg. Verslagen vijanden laten soms iets vallen.</div>';
     const v = this.vendor;
     const shopHtml = this.shop && v
-      ? `<div class="shop vshop"><h3>${esc(v.title)}</h3>${v.greet ? `<p class="vgreet">${esc(v.greet)}</p>` : ''}${v.note ? `<p class="vnote">${esc(v.note)}</p>` : ''}
-          ${v.buyback ? gearCard(v.buyback.gear, `<div class="gsure back">Vandaag aan mij verkocht. Je kunt het terugkopen voor wat je ervoor kreeg.</div><div class="gb"><button data-back="1"${this.q.s.florins < v.buyback.price ? ' class="poor"' : ''}>TERUGKOPEN · ${v.buyback.price}</button></div>`) : ''}
+      ? `<div class="shop vshop scrolls"><h3>${esc(v.title)}</h3>${v.greet ? `<p class="vgreet">${esc(v.greet)}</p>` : ''}${v.note ? `<p class="vnote">${esc(v.note)}</p>` : ''}
+          ${v.buyback ? gearCard(v.buyback.gear, `<div class="gsure back">Vandaag aan mij verkocht. Je kunt het terugkopen voor wat je ervoor kreeg.</div><div class="gb"><button data-back="1"${this.q.s.florins < v.buyback.price ? ' class="poor"' : ''}>TERUGKOPEN · ${v.buyback.price} st.</button></div>`) : ''}
           ${v.wares.map((w) => {
-            const btn = w.locked ? `<span class="vlock">${esc(w.locked)}</span>` : `<button data-vbuy="${esc(w.key)}"${this.q.s.florins < w.price ? ' class="poor"' : ''}>KOPEN · ${w.price}</button>`;
+            const btn = w.locked ? `<span class="vlock">${esc(w.locked)}</span>` : `<button data-vbuy="${esc(w.key)}"${this.q.s.florins < w.price ? ' class="poor"' : ''}>KOPEN · ${w.price} st.</button>`;
             if (w.gear) return gearCard(w.gear, `<div class="gb">${w.tag ? `<span class="up">${esc(w.tag)}</span>` : ''}${btn}</div>`);
             return `<div class="ware vware${w.locked ? ' locked' : ''}">${w.swatch ? `<i class="swatch" style="background:${esc(w.swatch)}"></i>` : ''}<span><b>${esc(w.name)}</b>${w.tag ? ` <em>${esc(w.tag)}</em>` : ''}${w.text ? `<small>${esc(w.text)}</small>` : ''}</span>${btn}</div>`;
           }).join('')}
         </div>`
       : this.shop
-      ? `<div class="shop"><h3>MARIEKES WAREN</h3>
-          <div class="ware"><span>Begijnenzalf (herstelt de helft van je levenskracht)</span><button data-buy="salve">KOPEN · 6</button></div>
-          ${this.wares.map((g, i) => gearCard(g, `<div class="gb"><button data-buyg="${i}">KOPEN · ${gearValue(g) * 4}</button></div>`)).join('')}
+      ? `<div class="shop scrolls"><h3>MARIEKES WAREN</h3>
+          <div class="ware"><span>Begijnenzalf (herstelt de helft van je levenskracht)</span><button data-buy="salve">KOPEN · 6 st.</button></div>
+          ${this.wares.map((g, i) => gearCard(g, `<div class="gb"><button data-buyg="${i}">KOPEN · ${gearValue(g) * 4} st.</button></div>`)).join('')}
         </div>`
       : '';
     const sellRate = v?.sellRate ?? 1;
-    this.el.innerHTML = `<header>${this.shop ? '' : bookTabs('character')}<h2>${esc(h.name)}</h2><span><b class="ch-who" title="${esc(`${this.q.sheet.background.perkName}: ${this.q.sheet.background.perk} Van huis uit trouw aan: ${FACTIONS[h.faction]?.name ?? ''}.`)}">${esc(this.q.sheet.background.name[h.sex === 'f' ? 1 : 0])} · ${esc(FACTIONS[h.faction]?.name ?? '')}</b> · ${esc(o.name)} · niveau ${h.level} · ${stuivers(this.q.s.florins)} · ${this.q.s.inv.salve ?? 0} zalf</span></header>
-      <div class="cols">
-        <div class="col stats"${v ? " hidden" : ""}><h3>EIGENSCHAPPEN</h3>${(['kracht', 'klank', 'list', 'taaiheid'] as Stat[]).map(stat).join('')}
+    this.el.innerHTML = `<header>${this.shop ? '' : bookTabs('character')}<h2>${esc(h.name)}</h2>${closeBtn()}<span><b class="ch-who" title="${esc(`${this.q.sheet.background.perkName}: ${this.q.sheet.background.perk} Van huis uit trouw aan: ${FACTIONS[h.faction]?.name ?? ''}.`)}">${esc(this.q.sheet.background.name[h.sex === 'f' ? 1 : 0])} · ${esc(FACTIONS[h.faction]?.name ?? '')}</b> · ${esc(o.name)} · niveau ${h.level} · ${stuivers(this.q.s.florins)} · ${this.q.s.inv.salve ?? 0} zalf</span></header>
+      <div class="cols${this.shop ? ' shopcols' : ''}">
+        <div class="col stats"${this.shop ? " hidden" : ""}><h3>EIGENSCHAPPEN</h3>${(['kracht', 'klank', 'list', 'taaiheid'] as Stat[]).map(stat).join('')}
           <div class="st"><span>Levenskracht</span><b>${d.maxHp}</b></div>
           <div class="st"><span>Schade</span><b>${d.dmg[0]}–${d.dmg[1]}</b></div>
           <div class="st"><span>Pantser</span><b>${d.armor}</b></div>
           <div class="st"><span>Voltreffer</span><b>${d.crit.toFixed(0)}%</b></div>
           <h3>VAARDIGHEDEN</h3>
-          <div class="sk"><b>Rechtermuis · ${esc(o.skill.name)}</b><p>${esc(o.skill.text)}</p></div>
-          <div class="sk${h.level < o.skill2.level ? ' locked' : ''}"><b>R · ${esc(o.skill2.name)}${h.level < o.skill2.level ? ` (niveau ${o.skill2.level})` : ''}</b><p>${esc(o.skill2.text)}</p></div>
-          <div class="sk"><b>Linkermuis in de lucht · Drakenvuur</b><p>${esc(h.dragon)} spuwt vuur naar de plek waar je kijkt.</p></div>
+          <p class="res-note">Resonantie, de gouden balk onder je levenskracht, groeit met elke slag die raak is en loopt leeg buiten een gevecht. Je vaardigheden kosten Resonantie.</p>
+          <div class="sk"><b>${hint('Rechtermuis', 'LT')} · ${esc(o.skill.name)}</b><p>${esc(o.skill.text)}</p></div>
+          <div class="sk${h.level < o.skill2.level ? ' locked' : ''}"><b>${hint('R', 'B')} · ${esc(o.skill2.name)}${h.level < o.skill2.level ? ` (niveau ${o.skill2.level})` : ''}</b><p>${esc(o.skill2.text)}</p></div>
+          <div class="sk"><b>${hint('Linkermuis', 'LB')} in de lucht · Drakenvuur</b><p>${esc(h.dragon)} spuwt vuur naar de plek waar je kijkt.</p></div>
           ${(() => {
             // what Het Oude Volk taught the dragon, in one entry (the panel has to fit at 1280 x 720)
             const ds = Object.values(DRAGON_SKILLS).filter((d) => this.q.s.flags[`ov_${d.id}`]);
-            return ds.length ? `<div class="sk"><b>Gaven van ${esc(h.dragon)}</b><p>${ds.map((d) => `${esc(d.name)} (${d.key === 'RMB' ? 'rechtermuis' : d.key}${d.flying ? ' in de lucht' : ' te voet'})`).join(', ')}. Geleerd van het Oude Volk.</p></div>` : '';
+            return ds.length ? `<div class="sk"><b>Gaven van ${esc(h.dragon)}</b><p>${ds.map((d) => `${esc(d.name)} (${hint(d.key === 'RMB' ? 'rechtermuis' : d.key, PAD_KEY[d.key] ?? d.key)}${d.flying ? ' in de lucht' : ' te voet'})`).join(', ')}. Geleerd van het Oude Volk.</p></div>` : '';
           })()}
         </div>
-        <div class="col"><h3>WAT JE DRAAGT</h3>${worn}${this.extra && !v ? this.extra() : ""}</div>
-        <div class="col"><h3>IN JE ZAK</h3><div class="bag">${bag}</div></div>
+        ${this.shop
+          ? `<div class="col mine scrolls"><h3>IN JE ZAK</h3><div class="bag">${bag}</div><h3>WAT JE DRAAGT</h3>${worn}</div>`
+          : `<div class="col"><h3>WAT JE DRAAGT</h3>${worn}${this.extra ? this.extra() : ''}</div>
+        <div class="col"><h3>IN JE ZAK</h3><div class="bag scrolls">${bag}</div></div>`}
         ${shopHtml ? `<div class="col">${shopHtml}</div>` : ''}
       </div>`;
+    requestAnimationFrame(() => this.el.querySelectorAll<HTMLElement>('.scrolls').forEach((c) => this.more(c)));
     /** one action per click, and none for a moment after it */
     const act = (b: HTMLButtonElement, fn: () => void) =>
       b.addEventListener('click', () => {

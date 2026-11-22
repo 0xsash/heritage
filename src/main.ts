@@ -29,7 +29,8 @@ import { dressHero, kitStandIn } from './player/herokit';
 import { tintDragon } from './player/scales';
 import { HERO_CLIPS } from './rpg/look';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Banner, CharacterPanel, Guide, PlayerFrame, type SlotView } from './ui/gamehud';
+import { Banner, CharacterPanel, Guide, PAD_KEY, PlayerFrame, type SlotView } from './ui/gamehud';
+import { nav } from './ui/nav';
 import { Hud } from './ui/hud';
 import { KroniekUI } from './ui/kroniekui';
 import { Tutorial } from './ui/tutorial';
@@ -190,6 +191,8 @@ async function boot() {
 
   // --- who are you?
   const fe = await front;
+  input.gameKeys = true;
+  input.endFrame();
   loading.classList.add('hidden');
   setTimeout(() => loading.remove(), 700);
   clearInterval(tipTimer);
@@ -227,7 +230,7 @@ async function boot() {
   let pendingShop = false;
   const late: { journal?: JournalUI; actors?: Actors; chars?: CharacterPanel; banner?: Banner; life?: Life } = {};
   const lootNotice = (g: Gear) => {
-    if (g.rarity >= 2) late.banner?.show('loot', RARITY[g.rarity].name.toUpperCase(), g.name, ['Druk op I om het te bekijken']);
+    if (g.rarity >= 2) late.banner?.show('loot', RARITY[g.rarity].name.toUpperCase(), g.name, [input.device === 'pad' ? 'Druk op ▶ (kruistoets) om het te bekijken' : 'Druk op I om het te bekijken']);
     else toasts.push(`OPGERAAPT · ${g.name}`);
     late.chars?.render();
   };
@@ -247,7 +250,7 @@ async function boot() {
       const o = quests.sheet.origin;
       late.banner?.show('level', 'NIEUW NIVEAU', levels > 1 ? `Niveau ${L - levels} → ${L}` : `Niveau ${L}`, [
         'Je wordt sterker. Je levenskracht is weer vol.',
-        L - levels < o.skill2.level && L >= o.skill2.level ? `Nieuwe vaardigheid: ${o.skill2.name} (R)` : '',
+        L - levels < o.skill2.level && L >= o.skill2.level ? `Nieuwe vaardigheid: ${o.skill2.name} (${input.device === 'pad' ? 'B' : 'R'})` : '',
       ]);
       sound.levelUp();
       combat.fx.ring(player.onFoot ? player.heroPos : player.pos, 6, '#c8a8ff', 0.8);
@@ -439,11 +442,16 @@ async function boot() {
   let keyToUi = false;
   // one book, three sections: opening one closes the others
   const book = (which: 'journal' | 'kroniek' | 'character') => {
-    if (dialogue.open || kroniekUI.reading || shareCard.open) return;
+    // in the prologue there is no book yet (the film's bars and lines would lie over it)
+    if (dialogue.open || kroniekUI.reading || shareCard.open || chapterCard.open || prologue.active || cine.active) return;
+    // the map is a screen too: a book opened from it takes its place
+    if (mapOpen) mapOpen = hud.toggleMap();
     const was = which === 'journal' ? journal.open : which === 'kroniek' ? kroniekUI.open : chars.open;
     if (journal.open) journal.toggle();
     if (kroniekUI.open) kroniekUI.toggle();
     if (chars.open) chars.toggle(false);
+    // a new page: the keyboard and the pad start on its first control
+    nav.refocus();
     if (was) closeUi();
     else if (which === 'journal') journal.toggle();
     else if (which === 'kroniek') kroniekUI.toggle();
@@ -459,11 +467,65 @@ async function boot() {
   };
   uiRoot.addEventListener('mouseover', glossShift);
   uiRoot.addEventListener('focusin', glossShift);
+  /** close the book (or the shop), whichever page is open: SLUITEN, Escape, B all come here */
+  const closeBook = () => {
+    if (journal.open) journal.toggle();
+    if (kroniekUI.open) kroniekUI.toggle();
+    if (chars.open) chars.toggle(false);
+    closeUi();
+  };
   uiRoot.addEventListener('click', (e) => {
-    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-book]');
+    const t = e.target as HTMLElement;
+    const b = t.closest<HTMLElement>('[data-book]');
     if (b && !b.classList.contains('on')) book(b.dataset.book as 'journal' | 'kroniek' | 'character');
+    if (t.closest('[data-close]')) closeBook();
   });
-  const uiOpen = () => dialogue.open || journal.open || chars.open || kroniekUI.open || kroniekUI.reading || shareCard.open || chapterCard.open;
+  let mapOpen = false;
+  const uiOpen = () => dialogue.open || journal.open || chars.open || kroniekUI.open || kroniekUI.reading || shareCard.open || chapterCard.open || mapOpen;
+  // the book and the map as screens of the shared navigation (src/ui/nav.ts): d-pad / arrows choose, A / Enter
+  // press, B / Escape close, LB / RB turn to the next page of the book (or zoom the map)
+  const BOOKS = ['journal', 'kroniek', 'character'] as const;
+  const bookEl = () => (journal.open ? journal.el : kroniekUI.open ? kroniekUI.el : chars.el);
+  nav.add({
+    layer: 20,
+    active: () => journal.open || kroniekUI.open || chars.open,
+    root: bookEl,
+    // in order of preference: the chosen line of the list, a ware you can buy, any control in the page
+    first: () => {
+      for (const q of ['.list button.sel', '.vshop button[data-vbuy]:not(.poor)', '.shop button', '.cols button', '.list button', '.booktabs button.on']) {
+        const e = bookEl().querySelector<HTMLElement>(q);
+        if (e) return e;
+      }
+      return null;
+    },
+    back: closeBook,
+    handle: (cmd) => {
+      if ((cmd === 'prev' || cmd === 'next') && !chars.shop) {
+        const i = journal.open ? 0 : kroniekUI.open ? 1 : 2;
+        book(BOOKS[(i + (cmd === 'next' ? 1 : 2)) % 3]);
+        return true;
+      }
+      return false;
+    },
+  });
+  const toggleMap = () => {
+    mapOpen = hud.toggleMap(player.onFoot ? player.heroPos.x : player.pos.x, player.onFoot ? player.heroPos.z : player.pos.z);
+    if (!mapOpen) closeUi();
+  };
+  nav.add({
+    layer: 15,
+    active: () => mapOpen,
+    root: () => hud.mapEl,
+    items: () => [],
+    back: toggleMap,
+    handle: (cmd) => {
+      if (cmd === 'select') toggleMap();
+      else if (cmd === 'next' || cmd === 'up') hud.zoomMap(1);
+      else if (cmd === 'prev' || cmd === 'down') hud.zoomMap(-1);
+      else return false;
+      return true;
+    },
+  });
   let bellsRang = !!quests.s.flags.bells_ring;
   let bellTimer = 30;
 
@@ -636,6 +698,8 @@ async function boot() {
   menu.attach({
     resume,
     helpHtml: () => hud.helpHtml(),
+    canSkip: () => prologue.active,
+    skip: () => prologue.skip(),
     toTitle: () => {
       quests.save();
       running = false;
@@ -751,18 +815,29 @@ async function boot() {
 
   const clock = new THREE.Clock();
   const focus = new THREE.Vector3();
-  let mapOpen = false;
   // Dynamic resolution: hold a playable frame rate on weaker GPUs.
   const adaptive = !params.has('dpr') && !lowQ;
   let fpsFrames = 0, fpsTime = 0;
   let mapTimer = 0;
   const LIGHT: Record<string, string> = { 'Gouden uur': 'GOUDEN UUR', Hoogzomer: 'HOOGZOMER', Stormlicht: 'STORMLICHT', Maannacht: 'MAANNACHT' };
+  // falling in battle: the screen goes dark at once with VERSLAGEN, and you wake in town under it (respawn())
+  const deathEl = document.createElement('div');
+  deathEl.className = 'death';
+  deathEl.innerHTML = '<div class="d-k">VERSLAGEN</div><div class="d-t"></div>';
+  uiRoot.appendChild(deathEl);
+  let wasDead = false;
 
   function frameLoop() {
     requestAnimationFrame(frameLoop);
     const dt = clamp(clock.getDelta(), 0, 1 / 20);
     input.flying = player.mode === 'fly';
+    // a screen is up: its keys and buttons are its own (nav.ts reads the pad right after the game does,
+    // so a press that closes a screen is seen as held, not new, by the game in the next frame)
+    nav.external = true;
+    input.ui = !!nav.top();
     input.poll();
+    nav.poll();
+    nav.device = input.device;
     let sdt = dt;
     if (running && !paused) {
       if (cine.active) {
@@ -770,13 +845,14 @@ async function boot() {
         for (const a of ['interact', 'jump', 'attack', 'skill', 'skill2', 'potion', 'time', 'map', 'journal', 'kroniek', 'paint', 'character', 'help'] as const) input.consume(a);
         if (!cine.manual) cine.update(dt);
       }
-      if (input.consume('help')) hud.toggleHelp();
+      // the keys of the game do nothing behind an open screen (the book's own J / K / I and M do)
+      if (input.consume('help') && !uiOpen()) hud.toggleHelp();
       if (input.consume('menu') && performance.now() - menu.closedAt > 400) openMenu();
-      if (input.consume('time')) {
+      if (input.consume('time') && !uiOpen() && !prologue.active) {
         atmo.advance();
         setTimeout(() => hud.flash(LIGHT[atmo.look.label] ?? atmo.look.label.toUpperCase()), 400);
       }
-      if (input.consume('map') && !uiOpen()) mapOpen = hud.toggleMap(player.onFoot ? player.heroPos.x : player.pos.x, player.onFoot ? player.heroPos.z : player.pos.z);
+      if (input.consume('map') && (mapOpen || (!uiOpen() && !prologue.active))) toggleMap();
       if (input.consume('paint') && !uiOpen()) {
         // Het Schilderij: render this very frame and frame it
         // (without the game's own signs: no beacons, markers or rings in a painting)
@@ -799,7 +875,7 @@ async function boot() {
       if (input.consume('kroniek')) book('kroniek');
       if (input.consume('character')) book('character');
       const filming = cine.active;
-      const blocked = uiOpen() || mapOpen || filming;
+      const blocked = uiOpen() || filming;
       combat.update(blocked ? 0 : dt, input, rig.yaw, rig.camera, !blocked && !prologue.active && performance.now() - uiClosedAt > 250);
       sdt = blocked ? 0 : dt * combat.timeScale;
       if (uiOpen() || keyToUi) {
@@ -811,7 +887,7 @@ async function boot() {
       keyToUi = false;
       if (filming) {
         // the people and things of the film move by its own clock (see src/story/cine.ts)
-      } else if (!uiOpen() && !mapOpen) {
+      } else if (!uiOpen()) {
         prologue.update(dt, input);
         if (!prologue.active && player.mode === 'walk' && !player.dead && performance.now() - uiClosedAt > 250 && talkOrPickUp()) {
           // the press went to a person or a thing on the ground
@@ -840,6 +916,15 @@ async function boot() {
     const pz = filming ? cine.focus.z : player.onFoot ? player.heroPos.z : player.pos.z;
     const py = filming ? 0 : player.onFoot ? player.heroPos.y : player.pos.y;
     uiRoot.classList.toggle('ui-open', uiOpen());
+    // a banner has the middle of the screen: the prompt, the hint and the discovery card wait (style.css)
+    uiRoot.classList.toggle('banner-up', banner.active && !uiOpen());
+    hud.setHelp(!player.onFoot, input.device === 'pad');
+    if (combat.playerDead && !wasDead) {
+      banner.clear();
+      deathEl.querySelector('.d-t')!.textContent = '';
+      deathEl.classList.add('show');
+    }
+    wasDead = combat.playerDead;
     // the HUD shows what the moment needs: little in the air, everything in a fight
     uiRoot.classList.toggle('st-fly', !player.onFoot);
     uiRoot.classList.toggle('st-combat', combat.inCombat);
@@ -880,7 +965,7 @@ async function boot() {
         talking: dialogue.open, bookOpen: journal.open || kroniekUI.open, nearGiver: false,
         quests: Object.keys(quests.s.quests).length, inCombat: combat.inCombat,
         hpFrac: quests.s.hero.hp / quests.sheet.derived().maxHp, salves: quests.s.inv.salve ?? 0,
-        tally: combat.tally, dragon: quests.s.hero.dragon, skill: quests.sheet.origin.skill.name, uiOpen: uiOpen() || mapOpen,
+        tally: combat.tally, dragon: quests.s.hero.dragon, skill: quests.sheet.origin.skill.name, uiOpen: uiOpen(),
         spare: !!combat.spareHint, dragonFly: combat.dragonSlots(true).length > 0, dragonCall: combat.dragonSlots(false).length > 0,
       });
       crowd?.update(sdt, px, pz, player.onFoot ? 0 : player.altitude(), rig.camera, {
@@ -1002,6 +1087,7 @@ async function boot() {
           ...combat.dragonSlots(false),
           { key: 'Q', name: 'Zalf', icon: 'salve', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },
         ];
+    if (input.device === 'pad') for (const sl of slots) if (!(flying && sl.icon === 'fire')) sl.key = PAD_KEY[sl.key] ?? sl.key;
     frame.update(quests, combat.resonance, flying ? 'Vuur' : 'Resonantie', slots, flying ? combat.fire : null);
     banner.update(dt);
     hud.hold = banner.active;
@@ -1011,13 +1097,14 @@ async function boot() {
     hud.update(dt, rig.yaw, px, pz);
     // a prologue beat has the camera: the objective and the marks step aside too
     uiRoot.classList.toggle('beat', cine.beating);
-    if (filming || cine.beating) {
+    if (filming || cine.beating || banner.active) {
       // no signs of the game in a film: beacons, rings, markers, street icons
-      const signs = [guide.group, rings.group, ...readables.signs(), ...actors.npcs.map((n) => n.marker), ...life.signs()];
+      // (under a banner only the street signs and markers, which would lie over its words)
+      const signs = filming || cine.beating ? [guide.group, rings.group, ...readables.signs(), ...actors.npcs.map((n) => n.marker), ...life.signs()] : [...readables.signs(), ...actors.npcs.map((n) => n.marker), ...life.signs()];
       const was = signs.map((o) => o.visible);
       for (const o of signs) o.visible = false;
       post.render(dt);
-      cine.afterRender(canvas);
+      if (filming || cine.beating) cine.afterRender(canvas);
       signs.forEach((o, i) => (o.visible = was[i]));
     } else post.render(dt);
     input.endFrame();
@@ -1120,7 +1207,11 @@ async function boot() {
     player.hero.revive();
     combat.reset();
     quests.save();
-    banner.show('failed', 'VERSLAGEN', `Je komt bij in ${name}`, [fee ? `De chirurgijn rekende ${stuivers(fee)} aan.` : 'De chirurgijn wilde niets aannemen.']);
+    // under the dark: where you wake and what it cost, then the town comes back
+    banner.clear();
+    deathEl.querySelector('.d-t')!.textContent = `Je komt bij in ${name}. ${fee ? `De chirurgijn rekende ${stuivers(fee)} aan.` : 'De chirurgijn wilde niets aannemen.'}`;
+    deathEl.classList.add('show');
+    setTimeout(() => deathEl.classList.remove('show'), 2600);
   }
 
   /** The nearest named place, and where it lies (inside the walls, before a gate, out in the fields). */

@@ -215,7 +215,10 @@ export class HeroPreview {
       const body = { pos: new THREE.Vector3(0, H * 0.5, fitH(H, H * 0.62)), look: new THREE.Vector3(0, H * 0.47, 0) };
       const fh = this.focus === 'head' ? 0.78 : 0.5;
       const hy = this.headY + (this.focus === 'head' ? 0.04 : 0);
-      const face = { pos: new THREE.Vector3(0, hy, fitH(fh, fh * 0.9)), look: new THREE.Vector3(0, hy - 0.02, 0) };
+      // the face sits in the middle of the part of the view the lore panel leaves free (not behind the panel)
+      const fd = fitH(fh, fh * 0.9);
+      const lift = (covered / h) * fd * Math.tan(fov / 2);
+      const face = { pos: new THREE.Vector3(0, hy - lift, fd), look: new THREE.Vector3(0, hy - 0.02 - lift, 0) };
       let target = body;
       if (this.debugView) target = this.debugView;
       else if (this.focus === 'face' || this.focus === 'head') target = face;
