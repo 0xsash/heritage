@@ -71,17 +71,17 @@ export class DialogueUI {
     const role = line.who === 'you' ? '' : npc?.role ?? '';
     const choices = this.visibleChoices();
     const keys = choices.length
-      ? hint(`<kbd>1</kbd>–<kbd>${choices.length}</kbd> of <kbd>Enter</kbd> kiezen · <kbd>Esc</kbd> weggaan`, '<kbd>A</kbd> kiezen · <kbd>B</kbd> weggaan')
-      : hint('<kbd>Esc</kbd> weggaan', '<kbd>B</kbd> weggaan');
+      ? hint(`<kbd>1</kbd>–<kbd>${choices.length}</kbd> or <kbd>Enter</kbd> to choose · <kbd>Esc</kbd> to leave`, '<kbd>A</kbd> choose · <kbd>B</kbd> leave')
+      : hint('<kbd>Esc</kbd> leave', '<kbd>B</kbd> leave');
     this.el.innerHTML = `<div class="who">${esc(who)}<span class="role">${esc(role)}</span></div>
       <div class="text${line.who === 'you' ? ' you' : ''}">${gloss(esc(this.q.fill(line.text)))}</div>
       ${choices.length ? '<div class="choices"></div>' : ''}
-      <div class="dl-foot"><span class="dl-keys">${keys}</span>${choices.length ? '' : `<button class="cont" data-cont>VERDER <kbd>${hint('Spatie', 'A')}</kbd></button>`}</div>`;
+      <div class="dl-foot"><span class="dl-keys">${keys}</span>${choices.length ? '' : `<button class="cont" data-cont>CONTINUE <kbd>${hint('Space', 'A')}</kbd></button>`}</div>`;
     const box = this.el.querySelector('.choices');
     choices.forEach((c, i) => {
       const b = document.createElement('button');
       const starts = c.effects?.find((e) => 'start' in e) as { start: string } | undefined;
-      const tag = starts ? '<span class="qtag">opdracht</span>' : '';
+      const tag = starts ? '<span class="qtag">contract</span>' : '';
       b.dataset.c = String(i);
       b.innerHTML = `<span class="n">${i + 1}</span>${esc(this.q.fill(c.text))}${tag}`;
       b.addEventListener('click', (e) => {
@@ -93,7 +93,7 @@ export class DialogueUI {
     });
     if (!choices.length) this.el.onclick = () => this.advance();
     else this.el.onclick = null;
-    // a new line: the keyboard and the pad start on its first choice (or on VERDER)
+    // a new line: the keyboard and the pad start on its first choice (or on CONTINUE)
     nav.refocus();
   }
 
@@ -160,14 +160,14 @@ export class JournalUI {
             .join('')
         : '';
     const list =
-      (next ? `<h3>VOLGEND HOOFDSTUK</h3><button data-q="${NEXT}" class="${this.sel === NEXT ? 'sel' : ''}">${esc(ROADS.title)}</button>` : '') +
-      section('HOOFDVERHAAL', by('main', 'active')) + section('ZIJVERHALEN', by('side', 'active')) + section('OPDRACHTEN', by('contract', 'active')) +
-      section('VOLTOOID', [...by('main', 'done'), ...by('side', 'done'), ...by('contract', 'done'), ...quests.filter((x) => s.quests[x.id].status === 'failed')]);
-    let detail = '<div class="empty">Nog geen opdrachten. Spreek met de mensen van Diest: zoek het gouden ! boven hun hoofd.</div>';
+      (next ? `<h3>NEXT CHAPTER</h3><button data-q="${NEXT}" class="${this.sel === NEXT ? 'sel' : ''}">${esc(ROADS.title)}</button>` : '') +
+      section('MAIN STORY', by('main', 'active')) + section('SIDE STORIES', by('side', 'active')) + section('CONTRACTS', by('contract', 'active')) +
+      section('COMPLETED', [...by('main', 'done'), ...by('side', 'done'), ...by('contract', 'done'), ...quests.filter((x) => s.quests[x.id].status === 'failed')]);
+    let detail = '<div class="empty">No work yet. Speak to the people of Diest: look for the gold ! above their heads.</div>';
     const cur = this.sel ? this.q.quest(this.sel) : null;
     if (next && this.sel === NEXT) {
       detail = `<h1>${esc(ROADS.title)}</h1>
-        <div class="meta">Hoofdstuk 2 · binnenkort</div>
+        <div class="meta">Chapter 2 · coming soon</div>
         <div class="reward">${esc(ROADS.next)}</div>
         <div class="entries"><p>${esc(this.q.fill(ROADS.west))}</p><p>${esc(this.q.fill(ROADS.east))}</p></div>`;
     } else if (cur) {
@@ -182,23 +182,23 @@ export class JournalUI {
                 return `<div class="obj ${st.done.includes(o.id) ? 'ok' : ''}">${st.done.includes(o.id) ? '☑' : '☐'} ${esc(t)}</div>`;
               })
               .join('')
-          : `<div class="obj ok">${st.status === 'done' ? 'Voltooid' : 'Mislukt'}</div>`;
+          : `<div class="obj ok">${st.status === 'done' ? 'Completed' : 'Failed'}</div>`;
       const r = cur.reward;
       const reward = r
-        ? [r.xp ? `${r.xp} ervaring` : '', r.florins ? stuivers(r.florins) : '', ...(r.standing ?? []).map(([f, n]) => standingLine(f, n)), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`), ...(r.gear?.length ? ['een uniek voorwerp'] : [])].filter(Boolean).join(' · ')
+        ? [r.xp ? `${r.xp} experience` : '', r.florins ? stuivers(r.florins) : '', ...(r.standing ?? []).map(([f, n]) => standingLine(f, n)), ...(r.items ?? []).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`), ...(r.gear?.length ? ['a unique item'] : [])].filter(Boolean).join(' · ')
         : '';
       detail = `<h1>${esc(cur.title)}</h1>
-        <div class="meta">${cur.kind === 'main' ? 'Hoofdverhaal' : cur.kind === 'contract' ? 'Opdracht' : 'Zijverhaal'} · ${esc(cur.town)}${cur.level ? ' · niveau ' + cur.level : ''}${giver ? ' · van ' + esc(giver) : ''}</div>
+        <div class="meta">${cur.kind === 'main' ? 'Main story' : cur.kind === 'contract' ? 'Contract' : 'Side story'} · ${esc(cur.town)}${cur.level ? ' · level ' + cur.level : ''}${giver ? ' · from ' + esc(giver) : ''}</div>
         ${objs}
-        ${reward ? `<div class="reward">Beloning: ${esc(reward)}</div>` : ''}
-        ${st.status === 'active' ? `<div class="actions"><button data-track="${cur.id}">${s.tracked === cur.id ? 'NIET MEER VOLGEN' : 'DEZE OPDRACHT VOLGEN'}</button></div>` : ''}
+        ${reward ? `<div class="reward">Reward: ${esc(reward)}</div>` : ''}
+        ${st.status === 'active' ? `<div class="actions"><button data-track="${cur.id}">${s.tracked === cur.id ? 'STOP TRACKING' : 'TRACK THIS QUEST'}</button></div>` : ''}
         <div class="entries">${[...st.log].reverse().map((p) => `<p>${gloss(esc(this.q.fill(p)))}</p>`).join('')}</div>`;
     }
     const inv = Object.entries(s.inv).filter(([, n]) => n > 0).map(([i, n]) => `${this.q.item(i)?.name ?? i}${n > 1 ? ' ×' + n : ''}`).join(' · ');
     this.el.innerHTML = `<header>${bookTabs('journal')}<span class="purse">${stuivers(s.florins)}</span>${closeBtn()}</header>
-      <div class="list">${list || '<div class="empty">Je hebt nog geen opdrachten.</div>'}</div>
+      <div class="list">${list || '<div class="empty">You have no work yet.</div>'}</div>
       <div class="detail">${detail}</div>
-      <div class="inv">Op zak: ${inv ? esc(inv) : 'niets bijzonders'}</div>`;
+      <div class="inv">On you: ${inv ? esc(inv) : 'nothing of note'}</div>`;
     this.el.querySelectorAll<HTMLButtonElement>('button[data-q]').forEach((b) =>
       b.addEventListener('click', () => {
         this.sel = b.dataset.q!;

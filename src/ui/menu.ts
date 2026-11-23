@@ -35,10 +35,10 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 interface RangeRow { key: 'sens' | 'volume' | 'effects' | 'ambience'; label: string; min: number; max: number; step: number }
 const RANGES: RangeRow[] = [
-  { key: 'sens', label: 'Muisgevoeligheid', min: 0.3, max: 2.5, step: 0.1 },
+  { key: 'sens', label: 'Mouse sensitivity', min: 0.3, max: 2.5, step: 0.1 },
   { key: 'volume', label: 'Volume', min: 0, max: 1, step: 0.05 },
-  { key: 'effects', label: 'Geluidseffecten', min: 0, max: 1, step: 0.05 },
-  { key: 'ambience', label: 'Sfeergeluid in filmpjes', min: 0, max: 1, step: 0.05 },
+  { key: 'effects', label: 'Sound effects', min: 0, max: 1, step: 0.05 },
+  { key: 'ambience', label: 'Ambience in cutscenes', min: 0, max: 1, step: 0.05 },
 ];
 
 export class GameMenu {
@@ -110,7 +110,7 @@ export class GameMenu {
     this.render();
   }
 
-  /** B, Escape, TERUG: one step back. `outside`: a click beside the panel. */
+  /** B, Escape, BACK: one step back. `outside`: a click beside the panel. */
   back(outside = false) {
     if (this.page === 'settings' && this.from === 'pause' && this.game && !outside) return this.show('pause');
     if (this.page === 'help') return this.show('pause');
@@ -127,15 +127,15 @@ export class GameMenu {
     const s = this.h.settings;
     let body = '';
     if (this.page === 'pause') {
-      body = `<h2>PAUZE</h2>
-        <button data-nav data-do="resume">VERDER SPELEN</button>
-        ${this.game?.canSkip?.() ? '<button data-nav data-do="skip">PROLOOG OVERSLAAN</button>' : ''}
-        <button data-nav data-do="settings">INSTELLINGEN</button>
-        <button data-nav data-do="help">BESTURING</button>
-        <button data-nav data-do="title">NAAR HET TITELSCHERM</button>
-        <p class="gm-note">Je voortgang wordt bewaard. Op het titelscherm kies je Verder spelen.</p>`;
+      body = `<h2>PAUSED</h2>
+        <button data-nav data-do="resume">RESUME</button>
+        ${this.game?.canSkip?.() ? '<button data-nav data-do="skip">SKIP PROLOGUE</button>' : ''}
+        <button data-nav data-do="settings">SETTINGS</button>
+        <button data-nav data-do="help">CONTROLS</button>
+        <button data-nav data-do="title">TITLE SCREEN</button>
+        <p class="gm-note">Your progress is saved. On the title screen, choose Continue.</p>`;
     } else if (this.page === 'help') {
-      body = `<div class="gm-help">${this.game?.helpHtml() ?? ''}</div><button data-nav data-do="back">TERUG</button>`;
+      body = `<div class="gm-help">${this.game?.helpHtml() ?? ''}</div><button data-nav data-do="back">BACK</button>`;
     } else {
       const range = (r: RangeRow) => {
         const v = s[r.key];
@@ -143,20 +143,20 @@ export class GameMenu {
           <input type="range" min="${r.min}" max="${r.max}" step="${r.step}" value="${v}" tabindex="-1" aria-label="${esc(r.label)}"><b>${Math.round(v * 100)}%</b></div>`;
       };
       const reloadNote = s.quality !== this.h.bootQuality
-        ? `<p class="gm-note warn">Je ziet de nieuwe beeldkwaliteit pas als het spel opnieuw laadt.</p><button data-nav data-do="reload">NU OPNIEUW LADEN</button>`
-        : `<p class="gm-note">Laag is sneller op een trage computer: minder scherp en zonder schaduwen.</p>`;
-      body = `<h2>INSTELLINGEN</h2>
-        <h3>BESTURING</h3>
+        ? `<p class="gm-note warn">The new picture quality applies when the game reloads.</p><button data-nav data-do="reload">RELOAD NOW</button>`
+        : `<p class="gm-note">Low runs faster on a slow computer: less sharp, no shadows.</p>`;
+      body = `<h2>SETTINGS</h2>
+        <h3>CONTROLS</h3>
         ${range(RANGES[0])}
-        <div class="gm-row" data-nav data-kind="toggle" data-key="invert" tabindex="-1"><span>Camera op en neer omkeren</span><button class="gm-tog${s.invert ? ' on' : ''}" tabindex="-1">${s.invert ? 'AAN' : 'UIT'}</button></div>
-        <h3>GELUID</h3>
+        <div class="gm-row" data-nav data-kind="toggle" data-key="invert" tabindex="-1"><span>Invert camera up and down</span><button class="gm-tog${s.invert ? ' on' : ''}" tabindex="-1">${s.invert ? 'ON' : 'OFF'}</button></div>
+        <h3>SOUND</h3>
         ${RANGES.slice(1).map(range).join('')}
-        <h3>BEELD</h3>
-        <div class="gm-row" data-nav data-kind="seg" data-key="quality" tabindex="-1"><span>Beeldkwaliteit</span><div class="gm-seg">${(['low', 'high'] as const).map((q) => `<button data-q="${q}" class="${s.quality === q ? 'on' : ''}" tabindex="-1">${q === 'low' ? 'LAAG' : 'HOOG'}</button>`).join('')}</div></div>
+        <h3>PICTURE</h3>
+        <div class="gm-row" data-nav data-kind="seg" data-key="quality" tabindex="-1"><span>Picture quality</span><div class="gm-seg">${(['low', 'high'] as const).map((q) => `<button data-q="${q}" class="${s.quality === q ? 'on' : ''}" tabindex="-1">${q === 'low' ? 'LOW' : 'HIGH'}</button>`).join('')}</div></div>
         ${reloadNote}
-        <button data-nav data-do="back">TERUG</button>`;
+        <button data-nav data-do="back">BACK</button>`;
     }
-    this.el.innerHTML = `<div class="gm-panel gm-${this.page}">${body}<div class="gm-pad">${hint('Kies met de pijltjes · Enter om te bevestigen · Esc om terug te gaan', 'Kies met de kruistoetsen · A om te bevestigen · B om terug te gaan')}</div></div>`;
+    this.el.innerHTML = `<div class="gm-panel gm-${this.page}">${body}<div class="gm-pad">${hint('Arrows to choose · Enter to confirm · Esc to go back', 'D-pad to choose · A to confirm · B to go back')}</div></div>`;
     // mouse: buttons do what they say, sliders and switches change at once
     this.el.querySelectorAll<HTMLButtonElement>('button[data-do]').forEach((b) => b.addEventListener('click', () => this.run(b.dataset.do!)));
     this.el.querySelectorAll<HTMLInputElement>('.gm-row input[type=range]').forEach((inp) =>

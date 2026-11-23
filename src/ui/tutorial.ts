@@ -60,27 +60,27 @@ interface Step {
 // player doing the thing, before the hint appears: someone already doing it
 // never sees it (and it counts as learned).
 const STEPS: Step[] = [
-  { id: 'steer', keys: (p) => (p ? ['L'] : ['MUIS']), text: 'Zo stuur je {dragon}', when: (c) => c.mode === 'fly', done: (c) => c.turned > 1.0 },
-  { id: 'climb', keys: (p) => (p ? ['A', 'B'] : ['SPATIE', 'C']), text: 'Zo stijg en daal je', when: (c) => c.mode === 'fly' && c.gate === 'climb', done: (c, t) => (t.acc.climb += c.climbing ? t.dt : 0) > 0.5, stall: 2.5 },
-  { id: 'land', keys: (p) => (p ? ['Y'] : ['E']), text: 'Daal boven het plein en land', when: (c) => c.mode === 'fly' && c.toGoal < 260, done: (c) => c.mode !== 'fly', stall: 2 },
-  { id: 'walk', keys: (p) => (p ? ['L'] : ['W', 'A', 'S', 'D']), text: 'Zo stap je. Met Shift ren je', when: (c) => c.mode === 'walk', done: (c) => c.walked > 8 },
-  { id: 'talk', keys: (p) => (p ? ['Y'] : ['E']), text: 'Praat met wie een gouden ! heeft', when: (c) => c.mode === 'walk' && !c.inCombat, done: (c) => c.talking, stall: 6 },
-  { id: 'dodge', keys: (p) => (p ? ['A'] : ['SPATIE']), text: 'Gloeit de vijand rood? Rol weg', when: (c, t) => c.mode === 'walk' && c.inCombat && c.tally.telegraphs > t.base.telegraphs, done: (c, t) => c.tally.rolls > t.base.rolls, stall: 0.1 },
-  { id: 'attack', keys: (p) => (p ? ['RT'] : ['LMB']), text: 'Sla toe. Drie slagen vormen een reeks', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.hits - t.base.hits >= 3, stall: 2 },
-  { id: 'salve', keys: (p) => (p ? ['▼'] : ['Q']), text: 'Begijnenzalf geneest je', when: (c) => c.hpFrac < 0.5 && c.salves > 0, done: (c, t) => c.tally.potions > t.base.potions, stall: 1 },
+  { id: 'steer', keys: (p) => (p ? ['L'] : ['MOUSE']), text: 'Steer {dragon} like this', when: (c) => c.mode === 'fly', done: (c) => c.turned > 1.0 },
+  { id: 'climb', keys: (p) => (p ? ['A', 'B'] : ['SPACE', 'C']), text: 'Climb and dive like this', when: (c) => c.mode === 'fly' && c.gate === 'climb', done: (c, t) => (t.acc.climb += c.climbing ? t.dt : 0) > 0.5, stall: 2.5 },
+  { id: 'land', keys: (p) => (p ? ['Y'] : ['E']), text: 'Drop over the square and land', when: (c) => c.mode === 'fly' && c.toGoal < 260, done: (c) => c.mode !== 'fly', stall: 2 },
+  { id: 'walk', keys: (p) => (p ? ['L'] : ['W', 'A', 'S', 'D']), text: 'Walk like this. Shift to run', when: (c) => c.mode === 'walk', done: (c) => c.walked > 8 },
+  { id: 'talk', keys: (p) => (p ? ['Y'] : ['E']), text: 'Speak to anyone marked with a gold !', when: (c) => c.mode === 'walk' && !c.inCombat, done: (c) => c.talking, stall: 6 },
+  { id: 'dodge', keys: (p) => (p ? ['A'] : ['SPACE']), text: 'Enemy glowing red? Roll away', when: (c, t) => c.mode === 'walk' && c.inCombat && c.tally.telegraphs > t.base.telegraphs, done: (c, t) => c.tally.rolls > t.base.rolls, stall: 0.1 },
+  { id: 'attack', keys: (p) => (p ? ['RT'] : ['LMB']), text: 'Strike. Three blows make a combo', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.hits - t.base.hits >= 3, stall: 2 },
+  { id: 'salve', keys: (p) => (p ? ['▼'] : ['Q']), text: 'Begijn salve heals you', when: (c) => c.hpFrac < 0.5 && c.salves > 0, done: (c, t) => c.tally.potions > t.base.potions, stall: 1 },
   { id: 'skill', keys: (p) => (p ? ['LT'] : ['RMB']), text: '{skill}', when: (c) => c.mode === 'walk' && c.inCombat, done: (c, t) => c.tally.skills > t.base.skills, stall: 5 },
-  { id: 'breath', keys: (p) => (p ? ['LB'] : ['LMB']), text: '{dragon} spuwt vuur', when: (c) => c.mode === 'fly' && c.inCombat, done: (c) => c.tally.breaths > 0, stall: 2 },
+  { id: 'breath', keys: (p) => (p ? ['LB'] : ['LMB']), text: '{dragon} breathes fire', when: (c) => c.mode === 'fly' && c.inCombat, done: (c) => c.tally.breaths > 0, stall: 2 },
   // the first kill from the air: why it gave so little (combat.ts AIR_XP), and what to do about it
-  { id: 'airxp', keys: (p) => (p ? ['Y'] : ['E']), text: 'Land: te voet verdien je meer ervaring', when: (c) => c.mode === 'fly' && (c.tally.airKills ?? 0) > 0, done: (c) => c.mode !== 'fly', stall: 0.8, patience: 9 },
+  { id: 'airxp', keys: (p) => (p ? ['Y'] : ['E']), text: 'Land: kills on foot earn more experience', when: (c) => c.mode === 'fly' && (c.tally.airKills ?? 0) > 0, done: (c) => c.mode !== 'fly', stall: 0.8, patience: 9 },
   // what Het Oude Volk teaches (only ever seen by someone who found them)
-  { id: 'spare', keys: (p) => (p ? ['Y'] : ['E']), text: 'Laat het beest gaan', when: (c) => c.mode === 'walk' && !!c.spare, done: (c, t) => (c.tally.spares ?? 0) > (t.base.spares ?? 0), stall: 0.3, patience: 8 },
-  { id: 'dskill', keys: (p) => (p ? ['LT', 'B'] : ['RMB', 'R']), text: 'De gaven van {dragon}', when: (c) => c.mode === 'fly' && !!c.dragonFly && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
-  { id: 'dcall', keys: (p) => (p ? ['◀'] : ['G']), text: 'Roep {dragon} te hulp', when: (c) => c.mode === 'walk' && !!c.dragonCall && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
-  { id: 'mount', keys: (p) => (p ? ['Y'] : ['E']), text: 'Is het ver? Roep {dragon} en vlieg', when: (c) => c.mode === 'walk' && c.toGoal > 300 && c.toGoal < 1e8 && !c.inCombat, done: (c) => c.mode === 'fly', stall: 6 },
+  { id: 'spare', keys: (p) => (p ? ['Y'] : ['E']), text: 'Let the beast go', when: (c) => c.mode === 'walk' && !!c.spare, done: (c, t) => (c.tally.spares ?? 0) > (t.base.spares ?? 0), stall: 0.3, patience: 8 },
+  { id: 'dskill', keys: (p) => (p ? ['LT', 'B'] : ['RMB', 'R']), text: 'The gifts of {dragon}', when: (c) => c.mode === 'fly' && !!c.dragonFly && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
+  { id: 'dcall', keys: (p) => (p ? ['◀'] : ['G']), text: 'Call {dragon} to your side', when: (c) => c.mode === 'walk' && !!c.dragonCall && c.inCombat, done: (c, t) => (c.tally.dskills ?? 0) > (t.base.dskills ?? 0), stall: 3, patience: 10 },
+  { id: 'mount', keys: (p) => (p ? ['Y'] : ['E']), text: 'Far to go? Call {dragon} and fly', when: (c) => c.mode === 'walk' && c.toGoal > 300 && c.toGoal < 1e8 && !c.inCombat, done: (c) => c.mode === 'fly', stall: 6 },
   // the second flight: now speed matters
   // (or at once, when the dragon hangs in the air and the rider does not know how to send him on)
-  { id: 'speed', keys: (p) => (p ? ['RT', 'LT'] : ['W', 'S']), text: 'Zo vlieg je sneller of trager', when: (c, t) => c.mode === 'fly' && (t.learned('land') || (c.airspeed ?? 99) < 6), done: (c, t) => (t.acc.speed += Math.abs(c.throttle) > 0.3 ? t.dt : 0) > 0.8, stall: 5 },
-  { id: 'book', keys: (p) => (p ? ['RB'] : ['J', 'K']), text: 'Open je dagboek of de Kroniek', when: (c) => c.quests >= 2 && !c.talking && !c.inCombat, done: (c) => c.bookOpen, patience: 14, stall: 8 },
+  { id: 'speed', keys: (p) => (p ? ['RT', 'LT'] : ['W', 'S']), text: 'Fly faster or slower like this', when: (c, t) => c.mode === 'fly' && (t.learned('land') || (c.airspeed ?? 99) < 6), done: (c, t) => (t.acc.speed += Math.abs(c.throttle) > 0.3 ? t.dt : 0) > 0.8, stall: 5 },
+  { id: 'book', keys: (p) => (p ? ['RB'] : ['J', 'K']), text: 'Open your journal or the Kroniek', when: (c) => c.quests >= 2 && !c.talking && !c.inCombat, done: (c) => c.bookOpen, patience: 14, stall: 8 },
 ];
 
 export class Tutorial {
@@ -172,7 +172,7 @@ export class Tutorial {
     // not doing it by themselves? then say it
     this.waited += dt;
     if (this.waited < (s.stall ?? 4) || this.gap > 0) return;
-    const keys = s.keys(c.pad).map((k) => `<kbd>${k === 'MUIS' ? '<svg class="mouse" viewBox="0 0 14 20"><path d="M1 8V7a6 6 0 0 1 12 0v6a6 6 0 0 1-12 0z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M7 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>' : keyGlyph(k)}</kbd>`).join('');
+    const keys = s.keys(c.pad).map((k) => `<kbd>${k === 'MOUSE' ? '<svg class="mouse" viewBox="0 0 14 20"><path d="M1 8V7a6 6 0 0 1 12 0v6a6 6 0 0 1-12 0z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M7 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>' : keyGlyph(k)}</kbd>`).join('');
     this.el.innerHTML = `<span class="tut-keys">${keys}</span><span class="tut-text">${s.text.replace('{dragon}', c.dragon).replace('{skill}', c.skill)}</span><span class="tut-ok">✓</span>`;
     this.el.classList.remove('ok');
     this.el.classList.add('show');

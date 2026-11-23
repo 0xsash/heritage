@@ -8,11 +8,11 @@ import { hint, nav } from './nav';
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 /** The three sections of the player's book, as tabs in every panel header. */
 export const bookTabs = (on: 'journal' | 'kroniek' | 'character') =>
-  `<nav class="booktabs"><kbd class="k-pad bt-lr">LB</kbd>${([['journal', 'Dagboek', 'J'], ['kroniek', 'Kroniek', 'K'], ['character', 'Personage', 'I']] as const)
+  `<nav class="booktabs"><kbd class="k-pad bt-lr">LB</kbd>${([['journal', 'Journal', 'J'], ['kroniek', 'Kroniek', 'K'], ['character', 'Character', 'I']] as const)
     .map(([id, name, key]) => `<button data-book="${id}" class="${id === on ? 'on' : ''}"><kbd class="k-kbd">${key}</kbd>${name}</button>`)
     .join('')}<kbd class="k-pad bt-lr">RB</kbd></nav>`;
 /** Every panel says how to leave it, in the same words and place: top right (main.ts closes on [data-close]). */
-export const closeBtn = () => `<button class="bk-close" data-close>SLUITEN <kbd>${hint('Esc', 'B')}</kbd></button>`;
+export const closeBtn = () => `<button class="bk-close" data-close>CLOSE <kbd>${hint('Esc', 'B')}</kbd></button>`;
 
 const badge = (e: Entry) => `<span class="truth t-${e.truth}" title="${esc(TRUTH[e.truth].note)}">${TRUTH[e.truth].name}</span>`;
 
@@ -79,12 +79,12 @@ export class KroniekUI {
     this.cat = e.cat;
     document.exitPointerLock?.();
     this.card.innerHTML = `<div class="lk-in">
-      <div class="lk-kick">${isNew ? 'NIEUW IN DE KRONIEK' : 'UIT DE KRONIEK'} · ${CATS[e.cat].toUpperCase()}</div>
+      <div class="lk-kick">${isNew ? 'NEW IN THE KRONIEK' : 'FROM THE KRONIEK'} · ${CATS[e.cat].toUpperCase()}</div>
       <h2>${esc(e.title)}</h2>
       <div class="lk-rule"></div>
       <p>${esc(e.text)}</p>
       <div class="lk-foot">${badge(e)}<span>${esc(TRUTH[e.truth].note)}</span></div>
-      <div class="lk-close">${isNew && reward ? esc(reward) + ' · ' : ''}${this.k.count} van ${this.k.total} · ${hint('<kbd>E</kbd> sluiten', '<kbd>A</kbd> sluiten')}</div>
+      <div class="lk-close">${isNew && reward ? esc(reward) + ' · ' : ''}${this.k.count} of ${this.k.total} · ${hint('<kbd>E</kbd> close', '<kbd>A</kbd> close')}</div>
     </div>`;
     this.card.hidden = false;
     // restart the entrance animation
@@ -115,16 +115,16 @@ export class KroniekUI {
     // what you know first; the pages still to find are one line, which opens their hints
     const known = list.filter((e) => k.has(e.id)), locked = list.filter((e) => !k.has(e.id));
     const items = known.map((e) => `<button data-e="${e.id}" class="${e.id === this.sel ? 'sel' : ''}">${esc(e.title)}<span class="dot t-${e.truth}"></span></button>`).join('') +
-      (locked.length ? `<button data-more class="more${this.showLocked ? ' open' : ''}">${this.showLocked ? '▾' : '▸'} Nog ${locked.length} ${locked.length === 1 ? 'bladzijde' : 'bladzijden'} te vinden</button>` : '') +
+      (locked.length ? `<button data-more class="more${this.showLocked ? ' open' : ''}">${this.showLocked ? '▾' : '▸'} ${locked.length} ${locked.length === 1 ? 'page' : 'pages'} still to find</button>` : '') +
       (this.showLocked ? locked.map((e) => `<button data-e="${e.id}" class="locked ${e.id === this.sel ? 'sel' : ''}">· · ·</button>`).join('') : '');
     let detail = '';
     if (cur && k.has(cur.id)) detail = `<h1>${esc(cur.title)}</h1><div class="meta">${badge(cur)} <span>${esc(TRUTH[cur.truth].note)}</span></div><p class="lore">${gloss(esc(cur.text))}</p>`;
-    else if (cur) detail = `<h1 class="dim">Nog onbekend</h1><p class="lore dim">${esc(cur.hint)}</p>`;
+    else if (cur) detail = `<h1 class="dim">Not yet known</h1><p class="lore dim">${esc(cur.hint)}</p>`;
     const pct = Math.round((k.count / k.total) * 100);
-    this.el.innerHTML = `<header>${bookTabs('kroniek')}<div class="kr-prog"><i style="width:${pct}%"></i></div><span class="purse">${k.count} van ${k.total} bladzijden</span>${closeBtn()}</header>
+    this.el.innerHTML = `<header>${bookTabs('kroniek')}<div class="kr-prog"><i style="width:${pct}%"></i></div><span class="purse">${k.count} of ${k.total} pages</span>${closeBtn()}</header>
       <div class="list"><div class="kr-tabs">${tabs}</div>${items}</div>
       <div class="detail">${detail}</div>
-      <div class="inv">Bij elke bladzijde staat wat voor verhaal het is: <span class="truth t-geschiedenis">Geschiedenis</span> <span class="truth t-volksverhaal">Volksverhaal</span> <span class="truth t-verzonnen">Verzonnen</span></div>`;
+      <div class="inv">Each page says what kind of tale it is: <span class="truth t-geschiedenis">${TRUTH.geschiedenis.name}</span> <span class="truth t-volksverhaal">${TRUTH.volksverhaal.name}</span> <span class="truth t-verzonnen">${TRUTH.verzonnen.name}</span></div>`;
     this.el.querySelectorAll<HTMLButtonElement>('button[data-cat]').forEach((b) =>
       b.addEventListener('click', () => {
         this.cat = b.dataset.cat as Cat;

@@ -47,7 +47,7 @@ export class Hud {
     this.root = root;
     this.compass.appendChild(el('needle'));
     this.compass.appendChild(this.questMark);
-    for (const [label, yaw] of [['N', Math.PI], ['O', Math.PI / 2], ['Z', 0], ['W', -Math.PI / 2]] as const) {
+    for (const [label, yaw] of [['N', Math.PI], ['E', Math.PI / 2], ['S', 0], ['W', -Math.PI / 2]] as const) {
       const m = el('mark card', label);
       this.compass.appendChild(m);
       this.compassMarks.push({ el: m, yaw });
@@ -57,12 +57,12 @@ export class Hud {
     this.setHelp(false, false);
     this.help.classList.add('hidden'); // H shows it; the tutorial teaches the rest as you go
     this.map.appendChild(this.mapCanvas);
-    this.map.appendChild(el('legend', `DIEST &amp; HET DEMERDAL · ANNO 1650 <span class="mapzoom">· ${hint('muiswiel: in- en uitzoomen · M of Esc: sluiten', 'RB / LB: in- en uitzoomen · B: sluiten')}</span>`));
+    this.map.appendChild(el('legend', `DIEST &amp; THE DEMER VALLEY · 1650 <span class="mapzoom">· ${hint('mouse wheel: zoom · M or Esc: close', 'RB / LB: zoom · B: close')}</span>`));
     window.addEventListener('wheel', (e) => {
       if (!this.map.classList.contains('show')) return;
       this.zoomMap(e.deltaY < 0 ? 1 : -1);
     });
-    this.map.appendChild(el('map-credit', 'Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)'));
+    this.map.appendChild(el('map-credit', 'Town plan after OpenStreetMap contributors (ODbL) and the 1777 Ferraris map (Digitaal Vlaanderen)'));
     root.append(
       this.compass, this.tracker, this.card, this.loc, this.prompt, this.toast, this.help, this.map,
       this.overlay,
@@ -81,14 +81,14 @@ export class Hud {
   showTitle(loading: string) {
     this.overlay.innerHTML = `
       <h1>BELFORT</h1>
-      <h2>HET HERTOGDOM BRABANT · ANNO 1650</h2>
+      <h2>THE DUCHY OF BRABANT · 1650</h2>
       <div class="loading">${loading}</div>`;
   }
 
   ready(onStart: () => void) {
     this.overlay.querySelector('.loading')?.remove();
-    const cta = el('cta', 'KLIK OM TE BEGINNEN');
-    const small = el('small', 'Je speelt het best met muis en toetsenbord of een gamepad, en met een koptelefoon<br><span class="credit">Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)</span>');
+    const cta = el('cta', 'CLICK TO BEGIN');
+    const small = el('small', 'Best played with mouse and keyboard or a gamepad, and headphones<br><span class="credit">Town plan after OpenStreetMap contributors (ODbL) and the 1777 Ferraris map (Digitaal Vlaanderen)</span>');
     this.overlay.append(cta, small);
     this.overlay.addEventListener(
       'click',
@@ -107,7 +107,7 @@ export class Hud {
 
   pauseOverlay(show: boolean) {
     if (show) {
-      this.overlay.innerHTML = '<h2>PAUZE</h2><div class="cta">KLIK OM VERDER TE SPELEN</div>';
+      this.overlay.innerHTML = '<h2>PAUSED</h2><div class="cta">CLICK TO RESUME</div>';
       this.overlay.classList.remove('hidden');
     } else this.overlay.classList.add('hidden');
   }
@@ -133,14 +133,14 @@ export class Hud {
     const g = CONTROLS.find((c) => c.when === (flying ? 'fly' : 'foot'))!;
     const any = CONTROLS.find((c) => c.when === 'any')!.rows.slice(0, 3);
     const row = (r: { what: string; kbd: string; pad: string }) => `<tr><td>${escH(pad ? r.pad : r.kbd)}</td><td>${escH(r.what)}</td></tr>`;
-    this.help.innerHTML = `<h3>BESTURING · ${flying ? 'IN DE LUCHT' : 'TE VOET'}</h3><table>${g.rows.map(row).join('')}${any.map(row).join('')}</table>
-      <div class="help-more">${pad ? 'Alle knoppen: Start, dan Besturing' : 'H: verbergen · alle toetsen: Esc, dan Besturing'}</div>`;
+    this.help.innerHTML = `<h3>CONTROLS · ${flying ? 'IN THE AIR' : 'ON FOOT'}</h3><table>${g.rows.map(row).join('')}${any.map(row).join('')}</table>
+      <div class="help-more">${pad ? 'All buttons: Start, then Controls' : 'H: hide · all keys: Esc, then Controls'}</div>`;
   }
 
-  /** The controls, all of them, keyboard and gamepad side by side: the pause menu's BESTURING page. */
+  /** The controls, all of them, keyboard and gamepad side by side: the pause menu's CONTROLS page. */
   helpHtml() {
-    const table = (c: (typeof CONTROLS)[number]) => `<table><tr><th>${escH(c.group.toUpperCase())}</th><th>Toetsenbord</th><th>Gamepad</th></tr>${c.rows.map((r) => `<tr><td>${escH(r.what)}</td><td>${escH(r.kbd)}</td><td>${escH(r.pad)}</td></tr>`).join('')}</table>`;
-    return `<h3>BESTURING</h3><div class="gm-help-cols"><div>${CONTROLS.slice(0, 2).map(table).join('')}</div><div>${CONTROLS.slice(2).map(table).join('')}</div></div>`;
+    const table = (c: (typeof CONTROLS)[number]) => `<table><tr><th>${escH(c.group.toUpperCase())}</th><th>Keyboard</th><th>Gamepad</th></tr>${c.rows.map((r) => `<tr><td>${escH(r.what)}</td><td>${escH(r.kbd)}</td><td>${escH(r.pad)}</td></tr>`).join('')}</table>`;
+    return `<h3>CONTROLS</h3><div class="gm-help-cols"><div>${CONTROLS.slice(0, 2).map(table).join('')}</div><div>${CONTROLS.slice(2).map(table).join('')}</div></div>`;
   }
 
   /** Zoom the map in (+1) or out (-1): the wheel, RB / LB, up / down. */
@@ -158,7 +158,7 @@ export class Hud {
   }
 
   discover(d: Discovery) {
-    this.cardQueue.push({ kicker: d.major ? 'ONTDEKT' : 'GEZIEN', title: d.title, text: d.text });
+    this.cardQueue.push({ kicker: d.major ? 'DISCOVERED' : 'SEEN', title: d.title, text: d.text });
   }
 
   announce(kicker: string, title: string, text: string) {

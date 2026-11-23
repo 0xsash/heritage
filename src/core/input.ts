@@ -48,39 +48,39 @@ const KEYMAP: Record<string, Action> = {
  */
 export interface ControlRow { what: string; kbd: string; pad: string }
 export const CONTROLS: { group: string; when: 'fly' | 'foot' | 'any' | 'screen'; rows: ControlRow[] }[] = [
-  { group: 'In de lucht', when: 'fly', rows: [
-    { what: 'Sturen', kbd: 'Muis · A / D', pad: 'Linkerstick' },
-    { what: 'Sneller / trager', kbd: 'W / S · muiswiel', pad: 'RT / LT' },
-    { what: 'Stijgen / dalen', kbd: 'Spatie / C', pad: 'A / B' },
-    { what: 'Versnellen', kbd: 'Shift', pad: 'X' },
-    { what: 'Drakenvuur', kbd: 'Linkermuis', pad: 'LB' },
-    { what: 'Gaven van je draak', kbd: 'Rechtermuis · R', pad: 'LT · B' },
-    { what: 'Landen', kbd: 'E', pad: 'Y' },
+  { group: 'In the air', when: 'fly', rows: [
+    { what: 'Steer', kbd: 'Mouse · A / D', pad: 'Left stick' },
+    { what: 'Faster / slower', kbd: 'W / S · mouse wheel', pad: 'RT / LT' },
+    { what: 'Climb / dive', kbd: 'Spatie / C', pad: 'A / B' },
+    { what: 'Boost', kbd: 'Shift', pad: 'X' },
+    { what: 'Dragonfire', kbd: 'Left mouse', pad: 'LB' },
+    { what: 'Your dragon\'s gifts', kbd: 'Right mouse · R', pad: 'LT · B' },
+    { what: 'Land', kbd: 'E', pad: 'Y' },
   ] },
-  { group: 'Te voet', when: 'foot', rows: [
-    { what: 'Stappen · rondkijken', kbd: 'W A S D · muis', pad: 'Linkerstick · rechterstick' },
-    { what: 'Rennen', kbd: 'Shift', pad: 'LB · X' },
-    { what: 'Springen · in een gevecht wegrollen', kbd: 'Spatie', pad: 'A' },
-    { what: 'Praten · oprapen · lezen', kbd: 'E', pad: 'Y' },
-    { what: 'Je draak roepen en bestijgen', kbd: 'E', pad: 'Y' },
-    { what: 'Zwaardslag', kbd: 'Linkermuis', pad: 'RT' },
-    { what: 'Vaardigheden van je klasse', kbd: 'Rechtermuis · R', pad: 'LT · B' },
-    { what: 'Je draak te hulp roepen', kbd: 'G', pad: '◀ kruistoets' },
+  { group: 'On foot', when: 'foot', rows: [
+    { what: 'Walk · look around', kbd: 'W A S D · mouse', pad: 'Left stick · right stick' },
+    { what: 'Run', kbd: 'Shift', pad: 'LB · X' },
+    { what: 'Jump · roll away in a fight', kbd: 'Space', pad: 'A' },
+    { what: 'Talk · pick up · read', kbd: 'E', pad: 'Y' },
+    { what: 'Call and mount your dragon', kbd: 'E', pad: 'Y' },
+    { what: 'Sword strike', kbd: 'Left mouse', pad: 'RT' },
+    { what: 'Class skills', kbd: 'Right mouse · R', pad: 'LT · B' },
+    { what: 'Call your dragon to your side', kbd: 'G', pad: '◀ D-pad' },
   ] },
-  { group: 'Altijd', when: 'any', rows: [
-    { what: 'Begijnenzalf', kbd: 'Q', pad: '▼ kruistoets' },
-    { what: 'Dagboek · Kroniek · Personage', kbd: 'J · K · I', pad: 'RB · ▶ kruistoets' },
-    { what: 'Kaart', kbd: 'M', pad: 'Back' },
-    { what: 'Licht van de dag veranderen', kbd: 'T', pad: '▲ kruistoets' },
-    { what: 'Het Schilderij', kbd: 'P', pad: '–' },
-    { what: 'Besturing tonen of verbergen', kbd: 'H', pad: '–' },
-    { what: 'Pauze en instellingen', kbd: 'Esc', pad: 'Start' },
+  { group: 'Always', when: 'any', rows: [
+    { what: 'Begijn salve', kbd: 'Q', pad: '▼ D-pad' },
+    { what: 'Journal · Kroniek · Character', kbd: 'J · K · I', pad: 'RB · ▶ D-pad' },
+    { what: 'Map', kbd: 'M', pad: 'Back' },
+    { what: 'Change the time of day', kbd: 'T', pad: '▲ D-pad' },
+    { what: 'The Painting', kbd: 'P', pad: '–' },
+    { what: 'Show or hide controls', kbd: 'H', pad: '–' },
+    { what: 'Pause and settings', kbd: 'Esc', pad: 'Start' },
   ] },
-  { group: 'In een scherm', when: 'screen', rows: [
-    { what: 'Kiezen', kbd: 'Pijltjes · Tab', pad: 'Kruistoetsen · linkerstick' },
-    { what: 'Bevestigen', kbd: 'Enter · Spatie', pad: 'A' },
-    { what: 'Terug of sluiten', kbd: 'Esc', pad: 'B' },
-    { what: 'Andere bladzijde van je boek', kbd: 'J · K · I', pad: 'LB / RB' },
+  { group: 'In a screen', when: 'screen', rows: [
+    { what: 'Choose', kbd: 'Arrows · Tab', pad: 'D-pad · left stick' },
+    { what: 'Confirm', kbd: 'Enter · Space', pad: 'A' },
+    { what: 'Back or close', kbd: 'Esc', pad: 'B' },
+    { what: 'Turn to another page', kbd: 'J · K · I', pad: 'LB / RB' },
   ] },
 ];
 

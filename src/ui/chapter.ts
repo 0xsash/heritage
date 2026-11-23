@@ -10,7 +10,7 @@ export interface ChapterCardData {
   kicker: string;
   title: string;
   rows: EndRow[];
-  /** side stories still open, as names ("de brandewijn van Gielis de Ton") */
+  /** side stories still open, as names ("Gielis de Ton's brandy") */
   open: string[];
   standing: { name: string; tier: string; color: string }[];
   roads: { west: string; east: string; next: string };
@@ -48,19 +48,19 @@ export class ChapterCard {
   }
 
   show(d: ChapterCardData): Promise<void> {
-    const and = (l: string[]) => (l.length > 1 ? `${l.slice(0, -1).join(', ')} en ${l[l.length - 1]}` : l[0] ?? '');
+    const and = (l: string[]) => (l.length > 1 ? `${l.slice(0, -1).join(', ')} and ${l[l.length - 1]}` : l[0] ?? '');
     this.el.innerHTML = `<div class="chc-card">
       <div class="chc-kick">${esc(d.kicker)}</div>
       <h1>${esc(d.title)}</h1>
-      <h3>WAT JE KOOS, EN WAT HET KOSTTE</h3>
+      <h3>WHAT YOU CHOSE, AND WHAT IT COST</h3>
       <div class="chc-rows">${d.rows.map((r) => `<div class="chc-row"><b>${esc(r.what)}</b><span>${esc(r.cost)}</span></div>`).join('')}</div>
-      ${d.open.length ? `<p class="chc-open">Nog open in Diest: ${esc(and(d.open))}.</p>` : ''}
-      <h3>JE AANZIEN</h3>
+      ${d.open.length ? `<p class="chc-open">Still open in Diest: ${esc(and(d.open))}.</p>` : ''}
+      <h3>YOUR STANDING</h3>
       <div class="chc-stand">${d.standing.map((s) => `<span><i style="background:${s.color}"></i>${esc(s.name)} · <b>${esc(s.tier)}</b></span>`).join('')}</div>
-      <h3>HOE HET VERDER GAAT</h3>
-      <div class="chc-roads"><p><b>Naar het westen</b>${esc(d.roads.west)}</p><p><b>Naar het oosten</b>${esc(d.roads.east)}</p></div>
+      <h3>WHAT COMES NEXT</h3>
+      <div class="chc-roads"><p><b>West</b>${esc(d.roads.west)}</p><p><b>East</b>${esc(d.roads.east)}</p></div>
       <p class="chc-next">${esc(d.roads.next)}</p>
-      <button class="chc-go">VERDER SPELEN IN DIEST <kbd>${hint('Enter', 'A')}</kbd></button>
+      <button class="chc-go">CONTINUE IN DIEST <kbd>${hint('Enter', 'A')}</kbd></button>
     </div>`;
     this.el.querySelector('.chc-go')!.addEventListener('click', () => this.close());
     this.el.hidden = false;

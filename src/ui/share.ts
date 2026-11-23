@@ -36,7 +36,7 @@ export class ShareCard {
     this.el.className = 'leeskaart sharecard';
     this.el.hidden = true;
     root.appendChild(this.el);
-    // Escape / B close it; the focus starts on SLUITEN, so Enter / A does too (nav.ts)
+    // Escape / B close it; the focus starts on CLOSE, so Enter / A does too (nav.ts)
     nav.add({
       layer: 40,
       active: () => this.open,
@@ -68,10 +68,10 @@ export class ShareCard {
       ${res.lines.map((l) => `<div class="sc-line">${esc(l)}</div>`).join('')}
       <pre class="sc-text">${esc(res.text)}</pre>
       <div class="sc-acts">
-        <button data-act="copy">KOPIËREN</button>
-        ${canShare ? '<button data-act="share">DELEN</button>' : ''}
-        ${res.image ? '<button data-act="save">OPSLAAN</button>' : ''}
-        <button data-act="close">SLUITEN</button>
+        <button data-act="copy">COPY</button>
+        ${canShare ? '<button data-act="share">SHARE</button>' : ''}
+        ${res.image ? '<button data-act="save">SAVE</button>' : ''}
+        <button data-act="close">CLOSE</button>
       </div>
     </div>`;
     this.el.hidden = false;
@@ -105,7 +105,7 @@ export class ShareCard {
         ok = document.execCommand?.('copy') ?? false;
       }
     }
-    btn.textContent = ok ? 'GEKOPIEERD' : 'DRUK OP CTRL+C';
+    btn.textContent = ok ? 'COPIED' : 'PRESS CTRL+C';
   }
 
   private async share() {
@@ -123,7 +123,7 @@ export class ShareCard {
     if (!this.res?.image) return;
     const a = document.createElement('a');
     a.href = URL.createObjectURL(this.res.image);
-    a.download = 'belfort-schilderij.jpg';
+    a.download = 'belfort-painting.jpg';
     a.click();
   }
 }

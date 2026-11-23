@@ -206,7 +206,7 @@ export class Life {
     // every named person belongs to a party: say so under their name
     for (const [id, f] of Object.entries(NPC_FACTION)) {
       const n = q.npcs.get(id);
-      if (n && !n.role.includes(' · ')) n.role = `${n.role} · ${FACTIONS[f].name}`;
+      if (n && !n.role.includes(' · ')) n.role = `${n.role} · ${FACTIONS[f].name.replace(/^The /, "the ")}`;
     }
   }
 
@@ -264,7 +264,7 @@ export class Life {
       const s: Service = { def, x: px, z: pz, person };
       this.services.push(s);
       this.byId.set(def.id, s);
-      this.talk.speaker(def.id, def.name, `${def.role} · ${FACTIONS[def.faction].name}`, [px, pz]);
+      this.talk.speaker(def.id, def.name, `${def.role} · ${FACTIONS[def.faction].name.replace(/^The /, "the ")}`, [px, pz]);
       this.d.quests.npcPos.set(def.id, [px, pz]);
     }
     // the notice board, near the crier

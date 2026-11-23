@@ -34,12 +34,12 @@ const asset = (p: string) => new URL(p, document.baseURI).toString();
 
 // Two slides, about twenty seconds: the hook and you. The rest of the story is told in play.
 const SLIDES: [string, string, string][] = [
-  ['kludde-river-remembers', 'Diest, anno 1650', 'Op een zondag zwijgen de klokken van Sint-Sulpitius. De klepels zijn weg uit een gesloten toren. Op de klokkenstoel ligt nat rivierwier, en staat de afdruk van klauwen.'],
-  ['root-oak-forbidden-pilgrimage', 'Jij', 'Je hebt geen land, geen titel en geen meester. Je had een zusje. Nu heb je een draak, die op een nacht uit het riet van de Demer kroop en jou koos.'],
+  ['kludde-river-remembers', 'Diest, 1650', 'One Sunday the bells of Sint-Sulpitius fall silent. The clappers are gone from a locked tower. Wet river weed lies on the bell frame, and the print of claws.'],
+  ['root-oak-forbidden-pilgrimage', 'You', 'You have no land, no title and no master. You had a little sister. Now you have a dragon, who crept out of the Demer reeds one night and chose you.'],
 ];
 
 const pick = <T,>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)];
-const DIFF = ['', 'eenvoudig', 'gemiddeld', 'lastig'];
+const DIFF = ['', 'easy', 'moderate', 'hard'];
 const dots = (n: number) => '●'.repeat(n) + '○'.repeat(3 - n);
 /** approximate painted skin, for the swatch next to the tone */
 const SKIN_BASE = [0.88, 0.69, 0.56];
@@ -47,60 +47,60 @@ const SKIN_BASE = [0.88, 0.69, 0.56];
 const defaultHair = (o: { hair: Record<'m' | 'f', (string | null)[]> }, sex: 'm' | 'f') => (['hair_long', 'hair_f_curls'].find((x) => o.hair[sex].includes(x)) ?? o.hair[sex][0]);
 
 type Tab = 'body' | 'face' | 'hair' | 'clothes' | 'dragon';
-const TABS: [Tab, string][] = [['body', 'Lichaam'], ['face', 'Gezicht'], ['hair', 'Haar'], ['clothes', 'Kleding'], ['dragon', 'Draak']];
+const TABS: [Tab, string][] = [['body', 'Body'], ['face', 'Face'], ['hair', 'Hair'], ['clothes', 'Clothes'], ['dragon', 'Dragon']];
 const TAB_LORE: Record<Tab, [string, string]> = {
-  body: ['Lichaam', 'Man of vrouw, je bouw, je lengte en je huid. Wat het leven op je gezicht heeft achtergelaten, kies je hier ook.'],
-  face: ['Gezicht', 'Kies een gezicht en stel het daarna fijn af: neus, kaak, kin, wangen, ogen en mond.'],
-  hair: ['Haar', 'Je kapsel, de kleur van je haar en wat je op je hoofd zet.'],
-  clothes: ['Kleding', 'Elke klasse heeft haar eigen kleren. Kies wat je draagt, in welke kleuren, en je reismantel.'],
-  dragon: ['Je draak', 'De draak die jou koos. Kies de kleur van zijn schubben, zijn buik en vleugels, zijn ogen en zijn hoorns.'],
+  body: ['Body', 'Man or woman, your build, your height and your skin. What life has left on your face is chosen here too.'],
+  face: ['Face', 'Choose a face, then fine-tune it: nose, jaw, chin, cheeks, eyes and mouth.'],
+  hair: ['Hair', 'Your hairstyle, its colour and what you put on your head.'],
+  clothes: ['Clothes', 'Every class has its own clothes. Choose what you wear, in which colours, and your travelling cloak.'],
+  dragon: ['Your dragon', 'The dragon that chose you. Choose the colour of his scales, his belly and wings, his eyes and his horns.'],
 };
 const LOOK: Record<string, [string, string]> = {
-  sex: ['Man of vrouw', 'In het Brabant van 1650 draagt een vrouw geen zwaard. Een vrouw met een draak vraagt niemand om toestemming.'],
-  build: ['Bouw', 'Het verandert niets aan hoe je vecht. Wel aan hoe je in een deuropening staat.'],
-  height: ['Lengte', 'Een kop groter of kleiner dan de anderen op de markt. Het verandert niets aan je krachten.'],
-  skin: ['Huid', 'Van bleek tot verweerd. Wie op het veld werkt, draagt het weer op zijn gezicht.'],
-  mark: ['Kenmerk', 'Een litteken van een messengevecht, sproeten van de zon, een ooglap of een gezicht dat veel wind heeft gezien.'],
-  face: ['Gezicht', 'Neus, kaak, kin, wangen, ogen, mond. Uit dezelfde trekken komt elk gezicht in Diest.'],
-  eyes: ['Ogen', 'Bruin, blauw, grijs of groen. Je kunt ze ook laten zoals de schilder ze maakte.'],
-  fine: ['Fijn afstellen', 'Schuif aan elke trek van je gezicht tot je jezelf herkent. Je ziet het meteen op je personage.'],
-  hair: ['Kapsel', 'Mannen dragen het haar in 1650 vaak lang, tot op de schouders. Vrouwen steken het op, vlechten het of laten de krullen langs hun gezicht vallen.'],
-  hairColor: ['Haarkleur', 'Die kleur krijgt ook je baard.'],
-  beard: ['Baard', 'Een snor of een puntbaard is in 1650 de mode. Kijk maar naar de portretten van Van Dyck.'],
-  hat: ['Hoofddeksel', 'Hoed, muts of niets. Wie in 1650 zonder hoed buiten komt, is arm, haastig of iets van plan.'],
-  outfit: ['Kleren', 'Elke klasse heeft drie soorten kleren, voor mannen en voor vrouwen elk hun eigen snit.'],
-  main: ['Hoofdkleur', 'Verf kost geld. Meekrap geeft rood, wede blauw, wouw geel. Wie niet betaalt, draagt de kleur van het schaap.'],
-  accent: ['Bijkleur', 'De kleur van de onderrok, de omslagen, de linten en de broek. Kies iets dat bij je hoofdkleur past, of juist niet.'],
-  mantle: ['Mantel', 'Lang tot op de kuiten, kort tot op de heupen, of lang met een kap op je rug. Op de draak waait hij achter je aan.'],
-  cloak: ['Mantelkleur', 'Verf kost geld. Meekrap geeft rood, wede blauw. Wie niet betaalt, draagt de kleur van het schaap.'],
-  dragonScales: ['Schubben', 'Draken zijn in dit spel verzonnen, hun kleuren ook. Kies wat je de hele reis onder je wilt zien.'],
-  dragonBelly: ['Buik en vlies', 'De buikplaten en het vlies tussen de vingers van zijn vleugels. Als hij over je heen vliegt, zie je vooral deze kleur.'],
-  dragonEyes: ['Ogen', 'Zijn ogen gloeien in het donker. Kies welke kleur je ’s nachts boven de Demer ziet.'],
-  dragonHorns: ['Hoorns', 'Een draak uit het riet heeft hoorns zoals een oude ram, of een kroon van stekels. Niemand durft hem te vragen waarom.'],
-  random: ['Willekeurig', 'Een ander uiterlijk, in één klik. Klasse, herkomst, partij en je draak blijven wat ze zijn.'],
+  sex: ['Man or woman', "In the Brabant of 1650 a woman does not carry a sword. A woman with a dragon asks nobody's leave."],
+  build: ['Build', 'It changes nothing about how you fight. Only how you stand in a doorway.'],
+  height: ['Height', 'A head taller or shorter than the rest of the market. It changes nothing about your powers.'],
+  skin: ['Skin', 'From pale to weathered. Whoever works the field wears the weather on their face.'],
+  mark: ['Mark', 'A scar from a knife fight, freckles from the sun, an eyepatch, or a face that has seen a lot of wind.'],
+  face: ['Face', 'Nose, jaw, chin, cheeks, eyes, mouth. Every face in Diest is made of the same features.'],
+  eyes: ['Eyes', 'Brown, blue, grey or green. Or leave them as the painter made them.'],
+  fine: ['Fine-tune', 'Slide each feature of your face until you know yourself. You see it on your character at once.'],
+  hair: ['Hairstyle', 'In 1650 men often wear their hair long, to the shoulder. Women pin it up, braid it, or let the curls fall along the face.'],
+  hairColor: ['Hair colour', 'Your beard takes that colour too.'],
+  beard: ['Beard', 'A moustache or pointed beard is the fashion in 1650. Look at the portraits of Van Dyck.'],
+  hat: ['Headwear', 'Hat, cap or nothing. Whoever goes out without a hat in 1650 is poor, in a hurry or up to something.'],
+  outfit: ['Outfit', 'Every class has three kinds of clothes, and men and women each have their own cut.'],
+  main: ['Main colour', 'Dye costs money. Madder gives red, woad blue, weld yellow. Whoever does not pay wears the colour of the sheep.'],
+  accent: ['Accent colour', 'The colour of the underskirt, the cuffs, the ribbons and the breeches. Choose something to match your main colour, or not.'],
+  mantle: ['Mantle', 'Calf-length, hip-length, or long with a hood down your back. On the dragon it streams out behind you.'],
+  cloak: ['Cloak colour', 'Dye costs money. Madder gives red, woad blue. Whoever does not pay wears the colour of the sheep.'],
+  dragonScales: ['Scales', 'Dragons in this game are invented, and so are their colours. Choose what you want to see beneath you the whole journey.'],
+  dragonBelly: ['Belly and membrane', 'The belly plates and the membrane between the fingers of his wings. When he flies over you, this is the colour you mostly see.'],
+  dragonEyes: ['Eyes', 'His eyes glow in the dark. Choose the colour you see above the Demer at night.'],
+  dragonHorns: ['Horns', 'A dragon from the reeds has horns like an old ram, or a crown of spikes. Nobody dares ask him why.'],
+  random: ['Random', 'A different look in one click. Class, origin, faction and your dragon stay as they are.'],
 };
 const OUTFIT_LORE: Record<string, string> = {
-  Buffelkolder: 'Een kolder van buffelleer over het wambuis, en de rode sjerp van het Spaanse leger. Zo loopt een schutter in 1650 erbij.',
-  Musketier: 'Een wambuis met een witte kraag en een bandelier met kruitladingen over de schouder.',
-  Ruiterskazak: 'Een ruime kazak tot op de dijen, met brede omslagen aan de mouwen. Ruiters dragen hem over het wambuis.',
-  Rijjak: 'Een getailleerde jak met een korte schoot, een opgeschorte rok over de onderrok en laarzen. Je kunt erin rijden en lopen.',
-  'Lijfje en sjerp': 'Een geregen lijfje met een witte kraag, de rok opgeschort over de onderrok, en de rode sjerp om het middel.',
-  'Jak en lange rok': 'Een jak met een brede kraag over een lange rok tot op de enkels. Netjes genoeg voor de kerk, stevig genoeg voor de weg.',
-  Wambuis: 'Een wambuis met een witte kraag en een platte muts. De kleren van een ambachtsman met een vaste plaats in de stad.',
-  'Leren kolder': 'Een mouwloze leren kolder over het wambuis. Wie in een toren werkt, scheurt geen goede wol aan de balken.',
-  Kiel: 'Een linnen kiel met een riem, zoals de knechten en de boeren hem dragen.',
-  'Lijfje en schort': 'Een geregen lijfje met een halsdoek, een opgeschorte rok en een schort. Zo staan de vrouwen op de markt van Diest.',
-  Stadsjak: 'Een donkere jak met een brede witte kraag en een lange rok. De kleren van een burgersvrouw.',
-  Werkkleed: 'Een lijfje met een halsdoek, een lange rok en een schort, en klompen aan de voeten.',
-  Bandelier: 'Een donker wambuis, een brede vilthoed en een bandelier. Op de heide vraagt niemand waar die vandaan komt.',
-  'Kiel en laarzen': 'Een grijze kiel en hoge laarzen. Je ziet eruit als een voerman, en zo is het bedoeld.',
-  'Donkere kazak': 'Een donkere kazak over het wambuis. Hij houdt de regen buiten en verbergt wat je onder je arm draagt.',
-  Reisjak: 'Een jak met een korte schoot, een opgeschorte rok en laarzen. Gemaakt om ver te lopen en weinig op te vallen.',
-  'Lijfje en laarzen': 'Een lijfje met een halsdoek, een schort over de rok en stevige laarzen eronder.',
-  'Donkere jak': 'Een zwarte jak met een witte kraag, een lange rok en een bontmuts. Zo ziet een weduwe eruit, en niemand kijkt een weduwe lang aan.',
+  'Buff Coat': 'A buff-leather coat over the doublet, and the red sash of the Spanish army. This is how a guildsman goes about in 1650.',
+  Musketeer: 'A doublet with a white collar and a bandolier of powder charges over the shoulder.',
+  "Rider's Casaque": 'A loose casaque to the thigh, with wide cuffs at the sleeves. Riders wear it over the doublet.',
+  'Riding Jacket': 'A fitted jacket with a short skirt, the skirt pinned up over the underskirt, and boots. You can ride and walk in it.',
+  'Bodice and Sash': 'A laced bodice with a white collar, the skirt pinned up over the underskirt, and the red sash at the waist.',
+  'Jacket and Long Skirt': 'A jacket with a broad collar over a skirt to the ankles. Neat enough for church, sturdy enough for the road.',
+  Doublet: 'A doublet with a white collar and a flat cap. The clothes of a craftsman with a settled place in town.',
+  'Leather Jerkin': 'A sleeveless leather jerkin over the doublet. Whoever works in a tower tears no good wool on the beams.',
+  Smock: 'A linen smock with a belt, as the farmhands and farmers wear it.',
+  'Bodice and Apron': 'A laced bodice with a neckerchief, a pinned-up skirt and an apron. This is how the women stand in the market of Diest.',
+  'Town Jacket': 'A dark jacket with a broad white collar and a long skirt. The clothes of a burgher\'s wife.',
+  'Work Dress': 'A bodice with a neckerchief, a long skirt and an apron, and clogs on the feet.',
+  Bandolier: 'A dark doublet, a wide felt hat and a bandolier. On the heath nobody asks where that came from.',
+  'Smock and Boots': 'A grey smock and high boots. You look like a carter, and that is the point.',
+  'Dark Casaque': 'A dark casaque over the doublet. It keeps the rain out and hides what you carry under your arm.',
+  'Travel Jacket': 'A jacket with a short skirt, a pinned-up skirt and boots. Made to walk far and be noticed little.',
+  'Bodice and Boots': 'A bodice with a neckerchief, an apron over the skirt and sturdy boots beneath.',
+  'Dark Jacket': 'A black jacket with a white collar, a long skirt and a fur cap. This is how a widow looks, and nobody looks at a widow for long.',
 };
 
-/** "Kempense smokkelaar" and the like, for the title screen and the character panel. */
+/** "Kempen-born · Smuggler" and the like, for the title screen and the character panel. */
 export function heroLine(h: { sex?: string; background?: string; origin: string }) {
   const bg = BACKGROUNDS[h.background as BackgroundId];
   const cls = ORIGINS[h.origin as OriginId]?.name ?? '';
@@ -166,22 +166,22 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         <div class="fe-shade"></div>
         <div class="fe-center">
           <h1>BELFORT</h1>
-          <h2>EEN AVONTUUR IN BRABANT · ANNO 1650</h2>
+          <h2>AN ADVENTURE IN BRABANT · 1650</h2>
           <div class="fe-cols">
-            <div><h3>DIT IS</h3>
-              <p><b>Een avonturenspel.</b> Je vliegt op een draak over Brabant, landt waar je wilt en trekt te voet de stad in.</p>
-              <p><b>Het Diest van 1650.</b> De straten, de poorten en de kerken liggen waar ze toen lagen.</p>
-              <p><b>Vol oude volksverhalen.</b> De Kludde, dwaallichtjes en klokken die meer kunnen dan luiden.</p>
+            <div><h3>THIS IS</h3>
+              <p><b>An adventure.</b> You fly a dragon over Brabant, land where you please and walk into the town on foot.</p>
+              <p><b>Diest, 1650.</b> The streets, the gates and the churches lie where they lay then.</p>
+              <p><b>Full of old folk tales.</b> The Kludde, will-o'-the-wisps, and bells that can do more than ring.</p>
             </div>
-            <div><h3>DIT IS NIET</h3>
-              <p><b>Een geschiedenisles.</b> In de Kroniek lees je wat echt gebeurd is en wat wij verzonnen hebben.</p>
-              <p><b>Een vliegsimulator.</b> De draak vliegt vanzelf. Jij moet alleen sturen.</p>
-              <p><b>Een afgewerkt spel.</b> Dit is het eerste hoofdstuk. Je bent er ongeveer een uur mee bezig.</p>
+            <div><h3>THIS IS NOT</h3>
+              <p><b>A history lesson.</b> In the Kroniek you read what truly happened and what we made up.</p>
+              <p><b>A flight simulator.</b> The dragon flies itself. You only have to steer.</p>
+              <p><b>A finished game.</b> This is the first chapter. It takes about an hour.</p>
             </div>
           </div>
-          <div class="fe-menu"><button data-go="ok">${back ? 'TERUG' : 'BEGIN'}</button>${!back && openSettings ? '<button data-go="settings">INSTELLINGEN</button>' : ''}</div>
-          <div class="fe-small">Je speelt met muis en toetsenbord of met een gamepad. Zet het geluid aan. Je voortgang wordt op dit toestel bewaard.</div>
-          <div class="fe-keys">${hint('Kies met de pijltjes of Tab · Enter om te bevestigen', 'Kies met de kruistoetsen · A om te bevestigen')}</div>
+          <div class="fe-menu"><button data-go="ok">${back ? 'BACK' : 'BEGIN'}</button>${!back && openSettings ? '<button data-go="settings">SETTINGS</button>' : ''}</div>
+          <div class="fe-small">Play with mouse and keyboard or a gamepad. Turn the sound on. Your progress is saved on this device.</div>
+          <div class="fe-keys">${hint('Arrows or Tab to choose · Enter to confirm', 'D-pad to choose · A to confirm')}</div>
         </div>
       </div>`;
       nav.refocus();
@@ -197,16 +197,16 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         <div class="fe-shade"></div>
         <div class="fe-center">
           <h1>BELFORT</h1>
-          <h2>HET HERTOGDOM BRABANT · ANNO 1650</h2>
+          <h2>THE DUCHY OF BRABANT · 1650</h2>
           <div class="fe-menu">
-            ${save ? `<button data-go="continue">VERDER SPELEN<small>${esc(save.name)} · ${esc(heroLine(save))} · niveau ${save.level}</small></button>` : ''}
-            <button data-go="new">NIEUW SPEL</button>
-            ${openSettings ? '<button data-go="settings">INSTELLINGEN</button>' : ''}
+            ${save ? `<button data-go="continue">CONTINUE<small>${esc(save.name)} · ${esc(heroLine(save))} · level ${save.level}</small></button>` : ''}
+            <button data-go="new">NEW GAME</button>
+            ${openSettings ? '<button data-go="settings">SETTINGS</button>' : ''}
           </div>
-          <div class="fe-small">Je speelt het best met muis en toetsenbord of met een gamepad, en met het geluid aan · <button class="fe-link" data-go="what">wat is dit?</button></div>
-          <div class="fe-keys">${hint('Kies met de pijltjes of Tab · Enter om te bevestigen', 'Kies met de kruistoetsen · A om te bevestigen')}</div>
+          <div class="fe-small">Best played with mouse and keyboard or a gamepad, with the sound on · <button class="fe-link" data-go="what">what is this?</button></div>
+          <div class="fe-keys">${hint('Arrows or Tab to choose · Enter to confirm', 'D-pad to choose · A to confirm')}</div>
         </div>
-        <div class="fe-credit">Stadsplan naar OpenStreetMap-bijdragers (ODbL) en de Ferrariskaart van 1777 (Digitaal Vlaanderen)</div>
+        <div class="fe-credit">Town plan after OpenStreetMap contributors (ODbL) and the 1777 Ferraris map (Digitaal Vlaanderen)</div>
       </div>`;
       el.querySelector('[data-go="continue"]')?.addEventListener('click', () => done({ mode: 'continue' }));
       el.querySelector('[data-go="what"]')!.addEventListener('click', () => promise(true));
@@ -218,9 +218,9 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         confirmEl = document.createElement('div');
         confirmEl.className = 'fe-confirm';
         confirmEl.innerHTML = `<div class="fe-confirm-in" role="dialog" aria-modal="true">
-          <h3>NIEUW SPEL</h3>
-          <p>Wil je een nieuw spel beginnen? Je huidige personage, ${esc(save.name)}, gaat dan verloren.</p>
-          <div class="fe-menu"><button data-go="yes">NIEUW SPEL BEGINNEN</button><button data-go="no">TERUG</button></div>
+          <h3>NEW GAME</h3>
+          <p>Start a new game? Your current character, ${esc(save.name)}, will be lost.</p>
+          <div class="fe-menu"><button data-go="yes">START NEW GAME</button><button data-go="no">BACK</button></div>
         </div>`;
         el.querySelector('.fe-title')!.appendChild(confirmEl);
         confirmEl.querySelector('[data-go="yes"]')!.addEventListener('click', () => {
@@ -250,8 +250,8 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         <div class="fe-shade"></div>
         <div class="fe-story"><div class="fe-head">${esc(head)}</div><p>${esc(text)}</p></div>
         <div class="fe-dots">${SLIDES.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>
-        <div class="fe-next">KLIK OF SPATIE · VERDER</div>
-        <button class="fe-skip">OVERSLAAN</button>
+        <div class="fe-next">CLICK OR SPACE · CONTINUE</div>
+        <button class="fe-skip">SKIP</button>
       </div>`;
       const slide = el.querySelector('.fe-slide')!;
       slide.addEventListener('click', (e) => {
@@ -287,27 +287,27 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
       const back = `radial-gradient(ellipse 55% 65% at 50% 40%, rgba(130, 78, 32, 0.38), transparent 70%), linear-gradient(rgba(10, 7, 4, 0.84), rgba(8, 6, 4, 0.93)), url(${asset('ui/intro/diest-living-town.jpg')})`;
       el.innerHTML = `<div class="cc" style="background-image:${back}">
         <div class="cc-stage">
-          <div class="cc-view"><div class="cc-wait">De kleermaker zoekt zijn naalden…</div></div>
-          <div class="cc-hint">${hint('Sleep om te draaien · kies met de pijltjes, Enter om te kiezen, Esc om terug te gaan', 'Kies met de kruistoetsen · A om te kiezen · LB en RB: andere tab · X: willekeurig · B om terug te gaan')}</div>
+          <div class="cc-view"><div class="cc-wait">The tailor is looking for his needles…</div></div>
+          <div class="cc-hint">${hint('Drag to rotate · arrows to choose, Enter to select, Esc to go back', 'D-pad to choose · A to select · LB and RB: other tab · X: random · B to go back')}</div>
           <div class="cc-lore" aria-live="polite"></div>
         </div>
         <div class="cc-left">
           <div class="cc-tabs" role="tablist">${TABS.map(([id, t]) => `<button role="tab" data-tab="${id}" data-lore="tab:${id}">${esc(t)}</button>`).join('')}</div>
           <div class="cc-rows"></div>
-          <button class="cc-random" data-lore="look:random">⚄ WILLEKEURIG</button>
-          <h3>EIGENSCHAPPEN</h3>
+          <button class="cc-random" data-lore="look:random">⚄ RANDOM</button>
+          <h3>ATTRIBUTES</h3>
           <div class="cc-stats"></div>
         </div>
         <div class="cc-right">
-          <h3>HERKOMST</h3><div class="cc-list cc-bgs"></div>
-          <h3>KLASSE</h3><div class="cc-list cc-classes"></div>
-          <h3>PARTIJ</h3><div class="cc-list cc-factions"></div>
+          <h3>ORIGIN</h3><div class="cc-list cc-bgs"></div>
+          <h3>CLASS</h3><div class="cc-list cc-classes"></div>
+          <h3>FACTION</h3><div class="cc-list cc-factions"></div>
         </div>
         <div class="cc-bottom">
-          <label class="cc-field" data-lore="name:you"><span>JE NAAM</span><div><input class="cc-name" maxlength="18" list="cc-names" value="${esc(h.name)}" spellcheck="false"><button class="cc-dice" data-dice="name" title="Een andere naam">⚄</button></div></label>
+          <label class="cc-field" data-lore="name:you"><span>YOUR NAME</span><div><input class="cc-name" maxlength="18" list="cc-names" value="${esc(h.name)}" spellcheck="false"><button class="cc-dice" data-dice="name" title="Another name">⚄</button></div></label>
           <datalist id="cc-names"></datalist>
-          <label class="cc-field" data-lore="name:dragon"><span>JE DRAAK</span><div><input class="cc-dragon" maxlength="18" value="${esc(h.dragon)}" spellcheck="false"><button class="cc-dice" data-dice="dragon" title="Een andere naam">⚄</button></div></label>
-          <button class="cc-back">TERUG</button>
+          <label class="cc-field" data-lore="name:dragon"><span>YOUR DRAGON</span><div><input class="cc-dragon" maxlength="18" value="${esc(h.dragon)}" spellcheck="false"><button class="cc-dice" data-dice="dragon" title="Another name">⚄</button></div></label>
+          <button class="cc-back">BACK</button>
           <button class="cc-go">BEGIN</button>
         </div>
       </div>`;
@@ -324,18 +324,18 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         if (kind === 'origin') {
           const o = ORIGINS[id as OriginId];
           const w = uniqueGear(o.start);
-          return `<div class="k">KLASSE · ${dots(o.difficulty)} ${DIFF[o.difficulty]}</div>
+          return `<div class="k">CLASS · ${dots(o.difficulty)} ${DIFF[o.difficulty]}</div>
             <h4>${esc(o.name)} <em>${esc(o.role)}</em></h4>
             <p>${esc(o.lore)}</p>
             <div class="cc-skills">
-              <div><b>${hint('Rechtermuis', 'LT')} · ${esc(o.skill.name)}</b>${esc(o.skill.text)}</div>
-              <div><b>${hint('R', 'B')} · ${esc(o.skill2.name)}</b><i>vanaf niveau ${o.skill2.level}.</i> ${esc(o.skill2.text)}</div>
+              <div><b>${hint('Right mouse', 'LT')} · ${esc(o.skill.name)}</b>${esc(o.skill.text)}</div>
+              <div><b>${hint('R', 'B')} · ${esc(o.skill2.name)}</b><i>from level ${o.skill2.level}.</i> ${esc(o.skill2.text)}</div>
             </div>
-            ${w ? `<div class="m"><b>Begint met</b> ${esc(w.name)}, ${esc(gearLines(w).join(', '))}.</div>` : ''}`;
+            ${w ? `<div class="m"><b>Starts with</b> ${esc(w.name)}, ${esc(gearLines(w).join(', '))}.</div>` : ''}`;
         }
         if (kind === 'bg') {
           const b = BACKGROUNDS[id as BackgroundId];
-          return `<div class="k">HERKOMST · ${esc(b.place)}</div>
+          return `<div class="k">ORIGIN · ${esc(b.place)}</div>
             <h4>${esc(b.name[fem ? 1 : 0])}</h4>
             <p>${esc(b.lore)}</p>
             <div class="m"><b>${esc(b.perkName)}</b> ${esc(b.perk)}</div>
@@ -343,29 +343,29 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         }
         if (kind === 'faction') {
           const f = FACTIONS[id as FactionId];
-          return `<div class="k">PARTIJ · eerste trouw</div>
+          return `<div class="k">FACTION · first loyalty</div>
             <h4><i class="cc-dot" style="background:${f.color}"></i>${esc(f.name)} <em>${esc(f.tagline)}</em></h4>
             <p>${esc(f.text)}</p>
-            <div class="m">Je begint bij hen als <b>${tierOf(FIRST_LOYALTY).name}</b>. De andere partijen kennen je nog niet. Wat je doet, verandert dat.</div>`;
+            <div class="m">You start with them as <b>${tierOf(FIRST_LOYALTY).name}</b>. The other factions do not know you yet. What you do changes that.</div>`;
         }
         if (kind === 'name' && id === 'dragon')
-          return `<div class="k">DE DRAAK</div><h4>${esc(dragonIn.value || '…')}</h4>
-            <p>Hij kroop uit het riet van de Demer, de nacht dat de klokken zwegen, en koos jou. Waarom, weet niemand. Hij weet het misschien. Hij zegt het niet.</p>
-            <div class="m"><b>${hint('Linkermuis', 'LB')} in de lucht</b> Drakenvuur, waar je kijkt.</div>`;
+          return `<div class="k">THE DRAGON</div><h4>${esc(dragonIn.value || '…')}</h4>
+            <p>He crept out of the Demer reeds the night the bells fell silent, and chose you. Why, nobody knows. He may know. He does not say.</p>
+            <div class="m"><b>${hint('Left mouse', 'LB')} in the air</b> Dragonfire, where you look.</div>`;
         if (kind === 'name')
-          return `<div class="k">JE NAAM</div><h4>${esc(nameIn.value || '…')}</h4>
-            <p>Zo zullen ze je roepen in Diest: op de markt, in de herberg, en later, als er iets misgaat.</p>
-            <div class="m">Typ een eigen naam, of neem er een uit de lijst. Het zijn allemaal namen die je in 1650 in Brabant hoort.</div>`;
+          return `<div class="k">YOUR NAME</div><h4>${esc(nameIn.value || '…')}</h4>
+            <p>This is how they will call you in Diest: at the market, in the inn, and later, when something goes wrong.</p>
+            <div class="m">Type a name of your own, or take one from the list. They are all names you hear in Brabant in 1650.</div>`;
         if (kind === 'tab') {
           const t = TAB_LORE[id as Tab];
-          return `<div class="k">UITERLIJK</div><h4>${esc(t[0])}</h4><p>${esc(t[1])}</p>`;
+          return `<div class="k">APPEARANCE</div><h4>${esc(t[0])}</h4><p>${esc(t[1])}</p>`;
         }
         if (kind === 'outfit') {
           const o = outfits()[Math.min(outfits().length - 1, h.outfit ?? 0)];
-          return `<div class="k">KLEDING · ${esc(ORIGINS[h.origin].name)}</div><h4>${esc(o?.name ?? '')}</h4><p>${esc(OUTFIT_LORE[o?.name ?? ''] ?? LOOK.outfit[1])}</p>`;
+          return `<div class="k">CLOTHES · ${esc(ORIGINS[h.origin].name)}</div><h4>${esc(o?.name ?? '')}</h4><p>${esc(OUTFIT_LORE[o?.name ?? ''] ?? LOOK.outfit[1])}</p>`;
         }
         const [t, x] = LOOK[id] ?? ['', ''];
-        const k = id.startsWith('dragon') ? 'DE DRAAK' : 'UITERLIJK';
+        const k = id.startsWith('dragon') ? 'THE DRAGON' : 'APPEARANCE';
         return `<div class="k">${k}</div><h4>${esc(t)}</h4><p>${esc(x)}</p>`;
       };
       let shown = '';
@@ -420,46 +420,46 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         }));
       const TAB_ROWS: Record<Tab, () => Row[]> = {
         body: () => [
-          { id: 'sex', label: 'Geslacht', seg: () => [['m', 'Man', h.sex === 'm'], ['f', 'Vrouw', h.sex === 'f']] },
-          { id: 'build', label: 'Bouw', seg: () => opts.bodies[h.sex].map((b, i) => [b, buildName(b, i), h.build === b]) },
-          { id: 'height', label: 'Lengte', slider: () => [0.92, 1.08, h.height ?? 1], set: (v) => (h.height = v) },
-          { id: 'skin', label: 'Huid', swatches: () => tones().map((t, i) => [String(i), `Huid ${i + 1}`, toneCss(t), h.skin === i]), pick: (k) => (h.skin = +k) },
-          { id: 'mark', label: 'Kenmerk', value: () => MARKS.find(([k]) => k === (h.mark ?? null))?.[1] ?? 'Geen', step: (d) => (h.mark = cycle(MARKS.map(([k]) => k), h.mark ?? null, d)) },
+          { id: 'sex', label: 'Sex', seg: () => [['m', 'Man', h.sex === 'm'], ['f', 'Woman', h.sex === 'f']] },
+          { id: 'build', label: 'Build', seg: () => opts.bodies[h.sex].map((b, i) => [b, buildName(b, i), h.build === b]) },
+          { id: 'height', label: 'Height', slider: () => [0.92, 1.08, h.height ?? 1], set: (v) => (h.height = v) },
+          { id: 'skin', label: 'Skin', swatches: () => tones().map((t, i) => [String(i), `Skin ${i + 1}`, toneCss(t), h.skin === i]), pick: (k) => (h.skin = +k) },
+          { id: 'mark', label: 'Mark', value: () => MARKS.find(([k]) => k === (h.mark ?? null))?.[1] ?? 'None', step: (d) => (h.mark = cycle(MARKS.map(([k]) => k), h.mark ?? null, d)) },
         ],
         face: () => [
-          { id: 'face', label: 'Gezicht', value: () => faceName(h.face, h.sex), step: (d) => {
+          { id: 'face', label: 'Face', value: () => faceName(h.face, h.sex), step: (d) => {
             const i = faces().findIndex(([n]) => n === faceName(h.face, h.sex));
             h.face = { ...faces()[(Math.max(i, d > 0 ? -1 : 0) + d + faces().length) % faces().length][1] };
           } },
-          { id: 'eyes', label: 'Ogen', swatches: () => EYES.map(([k, n]) => [k ?? '', n, k ?? 'linear-gradient(135deg,#5a3a1e 50%,#4a6e9e 50%)', (h.eyes ?? null) === k]), pick: (k) => (h.eyes = k || null) },
+          { id: 'eyes', label: 'Eyes', swatches: () => EYES.map(([k, n]) => [k ?? '', n, k ?? 'linear-gradient(135deg,#5a3a1e 50%,#4a6e9e 50%)', (h.eyes ?? null) === k]), pick: (k) => (h.eyes = k || null) },
           ...morphRows(),
         ],
         hair: () => [
-          { id: 'hair', label: 'Kapsel', value: () => hairName(h.hair), step: (d) => (h.hair = cycle(opts.hair[h.sex], h.hair, d)) },
-          { id: 'hairColor', label: 'Haarkleur', swatches: () => HAIR_COLORS.map(([k, n]) => [k, n, hex(k), h.hairColor === k]), pick: (k) => (h.hairColor = k) },
-          ...(h.sex === 'm' ? [{ id: 'beard', label: 'Baard', value: () => beardName(h.beard), step: (d: number) => (h.beard = cycle(opts.beards, h.beard, d)) }] : []),
-          { id: 'hat', label: 'Hoofddeksel', value: () => headwearName(headwearOf(kit, h)), step: (d) => {
+          { id: 'hair', label: 'Hairstyle', value: () => hairName(h.hair), step: (d) => (h.hair = cycle(opts.hair[h.sex], h.hair, d)) },
+          { id: 'hairColor', label: 'Hair colour', swatches: () => HAIR_COLORS.map(([k, n]) => [k, n, hex(k), h.hairColor === k]), pick: (k) => (h.hairColor = k) },
+          ...(h.sex === 'm' ? [{ id: 'beard', label: 'Beard', value: () => beardName(h.beard), step: (d: number) => (h.beard = cycle(opts.beards, h.beard, d)) }] : []),
+          { id: 'hat', label: 'Headwear', value: () => headwearName(headwearOf(kit, h)), step: (d) => {
             h.headwear = cycle(opts.headwear[h.sex], headwearOf(kit, h), d);
             h.hat = h.headwear !== null;
           } },
         ],
         clothes: () => [
-          { id: 'outfit', label: 'Kleren', value: () => outfit()?.name ?? '', step: (d) => {
+          { id: 'outfit', label: 'Outfit', value: () => outfit()?.name ?? '', step: (d) => {
             h.outfit = ((h.outfit ?? 0) + d + outfits().length) % outfits().length;
             h.headwear = undefined;
             h.hat = true;
             pin('outfit:');
           } },
-          { id: 'main', label: 'Hoofdkleur', swatches: () => DYES.map(([k, n]) => [k, n, hex(k), (h.main ?? outfit()?.main) === k]), pick: (k) => (h.main = k), wide: true },
-          { id: 'accent', label: 'Bijkleur', swatches: () => DYES.map(([k, n]) => [k, n, hex(k), (h.accent ?? outfit()?.accent) === k]), pick: (k) => (h.accent = k), wide: true },
-          { id: 'mantle', label: 'Mantel', seg: () => opts.mantles.map((m) => [m, mantleName(m), (h.mantle ?? 'mantle') === m]) },
-          { id: 'cloak', label: 'Mantelkleur', swatches: () => CLOAKS.map(([c, n]) => [c, n, c, h.cloak === c]), pick: (k) => (h.cloak = k) },
+          { id: 'main', label: 'Main colour', swatches: () => DYES.map(([k, n]) => [k, n, hex(k), (h.main ?? outfit()?.main) === k]), pick: (k) => (h.main = k), wide: true },
+          { id: 'accent', label: 'Accent colour', swatches: () => DYES.map(([k, n]) => [k, n, hex(k), (h.accent ?? outfit()?.accent) === k]), pick: (k) => (h.accent = k), wide: true },
+          { id: 'mantle', label: 'Mantle', seg: () => opts.mantles.map((m) => [m, mantleName(m), (h.mantle ?? 'mantle') === m]) },
+          { id: 'cloak', label: 'Cloak colour', swatches: () => CLOAKS.map(([c, n]) => [c, n, c, h.cloak === c]), pick: (k) => (h.cloak = k) },
         ],
         dragon: () => [
-          { id: 'dragonScales', label: 'Schubben', swatches: () => SCALES.map((s) => [s.id, s.name, s.swatch, h.scales === s.id]), pick: (k) => (h.scales = k) },
-          { id: 'dragonBelly', label: 'Buik en vlies', swatches: () => BELLIES.map((s) => [s.id ?? '', s.name, s.swatch, (h.dragonBelly ?? null) === s.id]), pick: (k) => (h.dragonBelly = k || null) },
-          { id: 'dragonEyes', label: 'Ogen', swatches: () => DRAGON_EYES.map((s) => [s.id ?? '', s.name, s.swatch, (h.dragonEyes ?? null) === s.id]), pick: (k) => (h.dragonEyes = k || null) },
-          { id: 'dragonHorns', label: 'Hoorns', value: () => HORNS.find((x) => x.id === (h.dragonHorns ?? 'gewoon'))?.name ?? '', step: (d) => (h.dragonHorns = cycle(HORNS.map((x) => x.id), h.dragonHorns ?? 'gewoon', d)) },
+          { id: 'dragonScales', label: 'Scales', swatches: () => SCALES.map((s) => [s.id, s.name, s.swatch, h.scales === s.id]), pick: (k) => (h.scales = k) },
+          { id: 'dragonBelly', label: 'Belly and membrane', swatches: () => BELLIES.map((s) => [s.id ?? '', s.name, s.swatch, (h.dragonBelly ?? null) === s.id]), pick: (k) => (h.dragonBelly = k || null) },
+          { id: 'dragonEyes', label: 'Eyes', swatches: () => DRAGON_EYES.map((s) => [s.id ?? '', s.name, s.swatch, (h.dragonEyes ?? null) === s.id]), pick: (k) => (h.dragonEyes = k || null) },
+          { id: 'dragonHorns', label: 'Horns', value: () => HORNS.find((x) => x.id === (h.dragonHorns ?? 'gewoon'))?.name ?? '', step: (d) => (h.dragonHorns = cycle(HORNS.map((x) => x.id), h.dragonHorns ?? 'gewoon', d)) },
         ],
       };
       let rows: Row[] = [];
@@ -470,7 +470,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         const one = (r: Row) => {
           let ctl = '';
           if ('seg' in r) ctl = `<div class="cc-seg">${r.seg().map(([k, t, on]) => `<button data-seg="${r.id}" data-k="${k}" class="${on ? 'on' : ''}">${esc(t)}</button>`).join('')}</div>`;
-          else if ('step' in r) ctl = `<div class="cc-step${r.off?.() ? ' off' : ''}"><button data-step="${r.id}" data-d="-1" aria-label="vorige">‹</button><span>${esc(r.value())}</span><button data-step="${r.id}" data-d="1" aria-label="volgende">›</button></div>`;
+          else if ('step' in r) ctl = `<div class="cc-step${r.off?.() ? ' off' : ''}"><button data-step="${r.id}" data-d="-1" aria-label="previous">‹</button><span>${esc(r.value())}</span><button data-step="${r.id}" data-d="1" aria-label="next">›</button></div>`;
           else if ('swatches' in r) ctl = `<div class="cc-cloaks${r.wide ? ' cc-dyes' : ''}">${r.swatches().map(([k, n, css, on]) => `<button class="cc-sw${on ? ' on' : ''}" data-sw="${r.id}" data-k="${esc(k)}" title="${esc(n)}" style="background:${css}"></button>`).join('')}</div>`;
           else {
             const [lo, hi, v] = r.slider();
@@ -480,7 +480,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         };
         rowsEl.innerHTML =
           rows.filter((r) => !r.id.startsWith('morph:')).map(one).join('') +
-          (morphs.length ? `<div class="cc-fine" data-lore="look:fine"><div class="cc-fine-h">Fijn afstellen</div><div class="cc-fine-g">${morphs.map(one).join('')}</div></div>` : '');
+          (morphs.length ? `<div class="cc-fine" data-lore="look:fine"><div class="cc-fine-h">Fine-tune</div><div class="cc-fine-g">${morphs.map(one).join('')}</div></div>` : '');
       };
       const changed = (id: string) => {
         if (id.startsWith('dragon')) refreshDragon();
@@ -583,7 +583,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
           .map((id) => { const b = BACKGROUNDS[id]; return `<button class="cc-opt${h.background === id ? ' on' : ''}" data-bg="${id}" data-lore="bg:${id}"><b>${esc(b.name[fem ? 1 : 0])}</b><small>${esc(b.perk.replace(/\.$/, ''))}</small></button>`; })
           .join('');
         $('.cc-classes').innerHTML = (Object.keys(ORIGINS) as OriginId[])
-          .map((id) => { const o = ORIGINS[id]; return `<button class="cc-opt${h.origin === id ? ' on' : ''}" data-origin="${id}" data-lore="origin:${id}"><b>${esc(o.name)}</b><small>${esc(o.tagline)} <span class="cc-diff" title="moeilijkheid">${dots(o.difficulty)}</span></small></button>`; })
+          .map((id) => { const o = ORIGINS[id]; return `<button class="cc-opt${h.origin === id ? ' on' : ''}" data-origin="${id}" data-lore="origin:${id}"><b>${esc(o.name)}</b><small>${esc(o.tagline)} <span class="cc-diff" title="difficulty">${dots(o.difficulty)}</span></small></button>`; })
           .join('');
         $('.cc-factions').innerHTML = (Object.keys(FACTIONS) as FactionId[])
           .map((id) => { const f = FACTIONS[id]; return `<button class="cc-opt${h.faction === id ? ' on' : ''}" data-faction="${id}" data-lore="faction:${id}"><b><i class="cc-dot" style="background:${f.color}"></i>${esc(f.name.replace(/^De /, ''))}</b><small>${esc(f.tagline)}</small></button>`; })
@@ -616,7 +616,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         $('.cc-stats').innerHTML = (['kracht', 'klank', 'list', 'taaiheid'] as Stat[])
           .map((k) => `<div class="cc-st" data-lore="origin:${h.origin}"><span>${STAT_NAMES[k]}</span><i><em style="width:${Math.min(100, d[k] * 9)}%"></em></i><b>${d[k]}${bonus[k] ? '<sup>+</sup>' : ''}</b></div>`)
           .join('') +
-          `<div class="cc-derived"><span>Levenskracht <b>${d.maxHp}</b></span><span>Pantser <b>${d.armor}</b></span><span>Voltreffer <b>${Math.round(d.crit)}%</b></span></div>`;
+          `<div class="cc-derived"><span>Health <b>${d.maxHp}</b></span><span>Armour <b>${d.armor}</b></span><span>Critical <b>${Math.round(d.crit)}%</b></span></div>`;
       };
 
       // ------------------------------------------------ names, begin

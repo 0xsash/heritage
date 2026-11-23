@@ -6,37 +6,37 @@
 import * as THREE from 'three';
 
 export const SCALES: { id: string; name: string; color: string | null; swatch: string }[] = [
-  { id: 'demer', name: 'Demergroen', color: null, swatch: '#2f7a70' },
-  { id: 'brons', name: 'Brons', color: '#b07a3a', swatch: '#8a5a2a' },
-  { id: 'roest', name: 'Roest', color: '#b0482a', swatch: '#9a3a22' },
-  { id: 'mos', name: 'Mos', color: '#6a8a48', swatch: '#4f6a36' },
-  { id: 'nacht', name: 'Nacht', color: '#4a5a8a', swatch: '#303a5a' },
-  { id: 'as', name: 'As', color: '#9a948a', swatch: '#6a665e' },
-  { id: 'goud', name: 'Goud', color: '#e0b040', swatch: '#c89a32' },
+  { id: 'demer', name: 'Demer green', color: null, swatch: '#2f7a70' },
+  { id: 'brons', name: 'Bronze', color: '#b07a3a', swatch: '#8a5a2a' },
+  { id: 'roest', name: 'Rust', color: '#b0482a', swatch: '#9a3a22' },
+  { id: 'mos', name: 'Moss', color: '#6a8a48', swatch: '#4f6a36' },
+  { id: 'nacht', name: 'Night', color: '#4a5a8a', swatch: '#303a5a' },
+  { id: 'as', name: 'Ash', color: '#9a948a', swatch: '#6a665e' },
+  { id: 'goud', name: 'Gold', color: '#e0b040', swatch: '#c89a32' },
 ];
 /** Belly plates and wing membranes; null: the same as the scales. */
 export const BELLIES: { id: string | null; name: string; color: string | null; swatch: string }[] = [
-  { id: null, name: 'Zoals de schubben', color: null, swatch: 'linear-gradient(135deg,#2f7a70 50%,#8a5a2a 50%)' },
-  { id: 'room', name: 'Room', color: '#e0c890', swatch: '#d8c088' },
-  { id: 'vuur', name: 'Vuurrood', color: '#c84a28', swatch: '#b04024' },
-  { id: 'okergeel', name: 'Okergeel', color: '#d09a38', swatch: '#c08a30' },
-  { id: 'zeegroen', name: 'Zeegroen', color: '#4a9a88', swatch: '#3a8070' },
-  { id: 'paars', name: 'Paars', color: '#7a4a8a', swatch: '#6a3a78' },
-  { id: 'roet', name: 'Roet', color: '#3a3430', swatch: '#2a2624' },
+  { id: null, name: 'Like the scales', color: null, swatch: 'linear-gradient(135deg,#2f7a70 50%,#8a5a2a 50%)' },
+  { id: 'room', name: 'Cream', color: '#e0c890', swatch: '#d8c088' },
+  { id: 'vuur', name: 'Fire red', color: '#c84a28', swatch: '#b04024' },
+  { id: 'okergeel', name: 'Ochre yellow', color: '#d09a38', swatch: '#c08a30' },
+  { id: 'zeegroen', name: 'Sea green', color: '#4a9a88', swatch: '#3a8070' },
+  { id: 'paars', name: 'Purple', color: '#7a4a8a', swatch: '#6a3a78' },
+  { id: 'roet', name: 'Soot', color: '#3a3430', swatch: '#2a2624' },
 ];
 export const DRAGON_EYES: { id: string | null; name: string; color: string | null; swatch: string }[] = [
-  { id: null, name: 'Zoals geschilderd', color: null, swatch: '#e0c050' },
-  { id: 'amber', name: 'Barnsteen', color: '#ffb030', swatch: '#ffb030' },
-  { id: 'vuur', name: 'Vuur', color: '#ff4a20', swatch: '#ff4a20' },
-  { id: 'ijs', name: 'IJsblauw', color: '#70d0ff', swatch: '#70d0ff' },
-  { id: 'gifgroen', name: 'Gifgroen', color: '#7aff50', swatch: '#7aff50' },
-  { id: 'wit', name: 'Wit', color: '#f4f0e0', swatch: '#f4f0e0' },
+  { id: null, name: 'As painted', color: null, swatch: '#e0c050' },
+  { id: 'amber', name: 'Amber', color: '#ffb030', swatch: '#ffb030' },
+  { id: 'vuur', name: 'Fire', color: '#ff4a20', swatch: '#ff4a20' },
+  { id: 'ijs', name: 'Ice blue', color: '#70d0ff', swatch: '#70d0ff' },
+  { id: 'gifgroen', name: 'Poison green', color: '#7aff50', swatch: '#7aff50' },
+  { id: 'wit', name: 'White', color: '#f4f0e0', swatch: '#f4f0e0' },
 ];
 export const HORNS: { id: string; name: string }[] = [
-  { id: 'gewoon', name: 'Zoals geschilderd' },
-  { id: 'ram', name: 'Ramshoorns' },
-  { id: 'kroon', name: 'Stekelkroon' },
-  { id: 'spies', name: 'Lange spiesen' },
+  { id: 'gewoon', name: 'As painted' },
+  { id: 'ram', name: 'Ram horns' },
+  { id: 'kroon', name: 'Spike crown' },
+  { id: 'spies', name: 'Long spears' },
 ];
 
 /** What the creation screen chose for the dragon (all optional: an older save is the painted dragon). */
