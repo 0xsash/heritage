@@ -7,7 +7,7 @@ from mathutils import Vector, Matrix
 from . import garments as GM
 from .garments import (garment, MEN, UP, relax, solidify, fix_normals_out, finish, join, head_centre, head_radius,
                        head_shell, drape_rows, hat_place, deg, hair_cap, hanging_tail, tail_weights, outer_layers,
-                       hair_finish, lock_mesh, face_points, moustache, tube, set_keep, bvh_sub, grid_faces, back_surface)
+                       hair_finish, lock_mesh, face_points, moustache, tube, set_keep, bvh_sub, grid_faces, back_surface, onto_face)
 from .garments_e import push_out, HERO_F, HERO_M, ADULTS_E
 from .common import (get_bm, put_bm, bvh_of, transfer_weights, rigid_weight, set_aux, lathe_mesh, torus_mesh, rounded_box,
                      place, convex_ring, strap_mesh, smoothstep, new_mesh_obj)
@@ -499,6 +499,7 @@ def g_beard_goatee(ctx, ref):
     tip = top + Vector((0, -0.006 * k, -0.030 * k))
     pts = [top.lerp(tip, t) for t in np.linspace(0, 1, 6)]
     radii = [k * (0.008 * (1 - t) ** 0.6 + 0.0015) for t in np.linspace(0, 1, 6)]
+    pts = onto_face(ctx, pts, radii)
     tuft = tube('tuft', pts, 0.008, 6, 'beard', radii)
     o = join([tuft] + moustache(ctx, 'mg', mouth, nose, up=1.2, size=0.95), 'beard_goatee')
     push_out(o, [ctx.body], 0.002 * k)

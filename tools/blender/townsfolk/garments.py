@@ -1885,19 +1885,46 @@ def face_points(ctx):
     return mouth, chin, nose
 
 
+def skin_front(ctx, x, z):
+    """The face's surface seen from the front at (x, z): its y (front is -y), or None where the ray misses."""
+    loc, _, _, _ = ctx.bvh('body', [ctx.body]).ray_cast(Vector((x, -1.0, z)), Vector((0, 1, 0)), 2.0)
+    return None if loc is None else loc.y
+
+
+def onto_face(ctx, pts, radii, sink=0.55, reach=0.03):
+    """Bring a beard's centre line back onto the face: each point that has the face (lip, chin) within `reach`
+    behind it is set onto the skin, sunk to `sink` of its radius; points past the chin (where the ray would
+    find the neck far behind) keep their shape and follow the last point that touched."""
+    shift = 0.0
+    out = []
+    for p, r in zip(pts, radii):
+        y = skin_front(ctx, p.x, p.z)
+        if y is not None and (y - sink * r) - p.y < reach * ctx.k:
+            shift = (y - sink * r) - p.y
+        out.append(Vector((p.x, p.y + shift, p.z)))
+    return out
+
+
 def moustache(ctx, name, mouth, nose, up=1.0, size=1.0):
+    """Two tapered tubes on the upper lip, under the nose, their ends turned up. Every point of the centre line
+    sits on the skin (ray cast from the front), sunk to 55% of its radius: a moustache that hangs a centimetre
+    in front of the lip (as it did) reads at a slant and from above as sitting on the mouth or the chin."""
     k = ctx.k
     parts = []
-    base = mouth.lerp(nose, 0.42) + Vector((0, -0.006 * k, 0))
+    # the philtrum: a third of the way from the top of the upper lip to the tip of the nose
+    lip_top = mouth.z + 0.010 * k
+    base = Vector((0.0, mouth.y, lip_top + 0.36 * (nose.z - lip_top)))
     for sx in (1, -1):
         pts, radii = [], []
         for j in range(9):
             t = j / 8
             x = sx * (0.004 + 0.034 * size * t) * k
-            z = -0.010 * k * math.sin(math.pi * t * 0.9) + up * 0.016 * k * t ** 2.5
-            y = 0.012 * k * t ** 1.5
-            pts.append(base + Vector((x, y, z)))
-            radii.append(k * 0.0055 * size * (1 - t) ** 0.8 + 0.0008)
+            z = base.z - 0.008 * k * math.sin(math.pi * t * 0.9) + up * 0.016 * k * t ** 2.5
+            r = k * 0.0055 * size * (1 - t) ** 0.8 + 0.0008
+            y = skin_front(ctx, x, z)
+            y = (base.y - 0.006 * k + 0.012 * k * t ** 1.5) if y is None else y - 0.55 * r
+            pts.append(Vector((x, y, z)))
+            radii.append(r)
         parts.append(tube(f'{name}_{sx}', pts, 0.004, 6, 'beard', radii))
     return parts
 
@@ -1911,6 +1938,7 @@ def g_beard_pointed(ctx, ref):
     tip = chin + Vector((0, -0.020 * k, -0.045 * k))
     pts = [top.lerp(tip, t) + Vector((0, -0.010 * k * math.sin(math.pi * t), 0)) for t in np.linspace(0, 1, 8)]
     radii = [k * (0.016 * (1 - t) ** 0.7 + 0.002) for t in np.linspace(0, 1, 8)]
+    pts = onto_face(ctx, pts, radii)
     beard = tube('beard', pts, 0.01, 8, 'beard', radii)
     beard.data.transform(Matrix.Translation(-pts[3]) )
     beard.data.transform(Matrix.Diagonal((1.25, 0.8, 1.0, 1.0)))
@@ -1942,6 +1970,7 @@ def g_beard_full(ctx, ref):
         n = 8
         pts = [top.lerp(tip, t) + Vector((0, -0.012 * k * math.sin(math.pi * t), 0)) for t in np.linspace(0, 1, n)]
         radii = [k * (w0 * (1 - t ** 1.6) ** 0.6 + 0.003) for t in np.linspace(0, 1, n)]
+        pts = onto_face(ctx, pts, radii, sink=0.6)
         bd = tube('beard%d' % len(parts), pts, 0.01, 8, 'beard', radii)
         c = pts[n // 2]
         bd.data.transform(Matrix.Translation(-c))
