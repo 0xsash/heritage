@@ -1,9 +1,9 @@
-// Diest en omstreken, 1650: de mensen, de opdrachten, de vijanden en de
-// gesprekken. In hedendaags Vlaams Nederlands: iedereen zegt "je", behalve de
-// drossaard en de overste, die de held met "u" aanspreken.
-// Historische achtergrond: de Spaanse Nederlanden na de Vrede van Munster
-// (1648); Diest is een baronie van de (afwezige) prinsen van Oranje; de
-// kerk van Scherpenheuvel (ingewijd 1627) trekt pelgrims uit heel Brabant.
+// Diest and its surroundings, 1650: the people, the quests, the enemies and the
+// conversations. In English (docs/design/voice.md); the drossaard and the provost
+// speak to the hero more formally than the rest.
+// Historical background: the Spanish Netherlands after the Peace of Munster
+// (1648); Diest is a barony of the (absent) princes of Orange; the church of
+// Scherpenheuvel (consecrated 1627) draws pilgrims from all over Brabant.
 //
 // Positions are local metres from the Grote Markt (x east, z south).
 
@@ -17,39 +17,39 @@ const LEUVEN = 'main_leuven';
 
 export const diest: Content = {
   items: [
-    { id: 'pilgrim_badge', name: 'Pelgrimsinsigne van Scherpenheuvel', text: 'Een tinnen insigne van Onze-Lieve-Vrouw van Scherpenheuvel, verstrikt in rivierwier.', quest: true },
-    { id: 'humming_statuette', name: 'Zoemend eikenbeeldje', text: 'Het is gesneden uit het hout van de gevelde eik. Het zoemt als er klokken in de buurt zijn, en ook als er geen zijn.', quest: true },
-    { id: 'forged_seal', name: 'Vals lakenzegel', text: 'Een loden zegel met het wapen van Diest. De leeuw heeft te veel tanden.', quest: true },
-    { id: 'seal_mould', name: 'Zegelvorm', text: 'Met deze gietvorm maakte een weduwe de zegels van de stad na.' },
-    { id: 'marsh_herb', name: 'Moeraswondkruid', text: 'Het groeit in de natte weiden langs de Demer. De begijnen koken er een drank tegen de koorts van.', quest: true },
-    { id: 'salve', name: 'Begijnenzalf', text: 'Deze zalf geneest wonden. Ze ruikt naar de tuin van het Begijnhof.' },
-    { id: 'sealed_letter', name: 'Verzegelde brief', text: 'Een brief voor de overste van Scherpenheuvel, gesloten met het zegel van de drossaard.', quest: true },
-    { id: 'brandy', name: 'Vaatje brandewijn', text: 'Voor dit vaatje heeft niemand tol betaald, en dat was ook de bedoeling.' },
-    { id: 'klepel', name: 'Klepel van Sint-Sulpitius', text: 'Een ijzeren klepel, nat en vol modder. Hij is zwaarder dan hij eruitziet.', quest: true },
-    { id: 'pass', name: 'Vrijgeleide naar Leuven', text: 'Een reisbrief van de drossaard, met zegel en al.', quest: true },
+    { id: 'pilgrim_badge', name: 'Pilgrim badge of Scherpenheuvel', text: 'A tin badge of Our Lady of Scherpenheuvel, tangled in river weed.', quest: true },
+    { id: 'humming_statuette', name: 'Humming oak figure', text: 'It is carved from the wood of the felled oak. It hums when there are bells nearby, and also when there are none.', quest: true },
+    { id: 'forged_seal', name: 'Forged cloth seal', text: 'A lead seal with the arms of Diest. The lion has too many teeth.', quest: true },
+    { id: 'seal_mould', name: 'Seal mould', text: "A widow cast the town's good name in this, in lead." },
+    { id: 'marsh_herb', name: 'Marsh woundwort', text: 'It grows where the Demer floods each winter. The beguines brew it into a draught against fever.', quest: true },
+    { id: 'salve', name: 'Beguine salve', text: 'It heals wounds, and it smells of the Begijnhof garden.' },
+    { id: 'sealed_letter', name: 'Sealed letter', text: "A letter for the provost of Scherpenheuvel, closed with the drossaard's seal.", quest: true },
+    { id: 'brandy', name: 'Keg of brandy', text: 'No one paid the toll on this keg, which was the whole idea.' },
+    { id: 'klepel', name: 'Clapper of Sint-Sulpitius', text: 'An iron clapper, wet and caked in river mud. It is heavier than it looks, and colder.', quest: true },
+    { id: 'pass', name: 'Safe conduct to Leuven', text: 'A travel letter from the drossaard, seal and all.', quest: true },
     // Het Oude Volk, the hidden party (src/content/oudevolk.ts)
     ...OV_ITEMS,
   ],
 
   camps: [
-    { id: 'schaffen', name: 'Deserteurs', at: [720, -880], r: 30, enemies: [['deserteur', 1, 3]], respawn: 180 },
-    { id: 'kaggevinne', name: 'Wegrovers', at: [-2120, 560], r: 30, enemies: [['deserteur', 2, 3], ['musketier', 2, 1]], respawn: 240 },
-    { id: 'broek', name: 'Broekhonden', at: [1110, 520], r: 45, enemies: [['broekhond', 2, 3]], respawn: 200 },
-    { id: 'broek2', name: 'Broekhonden', at: [1330, 840], r: 45, enemies: [['broekhond', 3, 4]], respawn: 240 },
+    { id: 'schaffen', name: 'Deserters', at: [720, -880], r: 30, enemies: [['deserteur', 1, 3]], respawn: 180 },
+    { id: 'kaggevinne', name: 'Highwaymen', at: [-2120, 560], r: 30, enemies: [['deserteur', 2, 3], ['musketier', 2, 1]], respawn: 240 },
+    { id: 'broek', name: 'Broek hounds', at: [1110, 520], r: 45, enemies: [['broekhond', 2, 3]], respawn: 200 },
+    { id: 'broek2', name: 'Broek hounds', at: [1330, 840], r: 45, enemies: [['broekhond', 3, 4]], respawn: 240 },
     {
-      id: 'kluddenest', name: 'Het nest van de Kludde', at: [1680, 1060], r: 30, enemies: [['broekhond', 4, 3]], respawn: 0,
-      elite: { type: 'kludde', level: 5, name: 'De Kludde' }, if: { any: [{ quest: KLUDDE, state: 'active', stage: 'lair' }, { quest: KLUDDE, state: 'active', stage: 'clappers' }] },
+      id: 'kluddenest', name: "The Kludde's nest", at: [1680, 1060], r: 30, enemies: [['broekhond', 4, 3]], respawn: 0,
+      elite: { type: 'kludde', level: 5, name: 'The Kludde' }, if: { any: [{ quest: KLUDDE, state: 'active', stage: 'lair' }, { quest: KLUDDE, state: 'active', stage: 'clappers' }] },
     },
     {
-      id: 'galgeberg', name: 'Kamp van Lambrecht', at: [-1700, 2060], r: 35, enemies: [['deserteur', 4, 3], ['musketier', 4, 1]], respawn: 300,
+      id: 'galgeberg', name: "Lambrecht's camp", at: [-1700, 2060], r: 35, enemies: [['deserteur', 4, 3], ['musketier', 4, 1]], respawn: 300,
       elite: { type: 'deserteur', level: 5, name: 'Lambrecht de Rode' }, if: { not: { quest: 'side_roelof', state: 'done' } },
     },
-    { id: 'eikenbos', name: 'Dwaallichten', at: [-4460, 960], r: 50, enemies: [['dwaallicht', 3, 4]], respawn: 240 },
+    { id: 'eikenbos', name: "Will-o'-the-wisps", at: [-4460, 960], r: 50, enemies: [['dwaallicht', 3, 4]], respawn: 240 },
   ],
 
   npcs: [
     {
-      id: 'pieter', name: 'Pieter Vandenbempt', role: 'koster van Sint-Sulpitius', at: [30, 55], facing: Math.PI, tint: '#3a3330',
+      id: 'pieter', name: 'Pieter Vandenbempt', role: 'sexton of Sint-Sulpitius', at: [30, 55], facing: Math.PI, tint: '#3a3330',
       look: { body: 'man_old', wear: { hair_thin: 'h_grey', skullcap: 'black', habit: 'umber', rope_belt: null, shoes: null }, prop: 'lantern' },
       // the road to Leuven, for a save that lost it after the Kludde (see the talk entry below)
       offers: [BELLS, { quest: LEUVEN, if: { quest: KLUDDE, state: 'done' } }],
@@ -68,12 +68,12 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'marieke', name: 'Marieke Smets', role: 'marskraamster', at: [55, 95], facing: 0.3, tint: '#6a3a5a',
+      id: 'marieke', name: 'Marieke Smets', role: 'pedlar', at: [55, 95], facing: 0.3, tint: '#6a3a5a',
       look: { body: 'woman', wear: { hair_bun: 'h_chestnut', coif: null, bodice: 'madder', kerchief: null, skirt: 'woad_dk', apron: 'linen', shoes: null }, prop: 'basket' }, shop: true,
       talk: [{ start: 'marieke_hi' }],
     },
     {
-      id: 'joos', name: 'Meester Joos Peeters', role: 'deken van de wevers', at: [75, 45], facing: 0.4, tint: '#5a3a22',
+      id: 'joos', name: 'Master Joos Peeters', role: 'dean of the weavers', at: [75, 45], facing: 0.4, tint: '#5a3a22',
       look: { body: 'man_stout', wear: { hair_crop: 'h_brown', beard_pointed: 'h_brown', cap_flat: 'madder_dk', doublet: 'woad', collar_band: null, breeches: 'brown', stockings: 'grey', shoes: null } },
       offers: ['side_seals'],
       talk: [
@@ -84,7 +84,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'aleydis', name: 'Zuster Margriet', role: 'begijn en ziekenverzorgster', at: [680, -316], facing: -1.4, tint: '#2a2a2e',
+      id: 'aleydis', name: 'Sister Margriet', role: 'beguine of the infirmary', at: [680, -316], facing: -1.4, tint: '#2a2a2e',
       look: { body: 'woman', wear: { hair_bun: 'h_brown', habit: 'beguine', beguine_veil: null, shoes: null }, prop: 'rosary' },
       offers: ['side_herbs'],
       talk: [
@@ -98,7 +98,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'drossaard', name: 'Jonker Hendrik van Gorp', role: 'drossaard van Diest', at: [400, 140], facing: 2.2, tint: '#1e2a3a',
+      id: 'drossaard', name: 'Jonker Hendrik van Gorp', role: 'drossaard of Diest', at: [400, 140], facing: 2.2, tint: '#1e2a3a',
       look: { body: 'man', wear: { hair_long: 'h_dark', beard_pointed: 'h_dark', hat_wide: 'black', plume: 'madder', doublet: 'black', collar_band: null, breeches: 'black', stockings: 'black', boots: null } },
       offers: ['contract_letter'],
       talk: [
@@ -109,7 +109,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'wouter', name: 'Wouter Claes', role: 'tollenaar aan de Putterstraatpoort', at: [-95, 340], facing: 2.6, tint: '#4a4a2a',
+      id: 'wouter', name: 'Wouter Claes', role: 'toll keeper at the Putterstraatpoort', at: [-95, 340], facing: 2.6, tint: '#4a4a2a',
       look: { body: 'man_stout', wear: { hair_crop: 'h_black', moustache: 'h_black', hat_wide: 'umber', doublet: 'moss', collar_band: null, breeches: 'umber', stockings: 'grey', shoes: null } },
       offers: ['side_toll'],
       talk: [
@@ -120,7 +120,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'lijsbet', name: 'Lijsbet Vranckx', role: 'weduwe van een wever', at: [805, 100], facing: -1.6, tint: '#3d3428',
+      id: 'lijsbet', name: 'Lijsbet Vranckx', role: "weaver's widow", at: [805, 100], facing: -1.6, tint: '#3d3428',
       look: { body: 'woman_old', wear: { hair_bun: 'h_grey', coif: null, bodice: 'black', kerchief: null, skirt: 'slate', shoes: null } },
       talk: [
         { if: { quest: 'side_seals', state: 'active', stage: 'widow' }, start: 'lijsbet_meet' },
@@ -128,7 +128,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'gielis', name: 'Gielis "de Ton"', role: 'voerman, naar eigen zeggen', at: [-430, 100], facing: 1.2, tint: '#5a2a1a',
+      id: 'gielis', name: 'Gielis "de Ton"', role: 'carter, or so he says', at: [-430, 100], facing: 1.2, tint: '#5a2a1a',
       look: { body: 'man_stout', wear: { hair_crop: 'h_red', beard_full: 'h_red', cap_flat: 'russet', smock: 'linen', belt: null, breeches: 'russet', stockings: 'grey', clogs: null } },
       talk: [
         { if: { quest: 'side_toll', state: 'active', stage: 'cart' }, start: 'gielis_meet' },
@@ -136,7 +136,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'driesen', name: 'Boer Jan Driesen', role: 'boer te Kaggevinne', at: [-2235, 690], facing: 0.6, tint: '#5a4a2a',
+      id: 'driesen', name: 'Farmer Jan Driesen', role: 'farmer at Kaggevinne', at: [-2235, 690], facing: 0.6, tint: '#5a4a2a',
       look: { body: 'man', wear: { hair_crop: 'h_blond', moustache: 'h_blond', cap_flat: 'brown', smock: 'grey', belt: null, breeches: 'brown', stockings: 'linen', clogs: null }, prop: 'stick' },
       offers: ['side_roelof'],
       talk: [
@@ -147,7 +147,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'truyken', name: 'Truyken', role: 'verkoopster van eikenbeeldjes', at: [-5005, 545], facing: -2.0, tint: '#5a3f2a',
+      id: 'truyken', name: 'Truyken', role: 'seller of oak figures', at: [-5005, 545], facing: -2.0, tint: '#5a3f2a',
       look: { body: 'woman_stout', wear: { hair_bun: 'h_blond', coif: null, bodice: 'ochre', kerchief: null, pelerine: 'russet', skirt: 'umber', clogs: null }, prop: 'basket' },
       talk: [
         { if: { quest: BELLS, state: 'active', stage: 'scherpenheuvel' }, start: 'truyken_main' },
@@ -155,7 +155,7 @@ export const diest: Content = {
       ],
     },
     {
-      id: 'provost', name: 'Pater Jan Cools', role: 'overste van Scherpenheuvel', at: [-5085, 470], facing: 0.8, tint: '#e8e0d0',
+      id: 'provost', name: 'Father Jan Cools', role: 'provost of Scherpenheuvel', at: [-5085, 470], facing: 0.8, tint: '#e8e0d0',
       look: { body: 'man_old', wear: { hair_thin: 'h_white', skullcap: 'black', habit: 'black', bands: null, shoes: null } },
       offers: ['side_wisps'],
       talk: [
@@ -173,221 +173,221 @@ export const diest: Content = {
   quests: [
     // ================================================================ hoofdverhaal
     {
-      id: ARRIVE, title: 'Diest zonder klokken', kind: 'main', town: 'Diest', level: 1,
-      summary: 'Land in Diest en zoek uit waarom de klokken zwijgen.',
+      id: ARRIVE, title: 'Diest without bells', kind: 'main', town: 'Diest', level: 1,
+      summary: 'Land in Diest and find out why the bells are silent.',
       reward: { xp: 60 },
       stages: [
         {
           id: 'land',
-          journal: '{dragon} volgde de Demer tot Diest, laag over het water, alsof hij de weg kende. Van boven zag ik de muren, de markt en de kerk met haar stompe toren. Er luidde geen enkele klok. Ergens onder die daken weet iemand waar het water Neelke heeft gelaten.',
-          objectives: [{ id: 'land', kind: 'reach', text: 'Land op de Grote Markt van Diest', at: [40, 45], r: 70, onFoot: true }],
+          journal: '{dragon} followed the Demer to Diest, low over the water, as though he had flown it before. From above I saw the walls, the market and the church with its blunt tower. Not one bell was ringing. Somewhere under those roofs, someone knows where the water left Neelke.',
+          objectives: [{ id: 'land', kind: 'reach', text: 'Land on the Grote Markt of Diest', at: [40, 45], r: 70, onFoot: true }],
           onDone: [{ stage: [ARRIVE, 'pieter'] }],
         },
         {
           id: 'pieter',
-          journal: 'Op de markt kijkt iedereen naar de toren, zoals je naar een zieke kijkt. Ze sturen me naar Pieter, de koster. Hij staat bij de kerk, met een sleutelbos die hij niet meer nodig heeft.',
-          objectives: [{ id: 'pieter', kind: 'talk', text: 'Spreek met Pieter de koster bij de kerk', npc: 'pieter' }],
+          journal: 'In the market everyone looks at the tower the way you look at a sickbed. They send me to Pieter, the sexton. He stands by the church with a ring of keys he no longer needs.',
+          objectives: [{ id: 'pieter', kind: 'talk', text: 'Speak with Pieter the sexton at the church', npc: 'pieter' }],
         },
       ],
     },
     {
-      id: BELLS, title: 'De klokken die niet luiden', kind: 'main', town: 'Diest', giver: 'pieter', level: 2,
-      summary: 'De klokken van Sint-Sulpitius zwijgen. Hun klepels zijn weg.',
+      id: BELLS, title: 'The bells that do not ring', kind: 'main', town: 'Diest', giver: 'pieter', level: 2,
+      summary: 'The bells of Sint-Sulpitius are silent. Their clappers are gone.',
       reward: { xp: 220, florins: 30, standing: [['gilden', 10]] },
       stages: [
         {
           id: 'tower',
-          journal: 'De klok gaf zeven slagen, zegt Pieter, en daarna bleef het stil. De drie klepels zijn weg, uit een toren die op slot zat. Op de klokkenstoel lag nat wier. Met {dragon} geraak ik tot boven.',
-          objectives: [{ id: 'climb', kind: 'reach', text: 'Vlieg naar de top van de toren van Sint-Sulpitius', at: [-26, 30], r: 30, minY: 28 }],
+          journal: 'The bell struck seven times, Pieter says, and then nothing. The three clappers are gone, out of a tower that was locked. There was wet weed on the bell frame. With {dragon} I can reach the top.',
+          objectives: [{ id: 'climb', kind: 'reach', text: 'Fly to the top of the tower of Sint-Sulpitius', at: [-26, 30], r: 30, minY: 28 }],
           onDone: [{ give: 'pilgrim_badge' }, { xp: 60 }, { stage: [BELLS, 'badge'] }],
         },
         {
           id: 'badge',
-          journal: 'In het wier op de klokkenstoel zat een tinnen insigne van Onze-Lieve-Vrouw van Scherpenheuvel, het gezichtje nog scherp. Zuster Margriet in het Begijnhof kent elk pelgrimsteken van Brabant.',
-          objectives: [{ id: 'show', kind: 'talk', text: 'Toon het insigne aan zuster Margriet in het Begijnhof', npc: 'aleydis' }],
+          journal: 'In the weed on the bell frame was a tin badge of Our Lady of Scherpenheuvel, its little face still sharp. Sister Margriet in the Begijnhof knows every pilgrim badge in Brabant.',
+          objectives: [{ id: 'show', kind: 'talk', text: 'Show the badge to Sister Margriet in the Begijnhof', npc: 'aleydis' }],
         },
         {
           id: 'road',
-          journal: 'Margriet stuurt me naar Scherpenheuvel. De pelgrims durven de weg niet meer op: bij Kaggevinne liggen deserteurs uit de Franse oorlog. Ze nemen wat je bij je hebt, en soms nemen ze jou ook mee.',
-          objectives: [{ id: 'rovers', kind: 'kill', text: 'Verdrijf de wegrovers bij Kaggevinne', camp: 'kaggevinne', count: 4, at: [-2120, 560], r: 45 }],
+          journal: 'Margriet sends me to Scherpenheuvel. The pilgrims no longer dare the road: deserters from the French war lie in wait near Kaggevinne. They take what you carry, and sometimes they take you as well.',
+          objectives: [{ id: 'rovers', kind: 'kill', text: 'Drive off the highwaymen near Kaggevinne', camp: 'kaggevinne', count: 4, at: [-2120, 560], r: 45 }],
           onDone: [{ xp: 80 }, { standing: ['gilden', 5] }, { stage: [BELLS, 'scherpenheuvel'] }],
         },
         {
           id: 'scherpenheuvel',
-          journal: 'De weg is vrij, als je de kraaien bij de doden niet meetelt. In het westen ligt Scherpenheuvel, waar het altaar staat op de plek van de oude eik. Truyken verkoopt er beeldjes en ze hoort alles.',
-          objectives: [{ id: 'truyken', kind: 'talk', text: 'Zoek Truyken bij de kerk van Scherpenheuvel', npc: 'truyken' }],
+          journal: "The road is clear, if you don't count the crows on the dead. To the west lies Scherpenheuvel, where the altar stands on the spot where the old oak stood. Truyken sells figures there, and she hears everything.",
+          objectives: [{ id: 'truyken', kind: 'talk', text: 'Find Truyken at the church of Scherpenheuvel', npc: 'truyken' }],
         },
         {
           id: 'report',
-          journal: 'Truyken verkocht eikenbeeldjes aan een lange man "die naar de Demer rook en betaalde met natte munten". Ze gaf me er een. Het zoemt, en het zoemt luider als ik het in de richting van het Broek houd, het moeras ten zuidoosten van Diest. Daar staat water genoeg.',
-          objectives: [{ id: 'pieter', kind: 'talk', text: 'Breng verslag uit bij Pieter in Diest', npc: 'pieter' }],
+          journal: 'Truyken sold oak figures to a tall man "who smelled of the Demer and paid in wet coins". She gave me one. It hums, and it hums louder when I hold it towards the Broek, the marsh south-east of Diest. There is water enough there.',
+          objectives: [{ id: 'pieter', kind: 'talk', text: 'Report to Pieter in Diest', npc: 'pieter' }],
         },
       ],
     },
     {
-      id: KLUDDE, title: 'Het beest van het Broek', kind: 'main', town: 'Diest', giver: 'pieter', level: 4,
-      summary: 'Iets in de moerassen heeft de klepels van Diest gestolen.',
+      id: KLUDDE, title: 'The beast of the Broek', kind: 'main', town: 'Diest', giver: 'pieter', level: 4,
+      summary: 'Something in the marshes has stolen the clappers of Diest.',
       reward: { xp: 600, florins: 60, standing: [['gilden', 25]], gear: ['kluddevel'] },
       stages: [
         {
           id: 'hounds',
-          journal: 'Een man die naar de Demer ruikt, door gesloten deuren komt en met nat geld betaalt: Pieter zegt nu hardop dat het de Kludde is. Aan de rivier zag hij er niet uit als een man. Zijn honden zwerven door het Broek, voorbij de oude Koepoort. Als ik hen volg, kom ik bij hem uit.',
-          objectives: [{ id: 'honden', kind: 'kill', text: 'Volg het spoor: versla de broekhonden in het Broek', enemy: 'broekhond', count: 5, at: [1220, 680], r: 220 }],
+          journal: 'A man who smells of the Demer, walks through locked doors and pays in wet money: Pieter now says it aloud. It is the Kludde. By the river he did not look like a man. His hounds roam the Broek, past the old Koepoort. If I follow them, they will lead me to him.',
+          objectives: [{ id: 'honden', kind: 'kill', text: 'Follow the trail: kill the hounds in the Broek', enemy: 'broekhond', count: 5, at: [1220, 680], r: 220 }],
           onDone: [{ xp: 100 }, { stage: [KLUDDE, 'lair'] }],
         },
         {
           id: 'lair',
-          journal: 'De sporen lopen naar het moeras bij Webbekom. Tussen het riet sleept iets een ketting over de grond. Het beeldje zoemt zo hard dat mijn hand ervan tintelt. Als Neelke ergens is, dan is het hier.',
-          objectives: [{ id: 'kludde', kind: 'kill', text: 'Versla de Kludde in zijn nest bij Webbekom', camp: 'kluddenest', enemy: 'kludde', count: 1, at: [1680, 1060], r: 40 }],
+          journal: 'The tracks run to the marsh by Webbekom. Among the reeds, something drags a chain along the ground. The figure hums so hard my hand tingles. If Neelke is anywhere, she is here.',
+          objectives: [{ id: 'kludde', kind: 'kill', text: 'Defeat the Kludde in his nest by Webbekom', camp: 'kluddenest', enemy: 'kludde', count: 1, at: [1680, 1060], r: 40 }],
           onDone: [{ stage: [KLUDDE, 'clappers'] }],
         },
         {
           id: 'clappers',
-          journal: 'De Kludde is in het water verdwenen, met stoom en kettinggerinkel. Of hij dood is, weet je bij hem nooit. In zijn nest liggen de klepels, half in de modder. In de paal ernaast staan kerven, in groepjes van vijf.',
-          objectives: [{ id: 'klepels', kind: 'collect', text: 'Raap de klepels op in het nest', item: 'klepel', count: 3, spawns: [[1672, 1048], [1694, 1070], [1662, 1078]] }],
+          journal: 'The Kludde vanished into the water in steam and a rattle of chain. With him you never know if he is dead. The clappers lie in his nest, half sunk in mud. The post beside it is notched, in groups of five.',
+          objectives: [{ id: 'klepels', kind: 'collect', text: 'Pick up the clappers in the nest', item: 'klepel', count: 3, spawns: [[1672, 1048], [1694, 1070], [1662, 1078]] }],
           onDone: [{ stage: [KLUDDE, 'return'] }],
         },
         {
           id: 'return',
-          journal: 'Ik heb de drie klepels. Ze zijn zwaar als een kind en koud als de rivier. Aan één ervan kleeft nog wier. Pieter gaat ervan wenen.',
-          objectives: [{ id: 'pieter', kind: 'talk', text: 'Breng de klepels naar Pieter de koster', npc: 'pieter' }],
+          journal: 'I have the three clappers, heavy as a child, cold as the river. Weed still clings to one of them. Pieter will weep.',
+          objectives: [{ id: 'pieter', kind: 'talk', text: 'Bring the clappers to Pieter the sexton', npc: 'pieter' }],
         },
       ],
     },
     {
-      id: LEUVEN, title: 'De weg naar Leuven', kind: 'main', town: 'Diest', giver: 'pieter', level: 6,
-      summary: 'Het beeldje zoemt naar Leuven. Vraag de drossaard om een vrijgeleide.',
+      id: LEUVEN, title: 'The road to Leuven', kind: 'main', town: 'Diest', giver: 'pieter', level: 6,
+      summary: 'The figure hums towards Leuven. Ask the drossaard for a safe conduct.',
       reward: { xp: 50 },
       stages: [
         {
           id: 'pass',
-          journal: 'De klokken van Diest luiden weer. Bij elke slag vielen de ogen van {dragon} dicht, en Pieter zag het ook. Het beeldje zoemt nu het hardst als ik het naar het westen houd, naar Leuven. Voor die reis heb ik een vrijgeleide nodig van de drossaard.',
-          objectives: [{ id: 'dross', kind: 'talk', text: 'Vraag de drossaard om een vrijgeleide', npc: 'drossaard' }],
+          journal: "The bells of Diest ring again. At every stroke {dragon}'s eyes fell shut, and Pieter saw it too. Now the figure hums loudest when I hold it to the west, towards Leuven. For that journey I need a safe conduct from the drossaard.",
+          objectives: [{ id: 'dross', kind: 'talk', text: 'Ask the drossaard for a safe conduct', npc: 'drossaard' }],
         },
         {
           id: 'travel',
-          journal: 'Het vrijgeleide ruikt naar lak en naar de drossaard. De weg naar Leuven ligt open. In het oosten, in het land van Loon, zwijgen de torens al een jaar. Welke weg ik ook neem, het beeldje zoemt mee.',
-          objectives: [{ id: 'leuven', kind: 'flag', text: 'Reis naar Leuven (binnenkort)', flag: 'reached_leuven' }],
+          journal: 'The safe conduct smells of sealing wax and of the drossaard. The road to Leuven lies open. In the east, in the land of Loon, the towers have been silent for a year. Whichever road I take, the figure hums with me.',
+          objectives: [{ id: 'leuven', kind: 'flag', text: 'Travel to Leuven (coming soon)', flag: 'reached_leuven' }],
         },
       ],
     },
 
     // ================================================================ zijverhalen
     {
-      id: 'side_seals', title: 'Te veel tanden', kind: 'side', town: 'Diest', giver: 'joos', level: 1,
-      summary: 'Iemand vervalst de lakenzegels van Diest.',
+      id: 'side_seals', title: 'Too many teeth', kind: 'side', town: 'Diest', giver: 'joos', level: 1,
+      summary: 'Someone is forging the cloth seals of Diest.',
       reward: { xp: 120 },
       stages: [
         {
           id: 'find',
-          journal: 'Meester Joos zegt dat Antwerpen balen vodden terugstuurt onder het zegel van Diest. Eén vals zegel kost de hele stad haar naam, en die naam is ouder dan Joos. De vervalser werkt bij de bleekvelden voorbij de oude Koepoort.',
-          objectives: [{ id: 'seals', kind: 'collect', text: 'Zoek valse zegels bij de bleekvelden voorbij de oude Koepoort', item: 'forged_seal', count: 3, spawns: [[870, 40], [905, 125], [858, 185]] }],
+          journal: 'Master Joos says Antwerpen is sending back bales of rags under the seal of Diest. One forged seal costs the whole town its name, and that name is older than Joos. The forger works by the bleaching fields past the old Koepoort.',
+          objectives: [{ id: 'seals', kind: 'collect', text: 'Look for forged seals by the bleaching fields past the old Koepoort', item: 'forged_seal', count: 3, spawns: [[870, 40], [905, 125], [858, 185]] }],
           onDone: [{ stage: ['side_seals', 'widow'] }],
         },
         {
           id: 'widow',
-          journal: 'De zegels lagen langs een pad naar een huisje voorbij de gracht, als broodkruimels. Wie ze liet vallen, wilde misschien gevonden worden.',
-          objectives: [{ id: 'meet', kind: 'talk', text: 'Spreek met wie in het huisje woont', npc: 'lijsbet' }],
+          journal: 'The seals lay along a path to a cottage beyond the moat, like breadcrumbs. Whoever dropped them may have wanted to be found.',
+          objectives: [{ id: 'meet', kind: 'talk', text: 'Speak with whoever lives in the cottage', npc: 'lijsbet' }],
         },
         {
           id: 'decide',
-          journal: 'Lijsbet, de weduwe van een wever, giet het zegel na om haar eigen laken te verkopen. Het ambacht laat een weduwe niet aan het getouw van haar man. Ik heb gezegd dat ik naar de drossaard ga. Ze zei dat ze thuis zou zijn.',
-          objectives: [{ id: 'dross', kind: 'talk', text: 'Geef de vervalser aan bij de drossaard', npc: 'drossaard' }],
+          journal: "Lijsbet, a weaver's widow, casts the seal to sell her own cloth. The guild will not let a widow work her husband's loom. I told her I would go to the drossaard. She said she would be at home.",
+          objectives: [{ id: 'dross', kind: 'talk', text: 'Report the forger to the drossaard', npc: 'drossaard' }],
         },
         {
           id: 'shelter',
-          journal: 'Ik heb Lijsbet naar het Begijnhof gestuurd. De begijnen nemen weduwen op, en ze weven onder hun eigen zegel.',
-          objectives: [{ id: 'aleydis', kind: 'talk', text: 'Vraag zuster Margriet om Lijsbet op te nemen', npc: 'aleydis' }],
+          journal: 'I sent Lijsbet to the Begijnhof. The beguines take in widows, and they weave under their own seal.',
+          objectives: [{ id: 'aleydis', kind: 'talk', text: 'Ask Sister Margriet to take Lijsbet in', npc: 'aleydis' }],
         },
         {
           id: 'report',
-          journal: 'Het is geregeld, op de ene of de andere manier. Meester Joos wacht in de Lakenhalle. Hij zal niet vragen hoe.',
-          objectives: [{ id: 'joos', kind: 'talk', text: 'Keer terug naar meester Joos in de Lakenhalle', npc: 'joos' }],
+          journal: 'It is settled, one way or another. Master Joos is waiting in the Cloth Hall. He will not ask how.',
+          objectives: [{ id: 'joos', kind: 'talk', text: 'Return to Master Joos in the Cloth Hall', npc: 'joos' }],
         },
       ],
     },
     {
-      id: 'side_herbs', title: 'Wondkruid uit het Broek', kind: 'side', town: 'Diest', giver: 'aleydis', level: 2,
-      summary: 'De begijnen hebben kruiden nodig uit de Demerweiden.',
+      id: 'side_herbs', title: 'Woundwort from the Broek', kind: 'side', town: 'Diest', giver: 'aleydis', level: 2,
+      summary: 'The beguines need herbs from the Demer meadows.',
       reward: { xp: 150, florins: 8, standing: [['kerk', 10]], items: [['salve', 3]] },
       stages: [
         {
           id: 'gather',
-          journal: 'Zuster Margriet heeft wondkruid nodig tegen de koorts in de ziekenzaal. Het groeit in de natte weiden langs de Demer, ten zuidoosten van de stad. "Pluk het bij daglicht," zegt ze, maar ze zegt niet waarom. Uit die richting hoor ik honden huilen.',
-          objectives: [{ id: 'herbs', kind: 'collect', text: 'Pluk moeraswondkruid in de Demerweiden', item: 'marsh_herb', count: 4, spawns: [[960, 160], [1060, 330], [1160, 490], [1260, 640]] }],
+          journal: 'Sister Margriet needs woundwort for the fever in the infirmary. It grows in the wet meadows along the Demer, south-east of town. "Pick it by daylight," she says, but she does not say why. From that way I hear dogs howling.',
+          objectives: [{ id: 'herbs', kind: 'collect', text: 'Pick marsh woundwort in the Demer meadows', item: 'marsh_herb', count: 4, spawns: [[960, 160], [1060, 330], [1160, 490], [1260, 640]] }],
           onDone: [{ stage: ['side_herbs', 'return'] }],
         },
         {
           id: 'return',
-          journal: 'Ik heb vier handen vol wondkruid, nat tot aan mijn polsen. Voor het donker wil ik terug in het Begijnhof zijn.',
-          objectives: [{ id: 'back', kind: 'talk', text: 'Breng het wondkruid naar zuster Margriet', npc: 'aleydis' }],
+          journal: 'I have four handfuls of woundwort, wet to the wrists. I want to be back in the Begijnhof before dark.',
+          objectives: [{ id: 'back', kind: 'talk', text: 'Bring the woundwort to Sister Margriet', npc: 'aleydis' }],
         },
       ],
     },
     {
-      id: 'side_toll', title: 'De brandewijnweg', kind: 'side', town: 'Diest', giver: 'wouter', level: 1,
-      summary: 'Smokkelaars brengen brandewijn langs de Putterstraatpoort.',
+      id: 'side_toll', title: 'The brandy road', kind: 'side', town: 'Diest', giver: 'wouter', level: 1,
+      summary: 'Smugglers are bringing brandy past the Putterstraatpoort.',
       reward: { xp: 100 },
       stages: [
         {
           id: 'cart',
-          journal: 'Wouter de tollenaar zegt dat een voerman, Gielis de Ton, brandewijn rond de muren rijdt om de tol te ontlopen, langs de weg buiten de Allerheiligenpoort. Van boven is een kar met zulke vaten niet te missen.',
-          objectives: [{ id: 'gielis', kind: 'talk', text: 'Zoek de kar van de smokkelaar buiten de Allerheiligenpoort', npc: 'gielis' }],
+          journal: 'Wouter the toll keeper says a carter, Gielis de Ton, drives brandy round the walls to dodge the toll, by the road outside the Allerheiligenpoort. From above, a cart with barrels like that is hard to miss.',
+          objectives: [{ id: 'gielis', kind: 'talk', text: "Find the smuggler's cart outside the Allerheiligenpoort", npc: 'gielis' }],
         },
         {
           id: 'report',
-          journal: 'Ik heb Gielis gevonden. Wouter wil weten hoe het is afgelopen, en vooral hoeveel het opbrengt.',
-          objectives: [{ id: 'wouter', kind: 'talk', text: 'Vertel het aan Wouter aan de Putterstraatpoort', npc: 'wouter' }],
+          journal: 'I found Gielis. Wouter wants to know how it ended, and above all what it brings in.',
+          objectives: [{ id: 'wouter', kind: 'talk', text: 'Tell Wouter at the Putterstraatpoort', npc: 'wouter' }],
         },
       ],
     },
     {
       id: 'side_roelof', title: 'Lambrecht de Rode', kind: 'side', town: 'Kaggevinne', giver: 'driesen', level: 5,
-      summary: 'Een deserteurskapitein plundert de hoeves rond Kaggevinne.',
+      summary: 'A deserter captain is plundering the farms around Kaggevinne.',
       reward: { xp: 450, florins: 40, standing: [['gilden', 10]], gear: ['roelofs_slagzwaard'] },
       stages: [
         {
           id: 'hunt',
-          journal: 'Boer Driesen van Kaggevinne is zijn varkens, zijn haver en bijna zijn dochter kwijt aan Lambrecht de Rode, een kapitein die het leger van de koning verliet toen het hem niet meer betaalde. Zijn kamp ligt op de Galgenberg. Daar hoort hij ook thuis, zegt Driesen.',
-          objectives: [{ id: 'roelof', kind: 'kill', text: 'Versla Lambrecht de Rode op de Galgenberg', camp: 'galgeberg', count: 1, enemy: 'elite', at: [-1700, 2060], r: 50 }],
+          journal: "Farmer Driesen of Kaggevinne has lost his pigs, his oats and nearly his daughter to Lambrecht de Rode, a captain who left the king's army when it stopped paying him. His camp is on the Galgenberg, the gallows hill. He belongs there, says Driesen.",
+          objectives: [{ id: 'roelof', kind: 'kill', text: 'Defeat Lambrecht de Rode on the Galgenberg', camp: 'galgeberg', count: 1, enemy: 'elite', at: [-1700, 2060], r: 50 }],
           onDone: [{ stage: ['side_roelof', 'return'] }],
         },
         {
           id: 'return',
-          journal: 'Lambrecht de Rode ligt dood op de Galgenberg, waar hij altijd al thuishoorde. Hij droeg de laarzen van iemand anders. Driesen zal het graag horen.',
-          objectives: [{ id: 'driesen', kind: 'talk', text: 'Vertel het aan boer Driesen in Kaggevinne', npc: 'driesen' }],
+          journal: "Lambrecht de Rode lies dead on the Galgenberg, where he always belonged. He was wearing someone else's boots. Driesen will be glad to hear it.",
+          objectives: [{ id: 'driesen', kind: 'talk', text: 'Tell Farmer Driesen in Kaggevinne', npc: 'driesen' }],
         },
       ],
     },
     {
-      id: 'side_wisps', title: 'Lichtjes in het bos', kind: 'side', town: 'Scherpenheuvel', giver: 'provost', level: 3,
-      summary: 'Dwaallichten lokken pelgrims het bos in.',
+      id: 'side_wisps', title: 'Lights in the wood', kind: 'side', town: 'Scherpenheuvel', giver: 'provost', level: 3,
+      summary: "Will-o'-the-wisps are luring pilgrims into the wood.",
       reward: { xp: 320, florins: 20, standing: [['kerk', 15]], gear: ['pelgrimsmantel'] },
       stages: [
         {
           id: 'wisps',
-          journal: 'De overste zegt dat er pelgrims verdwalen in het eikenbos ten oosten van Scherpenheuvel. Ze volgen lichtjes die ze voor processiekaarsen houden. Twee zijn niet teruggekomen. Neelke volgde ook lichtjes.',
-          objectives: [{ id: 'licht', kind: 'kill', text: 'Doof de dwaallichten in het eikenbos', enemy: 'dwaallicht', count: 4, at: [-4460, 960], r: 90 }],
+          journal: 'The provost says pilgrims are getting lost in the oak wood east of Scherpenheuvel. They follow lights they take for procession candles. Two have not come back. Neelke followed lights too.',
+          objectives: [{ id: 'licht', kind: 'kill', text: "Put out the will-o'-the-wisps in the oak wood", enemy: 'dwaallicht', count: 4, at: [-4460, 960], r: 90 }],
           onDone: [{ stage: ['side_wisps', 'return'] }],
         },
         {
           id: 'return',
-          journal: 'Het bos is weer donker, zoals een bos hoort te zijn. Van de twee pelgrims heb ik alleen één klomp teruggevonden.',
-          objectives: [{ id: 'proost', kind: 'talk', text: 'Keer terug naar de overste', npc: 'provost' }],
+          journal: 'The wood is dark again, as a wood should be. Of the two pilgrims, I found only one clog.',
+          objectives: [{ id: 'proost', kind: 'talk', text: 'Return to the provost', npc: 'provost' }],
         },
       ],
     },
 
     // ================================================================ opdrachten
     {
-      id: 'contract_letter', title: 'Een brief voor de overste', kind: 'contract', town: 'Diest', giver: 'drossaard', level: 2,
-      summary: 'Breng de brief van de drossaard naar Scherpenheuvel.',
+      id: 'contract_letter', title: 'A letter for the provost', kind: 'contract', town: 'Diest', giver: 'drossaard', level: 2,
+      summary: "Take the drossaard's letter to Scherpenheuvel.",
       reward: { xp: 120, florins: 15, standing: [['gilden', 5], ['kerk', 5]] },
       stages: [
         {
           id: 'deliver',
-          journal: 'De drossaard wil een verzegelde brief laten bezorgen bij de overste van Scherpenheuvel, westwaarts langs de weg naar Aarschot. Hij zegt dat een koerier er een dag over doet en een draak niet.',
-          objectives: [{ id: 'provost', kind: 'talk', text: 'Bezorg de brief bij de overste in Scherpenheuvel', npc: 'provost' }],
+          journal: 'The drossaard wants a sealed letter delivered to the provost of Scherpenheuvel, west along the road to Aarschot. He says a courier takes a day over it, and a dragon does not.',
+          objectives: [{ id: 'provost', kind: 'talk', text: 'Deliver the letter to the provost in Scherpenheuvel', npc: 'provost' }],
         },
       ],
     },
@@ -398,220 +398,220 @@ export const diest: Content = {
 
   dialogue: {
     // ================================================================ Pieter
-    pieter_intro: { who: 'pieter', text: 'Jij daar, met dat... beest. Jij bent het over wie ze op de markt fluisteren. Dat komt goed uit: niemand anders durft nog mijn toren op.', next: 'pieter_2', effects: [{ complete: ARRIVE }] },
-    pieter_2: { who: 'pieter', text: 'Die nacht sloegen de klokken zeven keer, en daarna niet meer: niet voor de mis, niet voor de uren, niet voor de doden. Ik ben boven gaan kijken: de klepels zijn weg, alle drie. De deur zat op slot en de sleutel hangt aan mijn riem.', next: 'pieter_3' },
+    pieter_intro: { who: 'pieter', text: "You there, with that... beast. You're the one they whisper about in the market. Good. Nobody else dares climb my tower now.", next: 'pieter_2', effects: [{ complete: ARRIVE }] },
+    pieter_2: { who: 'pieter', text: 'That night the bells struck seven times, and then never again: not for Mass, not for the hours, not for the dead. I went up to look. The clappers are gone, all three. The door was locked, and the key hangs on my belt.', next: 'pieter_3' },
     pieter_3: {
-      who: 'pieter', text: 'Er lag rivierwier op de klokkenstoel. Het was nog nat, veertig el boven de grond.',
+      who: 'pieter', text: 'There was river weed on the bell frame. Still wet, forty ells above the ground.',
       choices: [
-        { text: 'Ik ga naar boven kijken.', next: 'pieter_accept', effects: [{ start: BELLS }] },
-        { text: 'Rivierwier? Komt dat van de Demer?', next: 'pieter_weed' },
-        { text: 'Die nacht heeft het water mijn zusje genomen.', next: 'pieter_sister' },
-        { text: 'Een stad zonder klokken: is dat zo erg?', next: 'pieter_why' },
+        { text: "I'll go up and look.", next: 'pieter_accept', effects: [{ start: BELLS }] },
+        { text: 'River weed? From the Demer?', next: 'pieter_weed' },
+        { text: 'That night the water took my little sister.', next: 'pieter_sister' },
+        { text: 'A town without bells. Is that so bad?', next: 'pieter_why' },
       ],
     },
-    pieter_weed: { who: 'pieter', text: 'Mijn grootmoeder zou zeggen dat het de Kludde was. Die wordt wat hij wil, zei ze: een hond, een paard, een kat. Ik ben koster, dus ik zeg dat het dieven zijn, dieven die naar de rivier ruiken.', next: 'pieter_3' },
-    pieter_sister: { who: 'pieter', text: 'Dan ben jij niet de enige. De veerman zoekt zijn jongen, en achter de Lakenhalle staat een wieg leeg. Wat het water die nacht genomen heeft, heeft het nog niet teruggegeven.', next: 'pieter_3' },
-    pieter_why: { who: 'pieter', text: 'Een stad zonder klokken weet niet wanneer ze moet opstaan, bidden of haar poorten sluiten. En de oude mensen zeggen dat de klokken ook iets in slaap houden. Ik weet niet wat, en ik wil het niet weten.', next: 'pieter_3' },
-    pieter_accept: { who: 'pieter', text: 'De toren is die platte aan de westkant. Ze hebben hem nooit afgewerkt; de mensen zeggen dat het geld op was. Pas op voor de duiven. Die zijn eigendom van de Kerk.' },
-    pieter_busy: { who: 'pieter', text: 'Ga naar boven, alsjeblieft, voor de deken van het kapittel er mij nog eens naar vraagt.' },
-    pieter_report: { who: 'pieter', text: 'Je bent in Scherpenheuvel geweest. Dat zie ik aan je schoenen. En, wat heb je gevonden?', next: 'pieter_r2' },
-    pieter_r2: { who: 'you', text: 'Een man die naar de Demer ruikt, koopt daar eikenhouten beeldjes. Dit beeldje zoemt, en het zoemt luider in de richting van het Broek.', next: 'pieter_r3' },
-    pieter_r3: { who: 'pieter', text: 'Het Broek dus. Iemand met natte munten en natte voeten, die door gesloten deuren gaat. Ik ben koster, ik geloof niet in sprookjes. Maar ik geloof wat ik op die klokkenstoel gezien heb: krassen van klauwen. Grote klauwen.', next: 'pieter_r4' },
+    pieter_weed: { who: 'pieter', text: "My grandmother would have said it was the Kludde. He becomes whatever he likes, she said: a dog, a horse, a cat. I'm a sexton, so I say thieves. Thieves who smell of the river.", next: 'pieter_3' },
+    pieter_sister: { who: 'pieter', text: 'Then you are not the only one. The ferryman is looking for his boy, and behind the Cloth Hall a cradle stands empty. What the water took that night, it has not given back.', next: 'pieter_3' },
+    pieter_why: { who: 'pieter', text: "A town without bells doesn't know when to rise, or pray, or shut its gates. And the old people say the bells keep something asleep as well. I don't know what, and I don't want to.", next: 'pieter_3' },
+    pieter_accept: { who: 'pieter', text: 'The tower is the flat one on the west side. They never finished it; people say the money ran out. Mind the pigeons. They belong to the Church.' },
+    pieter_busy: { who: 'pieter', text: 'Go up, please, before the dean of the chapter asks me about it again.' },
+    pieter_report: { who: 'pieter', text: "You've been to Scherpenheuvel. I can see it on your shoes. Well, what did you find?", next: 'pieter_r2' },
+    pieter_r2: { who: 'you', text: 'A man who smells of the Demer buys oak figures there. This one hums, and it hums louder towards the Broek.', next: 'pieter_r3' },
+    pieter_r3: { who: 'pieter', text: "The Broek, then. Someone with wet coins and wet feet, who walks through locked doors. I'm a sexton, I don't believe in fairy tales. But I believe what I saw on that bell frame: claw marks. Big claws.", next: 'pieter_r4' },
     pieter_r4: {
-      who: 'pieter', text: 'Dan is het toch de Kludde. Mijn grootmoeder had gelijk, en ze is al veertig jaar dood. Zijn honden zwerven door het Broek, voorbij de oude Koepoort. Volg ze, dan vind je zijn nest, en de klepels.',
+      who: 'pieter', text: "Then it is the Kludde after all. My grandmother was right, and she has been dead forty years. His hounds roam the Broek, past the old Koepoort. Follow them and you'll find his nest, and the clappers.",
       choices: [
-        { text: 'Dan ga ik op jacht.', effects: [{ complete: BELLS }, { start: KLUDDE }] },
-        { text: 'En mijn zusje?', next: 'pieter_r5' },
+        { text: "Then I'll go hunting.", effects: [{ complete: BELLS }, { start: KLUDDE }] },
+        { text: 'And my sister?', next: 'pieter_r5' },
       ],
     },
-    pieter_r5: { who: 'pieter', text: 'Als ze ergens is, dan is het daar. Ik ga niet tegen je liegen: de Kludde geeft niets terug. Maar hij heeft ook nog nooit klepels gestolen.', next: 'pieter_r4' },
-    pieter_kludde: { who: 'pieter', text: 'Het Broek ligt ten zuidoosten van de stad, voorbij de oude Koepoort. Neem zalf mee en neem je draak mee. En kijk niet naar de lichtjes.' },
-    pieter_bells: { who: 'pieter', text: 'Zijn dat... Heilige Sulpitius. Dat zijn ze, alle drie.', next: 'pieter_b2', effects: [{ take: 'klepel', n: 3 }] },
-    pieter_b2: { who: 'pieter', text: 'Help me ze ophangen. Nee, laat maar, je draak kan dat sneller. Luister. LUISTER.', next: 'pieter_b3', effects: [{ set: 'bells_ring' }, { complete: KLUDDE }, { start: LEUVEN }] },
-    pieter_b3: { who: 'pieter', text: 'Diest weet weer hoe laat het is. Kijk naar je draak: bij elke slag vallen zijn ogen dicht. En dat beeldje zoemt nog altijd, maar nu naar het westen, naar Leuven.', next: 'pieter_b4', effects: [{ start: LEUVEN }] },
+    pieter_r5: { who: 'pieter', text: "If she is anywhere, she is there. I won't lie to you: the Kludde gives nothing back. But he has never stolen clappers before, either.", next: 'pieter_r4' },
+    pieter_kludde: { who: 'pieter', text: "The Broek lies south-east of town, past the old Koepoort. Take salve, and take your dragon. And don't look at the lights." },
+    pieter_bells: { who: 'pieter', text: "Are those... Holy Sulpitius. It's them, all three.", next: 'pieter_b2', effects: [{ take: 'klepel', n: 3 }] },
+    pieter_b2: { who: 'pieter', text: 'Help me hang them. No, leave it, your dragon is quicker. Listen. LISTEN.', next: 'pieter_b3', effects: [{ set: 'bells_ring' }, { complete: KLUDDE }, { start: LEUVEN }] },
+    pieter_b3: { who: 'pieter', text: 'Diest knows what hour it is again. Look at your dragon: at every stroke his eyes fall shut. And that figure still hums, but westward now, towards Leuven.', next: 'pieter_b4', effects: [{ start: LEUVEN }] },
     pieter_b4: {
-      who: 'pieter', text: 'Als iemand de opschriften op oud brons en ouder hout kan lezen, zijn het de meesters van de universiteit. Ga naar de drossaard: zonder vrijgeleide kom je met een draak geen stadspoort binnen.',
+      who: 'pieter', text: 'If anyone can read the writing on old bronze and older wood, it is the masters of the university. Go to the drossaard: without a safe conduct, no town gate will let you in with a dragon.',
       choices: [
-        { text: 'Dan ga ik naar de drossaard.' },
-        { text: 'Wat doen de klokken met mijn draak?', next: 'pieter_b5' },
-        { text: 'Zoemt het beeldje alleen naar het westen?', next: 'pieter_b_loon' },
-        { text: 'De vroedvrouw zegt dat de klokken hem in slaap houden.', if: { flag: 'ov_found' }, next: 'pieter_b_ov' },
+        { text: "Then I'll go to the drossaard." },
+        { text: 'What do the bells do to my dragon?', next: 'pieter_b5' },
+        { text: 'Does the figure only hum towards the west?', next: 'pieter_b_loon' },
+        { text: 'The midwife says the bells keep him asleep.', if: { flag: 'ov_found' }, next: 'pieter_b_ov' },
       ],
     },
-    pieter_b5: { who: 'pieter', text: 'Ik ben koster, geen profeet. Ik weet alleen dat hij sliep zolang de klokken luidden, honderden jaren lang. Misschien vond hij dat niet erg.', next: 'pieter_b4' },
-    pieter_b_loon: { who: 'pieter', text: 'Het beeldje wel. Maar door de Beverenpoort komen nu karren uit het land van Loon, voorbij Halen. Daar zwijgen de torens al een jaar, zeggen de voerlui, en meer zeggen ze niet.', next: 'pieter_b4' },
-    pieter_after: { who: 'pieter', text: 'Hoor je dat? Ze slaan weer elk uur. Ik heb in mijn hele leven nog nooit zo graag naar klokken geluisterd. Je draak hoort ze minder graag, zie ik.' },
+    pieter_b5: { who: 'pieter', text: "I'm a sexton, not a prophet. I only know that he slept as long as the bells rang, for hundreds of years. Perhaps he didn't mind.", next: 'pieter_b4' },
+    pieter_b_loon: { who: 'pieter', text: 'The figure does. But carts come through the Beverenpoort now from the land of Loon, past Halen. The towers there have been silent a year, the carters say, and they say nothing more.', next: 'pieter_b4' },
+    pieter_after: { who: 'pieter', text: 'Do you hear that? They strike every hour again. Never in my life have I been so glad to hear bells. Your dragon is less glad, I see.' },
 
     // ================================================================ Marieke
     marieke_hi: {
-      who: 'marieke', text: 'Amai, de drakenrijder aan mijn kraam. Zalf, zwaarden, harnassen, amuletten: alles is eerlijk verkregen, of toch bijna alles. Wat zal het zijn?',
+      who: 'marieke', text: 'Well now, the dragon rider at my stall. Salve, swords, armour, amulets: all honestly come by, or nearly all. What will it be?',
       choices: [
-        { text: 'Laat je waren eens zien.', effects: [{ open: 'shop' }] },
-        { text: 'Wat hoor je zoal op de markt?', next: 'marieke_gossip' },
-        { text: 'Ik zoek een meisje, klein en blond. Ze telt alles wat ze ziet.', next: 'marieke_girl' },
-        { text: 'Ik heb niets nodig, dank je.' },
+        { text: 'Show me your wares.', effects: [{ open: 'shop' }] },
+        { text: 'What do you hear in the market?', next: 'marieke_gossip' },
+        { text: "I'm looking for a girl, small and fair. She counts everything she sees.", next: 'marieke_girl' },
+        { text: 'I need nothing, thank you.' },
       ],
     },
-    marieke_gossip: { who: 'marieke', text: 'Ze zeggen dat de deserteurs bij Kaggevinne de pelgrims uitkleden, en dat Lambrecht de Rode op de Galgenberg de wintervoorraad van de boeren opeet. In het Broek spookt het, elke nacht in een ander vel. Het zijn goede tijden voor wie zalf verkoopt.', next: 'marieke_hi' },
-    marieke_girl: { who: 'marieke', text: 'Ik kom in elk dorp tussen hier en Leuven. Als er een kind mijn waren telt, laat ik het je weten. Deze keer vraag ik er niets voor.', next: 'marieke_hi' },
+    marieke_gossip: { who: 'marieke', text: "They say the deserters at Kaggevinne strip the pilgrims, and Lambrecht de Rode on the Galgenberg is eating the farmers' winter stores. The Broek is haunted, every night in a different skin. Good times for anyone who sells salve.", next: 'marieke_hi' },
+    marieke_girl: { who: 'marieke', text: "I pass through every village between here and Leuven. If a child counts my wares, I'll let you know. This time I won't charge for it.", next: 'marieke_hi' },
 
     // ================================================================ Joos
-    joos_intro: { who: 'joos', text: 'Weet je wat dit is? Een loden zegel met het wapen van Diest: onze belofte dat het laken goed is. Mijn grootvader zwoer erbij. Maar dit zegel is vals.', next: 'joos_2' },
+    joos_intro: { who: 'joos', text: 'Do you know what this is? A lead seal with the arms of Diest: our promise that the cloth is good. My grandfather swore by it. But this seal is false.', next: 'joos_2' },
     joos_2: {
-      who: 'joos', text: 'De Antwerpse kooplieden sturen balen vodden terug die ons zegel dragen. Nog één seizoen zo en ook de laatste kopers van Diesters laken blijven weg. De vervalser werkt bij de bleekvelden, voorbij de oude Koepoort. Zoek hem voor mij.',
+      who: 'joos', text: 'The merchants in Antwerpen send back bales of rags that bear our seal. One more season of this and the last buyers of Diest cloth stay away too. The forger works by the bleaching fields, past the old Koepoort. Find him for me.',
       choices: [
-        { text: 'Ik zal je vervalser vinden.', effects: [{ start: 'side_seals' }], next: 'joos_3' },
-        { text: 'En wat gebeurt er met hem als ik hem vind?', next: 'joos_punish' },
+        { text: "I'll find your forger.", effects: [{ start: 'side_seals' }], next: 'joos_3' },
+        { text: 'And what happens to him when I find him?', next: 'joos_punish' },
       ],
     },
-    joos_punish: { who: 'joos', text: 'Daarover beslist de drossaard. Als hij geluk heeft, wordt hij verbannen. Het ambacht vergeet niets; daar hebben we een kist voor, en een klerk.', next: 'joos_2' },
-    joos_3: { who: 'joos', text: 'Zoek naar de zegels. Vervalsers laten hun mislukte stukken slordig rondslingeren.' },
-    joos_busy: { who: 'joos', text: 'Elke dag dat die vervalser werkt, is Diesters laken een stuiver minder waard. En ik tel die stuivers.' },
-    joos_report: { who: 'joos', text: 'En? Is het geregeld?', next: 'joos_r_branch' },
+    joos_punish: { who: 'joos', text: "That is for the drossaard to decide. If he's lucky, banishment. The guild forgets nothing; we have a chest for that, and a clerk.", next: 'joos_2' },
+    joos_3: { who: 'joos', text: 'Look for the seals. Forgers leave their failures lying about.' },
+    joos_busy: { who: 'joos', text: 'Every day that forger works, Diest cloth is worth a stuiver less. And I count those stuivers.' },
+    joos_report: { who: 'joos', text: 'Well? Is it settled?', next: 'joos_r_branch' },
     joos_r_branch: {
-      who: 'you', text: 'Het is geregeld.',
+      who: 'you', text: "It's settled.",
       choices: [
-        { text: 'De drossaard heeft haar. Het is de weduwe van een wever.', if: { flag: 'seals_reported' }, next: 'joos_r_reported' },
-        { text: 'Ze is nu bij de begijnen. Ze weeft er eerlijk, onder hun zegel.', if: { flag: 'seals_begijnhof' }, next: 'joos_r_begijnhof' },
-        { text: 'Het spoor liep dood. De vervalser is weg.', if: { flag: 'seals_warned' }, next: 'joos_r_warned' },
+        { text: "The drossaard has her. It's a weaver's widow.", if: { flag: 'seals_reported' }, next: 'joos_r_reported' },
+        { text: 'She is with the beguines now. She weaves honestly there, under their seal.', if: { flag: 'seals_begijnhof' }, next: 'joos_r_begijnhof' },
+        { text: 'The trail went cold. The forger is gone.', if: { flag: 'seals_warned' }, next: 'joos_r_warned' },
       ],
     },
-    joos_r_reported: { who: 'joos', text: 'Een weduwe? Toch niet die van Vranckx? God sta haar bij. Maar het zegel is de eer van de stad. Hier is je loon: het ambacht betaalt zijn schulden, ook als het pijn doet.', effects: [{ complete: 'side_seals', outcome: 'reported' }, { florins: 30 }, { standing: ['gilden', 10] }, { gear: 'zegelring' }] },
-    joos_r_begijnhof: { who: 'joos', text: 'Je hebt haar naar de begijnen laten gaan? Die verkopen laken onder hun eigen zegel en betalen geen duit aan het ambacht. Hm. Ze vervalst tenminste het onze niet meer. Hier is je geld, en zeg niet tegen de anderen dat ik betaald heb.', effects: [{ complete: 'side_seals', outcome: 'begijnhof' }, { florins: 15 }, { standing: ['gilden', 3] }, { standing: ['kerk', 10] }] },
-    joos_r_warned: { who: 'joos', text: 'Hij is dus weg. Dan vervalst hij nu ergens anders het zegel van een andere stad. Dat is ook al iets, veronderstel ik. Voor half werk betaal ik half loon.', effects: [{ complete: 'side_seals', outcome: 'warned' }, { florins: 12 }] },
-    joos_after: { who: 'joos', text: 'Antwerpen stuurt voorlopig geen balen meer terug. In Antwerpen is alles voorlopig.' },
+    joos_r_reported: { who: 'joos', text: "A widow? Not Vranckx's? God help her. But the seal is the honour of the town. Here is your pay: the guild pays its debts, even when it hurts.", effects: [{ complete: 'side_seals', outcome: 'reported' }, { florins: 30 }, { standing: ['gilden', 10] }, { gear: 'zegelring' }] },
+    joos_r_begijnhof: { who: 'joos', text: "You let her go to the beguines? They sell cloth under their own seal and pay the guild not a duit. Hm. At least she isn't forging ours any more. Here's your money, and don't tell the others I paid.", effects: [{ complete: 'side_seals', outcome: 'begijnhof' }, { florins: 15 }, { standing: ['gilden', 3] }, { standing: ['kerk', 10] }] },
+    joos_r_warned: { who: 'joos', text: "Gone, then. So now he forges some other town's seal somewhere else. That's something, I suppose. Half the work, half the pay.", effects: [{ complete: 'side_seals', outcome: 'warned' }, { florins: 12 }] },
+    joos_after: { who: 'joos', text: 'Antwerpen sends no more bales back, for now. In Antwerpen everything is for now.' },
 
     // ================================================================ Lijsbet
-    lijsbet_meet: { who: 'lijsbet', text: 'Je hebt de zegels gevonden. Dat verbaast me niet. Mijn handen beven als ik ze giet.', next: 'lijsbet_2' },
-    lijsbet_2: { who: 'lijsbet', text: 'Jan was meester-wever. Toen hij stierf, liet het ambacht me één baal afwerken en daarna namen ze zijn getouw af. Het laken dat ik maak is goed, beter dan de helft van wat met het echte zegel buitengaat. Maar het laken van een weduwe krijgt geen zegel.', next: 'lijsbet_3' },
+    lijsbet_meet: { who: 'lijsbet', text: "You found the seals. That doesn't surprise me. My hands shake when I cast them.", next: 'lijsbet_2' },
+    lijsbet_2: { who: 'lijsbet', text: "Jan was a master weaver. When he died, the guild let me finish one bale, and then they took his loom. My cloth is good, better than half of what goes out under the real seal. But a widow's cloth gets no seal.", next: 'lijsbet_3' },
     lijsbet_3: {
-      who: 'lijsbet', text: 'Zeg het maar. Wat ga je met mij doen?',
+      who: 'lijsbet', text: 'Say it, then. What will you do with me?',
       choices: [
-        { text: 'De wet is de wet. Ik ga naar de drossaard.', next: 'lijsbet_law', effects: [{ take: 'forged_seal', n: 3 }, { stage: ['side_seals', 'decide'] }] },
-        { text: 'De begijnen nemen weduwen op. Ga naar het Begijnhof; ik doe daar een goed woord voor je.', next: 'lijsbet_beg', effects: [{ set: 'seals_begijnhof' }, { stage: ['side_seals', 'shelter'] }] },
-        { text: 'Verlaat Diest vannacht. Ik heb je nooit gevonden.', next: 'lijsbet_flee', effects: [{ set: 'seals_warned' }, { give: 'seal_mould' }, { stage: ['side_seals', 'report'] }] },
+        { text: "The law is the law. I'm going to the drossaard.", next: 'lijsbet_law', effects: [{ take: 'forged_seal', n: 3 }, { stage: ['side_seals', 'decide'] }] },
+        { text: "The beguines take in widows. Go to the Begijnhof; I'll put in a good word for you.", next: 'lijsbet_beg', effects: [{ set: 'seals_begijnhof' }, { stage: ['side_seals', 'shelter'] }] },
+        { text: 'Leave Diest tonight. I never found you.', next: 'lijsbet_flee', effects: [{ set: 'seals_warned' }, { give: 'seal_mould' }, { stage: ['side_seals', 'report'] }] },
       ],
     },
-    lijsbet_law: { who: 'lijsbet', text: 'Dan ben ik thuis als ze komen. Ik kan toch nergens anders naartoe.' },
-    lijsbet_beg: { who: 'lijsbet', text: 'De begijnen? Zouden die mij willen? ...Ik ga erheen voor de poort dichtgaat.' },
-    lijsbet_flee: { who: 'lijsbet', text: 'Neem de gietvorm mee. Waar ik naartoe ga, heb ik hem niet nodig, en zo kom ik ook niet in de verleiding. God zegene je.' },
-    lijsbet_idle: { who: 'lijsbet', text: 'De bleekvelden zijn goed dit jaar. Het laken komt er wit als gebeente vanaf.' },
+    lijsbet_law: { who: 'lijsbet', text: "Then I'll be at home when they come. I have nowhere else to go." },
+    lijsbet_beg: { who: 'lijsbet', text: "The beguines? Would they have me? ...I'll go before the gate shuts." },
+    lijsbet_flee: { who: 'lijsbet', text: "Take the mould. Where I'm going I won't need it, and this way I won't be tempted. God bless you." },
+    lijsbet_idle: { who: 'lijsbet', text: 'The bleaching fields are good this year. The cloth comes off them white as bone.' },
 
     // ================================================================ Margriet
-    aleydis_intro: { who: 'aleydis', text: 'Doe de deur toe, je laat de tocht binnen. En hou die draak van jou buiten, de schapen zijn er bang van. Wat wil je?', next: 'aleydis_2' },
+    aleydis_intro: { who: 'aleydis', text: "Shut the door, you're letting the draught in. And keep that dragon of yours outside, the sheep are afraid of it. What do you want?", next: 'aleydis_2' },
     aleydis_2: {
-      who: 'aleydis', text: 'Nu je hier toch bent: er heerst koorts in de ziekenzaal en mijn wondkruid is op. Het groeit in de natte weiden langs de Demer, ten zuidoosten van de stad. Jij bent daar al voor ik mijn klompen gevonden heb.',
+      who: 'aleydis', text: "Since you're here: there's fever in the infirmary and my woundwort is gone. It grows in the wet meadows along the Demer, south-east of town. You'll be there before I've found my clogs.",
       choices: [
-        { text: 'Ik pluk het voor je.', effects: [{ start: 'side_herbs' }], next: 'aleydis_3' },
-        { text: 'Waarom alleen bij daglicht?', next: 'aleydis_why' },
-        { text: 'Is er die nacht iemand uit het water gekomen?', next: 'aleydis_water' },
+        { text: "I'll pick it for you.", effects: [{ start: 'side_herbs' }], next: 'aleydis_3' },
+        { text: 'Why only by daylight?', next: 'aleydis_why' },
+        { text: 'Did anyone come out of the water that night?', next: 'aleydis_water' },
       ],
     },
-    aleydis_why: { who: 'aleydis', text: 'De boeren zeggen dat de weiden na het donker van iets anders zijn: de ene nacht is het een hond, de andere een paard, en het heeft altijd honger. Ik zeg alleen: pluk bij daglicht, en kom terug.', next: 'aleydis_2' },
-    aleydis_water: { who: 'aleydis', text: 'Er is er één teruggekomen: een jongen van bij de Schaffensepoort, drie dagen later, kletsnat en toch warm. Hij spreekt niet. Hij legt steentjes op een rij.', next: 'aleydis_2' },
-    aleydis_3: { who: 'aleydis', text: 'Breng me vier goede handen vol, en niet de bladeren waar de koeien al aan gezeten hebben.' },
-    aleydis_herbs_back: { who: 'aleydis', text: 'Goed zo, de koeien zijn je niet voor geweest. Neem deze zalf, ze is voor brandwonden. Met dat beest van jou zul je ze nodig hebben.', effects: [{ take: 'marsh_herb', n: 4 }, { complete: 'side_herbs' }] },
-    aleydis_badge: { who: 'aleydis', text: 'Laat eens zien. Onze-Lieve-Vrouw van Scherpenheuvel, en dit jaar gegoten: de gietvormen slijten en elk jaar wordt het gezichtje vager. Waar heb je dat gevonden?', next: 'aleydis_b2' },
-    aleydis_b2: { who: 'you', text: 'Het lag in nat wier, op de klokkenstoel van Sint-Sulpitius.', next: 'aleydis_b3' },
-    aleydis_b3: { who: 'aleydis', text: 'Hm. De pelgrims die hier passeren zeggen dat de nieuwe kerk van Scherpenheuvel \'s nachts zoemt. Het altaar staat waar de oude eik stond, en ze zeggen dat ze de wortels nooit uitgegraven hebben.', next: 'aleydis_b4' },
-    aleydis_b4: { who: 'aleydis', text: 'Ga naar Scherpenheuvel. Zoek Truyken, die beeldjes verkoopt bij de bedevaartskerk. Maar pas op: bij Kaggevinne liggen deserteurs langs de weg op de loer. Ze beroven de pelgrims, en soms doen ze erger.', effects: [{ done: [BELLS, 'show'] }, { stage: [BELLS, 'road'] }] },
-    aleydis_lijsbet: { who: 'aleydis', text: 'Er staat een weversweduwe aan de poort, met niets dan haar handen. Jij hebt haar gestuurd, natuurlijk.', next: 'aleydis_l2' },
-    aleydis_l2: { who: 'aleydis', text: 'Het Begijnhof heeft getouwen en geen ambacht dat haar het weven verbiedt. Ze mag blijven. Ze zal werken, en bidden, en nooit meer iets vervalsen, of ik kom het te weten.', effects: [{ done: ['side_seals', 'aleydis'] }, { stage: ['side_seals', 'report'] }] },
-    aleydis_idle: { who: 'aleydis', text: 'Als de grote klokken zwijgen, luiden wij onze eigen. Kleine klokken tellen ook.' },
+    aleydis_why: { who: 'aleydis', text: "The farmers say the meadows belong to something else after dark: one night it's a dog, the next a horse, and it is always hungry. I only say this: pick by daylight, and come back.", next: 'aleydis_2' },
+    aleydis_water: { who: 'aleydis', text: "One came back: a boy from near the Schaffensepoort, three days later, soaking wet and yet warm. He doesn't speak. He lays pebbles in a row.", next: 'aleydis_2' },
+    aleydis_3: { who: 'aleydis', text: 'Bring me four good handfuls, and not the leaves the cows have been at.' },
+    aleydis_herbs_back: { who: 'aleydis', text: "Good, the cows didn't get there first. Take this salve, it's for burns. With that beast of yours, you'll need it.", effects: [{ take: 'marsh_herb', n: 4 }, { complete: 'side_herbs' }] },
+    aleydis_badge: { who: 'aleydis', text: 'Let me see. Our Lady of Scherpenheuvel, and cast this year: the moulds wear down, and every year the little face grows fainter. Where did you find this?', next: 'aleydis_b2' },
+    aleydis_b2: { who: 'you', text: 'It was in wet weed, on the bell frame of Sint-Sulpitius.', next: 'aleydis_b3' },
+    aleydis_b3: { who: 'aleydis', text: 'Hm. The pilgrims who pass through say the new church at Scherpenheuvel hums at night. The altar stands where the old oak stood, and they say the roots were never dug out.', next: 'aleydis_b4' },
+    aleydis_b4: { who: 'aleydis', text: 'Go to Scherpenheuvel. Find Truyken, who sells figures by the pilgrimage church. But take care: deserters lie in wait along the road near Kaggevinne. They rob the pilgrims, and sometimes they do worse.', effects: [{ done: [BELLS, 'show'] }, { stage: [BELLS, 'road'] }] },
+    aleydis_lijsbet: { who: 'aleydis', text: "There's a weaver's widow at the gate with nothing but her hands. You sent her, of course.", next: 'aleydis_l2' },
+    aleydis_l2: { who: 'aleydis', text: 'The Begijnhof has looms, and no guild to forbid her weaving. She may stay. She will work, and pray, and never forge anything again, or I will hear of it.', effects: [{ done: ['side_seals', 'aleydis'] }, { stage: ['side_seals', 'report'] }] },
+    aleydis_idle: { who: 'aleydis', text: 'When the great bells are silent, we ring our own. Small bells count too.' },
 
     // ================================================================ drossaard
     dross_letter: {
-      who: 'drossaard', text: 'U bent de drakenrijder. Dat treft. Ik heb een verzegelde brief voor de overste van Scherpenheuvel, en elke koerier die ik heb is kreupel, dronken of calvinist.',
+      who: 'drossaard', text: 'You are the dragon rider. How fortunate. I have a sealed letter for the provost of Scherpenheuvel, and every courier I have is lame, drunk or Calvinist.',
       choices: [
-        { text: 'Ik breng de brief.', effects: [{ start: 'contract_letter' }, { give: 'sealed_letter' }], next: 'dross_letter_ok' },
-        { text: 'Wat staat erin?', next: 'dross_letter_what' },
+        { text: "I'll take the letter.", effects: [{ start: 'contract_letter' }, { give: 'sealed_letter' }], next: 'dross_letter_ok' },
+        { text: 'What does it say?', next: 'dross_letter_what' },
       ],
     },
-    dross_letter_what: { who: 'drossaard', text: 'Het is een verzegelde brief, {ruiter|ruiterin}. Dat is wat "verzegeld" betekent.', next: 'dross_letter' },
-    dross_letter_ok: { who: 'drossaard', text: 'Vliegt u westwaarts langs de weg naar Aarschot; u zult de koepel zien. En leest u de brief niet: ik kom het te weten.' },
-    dross_seals: { who: 'drossaard', text: 'Een vervalser van het stadszegel? Zegt u het maar.', next: 'dross_s2' },
-    dross_s2: { who: 'you', text: 'Het is Lijsbet Vranckx, de weduwe van een wever. Ze woont in het huisje voorbij de oude Koepoort. Dit zijn haar zegels.', next: 'dross_s3' },
-    dross_s3: { who: 'drossaard', text: 'Vranckx. Ik heb haar man gekend. De wet is duidelijk, en ik dien de wet. Ze wordt uit de baronie verbannen, en ze mag van geluk spreken dat ze niet aan de kaak moet staan. De wevers zullen dankbaar zijn.', effects: [{ set: 'seals_reported' }, { done: ['side_seals', 'dross'] }, { stage: ['side_seals', 'report'] }] },
-    dross_pass: { who: 'drossaard', text: 'De klokken luiden weer, en dat heb ik aan u te danken. Een vrijgeleide naar Leuven, met een draak? De wachters aan de Mechelse Poort gaan het in hun broek doen.', next: 'dross_pass2' },
-    dross_pass2: { who: 'drossaard', text: 'Hier is hij, met mijn zegel erop. En als u in Leuven bent, vraagt u dan naar professor Fromondus. Hij weet alles over de hemel en de aarde, en hij praat er graag over. Veel te graag.', effects: [{ give: 'pass' }, { stage: [LEUVEN, 'travel'] }, { complete: LEUVEN, outcome: 'pass' }, { toast: 'Leuven en het land van Loon komen in het volgende hoofdstuk' }] },
-    dross_idle: { who: 'drossaard', text: 'De baronie heeft een afwezige heer, een lege schatkist en een heleboel mensen die in allebei een kans zien.' },
+    dross_letter_what: { who: 'drossaard', text: 'It is a sealed letter, rider. That is what "sealed" means.', next: 'dross_letter' },
+    dross_letter_ok: { who: 'drossaard', text: 'Fly west along the road to Aarschot; you will see the dome. And do not read the letter. I will know.' },
+    dross_seals: { who: 'drossaard', text: 'A forger of the town seal? Go on.', next: 'dross_s2' },
+    dross_s2: { who: 'you', text: "It's Lijsbet Vranckx, a weaver's widow. She lives in the cottage past the old Koepoort. These are her seals.", next: 'dross_s3' },
+    dross_s3: { who: 'drossaard', text: 'Vranckx. I knew her husband. The law is clear, and I serve the law. She will be banished from the barony, and may count herself lucky not to stand in the pillory. The weavers will be grateful.', effects: [{ set: 'seals_reported' }, { done: ['side_seals', 'dross'] }, { stage: ['side_seals', 'report'] }] },
+    dross_pass: { who: 'drossaard', text: 'The bells ring again, and I have you to thank for it. A safe conduct to Leuven, with a dragon? The guards at the Mechelse Poort will wet themselves.', next: 'dross_pass2' },
+    dross_pass2: { who: 'drossaard', text: 'Here it is, with my seal on it. And when you are in Leuven, ask for Professor Fromondus. He knows everything about heaven and earth, and he likes to talk about it. Far too much.', effects: [{ give: 'pass' }, { stage: [LEUVEN, 'travel'] }, { complete: LEUVEN, outcome: 'pass' }, { toast: 'Leuven and the land of Loon come in the next chapter' }] },
+    dross_idle: { who: 'drossaard', text: 'The barony has an absent lord, an empty treasury, and a great many people who see their chance in both.' },
 
     // ================================================================ Wouter
-    wouter_intro: { who: 'wouter', text: 'Er is tol op wijn, zout, brandewijn, laken en alles wat op wielen rijdt. Heb je niets aan te geven? Natuurlijk niet. Niemand heeft ooit iets aan te geven.', next: 'wouter_2' },
+    wouter_intro: { who: 'wouter', text: 'There is toll on wine, salt, brandy, cloth and anything that runs on wheels. Nothing to declare? Of course not. Nobody ever has anything to declare.', next: 'wouter_2' },
     wouter_2: {
-      who: 'wouter', text: 'Maar jij hebt een draak, en ik zit met Gielis de Ton. Hij smokkelt brandewijn rond de muren, langs de weg buiten de Allerheiligenpoort, en de tol ziet er geen stuiver van. Van daarboven zie je zijn kar meteen.',
+      who: 'wouter', text: "But you have a dragon, and I have Gielis de Ton. He smuggles brandy round the walls, by the road outside the Allerheiligenpoort, and the toll never sees a stuiver of it. From up there you'll spot his cart at once.",
       choices: [
-        { text: 'Ik zal hem vinden.', effects: [{ start: 'side_toll' }], next: 'wouter_3' },
-        { text: 'Wat krijg ik ervoor?', next: 'wouter_pay' },
+        { text: "I'll find him.", effects: [{ start: 'side_toll' }], next: 'wouter_3' },
+        { text: "What's in it for me?", next: 'wouter_pay' },
       ],
     },
-    wouter_pay: { who: 'wouter', text: 'Je krijgt de dank van de stad, en een deel van de boete als de drossaard goedgezind is. Dat is hij nooit.', next: 'wouter_2' },
-    wouter_3: { who: 'wouter', text: 'Het is een grote vent op een kleine kar met enorme vaten. Je kunt er niet naast kijken.' },
-    wouter_report: { who: 'wouter', text: 'En? Heb je de Ton gevangen?', next: 'wouter_r_branch' },
+    wouter_pay: { who: 'wouter', text: 'The thanks of the town, and a share of the fine if the drossaard is in a good mood. He never is.', next: 'wouter_2' },
+    wouter_3: { who: 'wouter', text: "A big fellow on a small cart with enormous barrels. You can't miss him." },
+    wouter_report: { who: 'wouter', text: 'Well? Did you catch Gielis?', next: 'wouter_r_branch' },
     wouter_r_branch: {
-      who: 'you', text: 'Ik heb hem gevonden.',
+      who: 'you', text: 'I found him.',
       choices: [
-        { text: 'Hij heeft de tol betaald. Hier is het geld.', if: { flag: 'toll_paid' }, next: 'wouter_r_paid' },
-        { text: 'Hij is ontsnapt.', if: { flag: 'toll_bribe' }, next: 'wouter_r_lie' },
-        { text: 'Ik heb zijn brandewijn in beslag genomen. Die is nu van de stad.', if: { flag: 'toll_seized' }, next: 'wouter_r_seized' },
+        { text: 'He paid the toll. Here is the money.', if: { flag: 'toll_paid' }, next: 'wouter_r_paid' },
+        { text: 'He got away.', if: { flag: 'toll_bribe' }, next: 'wouter_r_lie' },
+        { text: 'I seized his brandy. It belongs to the town now.', if: { flag: 'toll_seized' }, next: 'wouter_r_seized' },
       ],
     },
-    wouter_r_paid: { who: 'wouter', text: 'Gielis heeft betaald? Gielis? Jij hebt van de Ton een eerlijk man gemaakt. De stad dankt je, en ik ook.', effects: [{ complete: 'side_toll', outcome: 'paid' }, { florins: 10 }, { standing: ['gilden', 8] }] },
-    wouter_r_lie: { who: 'wouter', text: 'Hij is ontsnapt aan een draak? Hm. ...Je ruikt naar zijn brandewijn, {vriend|vriendin}. Laat maar zitten. Wat de drossaard niet weet, deert hem niet.', effects: [{ complete: 'side_toll', outcome: 'bribed' }, { standing: ['gilden', -3] }] },
-    wouter_r_seized: { who: 'wouter', text: 'Twee hele vaten! De drossaard zal voor één keer goedgezind zijn. Hier is jouw deel.', effects: [{ take: 'brandy' }, { complete: 'side_toll', outcome: 'seized' }, { florins: 18 }, { standing: ['gilden', 5] }] },
-    wouter_wink: { who: 'wouter', text: '*tikt tegen zijn neus* Het ruikt hier naar een plezante avond, hé?' },
-    wouter_idle: { who: 'wouter', text: 'Er is tol op wijn, zout, brandewijn, laken en alles wat op wielen rijdt. Over draken wordt nog vergaderd.' },
+    wouter_r_paid: { who: 'wouter', text: "Gielis paid? Gielis? You've made an honest man of him. The town thanks you, and so do I.", effects: [{ complete: 'side_toll', outcome: 'paid' }, { florins: 10 }, { standing: ['gilden', 8] }] },
+    wouter_r_lie: { who: 'wouter', text: "He got away from a dragon? Hm. ...You smell of his brandy, friend. Never mind. What the drossaard doesn't know won't hurt him.", effects: [{ complete: 'side_toll', outcome: 'bribed' }, { standing: ['gilden', -3] }] },
+    wouter_r_seized: { who: 'wouter', text: 'Two whole barrels! For once the drossaard will be in a good mood. Here is your share.', effects: [{ take: 'brandy' }, { complete: 'side_toll', outcome: 'seized' }, { florins: 18 }, { standing: ['gilden', 5] }] },
+    wouter_wink: { who: 'wouter', text: '*taps his nose* Smells like a pleasant evening round here, eh?' },
+    wouter_idle: { who: 'wouter', text: 'There is toll on wine, salt, brandy, cloth and anything on wheels. Dragons are still under discussion.' },
 
     // ================================================================ Gielis
-    gielis_meet: { who: 'gielis', text: 'Hola. Ik ben maar een arme voerman die zijn paard laat rusten. Die vaten? Daar zit azijn in, om in te leggen. Er valt heel veel in te leggen.', next: 'gielis_2' },
+    gielis_meet: { who: 'gielis', text: "Hola. I'm just a poor carter resting his horse. Those barrels? Vinegar, for pickling. There's a great deal to pickle.", next: 'gielis_2' },
     gielis_2: {
-      who: 'gielis', text: 'Een draak, natuurlijk. Allee, {vriend|vriendin}, de tol op brandewijn is diefstal. Neem een vaatje voor jezelf en vergeet mijn gezicht. Het is een gezicht dat je makkelijk vergeet.',
+      who: 'gielis', text: "A dragon, of course. Come on, friend, the toll on brandy is theft. Take a keg for yourself and forget my face. It's a face that's easy to forget.",
       choices: [
-        { text: 'Betaal de tol, Gielis, of de draak eet de kar op.', next: 'gielis_pay', effects: [{ set: 'toll_paid' }, { stage: ['side_toll', 'report'] }] },
-        { text: 'Ik neem dat vaatje. En ik heb je nooit gezien.', next: 'gielis_bribe', effects: [{ set: 'toll_bribe' }, { give: 'brandy' }, { stage: ['side_toll', 'report'] }] },
-        { text: 'De brandewijn gaat naar de stad. Span je paard uit en ga te voet verder.', next: 'gielis_seize', effects: [{ set: 'toll_seized' }, { give: 'brandy' }, { stage: ['side_toll', 'report'] }] },
+        { text: 'Pay the toll, Gielis, or the dragon eats the cart.', next: 'gielis_pay', effects: [{ set: 'toll_paid' }, { stage: ['side_toll', 'report'] }] },
+        { text: "I'll take that keg. And I never saw you.", next: 'gielis_bribe', effects: [{ set: 'toll_bribe' }, { give: 'brandy' }, { stage: ['side_toll', 'report'] }] },
+        { text: 'The brandy goes to the town. Unhitch your horse and walk on.', next: 'gielis_seize', effects: [{ set: 'toll_seized' }, { give: 'brandy' }, { stage: ['side_toll', 'report'] }] },
       ],
     },
-    gielis_pay: { who: 'gielis', text: 'Het is diefstal, zeg ik je. Diefstal met vleugels. Goed, ik betaal. IK BETAAL!' },
-    gielis_bribe: { who: 'gielis', text: 'Jij bent een verstandig mens. Dat je draak nooit de hik mag krijgen.' },
-    gielis_seize: { who: 'gielis', text: 'Mijn brandewijn! Mijn... azijn! Je hoort nog van mijn neef. Hij is advocaat in Leuven. Nu ja, hij veegt er de vloer bij een advocaat.' },
-    gielis_idle: { who: 'gielis', text: 'Het is azijn. Gewoon azijn.' },
+    gielis_pay: { who: 'gielis', text: "It's theft, I tell you. Theft with wings. Fine, I'll pay. I'M PAYING!" },
+    gielis_bribe: { who: 'gielis', text: "You're a sensible soul. May your dragon never get the hiccups." },
+    gielis_seize: { who: 'gielis', text: "My brandy! My... vinegar! You'll hear from my cousin. He's a lawyer in Leuven. Well, he sweeps the floor for a lawyer." },
+    gielis_idle: { who: 'gielis', text: "It's vinegar. Just vinegar." },
 
     // ================================================================ Driesen
-    driesen_intro: { who: 'driesen', text: 'Een {ruiter|ruiterin}! Met een... Heer, sta ons bij. Hoor je bij de koning? Bij de prins? Bij niemand? Bij niemand is het beste, dan kun je ons misschien helpen.', next: 'driesen_2' },
+    driesen_intro: { who: 'driesen', text: "A rider! With a... Lord help us. Are you the king's? The prince's? Nobody's? Nobody's is best. Then maybe you can help us.", next: 'driesen_2' },
     driesen_2: {
-      who: 'driesen', text: 'Het is Lambrecht de Rode. Hij was kapitein in het leger, tot het leger hem niet meer betaalde. Nu betaalt hij zichzelf, met mijn varkens, mijn haver en mijn rust. Zijn kamp ligt op de Galgenberg, ten zuiden van hier.',
+      who: 'driesen', text: "It's Lambrecht de Rode. He was a captain in the army, until the army stopped paying him. Now he pays himself, with my pigs, my oats and my peace. His camp is on the Galgenberg, south of here.",
       choices: [
-        { text: 'Ik ga naar de Galgenberg.', effects: [{ start: 'side_roelof' }], next: 'driesen_3' },
-        { text: 'Hoeveel mannen heeft hij?', next: 'driesen_men' },
+        { text: "I'll go to the Galgenberg.", effects: [{ start: 'side_roelof' }], next: 'driesen_3' },
+        { text: 'How many men does he have?', next: 'driesen_men' },
       ],
     },
-    driesen_men: { who: 'driesen', text: 'Hij heeft er genoeg om een dorp leeg te halen: een stuk of vier, en één met een musket, die zelfs dronken raak schiet. Lambrecht zelf is zo groot als een deur.', next: 'driesen_2' },
-    driesen_3: { who: 'driesen', text: 'God zij met je. En als je mijn varkens ziet: ze heten Pier, Pol en Mieke.' },
-    driesen_busy: { who: 'driesen', text: 'De Galgenberg ligt ten zuiden van hier. Je ziet de galg al van ver.' },
-    driesen_back: { who: 'driesen', text: 'Hij is dood? Lambrecht de Rode is dood? Vrouw! VROUW! Kom hier!', next: 'driesen_b2' },
-    driesen_b2: { who: 'driesen', text: 'Ik ben maar een boer, ik heb niet veel. Maar wat ik heb, deel ik. En iedereen in Kaggevinne gaat jouw naam kennen, {name}.', effects: [{ complete: 'side_roelof' }] },
-    driesen_after: { who: 'driesen', text: 'Pier is terug. Pol en Mieke niet, maar Pier is terug.' },
+    driesen_men: { who: 'driesen', text: 'Enough to strip a village: four or so, and one with a musket who shoots straight even drunk. Lambrecht himself is as big as a door.', next: 'driesen_2' },
+    driesen_3: { who: 'driesen', text: "God be with you. And if you see my pigs, they're called Pier, Pol and Mieke." },
+    driesen_busy: { who: 'driesen', text: 'The Galgenberg is south of here. You can see the gallows from a long way off.' },
+    driesen_back: { who: 'driesen', text: "He's dead? Lambrecht de Rode is dead? Wife! WIFE! Come here!", next: 'driesen_b2' },
+    driesen_b2: { who: 'driesen', text: "I'm only a farmer, I haven't much. But what I have, I share. And everyone in Kaggevinne will know your name, {name}.", effects: [{ complete: 'side_roelof' }] },
+    driesen_after: { who: 'driesen', text: "Pier is back. Pol and Mieke aren't, but Pier is back." },
 
     // ================================================================ Scherpenheuvel
-    truyken_main: { who: 'truyken', text: 'Insignes, rozenkransen, flesjes wijwater, beeldjes uit het hout van de echte eik! De eik is kort na 1600 omgehakt, God hebbe zijn ziel, en elk splintertje ervan heeft sindsdien een mirakel gedaan. Sommige splintertjes zelfs meer dan één.', next: 'truyken_2' },
-    truyken_2: { who: 'you', text: 'Heeft er iemand vreemds beeldjes gekocht?', next: 'truyken_3' },
-    truyken_3: { who: 'truyken', text: 'Vreemd? Iedereen is hier vreemd, het is een bedevaartsoord. Maar ja, er komt een lange man in een lange jas, elke week sinds Pasen. Hij koopt alleen de eikenhouten beeldjes en hij betaalt met natte munten. Hij ruikt naar de Demer bij laag water.', next: 'truyken_4' },
-    truyken_4: { who: 'truyken', text: 'Hier, neem er een mee. Het is een echte, dat hoor je aan het zoemen. Ik hoor dat zoemen niet graag.', effects: [{ give: 'humming_statuette' }, { done: [BELLS, 'truyken'] }, { stage: [BELLS, 'report'] }] },
-    truyken_idle: { who: 'truyken', text: 'Beeldjes van de echte eik! Ze zijn allemaal gezegend, of toch de meeste.' },
-    provost_letter: { who: 'provost', text: 'Een brief van de drossaard van Diest, gebracht met een draak? De aartshertogen, God hebbe hun ziel, hadden dat prachtig gevonden.', next: 'provost_l2' },
-    provost_l2: { who: 'provost', text: 'Hm. Hij vraagt of de pelgrims de klokken van de bedevaartskerk \'s nachts hebben horen luiden. Dat hebben ze, en niemand luidt ze. Zegt u hem dat maar.', effects: [{ take: 'sealed_letter' }, { complete: 'contract_letter' }] },
+    truyken_main: { who: 'truyken', text: 'Badges, rosaries, phials of holy water, figures from the wood of the true oak! The oak was felled just after 1600, God rest its soul, and every splinter of it has worked a miracle since. Some splinters more than one.', next: 'truyken_2' },
+    truyken_2: { who: 'you', text: 'Has anyone strange been buying figures?', next: 'truyken_3' },
+    truyken_3: { who: 'truyken', text: "Strange? Everyone here is strange, it's a place of pilgrimage. But yes, a tall man in a long coat comes every week since Easter. He buys only the oak figures, and he pays in wet coins. He smells of the Demer at low water.", next: 'truyken_4' },
+    truyken_4: { who: 'truyken', text: "Here, take one. It's a real one, you can tell by the humming. I don't like that humming.", effects: [{ give: 'humming_statuette' }, { done: [BELLS, 'truyken'] }, { stage: [BELLS, 'report'] }] },
+    truyken_idle: { who: 'truyken', text: 'Figures of the true oak! All of them blessed, or most of them.' },
+    provost_letter: { who: 'provost', text: 'A letter from the drossaard of Diest, brought by dragon? The Archdukes, God rest them, would have loved that.', next: 'provost_l2' },
+    provost_l2: { who: 'provost', text: 'Hm. He asks whether the pilgrims have heard the bells of the pilgrimage church ringing at night. They have, and nobody rings them. Tell him that.', effects: [{ take: 'sealed_letter' }, { complete: 'contract_letter' }] },
     provost_wisps: {
-      who: 'provost', text: 'U hebt een sterke arm en een vreemd rijdier. Luistert u even. In het eikenbos ten oosten van hier dwalen pelgrims af. Ze volgen lichtjes die ze voor processiekaarsen houden. Twee zijn niet teruggekomen.',
+      who: 'provost', text: 'You have a strong arm and a strange mount. Listen a moment. In the oak wood east of here, pilgrims go astray. They follow lights they take for procession candles. Two have not come back.',
       choices: [
-        { text: 'Ik doof die lichtjes.', effects: [{ start: 'side_wisps' }], next: 'provost_w2' },
-        { text: 'Lichtjes? Dat klinkt onschuldig.', next: 'provost_w3' },
+        { text: "I'll put out those lights.", effects: [{ start: 'side_wisps' }], next: 'provost_w2' },
+        { text: 'Lights? That sounds harmless.', next: 'provost_w3' },
       ],
     },
-    provost_w2: { who: 'provost', text: 'Ze zweven buiten het bereik van een zwaard, zeggen de houthakkers. Maar niet buiten het bereik van een draak, denk ik.' },
-    provost_w3: { who: 'provost', text: 'De twee die niet terugkwamen dachten dat ook.', next: 'provost_wisps' },
-    provost_wisps_back: { who: 'provost', text: 'Is het bos weer donker? Goddank. Neemt u deze mantel; hij is gezegend aan het altaar, op de plek van de eik. Hij zal u beter beschermen dan uw eigen mantel.', effects: [{ complete: 'side_wisps' }] },
-    provost_idle: { who: 'provost', text: 'De kerk heeft zeven zijden, de stad zeven hoeken, en de koepel hangt vol gouden sterren. De aartshertogen hebben goed gebouwd.' },
+    provost_w2: { who: 'provost', text: 'They float beyond the reach of a sword, the woodcutters say. Not beyond the reach of a dragon, I think.' },
+    provost_w3: { who: 'provost', text: 'The two who did not come back thought so too.', next: 'provost_wisps' },
+    provost_wisps_back: { who: 'provost', text: 'Is the wood dark again? Thank God. Take this cloak; it was blessed at the altar, on the spot where the oak stood. It will guard you better than your own.', effects: [{ complete: 'side_wisps' }] },
+    provost_idle: { who: 'provost', text: 'The church has seven sides, the town seven corners, and the dome is full of golden stars. The Archdukes built well.' },
 
     // ================================================================ Het Oude Volk
     ...OV_DIALOGUE,

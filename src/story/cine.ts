@@ -449,7 +449,7 @@ export class Cine {
     this.stage = new Stage(d);
     this.el.className = 'film';
     // hold to skip: Escape or Backspace, B on a gamepad (the hint shows the device in use: nav.ts, html.dev-pad)
-    this.el.innerHTML = `<div class="film-bar top"></div><div class="film-bar bot"></div><div class="film-title"></div><div class="film-sub"></div><div class="film-skip">${hint('Houd <kbd>Esc</kbd> ingedrukt om over te slaan', 'Houd <kbd>B</kbd> ingedrukt om over te slaan')}</div>`;
+    this.el.innerHTML = `<div class="film-bar top"></div><div class="film-bar bot"></div><div class="film-title"></div><div class="film-sub"></div><div class="film-skip">${hint('Hold <kbd>Esc</kbd> to skip', 'Hold <kbd>B</kbd> to skip')}</div>`;
     this.fadeEl = document.createElement('div');
     this.fadeEl.className = 'film-fade';
     this.snap = document.createElement('canvas');

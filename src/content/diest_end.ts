@@ -10,9 +10,9 @@
 
 /** Narration over the three shots of the film (the voice: docs/design/voice.md). */
 export const END_LINES: Record<string, string> = {
-  ch1_end_1: 'Voor het eerst sinds die zondag luiden de klokken van Sint-Sulpitius over Diest. De mensen op de markt tellen de slagen mee.',
-  ch1_end_2: 'Bij elke slag vallen de ogen van {dragon} dicht, en telkens duurt het wat langer voor hij ze weer opendoet.',
-  ch1_end_3: 'Diest slaapt vannacht gerust. Wat de klokken verder nog in slaap houden, vraagt niemand.',
+  ch1_end_1: 'For the first time since that Sunday, the bells of Sint-Sulpitius ring out over Diest. In the market, people count the strokes under their breath.',
+  ch1_end_2: "At every stroke {dragon}'s eyes fall shut, and each time it takes him a little longer to open them again.",
+  ch1_end_3: 'Diest sleeps soundly tonight. What else the bells keep asleep, nobody asks.',
 };
 
 /** One row of the card: what you did, and what it cost or brought. */
@@ -26,27 +26,27 @@ type Flags = Record<string, string | number | boolean>;
 /** What you chose in chapter 1, in the order it happened in the story. {dragon} is filled in by the card. */
 export function endRows(f: Flags): { rows: EndRow[]; open: string[] } {
   const rows: EndRow[] = [
-    { what: 'De klokken van Diest luiden weer.', cost: 'De stad is veilig. Bij elke slag valt {dragon} even in slaap.' },
+    { what: 'The bells of Diest ring again.', cost: 'The town is safe. At every stroke, {dragon} sleeps for a moment.' },
   ];
   const open: string[] = [];
-  if (f.ov_choice === 'volk') rows.push({ what: 'Je hebt het kleine klokje met riet gebonden.', cost: 'Het Oude Volk vertrouwt je. De deken van het kapittel zoekt een naam.' });
-  else if (f.ov_choice === 'kerk') rows.push({ what: 'Je hebt Pieter verteld van het riet aan het klokje.', cost: 'Er hangt nu een slot aan de toren. Het Oude Volk groet je koeler.' });
-  if (f.seals_reported) rows.push({ what: 'Je hebt Lijsbet Vranckx aangegeven bij de drossaard.', cost: 'Ze is uit de baronie verbannen. De wevers drinken op jou.' });
-  else if (f.seals_begijnhof) rows.push({ what: 'Je hebt Lijsbet Vranckx naar het Begijnhof gestuurd.', cost: 'Ze weeft nu onder het zegel van de begijnen. Meester Joos is er ziek van.' });
-  else if (f.seals_warned) rows.push({ what: 'Je hebt Lijsbet Vranckx laten vluchten.', cost: 'Ze is weg uit Diest. Haar gietvorm heb jij nu.' });
-  else open.push('de valse lakenzegels van meester Joos');
-  if (f.toll_paid) rows.push({ what: 'Gielis de Ton heeft de tol betaald.', cost: 'Hij vloekt op je draak, maar Wouter is je dankbaar.' });
-  else if (f.toll_bribe) rows.push({ what: 'Je hebt een vaatje brandewijn van Gielis aangenomen.', cost: 'Wouter weet het en zwijgt. De Kroon vertrouwt je wat minder.' });
-  else if (f.toll_seized) rows.push({ what: 'Je hebt de brandewijn van Gielis in beslag genomen.', cost: 'Hij ging te voet naar huis. De Vrije Lieden vergeten dat niet.' });
-  else open.push('de brandewijn van Gielis de Ton');
+  if (f.ov_choice === 'volk') rows.push({ what: 'You bound the little bell with reed.', cost: 'The Oude Volk trust you. The dean of the chapter is looking for a name.' });
+  else if (f.ov_choice === 'kerk') rows.push({ what: 'You told Pieter about the reed on the little bell.', cost: 'There is a lock on the tower now. The Oude Volk greet you more coolly.' });
+  if (f.seals_reported) rows.push({ what: 'You reported Lijsbet Vranckx to the drossaard.', cost: 'She has been banished from the barony. The weavers drink to you.' });
+  else if (f.seals_begijnhof) rows.push({ what: 'You sent Lijsbet Vranckx to the Begijnhof.', cost: "She weaves under the beguines' seal now. Master Joos is sick about it." });
+  else if (f.seals_warned) rows.push({ what: 'You let Lijsbet Vranckx run.', cost: 'She has left Diest. Her mould is yours now.' });
+  else open.push('the forged cloth seals of Master Joos');
+  if (f.toll_paid) rows.push({ what: 'Gielis de Ton paid the toll.', cost: 'He curses your dragon, but Wouter is grateful.' });
+  else if (f.toll_bribe) rows.push({ what: 'You took a keg of brandy from Gielis.', cost: 'Wouter knows, and says nothing. De Kroon trusts you a little less.' });
+  else if (f.toll_seized) rows.push({ what: 'You seized the brandy of Gielis de Ton.', cost: 'He walked home. De Vrije Lieden will not forget it.' });
+  else open.push('the brandy of Gielis de Ton');
   return { rows, open };
 }
 
 /** The two roads, for the card and for the journal (first person, as the journal is). */
 export const ROADS = {
-  title: 'Twee wegen uit Diest',
-  west: 'Het beeldje van Truyken zoemt naar het westen, naar Leuven. Pieter zegt dat de meesters van de universiteit oud brons en ouder hout kunnen lezen.',
-  east: 'Door de Beverenpoort komen karren uit het land van Loon, in het oosten. Daar zwijgen de torens al een jaar, zeggen de voerlui, en meer zeggen ze niet.',
+  title: 'Two roads out of Diest',
+  west: "Truyken's figure hums to the west, towards Leuven. Pieter says the masters of the university can read old bronze and older wood.",
+  east: 'Carts come through the Beverenpoort from the land of Loon, in the east. The towers there have been silent a year, the carters say, and they say nothing more.',
   /** interface: what comes, and what you can do until then */
-  next: 'Leuven en het land van Loon komen in het volgende hoofdstuk. Tot dan kun je in Diest verder spelen: zijverhalen, het aanplakbord en de Klokkenronde.',
+  next: 'Leuven and the land of Loon come in the next chapter. Until then you can play on in Diest: side quests, the notice board and the Bell Round.',
 };

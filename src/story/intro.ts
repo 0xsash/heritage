@@ -3,10 +3,10 @@
 // in the race intros of World of Warcraft: a shared cold open (this land was
 // taken from the water, the bells keep it, and something sleeps under them),
 // then the player's own party in its own places, with people doing what that
-// party does, and a close that turns to "jij" and to the last ordinary
+// party does, and a close that turns to "you" and to the last ordinary
 // evening, which is where the prologue begins.
 //
-// Lines follow docs/design/voice.md: Flemish Dutch, a full sentence each,
+// Lines follow docs/design/voice.md: English, a full sentence each,
 // clear on first reading. Every line has an id (intro_open_n, intro_<party>_n,
 // intro_close_n) and goes through src/audio/voice.ts, so recordings can be
 // dropped in later. Facts stated here are history; see the Kroniek for sources.
@@ -26,43 +26,43 @@ export type IntroFaction = (typeof INTRO_FACTIONS)[number];
 /** Every narrated line of the intros, by id: [speaker, text] (the narrator has no name). */
 export const INTRO_LINES: Record<string, [string, string]> = {
   // the cold open, the same for everyone
-  intro_open_1: ['', 'Waar nu koeien grazen, stond vroeger water. Met dijken en grachten is dit land van de Demer afgenomen.'],
-  intro_open_2: ['', 'Boven de daken hangen de klokken. Ze slaan elk uur, ze luiden bij brand, en ze zwijgen nooit.'],
-  intro_open_3: ['', 'De oude mensen zeggen dat de klokken nog iets anders doen. Wat, dat vertellen ze alleen bij het vuur.'],
+  intro_open_1: ['', 'Where the cows graze now, the Demer once lay. Men took this land from it with dikes and ditches, one field at a time.'],
+  intro_open_2: ['', 'Above the roofs hang the bells. They strike every hour, they ring for fire, and they have never once been silent.'],
+  intro_open_3: ['', 'The old people say the bells do one more thing. What it is, they will only tell by the fire.'],
 
   // De Gilden
-  intro_gilden_1: ['', 'Diest is een stad van ambachten. Brouwers, smeden, kleermakers: elk ambacht heeft zijn eigen deken.'],
-  intro_gilden_2: ['', 'Ooit lag het laken van Diest op alle grote markten. Nu staat de Lakenhalle half leeg.'],
-  intro_gilden_3: ['', 'De schutters bewaken de muren als het moet. Anders schieten ze op de gaai, en wie hem afschiet, is een jaar hun koning.'],
-  intro_gilden_4: ['', 'De gilden vinden dat Diest van hen is. Zij houden de wacht, zij betalen, en de heer komt nooit.'],
+  intro_gilden_1: ['', 'Diest is a town of crafts. Brewers, smiths, tailors: each craft has its own dean, and a long memory.'],
+  intro_gilden_2: ['', 'Diest cloth once sold in every great market. Now the Cloth Hall stands half empty.'],
+  intro_gilden_3: ['', 'The crossbowmen guard the walls when they must. Otherwise they shoot at the popinjay, and whoever downs it is king for a year.'],
+  intro_gilden_4: ['', 'The guilds hold that Diest is theirs. They keep the watch, they pay the bills, and the lord never comes.'],
 
   // De Kerk
-  intro_kerk_1: ['', 'In het Begijnhof verzorgen de begijnen de zieken. Bij valavond gaat hun poort dicht, voor iedereen.'],
-  intro_kerk_2: ['', 'De toren van Sint-Sulpitius is nooit afgebouwd. De kanunniken weten waarom de klokken erin moeten slaan.'],
-  intro_kerk_3: ['', 'In Scherpenheuvel stond een eik met een Mariabeeld. Nu staat daar een kerk met zeven zijden, en heel Brabant komt er bidden.'],
-  intro_kerk_4: ['', 'De priesters en de begijnen weten meer over de klokken dan ze zeggen. Ze bidden dat niemand het ooit vraagt.'],
+  intro_kerk_1: ['', 'In the Begijnhof, the beguines nurse the sick. At dusk their gate is shut, and it opens for no one.'],
+  intro_kerk_2: ['', 'The tower of Sint-Sulpitius was never finished. The canons know why its bells must strike, or say they do.'],
+  intro_kerk_3: ['', 'At Scherpenheuvel an oak once stood with an image of Mary in it. Now a church with seven sides stands there, and all Brabant comes to pray.'],
+  intro_kerk_4: ['', 'The priests and the beguines know more about the bells than they say. They pray that no one ever asks.'],
 
   // De Kroon
-  intro_kroon_1: ['', 'Brabant is van de koning van Spanje. Hij woont in Madrid, en hij heeft Diest nog nooit gezien.'],
-  intro_kroon_2: ['', 'Zijn soldaten liggen bij de burgers in huis, en hun soldij komt maanden te laat, of helemaal niet.'],
-  intro_kroon_3: ['', 'Vijftien jaar geleden gaf Diest zich over aan een Frans en een Staats leger. De Kroon is dat niet vergeten.'],
-  intro_kroon_4: ['', 'De Kroon wil orde en belastingen. Ze is haar soldaten geld schuldig, en de stad mag die schuld dragen.'],
+  intro_kroon_1: ['', 'Brabant belongs to the King of Spain. He lives in Madrid, and he has never once seen Diest.'],
+  intro_kroon_2: ['', "His soldiers are quartered in the burghers' houses, and their pay comes months late, or not at all."],
+  intro_kroon_3: ['', 'Fifteen years ago Diest surrendered to French and Dutch troops. De Kroon has not forgotten.'],
+  intro_kroon_4: ['', 'De Kroon wants order and taxes. It owes its soldiers their pay, and the town is made to carry the debt.'],
 
   // Oranje
-  intro_oranje_1: ['', 'De heer van Diest is de prins van Oranje. Zijn familie is hier heer sinds 1499, maar hun huis in de stad staat leeg.'],
-  intro_oranje_2: ['', 'In zijn jachtpark, de Warande, lopen herten en reeën, voor een heer die er nooit komt jagen.'],
-  intro_oranje_3: ['', 'Dit najaar is de prins aan de pokken gestorven. Acht dagen later is zijn zoon geboren, en die is nu de heer van Diest.'],
-  intro_oranje_4: ['', 'Zijn drossaard dient een protestantse heer, in een katholieke stad, onder een Spaanse koning. Hij slaapt slecht.'],
+  intro_oranje_1: ['', 'The lord of Diest is the Prince of Orange. His family has held it since 1499, but their house in the town stands empty.'],
+  intro_oranje_2: ['', 'In his hunting park, the Warande, red deer and roe deer run for a lord who never comes to hunt.'],
+  intro_oranje_3: ['', 'This autumn the prince died of smallpox. Eight days later his son was born, and the child is now the lord of Diest.'],
+  intro_oranje_4: ['', 'His drossaard serves a Protestant lord, in a Catholic town, under a Spanish king. He sleeps badly.'],
 
   // De Vrije Lieden
-  intro_vrije_1: ['', 'Buiten de muren leven de marskramers, de voerlui, en iedereen die geen meester heeft.'],
-  intro_vrije_2: ['', 'Overdag bleekt het laken van de stad op de velden. \'s Nachts rijdt daar wat niemand mag zien.'],
-  intro_vrije_3: ['', 'Aan elke poort betaal je tol. Daarom rijdt de kar met brandewijn \'s nachts, en altijd om de poort heen.'],
-  intro_vrije_4: ['', 'Ze zijn niemand iets schuldig, zeggen ze. Maar langs de weg waar zij rijden, staat een galg.'],
+  intro_vrije_1: ['', 'Outside the walls live the pedlars, the carters, and everyone who answers to no master.'],
+  intro_vrije_2: ['', "By day the town's cloth bleaches on the fields. By night, things ride there that no one is meant to see."],
+  intro_vrije_3: ['', 'Every gate takes its toll. That is why the brandy cart rides by night, and always around the gate.'],
+  intro_vrije_4: ['', 'They owe nobody anything, they say. But along the road they ride, there stands a gallows.'],
 
   // the close, the same for everyone
-  intro_close_1: ['', 'En jij, {name}, stond al aan hun kant, al wist je het zelf nog niet. Die avond moest je je zusje thuisbrengen.'],
-  intro_close_2: ['', 'Het was bijna middernacht, en niemand in Diest twijfelde eraan dat de klok twaalf keer zou slaan.'],
+  intro_close_1: ['', 'And you, {name}, were already on their side, though you did not know it yet. That evening you had to bring your little sister home.'],
+  intro_close_2: ['', 'It was nearly midnight, and nobody in Diest doubted that the bell would strike twelve.'],
 };
 
 export interface IntroContext {
