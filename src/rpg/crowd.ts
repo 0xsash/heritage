@@ -480,12 +480,12 @@ export class Crowd {
     const fame = q.test({ quest: 'main_bells', state: 'done' }) || (s.standing.gilden ?? 0) + (s.standing.kerk ?? 0) >= 40;
     if (fame) pool.push(...FAMOUS, ...FAMOUS);
     if (q.test({ quest: 'main_bells', state: 'active' }) || q.test({ quest: 'main_bells', state: 'none' })) pool.push(...BELLS);
-    if (q.test({ flag: 'seals_reported' })) pool.push('Lijsbet Vranckx is weg. Haar getouw staat nu bij de buren.', 'De wevers drinken op jou. De weduwe drinkt niet mee.');
-    if (q.test({ flag: 'seals_begijnhof' })) pool.push('Lijsbet weeft nu bij de begijnen. Meester Joos is er ziek van.');
-    if (q.test({ flag: 'toll_bribe' })) pool.push('Was hij lekker, die azijn van Gielis? Zeg maar niets.');
-    if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push('Lambrecht dood? Dat geloof ik pas als ik zijn laarzen zie.', 'In Kaggevinne gaan de deuren weer dicht, maar niet meer op slot.');
-    if (q.test({ quest: 'main_kludde', state: 'done' })) pool.push('Jij hebt de Kludde verjaagd. Grootmoeder zegt: verjaagd is niet dood.', 'Hoor je de klokken? Mijn man weende bij de eerste slag.', 'Ze luiden weer. Je draak slaapt er staand bij, zie ik.');
-    if (s.hero.level >= 5) pool.push('Dat is een stevig zwaard, {name}. Hou het in de schede.');
+    if (q.test({ flag: 'seals_reported' })) pool.push('Lijsbet Vranckx is gone. Her loom stands with the neighbours now.', "The weavers drink to you. The widow doesn't join them.");
+    if (q.test({ flag: 'seals_begijnhof' })) pool.push('Lijsbet weaves with the begijnen now. Master Joos is sick over it.');
+    if (q.test({ flag: 'toll_bribe' })) pool.push("Was it tasty, that vinegar of Gielis? I'll say nothing.");
+    if (q.test({ quest: 'side_roelof', state: 'done' })) pool.push("Lambrecht dead? I'll believe it when I see his boots.", 'In Kaggevinne the doors close again, but stay unlocked.');
+    if (q.test({ quest: 'main_kludde', state: 'done' })) pool.push('You drove off the Kludde. Grandmother says: driven off is not dead.', 'Hear the bells? My husband wept at the first stroke.', 'They ring again. Your dragon sleeps standing through it, I see.');
+    if (s.hero.level >= 5) pool.push("That's a stout sword, {name}. Keep it in the scabbard.");
     // Het Oude Volk (src/content/oudevolk.ts): a rumour now and then before you find them, talk after
     const f = s.flags;
     const ov: Record<string, boolean> = { ov_rumour: !f.ov_found && Math.random() < 0.3, ov_found: !!f.ov_found, ov_choice_volk: f.ov_choice === 'volk', ov_named: !!f.ov_named };
@@ -495,19 +495,19 @@ export class Crowd {
 }
 
 const GREET = [
-  'Goeiendag.', 'Dag, vreemdeling. Hou je beest uit mijn moestuin.', 'Allee, kijk uit waar je loopt.', 'Droog weer, hé. Dat blijft niet duren.', 'Goeiemorgen. Heb jij een geit gezien?',
-  'Heb je al gegeten? De wafels aan de Lakenhalle zijn goed.', 'De tol is alweer verhoogd. Zakken doet hij nooit.', 'Mijn koe is ziek. Ken jij iets van koeien?',
-  'Ze zeggen dat de Fransen in Henegouwen zitten.', 'Amai, wat een mantel. Wie heeft die betaald?', 'Pas op voor de zakkenrollers op de markt.',
-  'De Demer staat hoog dit jaar. Ze wil iets.', 'Jij komt niet veel in de stad, hé?', 'Diests bier is beter dan dat van Leuven. Zeg het voort.',
+  'Good day.', 'Morning, stranger. Keep your beast out of my cabbages.', 'Mind where you walk.', "Dry weather, eh. It won't last.", 'Good morning. Have you seen a goat?',
+  'Eaten yet? The waffles by the Cloth Hall are good.', "The toll's gone up again. It never comes down.", 'My cow is sick. Do you know anything about cows?',
+  'They say the French are in Hainaut.', 'Well, what a cloak. Who paid for that?', 'Mind the cutpurses on the market.',
+  'The Demer stands high this year. She wants something.', "You don't come into town much, do you?", "Diest beer beats Leuven's. Pass it on.",
 ];
 const BELLS = [
-  'Ik hoorde zeven slagen en daarna niets meer. Ik lag nog wakker.', 'Zonder klokken sluit de wachter de poort wanneer hij goesting heeft.',
-  'Hij was een hond zo groot als een kalf, zegt de veerman.', 'Pieter de koster loopt rond als een kip zonder kop.',
-  'Mijn man ging die nacht vissen. Zijn netten zijn teruggekomen.', 'Niemand weet nog hoe laat het is, mijn deeg ook niet.',
+  'I heard seven strokes, then nothing. I lay awake.', 'Without bells, the watchman shuts the gate whenever he likes.',
+  'It was a dog big as a calf, says the ferryman.', 'Pieter the sexton runs about like a headless chicken.',
+  'My husband went fishing that night. His nets came back.', "Nobody knows the time any more. My dough doesn't either.",
 ];
 const FAMOUS = [
-  'Daar is {name}, die van de draak.', 'Goeiendag, {name}. Eet {dragon} ook vis?', '{name}! Mijn zoon wil later ook een draak.',
-  'Iedereen praat over jou, {name}, maar niet altijd goed.', 'Daar gaat {name}. Die is niet bang van de Kludde, zeggen ze.',
+  'There goes {name}, the one with the dragon.', 'Good day, {name}. Does {dragon} eat fish too?', '{name}! My son wants a dragon when he grows up.',
+  'Everyone talks about you, {name}, though not always kindly.', 'There goes {name}. Not afraid of the Kludde, they say.',
 ];
 interface Anchor { x: number; z: number; r: number; p: number }
 /** Where each kind of person tends to be (p: how often they stick to it). */
@@ -519,4 +519,4 @@ const ANCHORS: Partial<Record<Role, Anchor[]>> = {
   burgher: [{ x: 40, z: 10, r: 150, p: 0.4 }], // the Grote Markt and the Lakenhalle
 };
 
-const FLEE = ['Een draak! Een DRAAK!', 'Jezus Maria!', 'Weg hier! Weg!', 'Mijn kippen!', 'Eet me niet op!'];
+const FLEE = ['A dragon! A DRAGON!', 'Mother of God!', 'Get away! Away!', 'My chickens!', "Don't eat me!"];

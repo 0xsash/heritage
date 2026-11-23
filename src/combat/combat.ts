@@ -288,7 +288,7 @@ export class Combat {
       if ((this.lore?.weak(t.id) ?? 1) > 1) {
         // you know how to beat this one: a small mark by its name
         e.bar.classList.add('weak');
-        e.bar.title = 'Je kent zijn zwakte';
+        e.bar.title = 'You know its weakness';
       }
       e.pos.y = this.col.heightAt(e.pos.x, e.pos.z);
       e.wanderTo.copy(e.pos);
@@ -445,8 +445,8 @@ export class Combat {
     const o = this.sheet.origin;
     if (input.consume('skill') && !this.atk && this.cds.skill <= 0 && this.resonance >= o.skill.cost) this.useSkill(o.skill.id, input, camYaw, d);
     if (input.consume('skill2')) {
-      if (this.sheet.h.level < o.skill2.level) this.floaters.add(`${o.skill2.name}: vanaf niveau ${o.skill2.level}`, this.headPos(), 'note', 1.4, 0.6);
-      else if (this.resonance < o.skill2.cost) this.floaters.add('Te weinig Resonantie', this.headPos(), 'note', 1.2, 0.6);
+      if (this.sheet.h.level < o.skill2.level) this.floaters.add(`${o.skill2.name}: from level ${o.skill2.level}`, this.headPos(), 'note', 1.4, 0.6);
+      else if (this.resonance < o.skill2.cost) this.floaters.add('Not enough Resonance', this.headPos(), 'note', 1.2, 0.6);
       else if (!this.atk && this.cds.skill2 <= 0) this.useSkill(o.skill2.id, input, camYaw, d);
     }
 
@@ -558,7 +558,7 @@ export class Combat {
       this.buff = 8;
       p.hero.act('cast', 0.6);
       this.fx.ring(at, 7, '#ff6a3a');
-      this.floaters.add('Strijdkreet!', this.headPos(), 'skill', 1.2);
+      this.floaters.add('Battle cry!', this.headPos(), 'skill', 1.2);
       this.sound.howl();
       for (const e of this.enemies) if (e.alive && e.pos.distanceTo(p.heroPos) < 6.5) this.stagger(e, this.v2.copy(e.pos).sub(p.heroPos).setY(0).normalize(), 6);
       this.ev.trauma(0.25);
@@ -613,7 +613,7 @@ export class Combat {
       this.invuln = 0.6;
       this.sound.whoosh();
       for (const e of this.enemies) if (e.alive && e.pos.distanceTo(p.heroPos) < 7) { e.blind = 3; this.releaseToken(e); e.state = 'idle'; }
-      this.floaters.add('Je verdwijnt in de rook', this.headPos(), 'skill', 1.2);
+      this.floaters.add('You vanish in the smoke', this.headPos(), 'skill', 1.2);
     }
   }
 
@@ -643,11 +643,11 @@ export class Combat {
     this.tally.spares++;
     this.lastFight = this.time;
     const top = e.pos.clone().setY(e.pos.y + e.body.top + 0.4);
-    this.floaters.add('Laten gaan', top, 'skill', 1.3);
+    this.floaters.add('Let go', top, 'skill', 1.3);
     this.fx.particles.emit(e.pos.clone().setY(e.pos.y + 0.8), { n: 24, color: '#bcd8c8', speed: 1.6, up: 1.5, life: 1.4, size: 0.35, gravity: -0.4, drag: 1.2 });
     this.sound.chime(false);
     const xp = Math.round(e.type.xp(e.level) * 0.75 * (e.level >= this.sheet.h.level - 3 ? 1 : 0.3));
-    this.floaters.add(`+${xp} ervaring`, top.clone().setY(top.y + 0.5), 'xp', 1.5, 1.2);
+    this.floaters.add(`+${xp} experience`, top.clone().setY(top.y + 0.5), 'xp', 1.5, 1.2);
     const before = this.sheet.h.level;
     this.quests.addXp(xp);
     if (this.sheet.h.level > before) this.ev.levelUp(this.sheet.h.level);
@@ -664,7 +664,7 @@ export class Combat {
     const head = p.onFoot ? this.headPos() : p.pos.clone().setY(p.pos.y + 3);
     if (this.cds[id] > 0) return;
     if (def.cost && this.fire < def.cost) {
-      this.floaters.add('Te weinig vuur', head, 'note', 1.1, 0.6);
+      this.floaters.add('Not enough fire', head, 'note', 1.1, 0.6);
       return;
     }
     const dragonDmg = (14 + this.sheet.h.level * 6) * d.power * (1 + d.fire / 100);
@@ -701,7 +701,7 @@ export class Combat {
     } else if (id === 'slag') {
       const alt = p.altitude();
       if (alt > 32) {
-        this.floaters.add('Te hoog voor een vleugelslag', head, 'note', 1.2, 0.6);
+        this.floaters.add('Too high for a wingbeat', head, 'note', 1.2, 0.6);
         return;
       }
       const at = p.pos.clone().setY(this.col.heightAt(p.pos.x, p.pos.z));
@@ -743,7 +743,7 @@ export class Combat {
         n++;
       }
       if (n) this.hitstop = Math.max(this.hitstop, 0.1);
-      this.floaters.add(this.quests.fill('{dragon} antwoordt'), head, 'skill', 1.4);
+      this.floaters.add(this.quests.fill('{dragon} answers'), head, 'skill', 1.4);
       this.lastFight = this.time;
     }
     this.cds[id] = def.cooldown;
@@ -768,11 +768,11 @@ export class Combat {
     const inv = this.quests.s.inv;
     if (this.cds.potion > 0) return;
     if ((inv.salve ?? 0) <= 0) {
-      this.floaters.add('Je zalf is op', this.headPos(), 'note', 1.1, 0.6);
+      this.floaters.add('Your salve is gone', this.headPos(), 'note', 1.1, 0.6);
       return;
     }
     if (this.quests.s.hero.hp >= maxHp && this.heal <= 0) {
-      this.floaters.add('Je bent ongedeerd', this.headPos(), 'note', 1.1, 0.6);
+      this.floaters.add('You are unhurt', this.headPos(), 'note', 1.1, 0.6);
       return;
     }
     inv.salve--;
@@ -963,7 +963,7 @@ export class Combat {
     // burned from the air, a fight teaches you less than one on foot (the tutorial says so the first time)
     const xp = Math.round(e.type.xp(e.level) * (e.elite ? 4 : 1) * (e.level >= this.sheet.h.level - 3 ? 1 : 0.3) * (e.byAir ? AIR_XP : 1));
     if (e.byAir) this.tally.airKills++;
-    this.floaters.add(`+${xp} ervaring`, e.pos.clone().setY(e.pos.y + e.body.top + 0.4), 'xp', 1.5, 1.2);
+    this.floaters.add(`+${xp} experience`, e.pos.clone().setY(e.pos.y + e.body.top + 0.4), 'xp', 1.5, 1.2);
     const before = this.sheet.h.level;
     this.quests.addXp(xp);
     if (this.sheet.h.level > before) this.ev.levelUp(this.sheet.h.level);
@@ -1054,7 +1054,7 @@ export class Combat {
       this.sound.coins();
     } else if (l.kind === 'salve') {
       this.quests.s.inv.salve = (this.quests.s.inv.salve ?? 0) + 1;
-      this.floaters.add('+1 Begijnenzalf', this.headPos(), 'heal', 1.1, 0.8);
+      this.floaters.add('+1 Beguine salve', this.headPos(), 'heal', 1.1, 0.8);
       this.sound.coins();
     } else if (l.gear) {
       this.quests.s.hero.bag.push(l.gear);
@@ -1156,7 +1156,7 @@ export class Combat {
     if (!e.aggro && target && dist < t.aggro * (e.elite ? 1.3 : 1) * (this.lore?.aggro(t.id) ?? 1) && (!targetFlying || t.ranged || t.sky || dist < 12)) {
       e.aggro = true;
       if (t.body === 'hound') this.sound.howl();
-      if (t.body === 'human') this.floaters.add(this.quests.fill(['Daar! Pak {hem|haar}!', 'Een {ruiter|ruiterin}!', 'Halt!', 'Voor de buit!'][Math.floor(Math.random() * 4)]), e.pos.clone().setY(e.pos.y + 2.3), 'bark', 1.6, 0.3);
+      if (t.body === 'human') this.floaters.add(this.quests.fill(['There! Seize {him|her}!', 'A rider!', 'Halt!', 'For the loot!'][Math.floor(Math.random() * 4)]), e.pos.clone().setY(e.pos.y + 2.3), 'bark', 1.6, 0.3);
       for (const o of e.camp.enemies) if (o.alive && o.pos.distanceToSquared(e.pos) < 625) o.aggro = true;
     }
     if (e.aggro && (!target || dist > (t.sky && targetFlying ? t.sky.range + 10 : 70))) {
@@ -1199,7 +1199,7 @@ export class Combat {
           this.tally.telegraphs++;
           this.sound.howl();
           this.fx.ring(e.pos, 6, '#7cc4ff', t.sky.windup);
-          this.floaters.add('De Kludde huilt naar je', e.pos.clone().setY(e.pos.y + e.body.top + 1.2), 'bark', 1.8, 0.3);
+          this.floaters.add('The Kludde howls at you', e.pos.clone().setY(e.pos.y + e.body.top + 1.2), 'bark', 1.8, 0.3);
           break;
         }
         if (canSwing && hasToken && (!targetFlying || ranged)) {

@@ -95,7 +95,7 @@ export type Near =
 
 interface Pointer { x: number; z: number; label: string; until: number; since: number }
 
-const BUFF_NAMES: Record<string, string> = { zegen: 'Gezegend', moed: 'Moed', uitgerust: 'Uitgerust', eten: 'Gegeten' };
+const BUFF_NAMES: Record<string, string> = { zegen: 'Blessed', moed: 'Courage', uitgerust: 'Rested', eten: 'Fed' };
 const R_COVER = 37;
 const FEMALE_ROLES = new Set<Role>(['peasantWoman', 'huik', 'beguine', 'oldWoman']);
 const MALE_ROLES = new Set<Role>(['peasant', 'soldier', 'friar', 'oldMan']);
@@ -106,21 +106,21 @@ const MALE_ROLES = new Set<Role>(['peasant', 'soldier', 'friar', 'oldMan']);
  */
 const MARKET_DAY: { kind: StallKind; look: NonNullable<ServiceDef['look']>; calls: string[] }[] = [
   { kind: 'fish', look: { body: 'woman_stout', wear: { hair_bun: 'h_dark', coif: null, bodice: 'woad_dk', kerchief: null, skirt: 'grey', apron: 'linen', clogs: null } },
-    calls: ['Paling uit de Demer, vanmorgen nog levend.', 'Haring uit Zeeland. Gezouten, niet gesmokkeld.', 'Ruik maar eens. Die vis is vers.'] },
+    calls: ['Eel from the Demer, still alive this morning.', 'Herring from Zeeland. Salted, not smuggled.', 'Smell that. That fish is fresh.'] },
   { kind: 'cheese', look: { body: 'man_stout', wear: { hair_crop: 'h_brown', cap_flat: 'umber', smock: 'linen', belt: null, breeches: 'brown', stockings: 'grey', clogs: null } },
-    calls: ['Kaas uit de Kempen. Proeven kost niets.', 'Boter van gisteren. Morgen is ze van eergisteren.', 'Drie stuivers het pond. Voor jou ook.'] },
+    calls: ['Cheese from the Kempen. Tasting costs nothing.', 'Butter from yesterday. By tomorrow it will be from the day before.', 'Three stuivers the pound. For you too.'] },
   { kind: 'veg', look: { body: 'woman_old', wear: { hair_bun: 'h_grey', coif: null, bodice: 'brown', kerchief: null, skirt: 'moss', apron: 'grey', clogs: null } },
-    calls: ['Kolen en rapen. De soldaten hebben de rest al.', 'Ajuin uit het Hageland. Je weent van de ajuin, niet van mij.', 'Koop iets, kind. Je ziet bleek.'] },
+    calls: ['Cabbage and turnips. The soldiers have taken the rest.', 'Onions from the Hageland. You weep from the onions, not from me.', 'Buy something, child. You look pale.'] },
   { kind: 'pots', look: { body: 'man', wear: { hair_long: 'h_chestnut', moustache: 'h_chestnut', hat_wide: 'brown', doublet: 'russet', collar_band: null, breeches: 'umber', stockings: 'grey', shoes: null } },
-    calls: ['Kannen en kruiken. Gebakken, niet gebarsten.', 'Een pot voor de soep, een pot voor de nacht.', 'Wie iets laat vallen, betaalt het. Zo gaat dat.'] },
+    calls: ['Jugs and pitchers. Fired, not cracked.', 'A pot for the soup, a pot for the night.', "Whoever drops something pays for it. That's how it goes."] },
   { kind: 'poultry', look: { body: 'woman', wear: { hair_bun: 'h_blond', coif: null, bodice: 'madder', kerchief: null, skirt: 'woad', apron: 'linen', clogs: null } },
-    calls: ['Een hen voor drie stuivers. Ze legt nog.', 'Eieren, vers. De hen staat ervoor in.', 'Pas op voor de haan. Hij is van de koster.'] },
+    calls: ['A hen for three stuivers. She still lays.', 'Eggs, fresh. The hen vouches for it.', 'Mind the cock. He belongs to the sexton.'] },
   { kind: 'cloth', look: { body: 'man_old', wear: { hair_thin: 'h_white', beard_full: 'h_white', cap_flat: 'black', doublet: 'black', collar_band: null, breeches: 'black', stockings: 'black', shoes: null } },
-    calls: ['Diests laken. Gemeten met de el van de halle.', 'Voel maar. Zo weven ze het in Leiden niet.', 'Laken voor een mantel. Of voor een lijkwade.'] },
+    calls: ['Diest cloth. Measured with the ell of the hall.', "Feel it. They don't weave it like this in Leiden.", 'Cloth for a cloak. Or for a shroud.'] },
   { kind: 'bread', look: { body: 'woman', wear: { hair_bun: 'h_brown', coif: null, bodice: 'ochre', kerchief: null, skirt: 'russet', apron: 'linen', shoes: null } },
-    calls: ['Mik en roggebrood, nog warm van de oven.', 'Krentenbrood voor wie iets te vieren heeft.', 'Brood van vanmorgen. Het gewicht klopt.'] },
+    calls: ['White rolls and rye bread, still warm from the oven.', 'Currant bread for those with something to celebrate.', 'Bread from this morning. The weight is right.'] },
   { kind: 'herbs', look: { body: 'woman_stout', wear: { hair_bun: 'h_red', coif: null, bodice: 'green_dk', kerchief: null, skirt: 'brown', apron: 'grey', clogs: null } },
-    calls: ['Salie, rozemarijn, alsem. Tegen alles behalve armoe.', 'Kamille om te slapen. Jij kunt ze gebruiken.', 'Wijnruit helpt tegen de pest, zegt mijn moeder.'] },
+    calls: ['Sage, rosemary, wormwood. Good against everything but poverty.', 'Chamomile to sleep on. You could use it.', 'Rue helps against the plague, my mother says.'] },
 ];
 
 /** Golden weathercocks on towers and gates, taken in flight (x, z, height of the top). */
@@ -131,9 +131,9 @@ const COCKS: [string, number, number, number][] = [
 ];
 /** How each weathercock's place is named in the note (the names above are save keys, so they stay). */
 const COCK_SHOWN: Record<string, string> = {
-  'Sint-Sulpitius': 'de Sint-Sulpitiuskerk', Lakenhalle: 'de Lakenhalle', 'Onze-Lieve-Vrouwekerk': 'de Onze-Lieve-Vrouwekerk', 'Sint-Catharinakerk': 'de Sint-Catharinakerk',
-  'Antwerpse Poort': 'de Schaluinpoort', 'Schaffense Poort': 'de Schaffensepoort', Koepoort: 'de oude Koepoort', 'Maastrichtse Poort': 'de Beverenpoort',
-  'Leuvense Poort': 'de Putterstraatpoort', Allerheiligenpoort: 'de Allerheiligenpoort', 'Sint-Trudokerk': 'de Sint-Trudokerk', 'Basiliek van Scherpenheuvel': 'de kerk van Scherpenheuvel',
+  'Sint-Sulpitius': 'the Sint-Sulpitiuskerk', Lakenhalle: 'the Cloth Hall', 'Onze-Lieve-Vrouwekerk': 'the Onze-Lieve-Vrouwekerk', 'Sint-Catharinakerk': 'the Sint-Catharinakerk',
+  'Antwerpse Poort': 'the Schaluinpoort', 'Schaffense Poort': 'the Schaffensepoort', Koepoort: 'the old Koepoort', 'Maastrichtse Poort': 'the Beverenpoort',
+  'Leuvense Poort': 'the Putterstraatpoort', Allerheiligenpoort: 'the Allerheiligenpoort', 'Sint-Trudokerk': 'the Sint-Trudokerk', 'Basiliek van Scherpenheuvel': 'the church of Scherpenheuvel',
 };
 
 export class Life {
@@ -275,7 +275,7 @@ export class Life {
       boardProp(k);
       this.boardPos = { x: x + Math.sin(yaw) * 0.6, z: z + Math.cos(yaw) * 0.6 };
       this.people.addSign(BOARD.id, BOARD.glyph, x, col.heightAt(x, z) + 3.1, z);
-      this.talk.speaker(BOARD.id, BOARD.name, 'op de Grote Markt', [x, z]);
+      this.talk.speaker(BOARD.id, BOARD.name, 'on the Grote Markt', [x, z]);
       this.d.quests.npcPos.set(BOARD.id, [x, z]);
     }
     this.placeMarket(k);
@@ -598,17 +598,17 @@ export class Life {
         const r = this.race;
         this.race = null;
         const secret = this.todoTarget(px, pz, true);
-        const line = fill(this.pick.pick(DARES.win), secret ? { what: secret.label, dir: direction(secret.x - px, secret.z - pz) } : { what: 'de put op de markt', dir: 'daarginds' });
-        this.showNote(`${r.who.toUpperCase()} · GEWONNEN`, line);
+        const line = fill(this.pick.pick(DARES.win), secret ? { what: secret.label, dir: direction(secret.x - px, secret.z - pz) } : { what: 'the well on the market', dir: 'over there' });
+        this.showNote(`${r.who.toUpperCase()} · WON`, line);
         q.addXp(15 + q.s.hero.level * 3);
         if (secret) this.point(secret.x, secret.z, secret.label);
         this.d.sound.chime(false);
       } else if (this.race.t <= 0) {
-        this.showNote(`${this.race.who.toUpperCase()} · TE LAAT`, this.pick.pick(DARES.lose));
+        this.showNote(`${this.race.who.toUpperCase()} · TOO LATE`, this.pick.pick(DARES.lose));
         this.race = null;
       } else if (left !== this.raceShown) {
         this.raceShown = left;
-        this.showNote(`WEDLOOP · ${this.race.label.toUpperCase()}`, `Nog ${left} tellen`, true);
+        this.showNote(`RACE · ${this.race.label.toUpperCase()}`, `${left} counts to go`, true);
         this.noteT = 1.5;
       }
     }
@@ -655,18 +655,18 @@ export class Life {
 
   prompt(n: Near, key: string) {
     const k = `<kbd>${key}</kbd>`;
-    if (n.kind === 'svc') return `${k}Spreek met ${n.s.def.name} · ${n.s.def.label.toLowerCase()}`;
-    if (n.kind === 'board') return `${k}Lees het aanplakbord${this.board.open() ? ' · werk' : ''}`;
+    if (n.kind === 'svc') return `${k}Talk to ${n.s.def.name} · ${n.s.def.label.toLowerCase()}`;
+    if (n.kind === 'board') return `${k}Read the notice board${this.board.open() ? ' · work' : ''}`;
     if (n.kind === 'walker') {
       const p = this.persona(n.w);
-      return `${k}Spreek ${p.article} ${p.label} aan`;
+      return `${k}Talk to ${p.article} ${p.label}`;
     }
     if (n.kind === 'cock') return '';
     const s = n.spot;
-    if (s.kind === 'sign') return `${k}Bekijk het uithangbord`;
-    if (s.kind === 'door') return `${k}Klop aan`;
-    if (s.kind === 'well') return `${k}Drink uit de put`;
-    return `${k}Bid bij het kapelletje`;
+    if (s.kind === 'sign') return `${k}Look at the signboard`;
+    if (s.kind === 'door') return `${k}Knock`;
+    if (s.kind === 'well') return `${k}Drink from the well`;
+    return `${k}Pray at the shrine`;
   }
 
   interact(n: Near) {
@@ -686,7 +686,7 @@ export class Life {
       const stop = WALK[i];
       if (!stop) return;
       this.d.quests.s.life.walk = Math.max(this.d.quests.s.life.walk, i + 1);
-      this.d.hud.announce(`STADSWANDELING · HALTE ${i + 1} VAN ${WALK.length}`, stop.title, stop.line);
+      this.d.hud.announce(`TOWN WALK · STOP ${i + 1} OF ${WALK.length}`, stop.title, stop.line);
       if (i === 0) this.d.kroniek.unlock('tijd:stadswandeling');
       this.d.sound.chime(false);
     }
@@ -723,7 +723,7 @@ export class Life {
       if (!q.s.life.reads.includes(tag)) q.s.life.reads.push(tag);
       const n = q.s.life.reads.filter((r) => r.startsWith(`${id}:`)).length;
       const need = this.board.job(id)?.n ?? 3;
-      this.d.toast(`OPDRACHT · ${Math.min(n, need)} van ${need} gelezen`);
+      this.d.toast(`JOB · ${Math.min(n, need)} of ${need} read`);
       if (n >= need) q.apply([{ done: [id, 'read'] }]);
     }
   }
@@ -731,12 +731,12 @@ export class Life {
   // ================================================================ map, pointer
   mapMarks() {
     const out: { x: number; z: number; kind: 'svc' | 'pin'; label: string; glyph?: string }[] = [];
-    if (this.d.hud.mapScale < 2) out.push({ x: MARKET_CENTRE[0], z: MARKET_CENTRE[1], kind: 'svc', label: 'Markt', glyph: '⚖' });
+    if (this.d.hud.mapScale < 2) out.push({ x: MARKET_CENTRE[0], z: MARKET_CENTRE[1], kind: 'svc', label: 'Market', glyph: '⚖' });
     for (const s of this.services) {
       if (s.def.market && this.d.hud.mapScale < 2) continue;
       out.push({ x: s.x, z: s.z, kind: 'svc', label: s.def.label, glyph: s.def.glyph });
     }
-    if (this.d.hud.mapScale >= 2) out.push({ x: this.boardPos.x, z: this.boardPos.z, kind: 'svc', label: 'Aanplakbord', glyph: BOARD.glyph });
+    if (this.d.hud.mapScale >= 2) out.push({ x: this.boardPos.x, z: this.boardPos.z, kind: 'svc', label: 'Notice board', glyph: BOARD.glyph });
     const m = this.d.quests.npcPos.get(MARIEKE.id);
     if (m) out.push({ x: m[0], z: m[1], kind: 'svc', label: MARIEKE.label, glyph: MARIEKE.glyph });
     out.push(...this.ov.mapMarks());
@@ -770,7 +770,7 @@ export class Life {
       const list = female ? NAMES.f : NAMES.m;
       name = list[Math.floor(r() * list.length)];
     }
-    const article = label === 'meisje' ? 'het' : 'de';
+    const article = 'the';
     return { name, label, article, info };
   }
 
@@ -792,13 +792,13 @@ export class Life {
       text: first,
       choices: [
         { text: p.info.ask, reply: () => this.special(role, p.name) },
-        { text: 'Waar ben ik?', reply: () => this.after(this.where(role)) },
-        { text: 'Wat valt er hier te doen?', reply: () => this.after(this.todo()) },
-        { text: 'Vertel eens iets.', reply: () => this.after(this.gossip(role)) },
+        { text: 'Where am I?', reply: () => this.after(this.where(role)) },
+        { text: 'What is there to do here?', reply: () => this.after(this.todo()) },
+        { text: 'Tell me something.', reply: () => this.after(this.gossip(role)) },
         { text: this.pick.pick(BYE), close: () => this.d.toast(`${p.name.toUpperCase()} · ${this.pick.pick(BYE_REPLY)}`) },
       ],
     });
-    this.menuBack = () => menu(this.pick.pick(['Wil je nog iets weten?', 'Ja, zeg het maar.', 'Wat wil je nog vragen?', 'Vraag maar.']));
+    this.menuBack = () => menu(this.pick.pick(['Is there anything else you want to know?', 'Yes, go on.', 'What else do you want to ask?', 'Ask away.']));
     this.talk.start('life_walker', menu(this.quests().fill(this.greetFor(f))));
   }
 
@@ -833,7 +833,7 @@ export class Life {
       if (dist < Math.max(160, d.r * 2.2) && dist < bd) { bd = dist; best = d; }
     }
     if (!best) best = this.d.world.discoveries.find((d) => d.key === 'Diest' && this.d.world.inTown(x, z)) ?? null;
-    if (!best) return this.pick.pick(['Hier ben je nergens, vreemdeling, tussen twee dorpen in. Volg de weg maar.', 'Je bent ergens in het Demerdal. Meer weet ik ook niet.']);
+    if (!best) return this.pick.pick(["You're between two villages, stranger, which is to say nowhere. Follow the road.", "You're somewhere in the Demer valley. More than that I don't know either."]);
     const frames = [...(WHERE_FRAMES[role] ?? []), ...WHERE_FRAMES.any];
     const line = this.pick.pick(PLACE_LINES[best.key]);
     const known = this.d.kroniek.has(`plaats:${best.key}`);
@@ -843,7 +843,7 @@ export class Life {
       this.d.toast(`KRONIEK · ${best.title}`);
       this.d.quests.addXp(15);
     }
-    const near = bd > 70 && best.key !== 'Diest' ? `Het ligt ${farness(bd)}, ${direction(best.x - x, best.z - z)}. ` : '';
+    const near = bd > 70 && best.key !== 'Diest' ? `It lies ${farness(bd)}, ${direction(best.x - x, best.z - z)}. ` : '';
     const place = best.title.replace(/^(De|Het) /, (m) => m.toLowerCase());
     const out = fill(this.pick.pick(frames), { place, line: near + line });
     return out[0].toUpperCase() + out.slice(1);
@@ -855,8 +855,8 @@ export class Life {
     const c: { kind: string; x: number; z: number; label: string; w: number }[] = [];
     if (!secret) {
       for (const r of READABLES) if (!this.d.kroniek.has(r.entry)) c.push({ kind: 'read', x: r.at[0], z: r.at[1], label: r.label, w: 1 });
-      for (const s of this.services) if (!L.met.includes(s.def.id)) c.push({ kind: s.def.guide && s.def.guide !== 'inn' ? 'guide' : 'shop', x: s.x, z: s.z, label: `${s.def.name}, de ${s.def.role.split(',')[0]}`, w: 1 });
-      if (this.board.open()) c.push({ kind: 'board', x: this.boardPos.x, z: this.boardPos.z, label: 'het aanplakbord', w: 0.9 });
+      for (const s of this.services) if (!L.met.includes(s.def.id)) c.push({ kind: s.def.guide && s.def.guide !== 'inn' ? 'guide' : 'shop', x: s.x, z: s.z, label: `${s.def.name}, the ${s.def.role.split(',')[0]}`, w: 1 });
+      if (this.board.open()) c.push({ kind: 'board', x: this.boardPos.x, z: this.boardPos.z, label: 'the notice board', w: 0.9 });
       for (const m of this.d.combat.campMarks()) if (!m.cleared && m.level <= q.s.hero.level + 2) c.push({ kind: 'camp', x: m.x, z: m.z, label: m.name.toLowerCase(), w: 1.3 });
       for (const n of q.content.npcs) {
         const p = q.npcPos.get(n.id);
@@ -865,8 +865,8 @@ export class Life {
       for (const d of this.d.world.discoveries) if (!d.found && d.key !== 'Diest') c.push({ kind: 'place', x: d.x, z: d.z, label: d.title, w: 1.2 });
     }
     for (const s of this.spots) {
-      if (s.kind === 'sign' && !L.spots.includes(s.key)) c.push({ kind: 'spot', x: s.x, z: s.z, label: `een uithangbord, "${s.name}"`, w: secret ? 1 : 2.5 });
-      if (s.kind === 'shrine' && !L.spots.includes(s.key)) c.push({ kind: 'spot', x: s.x, z: s.z, label: 'een kapelletje', w: secret ? 1 : 2.5 });
+      if (s.kind === 'sign' && !L.spots.includes(s.key)) c.push({ kind: 'spot', x: s.x, z: s.z, label: `a signboard, "${s.name}"`, w: secret ? 1 : 2.5 });
+      if (s.kind === 'shrine' && !L.spots.includes(s.key)) c.push({ kind: 'spot', x: s.x, z: s.z, label: 'a shrine', w: secret ? 1 : 2.5 });
     }
     let best: (typeof c)[number] | null = null, bd = Infinity;
     for (const t of c) {
@@ -932,12 +932,12 @@ export class Life {
     if (sp === 'work') {
       const jobs = this.board.open();
       const t = this.todoTarget(x, z);
-      let what = jobs ? `Op het aanplakbord op de markt ${jobs === 1 ? 'hangt vandaag één briefje' : `hangen vandaag ${jobs} briefjes`}.` : 'Het aanplakbord is leeg vandaag, maar morgen hangt er weer iets.';
+      let what = jobs ? `On the notice board on the market ${jobs === 1 ? 'one note hangs today' : `${jobs} notes hang today`}.` : 'The notice board is empty today, but tomorrow something will hang there again.';
       const giver = q.nearestGiver(x, z);
       if (giver) {
-        what += ` En ${giver.npc.name} zoekt hulp, ${direction(giver.x - x, giver.z - z)}.`;
+        what += ` And ${giver.npc.name} is looking for help, ${direction(giver.x - x, giver.z - z)}.`;
         this.point(giver.x, giver.z, giver.npc.name);
-      } else if (jobs) this.point(this.boardPos.x, this.boardPos.z, 'Het aanplakbord');
+      } else if (jobs) this.point(this.boardPos.x, this.boardPos.z, 'The notice board');
       else if (t) this.point(t.x, t.z, t.label);
       return this.after(fill(this.pick.pick(WORK), { what }));
     }
@@ -945,8 +945,8 @@ export class Life {
       return {
         who: 'life_walker', text: this.pick.pick(FOOD.open),
         choices: [
-          { text: 'Laat eens zien.', close: () => this.openShop('marktvrouw', 'vrije', `${name.toUpperCase()}S MAND`, FOOD_GOODS as unknown as Good[]) },
-          { text: 'Nee, dank je.', reply: () => this.menuBack() },
+          { text: 'Show me.', close: () => this.openShop('marktvrouw', 'vrije', `${name.toUpperCase()}'S BASKET`, FOOD_GOODS as unknown as Good[]) },
+          { text: 'No, thank you.', reply: () => this.menuBack() },
         ],
       };
     }
@@ -960,7 +960,7 @@ export class Life {
       const last = tiers[tiers.length - 1];
       const parts = [REP[tiers[0].f]?.[tiers[0].t], REP[last.f]?.[last.t]].filter(Boolean);
       if (deeds.length) parts.push(deeds[Math.floor(Math.random() * deeds.length)]);
-      return this.after(`Wat ze zeggen? ${parts.join(' ')}`);
+      return this.after(`What do they say? ${parts.join(' ')}`);
     }
     if (sp === 'tend') {
       const max = q.sheet.derived().maxHp;
@@ -969,18 +969,18 @@ export class Life {
         who: 'life_walker', text: this.pick.pick(TEND.offer),
         choices: [
           {
-            text: 'Hier, twee stuivers.',
+            text: 'Here, two stuivers.',
             reply: () => {
               if (q.s.florins < 2) return this.after(this.healBy(0.6, TEND.poor));
               q.s.florins -= 2;
               this.d.sound.coins();
               this.standing.spend('kerk', 2);
-              this.onceToday('tend', () => this.standing.add('kerk', 1, 'een gift'));
+              this.onceToday('tend', () => this.standing.add('kerk', 1, 'a gift'));
               return this.after(this.healBy(1, TEND.done));
             },
           },
-          { text: 'Ik heb niets bij me.', reply: () => this.after(this.healBy(0.5, TEND.poor)) },
-          { text: 'Laat maar, het gaat wel.', reply: () => this.menuBack() },
+          { text: 'I have nothing on me.', reply: () => this.after(this.healBy(0.5, TEND.poor)) },
+          { text: "Never mind, I'll manage.", reply: () => this.menuBack() },
         ],
       };
     }
@@ -988,7 +988,7 @@ export class Life {
       const camps = this.d.combat.campMarks().filter((m) => !m.cleared).map((m) => ({ ...m, d: Math.hypot(m.x - x, m.z - z) })).sort((a, b) => a.d - b.d);
       const c = camps.find((m) => m.level <= q.s.hero.level + 2) ?? camps[0];
       if (!c) return this.after(this.pick.pick(CAMPS_NONE));
-      this.point(c.x, c.z, `${c.name} · niveau ${c.level}`, 240);
+      this.point(c.x, c.z, `${c.name} · level ${c.level}`, 240);
       this.d.kroniek.unlock('tijd:garnizoen');
       return this.after(fill(this.pick.pick(CAMPS_WARN), { camp: c.name.toLowerCase(), dir: direction(c.x - x, c.z - z), far: farness(c.d) }).replace(/^./, (m) => m.toUpperCase()));
     }
@@ -997,7 +997,7 @@ export class Life {
       this.addBuff('zegen', 300);
       this.onceToday('bless', () => this.standing.add('kerk', 1, 'gezegend'));
       this.d.sound.chime(false);
-      return this.after(`${this.pick.pick(BLESS)} (Gezegend: je krijgt vijf minuten lang minder schade.)`);
+      return this.after(`${this.pick.pick(BLESS)} (Blessed: you take less damage for five minutes.)`);
     }
     if (sp === 'pilgrim') {
       const b = this.d.world.discoveries.find((d) => d.key === 'Basiliek van Onze-Lieve-Vrouw van Scherpenheuvel');
@@ -1012,8 +1012,8 @@ export class Life {
           const n = Math.ceil(t.d / 4.6) + 4;
           const text = fill(this.pick.pick(DARES.race), { what: t.label, dir: direction(t.x - x, t.z - z), n: String(n) });
           return { who: 'life_walker', text, choices: [
-            { text: 'Afgesproken!', close: () => this.startRace(t.x, t.z, t.label, n, name) },
-            { text: 'Een andere keer.', reply: () => this.menuBack() },
+            { text: 'Agreed!', close: () => this.startRace(t.x, t.z, t.label, n, name) },
+            { text: 'Another time.', reply: () => this.menuBack() },
           ] };
         }
       }
@@ -1025,7 +1025,7 @@ export class Life {
         }
         return this.after(this.pick.pick(DARES.guessLose));
       };
-      return { who: 'life_walker', text: this.pick.pick(DARES.guess), choices: [{ text: 'Links.', reply: guess(0) }, { text: 'Rechts.', reply: guess(1) }] };
+      return { who: 'life_walker', text: this.pick.pick(DARES.guess), choices: [{ text: 'Left.', reply: guess(0) }, { text: 'Right.', reply: guess(1) }] };
     }
     // tale
     const said = this.pick.pick(TALES.map((x) => x.t));
@@ -1053,8 +1053,8 @@ export class Life {
 
   private raceTarget(x: number, z: number) {
     const c: { x: number; z: number; label: string; d: number }[] = [];
-    for (const s of this.spots) c.push({ x: s.x, z: s.z, label: s.kind === 'sign' ? `het bord van ${s.name}` : s.kind === 'well' ? 'de put' : s.kind === 'door' ? 'die deur daar' : 'het kapelletje', d: Math.hypot(s.x - x, s.z - z) });
-    for (const s of this.services) c.push({ x: s.x, z: s.z, label: s.def.label.toLowerCase().replace(/^/, 'de '), d: Math.hypot(s.x - x, s.z - z) });
+    for (const s of this.spots) c.push({ x: s.x, z: s.z, label: s.kind === 'sign' ? `the sign of ${s.name}` : s.kind === 'well' ? 'the well' : s.kind === 'door' ? 'that door over there' : 'the shrine', d: Math.hypot(s.x - x, s.z - z) });
+    for (const s of this.services) c.push({ x: s.x, z: s.z, label: s.def.label.toLowerCase().replace(/^/, 'the '), d: Math.hypot(s.x - x, s.z - z) });
     const ok = c.filter((t) => t.d > 35 && t.d < 110);
     return ok.length ? ok[Math.floor(Math.random() * ok.length)] : null;
   }
@@ -1078,7 +1078,7 @@ export class Life {
     this.talkingTo = def.id;
     const greet = `${this.greetFor(def.faction)} ${this.pick.pick(def.greet)}`;
     const menu = (text: string): Spec => ({ who: def.id, text, choices: this.serviceChoices(s) });
-    this.menuBack = () => menu(this.pick.pick(['Had je nog iets nodig?', 'Zeg het maar.', 'Wat kan ik nog voor je doen?']));
+    this.menuBack = () => menu(this.pick.pick(['Did you need something else?', 'Go on.', 'What else can I do for you?']));
     this.talk.start(def.id, menu(q.fill(greet)));
     if (def.guide === 'gate') this.d.kroniek.unlock('tijd:poorten');
     if (def.guide === 'inn') this.d.kroniek.unlock('tijd:herberg');
@@ -1094,13 +1094,13 @@ export class Life {
     if (want) {
       const j = want.job;
       const isPick = j.template.kind === 'delivery' && want.stage === 'pick';
-      const text = isPick ? `Ik kom ${j.def.stages[0].objectives[0].text.replace(/^Haal (.*) op bij .*$/, '$1')} halen.` : j.template.kind === 'bounty' ? 'Het werk is gedaan. De weg is weer vrij.' : j.template.kind === 'delivery' ? 'Hier is je bestelling.' : j.template.kind === 'read' ? 'Ik heb gelezen wat er aan de muren hangt.' : 'Ik heb je spullen gevonden.';
+      const text = isPick ? `I've come to collect ${j.def.stages[0].objectives[0].text.replace(/^Collect (.*) from .*$/, '$1')}.` : j.template.kind === 'bounty' ? 'The work is done. The road is clear again.' : j.template.kind === 'delivery' ? 'Here is your order.' : j.template.kind === 'read' ? "I've read what hangs on the walls." : "I've found your things.";
       out.push({
         text,
         reply: () => {
           if (isPick) {
             q.apply([{ give: j.item! }, { done: [j.id, 'pick'] }, { stage: [j.id, 'bring'] }]);
-            return this.after(this.pick.pick(['Hier, wees er voorzichtig mee en eet het onderweg niet op.', 'Daar is het. Zeg dat het van mij komt.', 'Eindelijk komt er iemand. Hier, en haast je.']), def.id);
+            return this.after(this.pick.pick(["Here. Be careful with it, and don't eat it on the way.", "There it is. Tell them it's from me.", 'At last, someone comes. Here, and hurry.']), def.id);
           }
           const eff: Parameters<QuestEngine['apply']>[0] = [];
           if (j.item) eff.push({ take: j.item, n: 99 });
@@ -1110,39 +1110,39 @@ export class Life {
         },
       });
     }
-    if (def.shop) out.push({ text: def.guide === 'inn' ? 'Wat schenk je?' : 'Laat je waren eens zien.', close: () => this.openShop(def.id, def.faction, `${def.name.toUpperCase()} · ${def.label.toUpperCase()}`, GOODS[def.shop!] ?? [], def.shopGreet) });
+    if (def.shop) out.push({ text: def.guide === 'inn' ? 'What are you pouring?' : 'Show me your wares.', close: () => this.openShop(def.id, def.faction, `${def.name.toUpperCase()} · ${def.label.toUpperCase()}`, GOODS[def.shop!] ?? [], def.shopGreet) });
     if (def.guide === 'crier') {
-      out.push({ text: 'Is er nieuws?', reply: () => this.after(this.news(), def.id) });
-      out.push({ text: 'Wat is er te zien in Diest?', reply: () => this.after(this.sights(), def.id) });
-      if (!q.s.quests.walk_diest) out.push({ text: 'Kun je me de stad laten zien?', reply: () => {
+      out.push({ text: 'Is there any news?', reply: () => this.after(this.news(), def.id) });
+      out.push({ text: 'What is there to see in Diest?', reply: () => this.after(this.sights(), def.id) });
+      if (!q.s.quests.walk_diest) out.push({ text: 'Can you show me the town?', reply: () => {
         q.start('walk_diest');
-        return this.after('Ik kan hier niet weg, ik moet roepen. Maar ik zeg je waar je moet kijken: acht plekken, van de markt tot aan het Begijnhof. Bij elke plek vertel ik je iets. Nu ja, de stad vertelt het. Ik heb het alleen opgeschreven.', def.id);
+        return this.after("I can't leave here, I have to cry. But I'll tell you where to look: eight places, from the market to the Begijnhof. At each I'll tell you something. Well, the town tells it. I only wrote it down.", def.id);
       } });
-      out.push({ text: 'Is er werk?', reply: () => {
+      out.push({ text: 'Is there work?', reply: () => {
         const n = this.board.open();
-        this.point(this.boardPos.x, this.boardPos.z, 'Het aanplakbord', 90);
-        return this.after(n ? `Kijk op het aanplakbord, hier naast me. Er ${n === 1 ? 'hangt vandaag één briefje' : `hangen vandaag ${n} briefjes`}. Wie kan lezen, kan iets verdienen.` : 'Alles van vandaag is al genomen. Morgen hang ik nieuwe briefjes op. Of iemand anders doet het, want ik kan niet zo goed plakken.', def.id);
+        this.point(this.boardPos.x, this.boardPos.z, 'The notice board', 90);
+        return this.after(n ? `Look at the notice board, here beside me. ${n === 1 ? 'One note hangs' : `${n} notes hang`} there today. Whoever can read can earn something.` : "Everything for today has been taken. Tomorrow I hang new notes. Or someone else does, because I'm no good at pasting.", def.id);
       } });
     }
-    if (def.guide === 'notary') out.push({ text: 'Ik wil je iets vragen…', reply: () => this.topics(def.id, TOPICS, 0) });
-    if (def.guide === 'pilgrims') out.push({ text: 'Vertel me iets over deze plek…', reply: () => this.topics(def.id, PILGRIM_TOPICS, 0) });
+    if (def.guide === 'notary') out.push({ text: 'I want to ask you something…', reply: () => this.topics(def.id, TOPICS, 0) });
+    if (def.guide === 'pilgrims') out.push({ text: 'Tell me about this place…', reply: () => this.topics(def.id, PILGRIM_TOPICS, 0) });
     if (def.guide === 'gate' && def.gate) {
       const g = GATES[def.gate];
-      out.push({ text: 'Waar gaat deze weg naartoe?', reply: () => this.after(g.road, def.id) });
-      out.push({ text: 'Waar moet ik op letten?', reply: () => {
+      out.push({ text: 'Where does this road lead?', reply: () => this.after(g.road, def.id) });
+      out.push({ text: 'What should I watch out for?', reply: () => {
         if (g.mark) {
           const c = this.d.combat.campMarks().find((m) => this.d.quests.content.camps.find((cd) => cd.id === g.mark && cd.at[0] === m.x && cd.at[1] === m.z));
-          if (c && !c.cleared) this.point(c.x, c.z, `${c.name} · niveau ${c.level}`, 240);
+          if (c && !c.cleared) this.point(c.x, c.z, `${c.name} · level ${c.level}`, 240);
         }
-        return this.after(g.watch + (g.mark ? ' Ik duid het aan op je kaart.' : ''), def.id);
+        return this.after(g.watch + (g.mark ? " I'll mark it on your map." : ''), def.id);
       } });
-      out.push({ text: 'Hoe gaat het hier aan de poort?', reply: () => this.after(g.lore, def.id) });
+      out.push({ text: 'How are things here at the gate?', reply: () => this.after(g.lore, def.id) });
     }
     if (def.guide === 'inn') {
-      out.push({ text: 'Is er een verteller vanavond?', reply: () => this.after(this.innTale(), def.id) });
-      out.push({ text: 'Zullen we een spelletje dobbelen?', reply: () => this.dice(def.id) });
+      out.push({ text: 'Is there a storyteller tonight?', reply: () => this.after(this.innTale(), def.id) });
+      out.push({ text: 'Shall we play a game of dice?', reply: () => this.dice(def.id) });
     }
-    if (!def.guide || def.guide === 'gate') out.push({ text: 'Wat hoor je zoal?', reply: () => this.after(this.serviceGossip(def.faction), def.id) });
+    if (!def.guide || def.guide === 'gate') out.push({ text: 'What do you hear, as a rule?', reply: () => this.after(this.serviceGossip(def.faction), def.id) });
     out.push(...this.ov.serviceChoices(def.id, (t) => this.after(t, def.id)));
     out.push({ text: this.pick.pick(BYE), close: () => {} });
     return out.slice(0, 6);
@@ -1160,7 +1160,7 @@ export class Life {
     const per = 5;
     const shown = order.slice(page * per, page * per + per);
     const choices: Ch[] = shown.map((t) => ({
-      text: `${t.ask}${L.topics.includes(t.id) ? ' (gehoord)' : ''}`,
+      text: `${t.ask}${L.topics.includes(t.id) ? ' (heard)' : ''}`,
       reply: () => {
         if (!L.topics.includes(t.id)) L.topics.push(t.id);
         this.d.kroniek.unlock(t.page);
@@ -1168,16 +1168,16 @@ export class Life {
         return {
           who, text: t.answer + label,
           choices: [
-            { text: 'Nog iets anders vragen.', reply: () => this.topics(who, list, 0) },
+            { text: 'Ask something else.', reply: () => this.topics(who, list, 0) },
             { text: this.pick.pick(BYE), close: () => {} },
           ],
         };
       },
     }));
-    if (order.length > per) choices.push({ text: 'Andere onderwerpen…', reply: () => this.topics(who, list, (page + 1) % Math.ceil(order.length / per)) });
-    choices.push({ text: 'Laat maar.', reply: () => this.menuBack() });
+    if (order.length > per) choices.push({ text: 'Other subjects…', reply: () => this.topics(who, list, (page + 1) % Math.ceil(order.length / per)) });
+    choices.push({ text: 'Never mind.', reply: () => this.menuBack() });
     const left = list.filter((t) => !L.topics.includes(t.id)).length;
-    return { who, text: left ? `Vraag maar. Ik weet iets over ${list.length} dingen, en over ${left} daarvan heb je me nog niets gevraagd.` : 'Je hebt me alles al gevraagd. Vraag gerust nog eens: ik word er niet moe van.', choices };
+    return { who, text: left ? `Ask away. I know something about ${list.length} things, and on ${left} of them you haven't asked me yet.` : "You've asked me everything. Ask again if you like: I don't tire of it.", choices };
   }
 
   private news() {
@@ -1185,7 +1185,7 @@ export class Life {
     const t = this.pick.pick(pool);
     const item = NEWS.find((n) => n.t === t);
     if (item && NEWS.indexOf(item) < 7) this.d.kroniek.unlock('tijd:wereld');
-    return `Horen, zien en zwijgen! ${t}`;
+    return `Hear this! ${t}`;
   }
 
   private sights() {
@@ -1194,11 +1194,11 @@ export class Life {
     const ds = keys.map((k) => this.d.world.discoveries.find((d) => d.key === k)).filter((d): d is NonNullable<typeof d> => !!d);
     const unseen = ds.filter((d) => !d.found).sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z));
     const list = ds.map((d) => d.title).join(', ');
-    let out = `In Diest heb je: ${list}. Op de markt staan de bakker, de kruidenvrouw, de boekverkoper, de kleermaker en de wapensmid. De herberg De Zwaan ligt ten noorden van de markt, de infirmerie in het Begijnhof, en aan elke poort staat een wachter die de weg kent.`;
+    let out = `In Diest you have: ${list}. On the market stand the baker, the herbwife, the bookseller, the tailor and the weaponsmith. The inn De Zwaan lies north of the market, the infirmary in the Begijnhof, and at every gate stands a guard who knows the road.`;
     if (unseen[0]) {
       this.point(unseen[0].x, unseen[0].z, unseen[0].title);
-      out += ` Je hebt ${unseen[0].title} nog niet gezien: ${direction(unseen[0].x - x, unseen[0].z - z)}, ${farness(Math.hypot(unseen[0].x - x, unseen[0].z - z))}.`;
-    } else out += ' Je hebt alles al gezien, hoor ik. Dan ken je de stad beter dan ik.';
+      out += ` You haven't yet seen ${unseen[0].title}: ${direction(unseen[0].x - x, unseen[0].z - z)}, ${farness(Math.hypot(unseen[0].x - x, unseen[0].z - z))}.`;
+    } else out += " You've seen everything already, I hear. Then you know the town better than I do.";
     return out;
   }
 
@@ -1211,14 +1211,14 @@ export class Life {
       if (cd) this.point(cd.at[0], cd.at[1], cd.name, 300);
     }
     const truth = tale.page || tale.camp === 'eikenbos' ? 'volksverhaal' : 'verzonnen';
-    return `Een oude voerman bij het vuur vertelt: "${tale.t}" (${TRUTH[truth].name}${tale.camp ? '. Hij wijst het aan op je kaart' : ''})`;
+    return `An old carter by the fire tells: "${tale.t}" (${TRUTH[truth].name}${tale.camp ? '. He marks it on your map' : ''})`;
   }
 
   /** Three dice each, highest wins. Forbidden, of course: the begijnen hear of it. */
   private dice(who: string): Spec {
     const q = this.d.quests;
     const play = (bet: number) => (): Spec => {
-      if (q.s.florins < bet) return this.after('Zonder geld geen spel. Dat is de enige regel die hier niemand breekt.', who);
+      if (q.s.florins < bet) return this.after("No money, no game. That's the one rule nobody here breaks.", who);
       const roll = () => [1, 2, 3].map(() => 1 + Math.floor(Math.random() * 6));
       const a = roll(), b = roll();
       const sa = a.reduce((x, y) => x + y), sb = b.reduce((x, y) => x + y);
@@ -1235,16 +1235,16 @@ export class Life {
         res = this.pick.pick(DICE.lose);
       } else res = this.pick.pick(DICE.tie);
       return {
-        who, text: `Jij gooit ${a.join(', ')}: ${sa}. De waard gooit ${b.join(', ')}: ${sb}. ${res}`,
-        choices: [{ text: 'Ik gooi nog eens.', reply: () => this.dice(who) }, { text: 'Het is genoeg voor vandaag.', reply: () => this.menuBack() }],
+        who, text: `You throw ${a.join(', ')}: ${sa}. The landlord throws ${b.join(', ')}: ${sb}. ${res}`,
+        choices: [{ text: 'I throw again.', reply: () => this.dice(who) }, { text: "That's enough for today.", reply: () => this.menuBack() }],
       };
     };
     return {
       who, text: `${this.pick.pick(DICE.ask)} (${DICE.sign})`,
       choices: [
-        { text: 'Ik zet één stuiver in.', reply: play(1) },
-        ...(this.standing.level('vrije') >= 1 || q.s.florins >= 20 ? [{ text: 'Ik zet vijf stuivers in.', reply: play(5) }] : []),
-        { text: 'Nee, laat maar.', reply: () => this.menuBack() },
+        { text: 'I stake one stuiver.', reply: play(1) },
+        ...(this.standing.level('vrije') >= 1 || q.s.florins >= 20 ? [{ text: 'I stake five stuivers.', reply: play(5) }] : []),
+        { text: 'No, never mind.', reply: () => this.menuBack() },
       ],
     };
   }
@@ -1258,28 +1258,28 @@ export class Life {
       const choices: Ch[] = jobs.map((j) => {
         const taken = this.board.taken(j.id);
         const st = q.s.quests[j.id]?.status;
-        const tag = st === 'done' ? ' (gedaan)' : taken ? ' (aangenomen)' : ` · ${stuivers(j.def.reward?.florins ?? 0)}`;
+        const tag = st === 'done' ? ' (done)' : taken ? ' (accepted)' : ` · ${stuivers(j.def.reward?.florins ?? 0)}`;
         return {
           text: `${j.def.title}${tag}`,
           reply: (): Spec => ({
             who: BOARD.id,
-            text: `${j.notice} (Niveau ${j.def.level}. Beloning: ${stuivers(j.def.reward?.florins ?? 0)}, ${j.def.reward?.xp} ervaring, en aanzien bij ${FACTIONS[this.factionOf(j.client) ?? 'gilden'].name}.)`,
+            text: `${j.notice} (Level ${j.def.level}. Reward: ${stuivers(j.def.reward?.florins ?? 0)}, ${j.def.reward?.xp} experience, and standing with ${FACTIONS[this.factionOf(j.client) ?? 'gilden'].name}.)`,
             choices: [
-              ...(taken ? [] : [{ text: 'Ik neem het aan.', reply: (): Spec => {
+              ...(taken ? [] : [{ text: "I'll take it.", reply: (): Spec => {
                 this.board.pinLevel(j.id);
                 this.board.take(j);
-                return { who: BOARD.id, text: 'Je trekt het briefje van het bord. Het staat nu in je dagboek, bij de opdrachten.', choices: [{ text: 'Verder kijken.', reply: list }, { text: 'Weggaan.', close: () => {} }] };
+                return { who: BOARD.id, text: 'You pull the note from the board. It is now in your journal, under the tasks.', choices: [{ text: 'Look further.', reply: list }, { text: 'Leave.', close: () => {} }] };
               } }]),
-              { text: 'Iets anders bekijken.', reply: list },
+              { text: 'Look at something else.', reply: list },
             ],
           }),
         };
       });
       const notice = this.ov.notice();
-      if (notice) choices.push({ text: 'Het plakkaat van het kapittel lezen.', reply: (): Spec => ({ who: BOARD.id, text: notice, choices: [{ text: 'Iets anders bekijken.', reply: list }, { text: 'Weggaan.', close: () => {} }] }) });
-      choices.push({ text: 'Weggaan.', close: () => {} });
+      if (notice) choices.push({ text: "Read the chapter's proclamation.", reply: (): Spec => ({ who: BOARD.id, text: notice, choices: [{ text: 'Look at something else.', reply: list }, { text: 'Leave.', close: () => {} }] }) });
+      choices.push({ text: 'Leave.', close: () => {} });
       const open = this.board.open();
-      return { who: BOARD.id, text: open ? `Er hangen briefjes, plakkaten en een premie met een rode lakzegel. ${open === 1 ? 'Eén opdracht is' : `${open} opdrachten zijn`} nog niet genomen. Morgen hangen er nieuwe.` : 'Alles van vandaag is genomen. Morgen hangen er nieuwe briefjes.', choices };
+      return { who: BOARD.id, text: open ? `Notes, proclamations and a bounty with a red wax seal hang here. ${open === 1 ? 'One job is' : `${open} jobs are`} still untaken. Tomorrow there will be new ones.` : 'Everything for today has been taken. Tomorrow there will be new notes.', choices };
     };
     this.menuBack = list;
     this.talk.start(BOARD.id, list());
@@ -1288,8 +1288,8 @@ export class Life {
   // ================================================================ shops and goods
   /** The shop panel for this seller (also Marieke's, from her own conversation). */
   shopFor(id: string) {
-    if (id === MARIEKE.id) return this.shops.view(id, 'vrije', 'MARIEKES WAREN', GOODS.marieke, 'Alles is eerlijk verkregen. Bijna alles toch.');
-    if (id === 'heylwich' && this.ov.found) return this.shops.view(id, 'oudevolk', 'HEYLWICHS MAND', this.ov.goods(), 'Wat ik pluk, pluk ik waar het groeit. Wat ik zeg, zeg ik maar één keer.');
+    if (id === MARIEKE.id) return this.shops.view(id, 'vrije', "MARIEKE'S WARES", GOODS.marieke, 'Everything honestly come by. Nearly everything, anyway.');
+    if (id === 'heylwich' && this.ov.found) return this.shops.view(id, 'oudevolk', "HEYLWICH'S BASKET", this.ov.goods(), 'What I pick, I pick where it grows. What I say, I say only once.');
     const s = this.byId.get(id);
     if (!s) return null;
     return this.shops.view(id, s.def.faction, `${s.def.name.toUpperCase()} · ${s.def.label.toUpperCase()}`, GOODS[s.def.shop ?? ''] ?? [], s.def.shopGreet ? this.pick.pick(s.def.shopGreet) : undefined);
@@ -1303,9 +1303,9 @@ export class Life {
 
   private spentGood(g: Good): string | null {
     const u = g.use;
-    if ('reveal' in u) return u.reveal.every((k) => this.d.kroniek.has(`plaats:${k}`)) ? 'Je kent die plaatsen al' : null;
-    if ('kroniek' in u) return u.kroniek.every((k) => this.d.kroniek.has(k)) ? 'Al in je Kroniek' : null;
-    if ('cloak' in u) return this.d.quests.s.hero.cloak.toLowerCase() === u.cloak.toLowerCase() ? 'Je mantel heeft deze kleur al' : null;
+    if ('reveal' in u) return u.reveal.every((k) => this.d.kroniek.has(`plaats:${k}`)) ? 'You already know those places' : null;
+    if ('kroniek' in u) return u.kroniek.every((k) => this.d.kroniek.has(k)) ? 'Already in your Kroniek' : null;
+    if ('cloak' in u) return this.d.quests.s.hero.cloak.toLowerCase() === u.cloak.toLowerCase() ? 'Your cloak is already this colour' : null;
     return null;
   }
 
@@ -1315,24 +1315,24 @@ export class Life {
     const max = q.sheet.derived().maxHp;
     if ('heal' in u && q.s.hero.hp >= max) {
       // nothing to mend: keep your money
-      this.d.toast('Je bent al helemaal hersteld');
+      this.d.toast('You are already fully healed');
       return false;
     }
     if ('heal' in u) {
       q.s.hero.hp = Math.min(max, q.s.hero.hp + max * u.heal);
-      this.d.toast(`${g.name.toUpperCase()} · hersteld`);
+      this.d.toast(`${g.name.toUpperCase()} · healed`);
     } else if ('regen' in u) {
       q.s.inv[g.id] = (q.s.inv[g.id] ?? 0) + 1;
-      this.d.toast(`IN JE TAS · ${g.name}`);
+      this.d.toast(`IN YOUR BAG · ${g.name}`);
     } else if ('salve' in u) {
       q.s.inv.salve = (q.s.inv.salve ?? 0) + u.salve;
-      this.d.toast(`ZALF · +${u.salve}`);
+      this.d.toast(`SALVE · +${u.salve}`);
     } else if ('buff' in u) {
       if (u.buff === 'uitgerust') q.s.hero.hp = max;
       this.addBuff(u.buff, u.secs);
     } else if ('cloak' in u) {
       q.s.hero.cloak = u.cloak;
-      this.d.toast(`JE MANTEL · ${g.name.replace('Verf: ', '')}`);
+      this.d.toast(`YOUR CLOAK · ${g.name.replace('Dye: ', '')}`);
     } else if ('reveal' in u) {
       const names: string[] = [];
       for (const key of u.reveal) {
@@ -1344,7 +1344,7 @@ export class Life {
         d.found = true;
         this.d.kroniek.unlock(`plaats:${key}`, true);
       }
-      this.d.toast(names.length ? `OP JE KAART · ${names.slice(0, 3).join(', ')}${names.length > 3 ? ' …' : ''}` : 'OP JE KAART');
+      this.d.toast(names.length ? `ON YOUR MAP · ${names.slice(0, 3).join(', ')}${names.length > 3 ? ' …' : ''}` : 'ON YOUR MAP');
     } else if ('kroniek' in u) {
       for (const id of u.kroniek) this.d.kroniek.unlock(id);
     } else if ('talisman' in u) {
@@ -1359,7 +1359,7 @@ export class Life {
   private addBuff(id: string, secs: number) {
     const B = this.d.quests.s.life.buffs;
     B[id] = Math.max(B[id] ?? 0, secs);
-    this.d.toast(`${(BUFF_NAMES[id] ?? id).toUpperCase()} · ${Math.round(secs / 60)} minuten`);
+    this.d.toast(`${(BUFF_NAMES[id] ?? id).toUpperCase()} · ${Math.round(secs / 60)} minutes`);
   }
 
   private autoEat() {
@@ -1372,7 +1372,7 @@ export class Life {
     q.s.inv[f.id]--;
     q.s.life.buffs.eten = f.use.secs;
     q.s.life.buffs.etenRate = f.use.regen;
-    this.d.toast(`JE EET · ${f.name.toLowerCase()}`);
+    this.d.toast(`YOU EAT · ${f.name.toLowerCase()}`);
   }
 
   // ================================================================ things in the street
@@ -1385,29 +1385,29 @@ export class Life {
     if (s.kind === 'sign') {
       const count = this.spots.filter((x) => x.kind === 'sign' && L.spots.includes(x.key)).length;
       const total = this.spots.filter((x) => x.kind === 'sign').length;
-      this.showNote(first ? `UITHANGBORD · ${count} VAN ${total}` : 'UITHANGBORD', fill(SIGN_LINES[hash(s.key) % SIGN_LINES.length], { name: s.name }));
+      this.showNote(first ? `SIGNBOARD · ${count} OF ${total}` : 'SIGNBOARD', fill(SIGN_LINES[hash(s.key) % SIGN_LINES.length], { name: s.name }));
       if (first) {
         q.addXp(6 + q.s.hero.level);
         this.d.kroniek.unlock('tijd:huisnamen');
         if (count % 10 === 0) {
           q.s.florins += 5;
-          this.d.toast(`${count} UITHANGBORDEN · de gilde van Sint-Lucas geeft je 5 stuivers`);
-          this.standing.add('gilden', 2, 'oog voor de stad');
+          this.d.toast(`${count} SIGNBOARDS · the guild of Sint-Lucas gives you 5 stuivers`);
+          this.standing.add('gilden', 2, 'an eye for the town');
         }
       }
     } else if (s.kind === 'door') {
       if (L.spotDay[s.key] === day) {
-        this.showNote('DEUR', this.pick.pick(['Niemand doet nog open. Ze hebben je vandaag al gezien.', 'Je klopt nog eens. Binnen wordt het heel stil.', 'Het gordijn beweegt, maar de deur blijft dicht.']));
+        this.showNote('DOOR', this.pick.pick(["Nobody opens any more. They've seen you today already.", 'You knock again. Inside it goes very quiet.', 'The curtain moves, but the door stays shut.']));
       } else {
         L.spotDay[s.key] = day;
         const line = DOOR_LINES[h % DOOR_LINES.length];
-        this.showNote('JE KLOPT AAN', line);
+        this.showNote('YOU KNOCK', line);
         if (/appel|pap/.test(line)) q.s.hero.hp = Math.min(max, q.s.hero.hp + max * 0.2);
         if (first) q.addXp(4 + q.s.hero.level);
       }
     } else if (s.kind === 'well') {
       q.s.hero.hp = Math.min(max, q.s.hero.hp + max * 0.3);
-      this.showNote('WATERPUT', this.pick.pick(WELL_LINES));
+      this.showNote('WELL', this.pick.pick(WELL_LINES));
       const sign = this.ov.spot(s.key);
       if (sign) this.showNote(sign.kicker, sign.text);
       if (first) {
@@ -1416,12 +1416,12 @@ export class Life {
       }
     } else {
       if (L.spotDay[s.key] === day) {
-        this.showNote('KAPELLETJE', `${SHRINE_LINES[hash(s.key) % SHRINE_LINES.length]} Je hebt hier vandaag al gebeden.`);
+        this.showNote('SHRINE', `${SHRINE_LINES[hash(s.key) % SHRINE_LINES.length]} You have already prayed here today.`);
         const sign = this.ov.spot(s.key);
         if (sign) this.showNote(sign.kicker, sign.text);
       } else {
         L.spotDay[s.key] = day;
-        this.showNote('JE BIDT', `${SHRINE_LINES[hash(s.key) % SHRINE_LINES.length]} Je voelt je beschermd.`);
+        this.showNote('YOU PRAY', `${SHRINE_LINES[hash(s.key) % SHRINE_LINES.length]} You feel protected.`);
         this.addBuff('zegen', 120);
         const sign = this.ov.spot(s.key);
         if (sign) this.showNote(sign.kicker, sign.text);
@@ -1429,7 +1429,7 @@ export class Life {
           q.addXp(6 + q.s.hero.level);
           this.d.kroniek.unlock('tijd:kapelletjes');
           const n = this.spots.filter((x) => x.kind === 'shrine' && L.spots.includes(x.key)).length;
-          if (n % 5 === 0) this.standing.add('kerk', 2, `${n} kapelletjes`);
+          if (n % 5 === 0) this.standing.add('kerk', 2, `${n} shrines`);
         }
       }
     }
@@ -1453,8 +1453,8 @@ export class Life {
     q.s.florins += 3 + n;
     q.addXp(25 + q.s.hero.level * 5);
     this.d.sound.chime(false);
-    this.showNote(`TORENHAAN · ${n} VAN ${COCKS.length}`, `De gouden haan van ${COCK_SHOWN[c.name] ?? c.name} draait en zingt in de wind. Je tikt hem aan in het voorbijvliegen. ${n === COCKS.length ? 'Nu heb je alle hanen van het Demerdal! De klokkengieters zullen ervan horen.' : ''}`);
-    if (n === COCKS.length) this.standing.add('gilden', 6, 'alle torenhanen');
+    this.showNote(`WEATHERCOCK · ${n} OF ${COCKS.length}`, `The golden cock of ${COCK_SHOWN[c.name] ?? c.name} turns and crows in the wind. You tap it as you fly past. ${n === COCKS.length ? 'Now you have every cock in the Demer valley! The bellfounders will hear of it.' : ''}`);
+    if (n === COCKS.length) this.standing.add('gilden', 6, 'all weathercocks');
     q.save();
   }
 
@@ -1535,13 +1535,13 @@ function spotAtlas() {
 /** The town walk: eight stops from the market to the Begijnhof, each with a line of history. */
 function walkQuest(): QuestDef {
   return {
-    id: 'walk_diest', title: 'Een wandeling door Diest', kind: 'side', town: 'Diest', giver: 'omroeper', level: 1,
-    summary: 'Je wandelt langs acht haltes, van de Grote Markt tot aan het Begijnhof. Bij elke halte hoor je iets over de stad.',
+    id: 'walk_diest', title: 'A walk through Diest', kind: 'side', town: 'Diest', giver: 'omroeper', level: 1,
+    summary: 'You walk eight stops, from the Grote Markt to the Begijnhof. At each stop you hear something about the town.',
     reward: { xp: 260, florins: 15 },
     stages: WALK.map((w, i) => ({
       id: `stop${i}`,
-      journal: `Halte ${i + 1} van ${WALK.length}: ${w.title}. ${w.go}`,
-      objectives: [{ id: 'reach', kind: 'reach' as const, text: `Halte ${i + 1}: ${w.title}`, at: w.at, r: 16, onFoot: true }],
+      journal: `Stop ${i + 1} of ${WALK.length}: ${w.title}. ${w.go}`,
+      objectives: [{ id: 'reach', kind: 'reach' as const, text: `Stop ${i + 1}: ${w.title}`, at: w.at, r: 16, onFoot: true }],
       onDone: i < WALK.length - 1 ? [{ call: `walk:${i}` }, { stage: ['walk_diest', `stop${i + 1}`] as [string, string] }] : [{ call: `walk:${i}` }, { complete: 'walk_diest' }],
     })),
   };

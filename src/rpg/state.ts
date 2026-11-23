@@ -305,7 +305,7 @@ function loseSave() {
   const el = document.createElement('div');
   el.className = 'elsewhere';
   el.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(12,10,8,.92);color:#e8dcc0;font:18px/1.5 Georgia,serif;text-align:center;padding:16px';
-  el.innerHTML = '<div style="max-width:30em">Het spel is in een ander venster geopend. Daar wordt je voortgang nu bewaard, hier niet meer.</div><button style="font:inherit;padding:8px 18px;cursor:pointer">HIER VERDER SPELEN</button>';
+  el.innerHTML = '<div style="max-width:30em">The game has been opened in another window. Your progress is saved there now, not here.</div><button style="font:inherit;padding:8px 18px;cursor:pointer">CONTINUE HERE</button>';
   el.querySelector('button')!.addEventListener('click', () => location.reload());
   for (const t of ['pointerdown', 'mousedown', 'click', 'wheel'] as const) el.addEventListener(t, (ev) => ev.stopPropagation());
   document.body.appendChild(el);

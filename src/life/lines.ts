@@ -75,15 +75,15 @@ export function today() {
 /** Direction in words, from a to b (x east, z south). */
 export function direction(dx: number, dz: number) {
   const a = Math.atan2(dx, -dz); // 0 = north, clockwise
-  const names = ['naar het noorden', 'naar het noordoosten', 'naar het oosten', 'naar het zuidoosten', 'naar het zuiden', 'naar het zuidwesten', 'naar het westen', 'naar het noordwesten'];
+  const names = ['to the north', 'to the north-east', 'to the east', 'to the south-east', 'to the south', 'to the south-west', 'to the west', 'to the north-west'];
   return names[((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8];
 }
 
 /** Distance in 1650 terms: no metres. */
 export function farness(d: number) {
-  if (d < 35) return 'hier vlakbij';
-  if (d < 120) return 'een eindje verder';
-  if (d < 400) return 'een paar straten verder';
-  if (d < 1200) return 'aan de andere kant van de stad';
-  return 'een flink eind buiten de stad';
+  if (d < 35) return 'close by';
+  if (d < 120) return 'a little further on';
+  if (d < 400) return 'a few streets on';
+  if (d < 1200) return 'across the town';
+  return 'well outside the town';
 }

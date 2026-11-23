@@ -57,8 +57,8 @@ export class Standing {
   priceNote(f: FactionId) {
     const t = this.tier(f);
     const off = Math.round((1 - PRICE[t.index]) * 100);
-    const next = t.next !== null ? ` · nog ${t.next - this.points(f)} tot ${TIERS[t.index + 1].name}` : '';
-    return `${FACTIONS[f].name}: ${t.name}${off ? ` · ${off}% korting` : ' · volle prijs'}${next}`;
+    const next = t.next !== null ? ` · ${t.next - this.points(f)} more to ${TIERS[t.index + 1].name}` : '';
+    return `${FACTIONS[f].name}: ${t.name}${off ? ` · ${off}% discount` : ' · full price'}${next}`;
   }
 
   /** Change standing; says so in a toast, and loudly when a tier is crossed. */
@@ -73,11 +73,11 @@ export class Standing {
     if (moved && this.known(f)) {
       const after = this.tier(f);
       this.onChange?.(f, before, after.index);
-      if (after.index !== before) this.toast(`${FACTIONS[f].name.toUpperCase()} · ${after.index > before ? 'nu' : 'nog maar'} ${after.name}`);
+      if (after.index !== before) this.toast(`${FACTIONS[f].name.toUpperCase()} · ${after.index > before ? 'now' : 'down to'} ${after.name}`);
       else this.toast(`${FACTIONS[f].name.toUpperCase()} ${moved > 0 ? '+' : ''}${moved}${why ? ' · ' + why : ''}`);
     }
     // then the rival party notices: a quarter of what you gained, at least one point
-    if (rival && n >= 3) for (const [a, b] of RIVAL_PAIRS) if (a === f || b === f) this.add(a === f ? b : a, -Math.max(1, Math.round(n / 4)), `omdat je ${FACTIONS[f].name.replace(/^De /, 'de ')} helpt`, false);
+    if (rival && n >= 3) for (const [a, b] of RIVAL_PAIRS) if (a === f || b === f) this.add(a === f ? b : a, -Math.max(1, Math.round(n / 4)), `because you help ${FACTIONS[f].name}`, false);
   }
 
   /** Money spent with a party turns into standing: one point for every ten florins. */
@@ -88,7 +88,7 @@ export class Standing {
     if (pts > 0) {
       sp[f] -= pts * 10;
       // trade is not taking sides: no rival minds where you shop
-      this.add(f, pts, 'goede klant', false);
+      this.add(f, pts, 'good customer', false);
     }
   }
 
@@ -104,7 +104,7 @@ export class Standing {
     if (sp[f] >= 0) return;
     const pts = Math.ceil(-sp[f] / 10);
     sp[f] += pts * 10;
-    this.add(f, -pts, 'je verkocht terug wat je kocht', false);
+    this.add(f, -pts, 'you sold back what you bought', false);
   }
 
   /** Bars with the tier name, for the character panel. */
@@ -118,9 +118,9 @@ export class Standing {
       return `<div class="standing" title="${D.tagline}. ${D.text.replace(/"/g, '&quot;')}">
         <div class="sd-top"><span>${D.name}</span><b>${t.name}</b></div>
         <div class="sd-bar"><i style="width:${(frac * 100).toFixed(1)}%;background:${D.color}"></i></div>
-        <div class="sd-sub">${p} punten${t.next !== null ? ` · ${TIERS[t.index + 1].name} bij ${t.next}` : ' · het hoogste aanzien'}</div>
+        <div class="sd-sub">${p} points${t.next !== null ? ` · ${TIERS[t.index + 1].name} at ${t.next}` : ' · the highest standing'}</div>
       </div>`;
     }).join('');
-    return `<h3>AANZIEN</h3>${rows}`;
+    return `<h3>STANDING</h3>${rows}`;
   }
 }

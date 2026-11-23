@@ -37,9 +37,9 @@ interface Pin { t: string; c: string; x?: string }
 
 /** Where each camp is, in words (camps without a place here are not posted). */
 const CAMP_WHERE: Record<string, string> = {
-  schaffen: 'de weg naar Schaffen', kaggevinne: 'Kaggevinne', broek: 'het Broek, voorbij de oude Koepoort', broek2: 'het moeras bij Webbekom', eikenbos: 'het eikenbos bij Scherpenheuvel',
+  schaffen: 'the road to Schaffen', kaggevinne: 'Kaggevinne', broek: 'the Broek, beyond the old Koepoort', broek2: 'the marsh at Webbekom', eikenbos: 'the oak wood near Scherpenheuvel',
 };
-const CAMP_NAME: Record<string, string> = { schaffen: 'de deserteurs', kaggevinne: 'de wegrovers', broek: 'de broekhonden', broek2: 'de broekhonden', eikenbos: 'de dwaallichten' };
+const CAMP_NAME: Record<string, string> = { schaffen: 'the deserters', kaggevinne: 'the highwaymen', broek: 'the Broek hounds', broek2: 'the Broek hounds', eikenbos: 'the wandering lights' };
 
 const svc = (id: string) => SERVICES.find((s) => s.id === id);
 const who = (id: string) => {
@@ -124,8 +124,8 @@ export class Board {
         ...base, title: fill(t.title, vars), summary: fill(t.notice, vars), level: Math.max(level, lv),
         reward: pay(10 + level * 4 + lv * 3, 60 + level * 25),
         stages: [
-          { id: 'kill', journal: fill(t.journal[0], vars), objectives: [{ id: 'kill', kind: 'kill', text: `Verdrijf ${vars.camp} bij ${vars.where}`, camp: camp.id, count, at: camp.at, r: camp.r + 20 }], onDone: [{ stage: [id, 'pay'] }] },
-          { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Haal je premie op bij ${short(client)}`, npc: client }] },
+          { id: 'kill', journal: fill(t.journal[0], vars), objectives: [{ id: 'kill', kind: 'kill', text: `Drive off ${vars.camp} at ${vars.where}`, camp: camp.id, count, at: camp.at, r: camp.r + 20 }], onDone: [{ stage: [id, 'pay'] }] },
+          { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Collect your bounty from ${short(client)}`, npc: client }] },
         ],
       };
       job = { id, template: t, def, notice: def.summary, client, pin: { t: t.id, c: client, x: camp.id }, level };
@@ -133,16 +133,16 @@ export class Board {
       const froms = (t.from ?? []).filter((f) => f !== client);
       const fi = Math.floor(r() * froms.length);
       const from = pin?.x && froms.includes(pin.x) ? pin.x : froms[fi];
-      const what = (t.goods ?? [])[Math.min((t.goods ?? []).length - 1, (t.from ?? []).indexOf(from))] ?? 'een pakje';
+      const what = (t.goods ?? [])[Math.min((t.goods ?? []).length - 1, (t.from ?? []).indexOf(from))] ?? 'a small parcel';
       Object.assign(vars, { from: who(from), to: who(client), what });
       const item = `${id}_goods`;
-      this.q.addItem({ id: item, name: what[0].toUpperCase() + what.slice(1), text: `Het komt van ${short(from)} en is bestemd voor ${short(client)}.`, quest: true });
+      this.q.addItem({ id: item, name: what[0].toUpperCase() + what.slice(1), text: `It comes from ${short(from)} and is meant for ${short(client)}.`, quest: true });
       const def: QuestDef = {
         ...base, title: fill(t.title, { ...vars, to: short(client) }), summary: fill(t.notice, vars),
         reward: pay(8 + level * 2, 40 + level * 15),
         stages: [
-          { id: 'pick', journal: fill(t.journal[0], vars), objectives: [{ id: 'pick', kind: 'talk', text: `Haal ${what} op bij ${short(from)}`, npc: from }] },
-          { id: 'bring', journal: fill(t.journal[1], vars), objectives: [{ id: 'bring', kind: 'talk', text: `Breng ${what} naar ${short(client)}`, npc: client }] },
+          { id: 'pick', journal: fill(t.journal[0], vars), objectives: [{ id: 'pick', kind: 'talk', text: `Collect ${what} from ${short(from)}`, npc: from }] },
+          { id: 'bring', journal: fill(t.journal[1], vars), objectives: [{ id: 'bring', kind: 'talk', text: `Bring ${what} to ${short(client)}`, npc: client }] },
         ],
       };
       job = { id, template: t, def, notice: def.summary, client, from, item, pin: { t: t.id, c: client, x: from }, level };
@@ -153,8 +153,8 @@ export class Board {
         ...base, title: t.title, summary: fill(t.notice, vars),
         reward: pay(6 + level * 2, 50 + level * 15),
         stages: [
-          { id: 'read', journal: fill(t.journal[0], vars), objectives: [{ id: 'read', kind: 'flag', text: `Lees ${n} plakkaten, borden of stenen in de stad`, flag: `${id}_read`, hint: [22, 44] }], onDone: [{ stage: [id, 'pay'] }] },
-          { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Vertel het aan ${short(client)}`, npc: client }] },
+          { id: 'read', journal: fill(t.journal[0], vars), objectives: [{ id: 'read', kind: 'flag', text: `Read ${n} proclamations, signs or stones in town`, flag: `${id}_read`, hint: [22, 44] }], onDone: [{ stage: [id, 'pay'] }] },
+          { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Tell ${short(client)} what you read`, npc: client }] },
         ],
       };
       job = { id, template: t, def, notice: def.summary, client, n, pin: { t: t.id, c: client }, level };
@@ -164,13 +164,13 @@ export class Board {
       const spot = FETCH_SPOTS[pinned >= 0 ? pinned : si];
       Object.assign(vars, { where: spot.where, what: spot.what });
       const item = `${id}_lost`;
-      this.q.addItem({ id: item, name: spot.what[0].toUpperCase() + spot.what.slice(1), text: `Verloren ${spot.where}. Het is van ${short(client)}.`, quest: true });
+      this.q.addItem({ id: item, name: spot.what[0].toUpperCase() + spot.what.slice(1), text: `Lost ${spot.where}. It belongs to ${short(client)}.`, quest: true });
       const def: QuestDef = {
         ...base, title: fill(t.title, { ...vars, what: spot.what }), summary: fill(t.notice, vars),
         reward: pay(10 + level * 3, 50 + level * 18),
         stages: [
-          { id: 'find', journal: fill(t.journal[0], vars), objectives: [{ id: 'find', kind: 'collect', text: `Zoek ${spot.what} ${spot.where}`, item, count: spot.at.length, spawns: spot.at }], onDone: [{ stage: [id, 'pay'] }] },
-          { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Breng alles terug naar ${short(client)}`, npc: client }] },
+          { id: 'find', journal: fill(t.journal[0], vars), objectives: [{ id: 'find', kind: 'collect', text: `Find ${spot.what} ${spot.where}`, item, count: spot.at.length, spawns: spot.at }], onDone: [{ stage: [id, 'pay'] }] },
+          { id: 'pay', journal: fill(t.journal[1], vars), objectives: [{ id: 'pay', kind: 'talk', text: `Bring everything back to ${short(client)}`, npc: client }] },
         ],
       };
       job = { id, template: t, def, notice: def.summary, client, item, pin: { t: t.id, c: client, x: spot.where }, level };

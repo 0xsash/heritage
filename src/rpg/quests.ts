@@ -26,7 +26,7 @@ export interface QuestEvents {
 /** "+10 aanzien bij De Gilden": a reward of standing, in words. */
 export function standingLine(f: string, n: number) {
   const name = FACTIONS[f as FactionId]?.name ?? f;
-  return `${n >= 0 ? '+' : ''}${n} aanzien bij ${name.replace(/^De /, 'de ').replace(/^Het /, 'het ')}`;
+  return `${n >= 0 ? '+' : ''}${n} standing with ${name}`;
 }
 
 export interface Target {
@@ -150,7 +150,7 @@ export class QuestEngine {
       const st = this.s.quests[e.fail];
       if (st) {
         st.status = 'failed';
-        this.ev.toast('OPDRACHT MISLUKT', this.quests.get(e.fail)?.title ?? e.fail);
+        this.ev.toast('JOB FAILED', this.quests.get(e.fail)?.title ?? e.fail);
       }
       return;
     }
@@ -161,7 +161,7 @@ export class QuestEngine {
     if ('give' in e) {
       const n = e.n ?? 1;
       this.s.inv[e.give] = (this.s.inv[e.give] ?? 0) + n;
-      this.ev.toast('GEKREGEN', `${this.items.get(e.give)?.name ?? e.give}${n > 1 ? ' ×' + n : ''}`);
+      this.ev.toast('RECEIVED', `${this.items.get(e.give)?.name ?? e.give}${n > 1 ? ' ×' + n : ''}`);
       return;
     }
     if ('take' in e) {
@@ -170,7 +170,7 @@ export class QuestEngine {
     }
     if ('florins' in e) {
       this.s.florins += e.florins;
-      this.ev.toast(e.florins >= 0 ? 'GEKREGEN' : 'BETAALD', stuivers(Math.abs(e.florins)));
+      this.ev.toast(e.florins >= 0 ? 'RECEIVED' : 'PAID', stuivers(Math.abs(e.florins)));
       return;
     }
     if ('standing' in e) {
@@ -217,7 +217,7 @@ export class QuestEngine {
     this.s.quests[id] = { status: 'active', stage: first.id, done: [], counts: {}, log: [first.journal], started: ++this.s.counter };
     // a quest you just took is the one you want to follow
     this.s.tracked = id;
-    this.ev.banner('start', q.title, [q.kind === 'main' ? 'Hoofdverhaal' : q.kind === 'contract' ? 'Opdracht' : 'Zijverhaal', this.fill(first.objectives[0]?.text ?? '')]);
+    this.ev.banner('start', q.title, [q.kind === 'main' ? 'Main story' : q.kind === 'contract' ? 'Job' : 'Side story', this.fill(first.objectives[0]?.text ?? '')]);
     this.checkStage(q);
   }
 
@@ -231,7 +231,7 @@ export class QuestEngine {
     st.done = [];
     st.counts = {};
     st.log.push(s.journal);
-    this.ev.toast('DAGBOEK', q.title);
+    this.ev.toast('JOURNAL', q.title);
     this.checkStage(q);
   }
 
@@ -253,7 +253,7 @@ export class QuestEngine {
     st.outcome = outcome;
     const r = q.reward;
     const lines: string[] = [];
-    if (r?.xp) lines.push(`+${r.xp} ervaring`);
+    if (r?.xp) lines.push(`+${r.xp} experience`);
     if (r?.florins) lines.push(`+${stuivers(r.florins)}`);
     for (const [f, n] of r?.standing ?? []) lines.push(standingLine(f, n));
     for (const id of r?.gear ?? []) {

@@ -38,7 +38,7 @@ export class Shops {
   constructor(private h: ShopHost) {}
 
   private tierName(f: FactionId, t: number) {
-    return `${TIERS[t].name} bij ${FACTIONS[f].name}`;
+    return `${TIERS[t].name} with ${FACTIONS[f].name}`;
   }
 
   /**
@@ -103,25 +103,25 @@ export class Shops {
       const w: ShopWare = { key: `g:${g.id}`, name: g.name, text: g.text, price: st.price(g.price, f) };
       if ('cloak' in g.use) {
         w.swatch = g.use.cloak;
-        if (this.h.q.s.hero.cloak.toLowerCase() === g.use.cloak.toLowerCase()) w.tag = 'draag je al';
+        if (this.h.q.s.hero.cloak.toLowerCase() === g.use.cloak.toLowerCase()) w.tag = 'worn';
       }
       if ('salve' in g.use || 'regen' in g.use) {
         const id = 'salve' in g.use ? 'salve' : g.id;
         const n = this.h.q.s.inv[id] ?? 0;
-        if (n) w.tag = `je hebt er ${n}`;
+        if (n) w.tag = `you have ${n}`;
       }
-      if (need > tier) w.locked = `Voor wie ${this.tierName(f, need)} is`;
-      else if ((g.level ?? 0) > L) w.locked = `Vanaf niveau ${g.level}`;
+      if (need > tier) w.locked = `Requires ${this.tierName(f, need)}`;
+      else if ((g.level ?? 0) > L) w.locked = `From level ${g.level}`;
       else if (spent) w.locked = spent;
-      else if ('heal' in g.use && this.h.q.s.hero.hp >= this.h.q.sheet.derived().maxHp) w.locked = 'Je bent al helemaal hersteld';
+      else if ('heal' in g.use && this.h.q.s.hero.hp >= this.h.q.sheet.derived().maxHp) w.locked = 'You are already fully healed';
       wares.push(w);
     }
     this.gear(seller, f).forEach((g, i) => {
-      wares.push({ key: `w:${i}:${g.uid}`, name: g.name, gear: g, price: st.price(gearValue(g) * 4, f), tag: this.h.q.sheet.better(g) ? '▲ beter' : undefined });
+      wares.push({ key: `w:${i}:${g.uid}`, name: g.name, gear: g, price: st.price(gearValue(g) * 4, f), tag: this.h.q.sheet.better(g) ? '▲ better' : undefined });
     });
     // what more standing would bring
-    for (const sp of SPECIALS[seller] ?? []) if (tier < sp.tier) wares.push({ key: `x:${sp.name}`, name: sp.name, text: sp.text, price: 0, locked: `Voor wie ${this.tierName(f, sp.tier)} is` });
-    if (GEAR_STOCK[seller] && tier < 2) wares.push({ key: 'x:rare', name: 'Zeldzaam stuk', text: 'De beste stukken liggen onder de toonbank.', price: 0, locked: `Voor wie ${this.tierName(f, 2)} is` });
+    for (const sp of SPECIALS[seller] ?? []) if (tier < sp.tier) wares.push({ key: `x:${sp.name}`, name: sp.name, text: sp.text, price: 0, locked: `Requires ${this.tierName(f, sp.tier)}` });
+    if (GEAR_STOCK[seller] && tier < 2) wares.push({ key: 'x:rare', name: 'Rare piece', text: 'The best pieces lie under the counter.', price: 0, locked: `Requires ${this.tierName(f, 2)}` });
     return {
       title,
       greet,

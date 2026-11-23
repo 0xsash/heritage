@@ -319,15 +319,15 @@ export function dress(root: THREE.Object3D, role: Role, r: () => number): Dresse
 }
 
 export const LINES: Record<Role, string[]> = {
-  peasant: ['De haver staat goed, als de soldaten haar tenminste laten staan.', 'Aan elke brug houdt er een zijn hand op voor tol.', 'Heb je mijn koe gezien? Het is een bruine met één horen.'],
-  peasantWoman: ['Verse eieren, nog warm. Wie wil er?', 'Mijn man zit weer in de herberg, met mijn eiergeld.', 'Pas op, de kasseien zijn glad van de mest.'],
-  burgher: ['Goeiendag. Ik heb het druk.', 'Van laken leeft hier bijna niemand meer. Vroeger kwamen kopers van ver.', 'Een draak in de stad! Wie gaat de schade betalen?'],
-  huik: ['Goedendag, {heer|juffrouw}.', 'Mijn man is schepen. Je hebt zeker al van hem gehoord.', 'Zo\'n beest in de stad, en niemand zegt er iets van.'],
-  beguine: ['God zegene je.', 'Kom eens naar onze kapel. Onze klok loopt voor.', 'Wij bidden voor de klokken, en ook voor wie ze deed zwijgen.'],
-  soldier: ['¡Hola! Pas op, {ruiter|ruiterin}.', 'Halt! Ah, jij bent het. Loop maar door.', 'De soldij is alweer drie maanden te laat.'],
-  friar: ['Pax tecum.', 'Een aalmoes voor de minderbroeders? God telt mee.', 'Ook draken zijn schepselen van God, denk ik toch.'],
-  pilgrim: ['Ik ga naar Scherpenheuvel. Mijn moeder ging ook, op blote voeten.', 'Onze-Lieve-Vrouw zal mijn knie genezen. Ik heb al betaald.', 'Ik moet nog zeven dagen stappen.'],
-  child: ['Een draak! Mag ik hem aaien?', 'Mijn vader zegt dat jij een tovenaar bent.', 'Kan je draak vuur spuwen? Toe, één keer!', 'Ik heb zijn tanden geteld. Aan één kant zijn er elf.'],
-  oldMan: ['In mijn tijd hadden we geen draken, maar wel Fransen.', 'Mijn rug, mijn rug.', 'Vroeger luidden ze altijd, zelfs toen de pest hier was.'],
-  oldWoman: ['Ach {jongen|meisje}, je bent veel te mager.', 'Als kind zag ik de Kludde. Die nacht was hij een kat.', 'God zegene je, en je beest ook. Vooral je beest.'],
+  peasant: ['The oats stand well, if the soldiers leave them standing.', 'At every bridge someone holds out a hand for toll.', 'Seen my cow? A brown one, with one horn.'],
+  peasantWoman: ['Fresh eggs, still warm. Who wants some?', "My husband's in the tavern again, with my egg money.", 'Careful, the cobbles are slick with dung.'],
+  burgher: ["Good day. I'm busy.", 'Hardly anyone lives off cloth here now. Buyers used to come from far.', 'A dragon in town! Who pays for the damage?'],
+  huik: ['Good day, {sir|madam}.', "My husband is a schepen. You'll have heard of him.", 'A beast like that in town, and no one says a word.'],
+  beguine: ['God bless you.', 'Come to our chapel. Our bell runs fast.', 'We pray for the bells, and for whoever silenced them.'],
+  soldier: ['¡Hola! Mind yourself, rider.', "Halt! Ah, it's you. Carry on.", 'Our pay is three months late again.'],
+  friar: ['Pax tecum.', 'Alms for the Franciscans? God keeps count.', "Even dragons are God's creatures, I suppose."],
+  pilgrim: ["I'm walking to Scherpenheuvel. My mother did too, barefoot.", "Our Lady will heal my knee. I've already paid.", 'Seven more days of walking.'],
+  child: ['A dragon! May I pet him?', "My father says you're a sorcerer.", 'Can your dragon spit fire? Go on, once!', 'I counted his teeth. There are eleven on one side.'],
+  oldMan: ['In my day we had no dragons, only the French.', 'My back, my back.', 'They always rang, even when the plague was here.'],
+  oldWoman: ["Ah, {lad|lass}, you're far too thin.", 'As a child I saw the Kludde. That night he was a cat.', 'God bless you, and your beast. Especially your beast.'],
 };
