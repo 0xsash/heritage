@@ -29,31 +29,31 @@ export interface FactionDef {
 
 const PUBLIC: Record<Exclude<FactionId, 'oudevolk'>, FactionDef> = {
   gilden: {
-    id: 'gilden', name: 'De Gilden', tagline: 'Ambachten, schutters en schepenen', color: '#c9a44e',
-    text: 'De stad is van wie er werkt. Wevers, brouwers en schutters besturen Diest via hun ambachten en de schepenbank. Ze willen rust, eerlijke handel en klokken die luiden.',
+    id: 'gilden', name: 'De Gilden', tagline: 'Crafts, militia and schepenen', color: '#c9a44e',
+    text: 'The town belongs to those who work it. Weavers, brewers and the militia guilds run Diest through their crafts and the schepenbank. They want quiet, honest trade and bells that ring.',
   },
   kerk: {
-    id: 'kerk', name: 'De Kerk', tagline: 'Begijnen, kapittel en bedevaart', color: '#d8d2c0',
-    text: 'Begijnen verzorgen de zieken, het kapittel bewaart de klokken, en Scherpenheuvel trekt pelgrims uit heel Brabant. Ze weten meer over wat de klokken tegenhouden dan ze zeggen.',
+    id: 'kerk', name: 'De Kerk', tagline: 'Beguines, chapter and pilgrimage', color: '#d8d2c0',
+    text: 'The beguines nurse the sick, the chapter keeps the bells, and Scherpenheuvel draws pilgrims from all of Brabant. They know more than they say about what the bells hold back.',
   },
   kroon: {
-    id: 'kroon', name: 'De Kroon', tagline: 'De koning, de landvoogd, het garnizoen', color: '#a8443a',
-    text: 'Brabant hoort bij de koning van Spanje. Zijn landvoogd zit in Brussel, zijn soldaten liggen bij de burgers in huis. Ze willen orde, belasting en geen verrassingen. Een draak is een verrassing.',
+    id: 'kroon', name: 'De Kroon', tagline: 'The king, the governor, the garrison', color: '#a8443a',
+    text: 'Brabant belongs to the King of Spain. His governor sits in Brussel; his soldiers are billeted in the townsfolk\'s houses. They want order, taxes and no surprises. A dragon is a surprise.',
   },
   oranje: {
-    id: 'oranje', name: 'Oranje', tagline: 'De baron, zijn drossaard, zijn mensen', color: '#d98a2b',
-    text: 'Diest is van de Prins van Oranje: een protestantse heer in het noorden over een katholieke stad onder een Spaanse koning. Zijn drossaard int de boetes en wacht op betere tijden. Wie Oranje dient, dient een heer die er nooit is. Zulke heren onthouden veel.',
+    id: 'oranje', name: 'Oranje', tagline: 'The baron, his drossaard, his people', color: '#d98a2b',
+    text: 'Diest belongs to the Prince of Orange: a Protestant lord in the north over a Catholic town under a Spanish king. His drossaard collects the fines and waits for better times. To serve Oranje is to serve a lord who is never here. Such lords remember a great deal.',
   },
   vrije: {
-    id: 'vrije', name: 'De Vrije Lieden', tagline: 'Marskramers, voerlui, smokkelaars', color: '#6f8a5a',
-    text: 'Dit zijn de mensen die geen meester hebben en geen tol willen betalen. Ze kennen elk pad rond elke stadsmuur, kopen alles en verkopen het verder. Ze vragen niet waar je draak vandaan komt.',
+    id: 'vrije', name: 'De Vrije Lieden', tagline: 'Pedlars, carters, smugglers', color: '#6f8a5a',
+    text: 'These are the people with no master and no wish to pay the toll. They know every path around every town wall; they buy anything and sell it on. They do not ask where your dragon came from.',
   },
 };
 
 /** The hidden party: ordinary people who keep their grandparents' habits (invented for this game; see the Kroniek). */
 export const OUDE_VOLK: FactionDef = {
-  id: 'oudevolk', name: 'Het Oude Volk', tagline: 'Vroedvrouwen, rietsnijders en herders', color: '#8fa39a',
-  text: 'Geen gilde en geen kerk: gewone mensen die nog doen wat hun grootouders deden. Ze zetten melk bij de put en knopen riet aan de kapelpaal. Als enigen in Diest willen ze niet dat de klokken weer luiden, want de klokken laten ook de oude wakers van het land slapen.',
+  id: 'oudevolk', name: 'The Oude Volk', tagline: 'Midwives, reed-cutters and shepherds', color: '#8fa39a',
+  text: 'No guild and no church: ordinary people who still do what their grandparents did. They leave milk by the well and knot reeds to the chapel post. They alone in Diest do not want the bells to ring again, because the bells also put the land\'s old guardians to sleep.',
 };
 
 export const FACTIONS = PUBLIC as Record<FactionId, FactionDef>;
@@ -61,11 +61,11 @@ Object.defineProperty(FACTIONS, 'oudevolk', { value: OUDE_VOLK, enumerable: fals
 
 /** Standing, WoW-style: each tier opens something (prices, wares, work). */
 export const TIERS: { at: number; name: string }[] = [
-  { at: 0, name: 'Vreemde' },
-  { at: 10, name: 'Bekende' },
-  { at: 25, name: 'Gezien' },
-  { at: 50, name: 'Geëerd' },
-  { at: 90, name: 'Vertrouweling' },
+  { at: 0, name: 'Stranger' },
+  { at: 10, name: 'Known' },
+  { at: 25, name: 'Respected' },
+  { at: 50, name: 'Honoured' },
+  { at: 90, name: 'Trusted' },
 ];
 
 export function tierOf(points: number) {

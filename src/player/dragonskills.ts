@@ -26,15 +26,15 @@ export interface DragonSkillDef {
 
 export const DRAGON_SKILLS: Record<DragonSkillId, DragonSkillDef> = {
   nevel: {
-    id: 'nevel', short: 'Nevel', name: 'Neveladem', key: 'RMB', flying: true, tier: 1, cooldown: 12, cost: 25,
-    text: 'In de vlucht ademt je draak moerasnevel in plaats van vuur. Wie erin staat, ziet even niets en vecht niet; een beest kun je dan sneller laten gaan.',
+    id: 'nevel', short: 'Mist', name: 'Mist Breath', key: 'RMB', flying: true, tier: 1, cooldown: 12, cost: 25,
+    text: 'In flight your dragon breathes marsh mist instead of fire. Whoever stands in it goes blind for a while and stops fighting; a beast is easier to let go.',
   },
   slag: {
-    id: 'slag', short: 'Slag', name: 'Vleugelslag', key: 'R', flying: true, tier: 2, cooldown: 9, cost: 30,
-    text: 'Laag boven de grond slaat je draak zijn vleugels neer. Alles wat eronder staat, valt om en krijgt klappen.',
+    id: 'slag', short: 'Wing', name: 'Wingbeat', key: 'R', flying: true, tier: 2, cooldown: 9, cost: 30,
+    text: 'Low over the ground your dragon brings his wings down. Everything beneath them is knocked flat and takes the blow.',
   },
   roep: {
-    id: 'roep', short: 'Roep', name: 'Drakenroep', key: 'G', flying: false, tier: 3, cooldown: 40, cost: 0,
-    text: 'Te voet roep je je draak te hulp. Hij komt, en zet alles rond je in brand.',
+    id: 'roep', short: 'Call', name: 'Dragon Call', key: 'G', flying: false, tier: 3, cooldown: 40, cost: 0,
+    text: 'On foot, you call your dragon to your side. He comes, and sets everything around you burning.',
   },
 };

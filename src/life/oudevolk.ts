@@ -77,7 +77,7 @@ export class OudeVolk implements CombatLore {
     // a new tier with them means something to learn
     standing.onChange = (f, before, after) => {
       if (f !== 'oudevolk' || after <= before || !this.found) return;
-      if (this.teachable() || this.knowable()) d.toast('HET OUDE VOLK · Heylwich heeft je iets nieuws te vertellen');
+      if (this.teachable() || this.knowable()) d.toast('THE OUDE VOLK · Heylwich has something new to tell you');
     };
     this.buildHeylwich();
     this.sync();
@@ -170,19 +170,19 @@ export class OudeVolk implements CombatLore {
 
   private countSign(id: string, text: string): { kicker: string; text: string } {
     const q = this.d.quests, f = q.s.flags;
-    if (f[`ov_sign_${id}`]) return { kicker: 'EEN TEKEN', text: `${text} ${OV_SIGN_AGAIN[id.startsWith('melk') ? 1 : 0]}` };
+    if (f[`ov_sign_${id}`]) return { kicker: 'A SIGN', text: `${text} ${OV_SIGN_AGAIN[id.startsWith('melk') ? 1 : 0]}` };
     f[`ov_sign_${id}`] = true;
     const n = this.signCount();
-    if (this.found) return { kicker: 'EEN TEKEN', text };
+    if (this.found) return { kicker: 'A SIGN', text };
     if (n === 1) q.start('ov_tekens');
     const more = OV_SIGN_COUNT[Math.min(n, SIGNS_NEEDED) - 1];
     if (n >= SIGNS_NEEDED && q.test({ quest: 'ov_tekens', state: 'active', stage: 'signs' })) {
       q.apply([{ done: ['ov_tekens', 'signs'] }]);
       const h = q.npcPos.get('heylwich');
-      if (h) this.host.point(h[0], h[1], 'Een oude vrouw', 600);
-    } else if (n < SIGNS_NEEDED) this.d.toast(`EEN TEKEN · ${n} van ${SIGNS_NEEDED}`);
+      if (h) this.host.point(h[0], h[1], 'An old woman', 600);
+    } else if (n < SIGNS_NEEDED) this.d.toast(`A SIGN · ${n} of ${SIGNS_NEEDED}`);
     q.save();
-    return { kicker: n >= SIGNS_NEEDED ? 'HET DERDE TEKEN' : 'EEN TEKEN', text: `${text} ${more}` };
+    return { kicker: n >= SIGNS_NEEDED ? 'THE THIRD SIGN' : 'A SIGN', text: `${text} ${more}` };
   }
 
   signCount() {
@@ -208,7 +208,7 @@ export class OudeVolk implements CombatLore {
       this.d.kroniek.unlock('tijd:oudevolk');
       this.d.kroniek.unlock('mens:heylwich');
       this.sync();
-      this.d.hud.announce('HET OUDE VOLK', 'Een zesde partij', 'Geen gilde en geen kerk: gewone mensen die nog doen wat hun grootouders deden. Je ziet nu ook je aanzien bij hen.');
+      this.d.hud.announce('THE OUDE VOLK', 'A sixth party', 'No guild and no church: ordinary people who still do what their grandparents did. Your standing with them now shows too.');
       this.d.sound.chime(false);
     } else if (what === 'learn' && arg === 'spare') {
       this.d.kroniek.unlock('tijd:ontzien');
@@ -230,7 +230,7 @@ export class OudeVolk implements CombatLore {
       const s = arg as DragonSkillId;
       f[`ov_${s}`] = true;
       const def = DRAGON_SKILLS[s];
-      this.d.hud.announce('NIEUWE VAARDIGHEID VAN DE DRAAK', def.name, `${def.text} Toets: ${def.key === 'RMB' ? 'rechtermuis' : def.key}.`);
+      this.d.hud.announce('THE DRAGON LEARNS', def.name, `${def.text} Key: ${def.key === 'RMB' ? 'right mouse' : def.key}.`);
       this.d.sound.chime(false);
     } else if (what === 'talisman') {
       const id2 = arg === 'knoop' ? 'ov_goossens' : arg;
@@ -281,36 +281,36 @@ export class OudeVolk implements CombatLore {
     const choices: Choice[] = [];
     // the next piece of work
     const work = this.heylOffers()[0];
-    if (work === 'ov_eik') choices.push({ text: 'Je zei dat je meer wist.', next: 'heyl_eik' });
-    else if (work === 'ov_broek') choices.push({ text: 'Wat moet ik nog leren?', next: 'heyl_broek' });
-    else if (work === 'ov_dof') choices.push({ text: 'De klokken luiden weer.', next: 'heyl_dof' });
-    else if (q.test({ quest: 'ov_broek', state: 'done' }) && !q.s.quests.ov_dof && !f.bells_ring) choices.push({ text: 'En wat nu?', next: 'heyl_wait' });
+    if (work === 'ov_eik') choices.push({ text: "You said you knew more.", next: 'heyl_eik' });
+    else if (work === 'ov_broek') choices.push({ text: 'What else must I learn?', next: 'heyl_broek' });
+    else if (work === 'ov_dof') choices.push({ text: 'The bells are ringing again.', next: 'heyl_dof' });
+    else if (q.test({ quest: 'ov_broek', state: 'done' }) && !q.s.quests.ov_dof && !f.bells_ring) choices.push({ text: 'And now what?', next: 'heyl_wait' });
     // what she knows
     const know = this.knowable();
     const ASK: Record<string, string> = {
-      heyl_k1a: 'Wat is mijn draak?', heyl_k2a: 'Waarom werd hij wakker?', heyl_k3a: 'Waarom koos hij mij?', heyl_k4a: 'Waar is mijn zusje?',
-      heyl_zw_kludde: 'Hoe versla ik de Kludde?', heyl_beeld: 'Het beeldje van Truyken zoemt.',
+      heyl_k1a: 'What is my dragon?', heyl_k2a: 'Why did he wake?', heyl_k3a: 'Why did he choose me?', heyl_k4a: 'Where is my sister?',
+      heyl_zw_kludde: 'How do I beat the Kludde?', heyl_beeld: "Truyken's little figure is humming.",
     };
     const tell: Choice[] = know.slice(0, 4).map((id) => ({ text: ASK[id], next: id }));
-    tell.push({ text: 'Iets anders.', next: 'heyl_idle', effects: back });
-    D.heyl_tell = { who: 'heylwich', text: know.length ? 'Vraag maar. Wat ik je vertel, vertel ik maar één keer.' : 'Meer vertel ik je als het volk je beter kent.', choices: tell };
-    choices.push({ text: 'Vertel me iets.', next: 'heyl_tell' });
+    tell.push({ text: 'Something else.', next: 'heyl_idle', effects: back });
+    D.heyl_tell = { who: 'heylwich', text: know.length ? 'Ask, then. What I tell you, I tell you once.' : 'I will tell you more when the folk know you better.', choices: tell };
+    choices.push({ text: 'Tell me something.', next: 'heyl_tell' });
     // what she teaches
     const s = this.teachable();
     if (s) {
       const text = s === 'refused' ? OV_TEACH.refused : OV_TEACH[s];
       D.heyl_teach = { who: 'heylwich', text, effects: s === 'refused' ? [{ set: 'ov_refused' }, { call: 'ov:menu' }] : [{ call: `ov:teach:${s}` }], next: 'heyl_idle' };
-      choices.push({ text: q.fill('Leer {dragon} iets nieuws.'), next: 'heyl_teach', effects: back });
+      choices.push({ text: q.fill('Teach {dragon} something new.'), next: 'heyl_teach', effects: back });
     } else D.heyl_teach = { who: 'heylwich', text: OV_TEACH.later };
-    if (!f.ov_named) choices.push({ text: 'Wat zit er in je mand?', effects: [{ open: 'shop' }] });
-    choices.push({ text: 'Tot ziens, Heylwich.' });
-    D.heyl_idle = { who: 'heylwich', text: `${greet} ${f.ov_choice === 'kerk' ? '' : this.pick.pick(['Wat kan ik voor je doen?', 'Zeg het maar.', 'Ga zitten, als je wilt.'])}`.trim(), choices: choices.slice(0, 5) };
+    if (!f.ov_named) choices.push({ text: "What's in your basket?", effects: [{ open: 'shop' }] });
+    choices.push({ text: 'Goodbye, Heylwich.' });
+    D.heyl_idle = { who: 'heylwich', text: `${greet} ${f.ov_choice === 'kerk' ? '' : this.pick.pick(['What can I do for you?', 'Say what you came to say.', 'Sit down, if you like.'])}`.trim(), choices: choices.slice(0, 5) };
     // the pieces of knowledge go back to her menu when done
     for (const id of ['heyl_k1b', 'heyl_k2d', 'heyl_k3b', 'heyl_k4b', 'heyl_zw_kludde', 'heyl_beeld']) {
       const l = D[id] as Line | undefined;
       if (l && !l.next) l.next = 'heyl_idle_back';
     }
-    D.heyl_idle_back = { who: 'heylwich', text: 'Zo. Nu weet je dat ook.', choices: [{ text: 'Nog iets anders.', next: 'heyl_idle', effects: back }, { text: 'Tot ziens, Heylwich.' }] };
+    D.heyl_idle_back = { who: 'heylwich', text: 'There. Now you know that too.', choices: [{ text: 'Something else.', next: 'heyl_idle', effects: back }, { text: 'Goodbye, Heylwich.' }] };
   }
 
   /** Her basket: priced and opened by your standing with the Oude Volk. */
@@ -363,7 +363,7 @@ export class OudeVolk implements CombatLore {
     if (this.signCount() > 0) {
       return [{ text: OV_WANNE.askBefore, reply: () => {
         const h = this.d.quests.npcPos.get('heylwich');
-        if (h) this.host.point(h[0], h[1], 'De vroedvrouw', 300);
+        if (h) this.host.point(h[0], h[1], 'The midwife', 300);
         return after(OV_WANNE.before);
       } }];
     }
@@ -373,7 +373,7 @@ export class OudeVolk implements CombatLore {
   /** Map pins: the safe path, once Gooris showed it. */
   mapMarks() {
     if (!this.flag('ov_paden')) return [];
-    return OV_PATH.map(([x, z]) => ({ x, z, kind: 'pin' as const, label: 'Vaste grond' }));
+    return OV_PATH.map(([x, z]) => ({ x, z, kind: 'pin' as const, label: 'Firm ground' }));
   }
 
   // ================================================================ combat (CombatLore)
@@ -392,14 +392,14 @@ export class OudeVolk implements CombatLore {
   spared(type: string) {
     const q = this.d.quests, f = q.s.flags;
     f.ov_spared = Number(f.ov_spared ?? 0) + 1;
-    this.standing.add('oudevolk', 2, 'laten gaan');
+    this.standing.add('oudevolk', 2, 'let go');
     if (type === 'broekhond' && q.test({ quest: 'ov_broek', state: 'active', stage: 'spaar' })) {
       const n = Number(f.ov_q3n ?? 0) + 1;
       f.ov_q3n = n;
       if (n >= 2) {
         f.ov_q3 = true;
         q.apply([{ done: ['ov_broek', 'spaar'] }]);
-      } else this.d.toast(`PADEN DOOR HET BROEK · ${n} van 2 honden laten gaan`);
+      } else this.d.toast(`PATHS THROUGH THE BROEK · ${n} of 2 hounds let go`);
     }
     q.save();
   }

@@ -697,7 +697,7 @@ export class Combat {
         if (e.state !== 'stagger') e.state = 'idle';
         n++;
       }
-      this.floaters.add(n ? 'Neveladem' : 'Neveladem · niemand geraakt', head, 'skill', 1.2);
+      this.floaters.add(n ? 'Mist Breath' : 'Mist Breath · nobody hit', head, 'skill', 1.2);
     } else if (id === 'slag') {
       const alt = p.altitude();
       if (alt > 32) {
@@ -718,7 +718,7 @@ export class Combat {
         n++;
       }
       if (n) this.hitstop = Math.max(this.hitstop, 0.08);
-      this.floaters.add('Vleugelslag', head, 'skill', 1.2);
+      this.floaters.add('Wingbeat', head, 'skill', 1.2);
     } else {
       // the call: he comes from wherever he is, and the ground round you burns
       const at = p.heroPos.clone();
