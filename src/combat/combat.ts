@@ -184,7 +184,9 @@ export class Combat {
   fire = 100;
   private fireCd = 0;
   private fireIdle = 0;
-  cds: Record<string, number> = { skill: 0, skill2: 0, potion: 0, nevel: 0, slag: 0, roep: 0 };
+  cds: Record<string, number> = { skill: 0, skill2: 0, faction: 0, potion: 0, nevel: 0, slag: 0, roep: 0 };
+  /** Guild Oath (De Gilden): seconds left of half damage taken */
+  private ward = 0;
   /** what Het Oude Volk taught (src/life/oudevolk.ts) */
   lore: CombatLore | null = null;
   /** the name of the creature you could let go right now (E), for the prompt */
@@ -344,6 +346,7 @@ export class Combat {
     this.comboT -= sdt;
     this.invuln -= sdt;
     this.buff -= sdt;
+    this.ward -= sdt;
     this.fireCd -= sdt;
     this.fireIdle += sdt;
     if (this.fireIdle > 0.6) this.fire = Math.min(100, this.fire + 24 * sdt);
@@ -369,6 +372,7 @@ export class Combat {
       input.consume('attack');
       input.consume('skill');
       input.consume('skill2');
+      input.consume('faction');
       input.consume('dragon');
     }
     p.hero.setArmed(onFoot && (this.inCombat || this.atk !== null || this.time - this.lastFight < 8));
@@ -442,7 +446,9 @@ export class Combat {
         if (this.atk.t > this.atk.def.dur * 0.35) this.atk.queued = true;
       } else this.startAttack(COMBO[this.comboT > 0 ? this.combo : 0], input, camYaw);
     }
-    const o = this.sheet.origin;
+    // the two skills come from the weapon in your hand (character.ts WEAPON_KITS)
+    const o = this.sheet.kit;
+    if (input.consume('faction')) this.factionAbility(d);
     if (input.consume('skill') && !this.atk && this.cds.skill <= 0 && this.resonance >= o.skill.cost) this.useSkill(o.skill.id, input, camYaw, d);
     if (input.consume('skill2')) {
       if (this.sheet.h.level < o.skill2.level) this.floaters.add(`${o.skill2.name}: from level ${o.skill2.level}`, this.headPos(), 'note', 1.4, 0.6);
@@ -546,7 +552,7 @@ export class Combat {
   private useSkill(id: string, input: Input, camYaw: number, d: ReturnType<Combat['sheet']['derived']>) {
     this.tally.skills++;
     const p = this.player;
-    const o = this.sheet.origin;
+    const o = this.sheet.kit;
     const def = o.skill.id === id ? o.skill : o.skill2;
     const slot = o.skill.id === id ? 'skill' : 'skill2';
     this.cds[slot] = def.cooldown;
@@ -615,6 +621,52 @@ export class Combat {
       for (const e of this.enemies) if (e.alive && e.pos.distanceTo(p.heroPos) < 7) { e.blind = 3; this.releaseToken(e); e.state = 'idle'; }
       this.floaters.add('You vanish in the smoke', this.headPos(), 'skill', 1.2);
     }
+  }
+
+  // ================================================================ your faction's ability
+  /** The one ability your first loyalty gives (factions.ts FACTION_GIFTS), on its own key and cooldown. */
+  private factionAbility(d: ReturnType<Combat['sheet']['derived']>) {
+    const a = this.sheet.gift.ability;
+    if (this.cds.faction > 0) {
+      this.floaters.add(`${a.name}: ${Math.ceil(this.cds.faction)} s`, this.headPos(), 'note', 1.1, 0.6);
+      return;
+    }
+    const p = this.player;
+    const at = p.heroPos.clone().setY(p.heroPos.y + 0.2);
+    this.cds.faction = a.cooldown;
+    this.tally.skills++;
+    p.hero.act('cast', 0.5);
+    if (a.id === 'eed') {
+      this.ward = 6;
+      this.fx.ring(at, 3, '#c9a44e', 0.6);
+      this.sound.bell(196, 0.3);
+    } else if (a.id === 'zegen') {
+      this.heal += d.maxHp * 0.34;
+      this.fx.particles.emit(at.clone().setY(at.y + 1), { n: 30, color: '#f4ecd0', speed: 1.2, up: 2.2, life: 1.2, size: 0.14, gravity: -1 });
+      this.floaters.add(`+${Math.round(d.maxHp * 0.34)}`, this.headPos(), 'heal', 1.1);
+      this.sound.chime(false);
+    } else if (a.id === 'halt') {
+      this.fx.ring(at, 7, '#a8443a', 0.55);
+      this.sound.howl();
+      for (const e of this.enemies) if (e.alive && e.pos.distanceTo(p.heroPos) < 7) { e.stun = Math.max(e.stun, 2); this.releaseToken(e); }
+      this.ev.trauma(0.2);
+    } else if (a.id === 'oproep') {
+      this.resonance = Math.min(100, this.resonance + 50);
+      this.fx.ring(at, 4, '#d98a2b', 0.5);
+      this.sound.chime(false);
+    } else if (a.id === 'wegwezen') {
+      this.invuln = Math.max(this.invuln, 1.5);
+      this.fx.particles.emit(at, { n: 24, color: '#6f8a5a', speed: 3, up: 1, life: 1.2, size: 0.5, gravity: -0.3, drag: 1.5 });
+      this.sound.whoosh();
+      for (const e of this.enemies) if (e.alive && e.pos.distanceTo(p.heroPos) < 8) { e.blind = Math.max(e.blind, 2.5); this.releaseToken(e); e.state = 'idle'; }
+    }
+    this.floaters.add(a.name, this.headPos(), 'skill', 1.2);
+  }
+
+  /** The faction ability for the action bar. */
+  factionSlot() {
+    const a = this.sheet.gift.ability;
+    return { key: 'V', name: a.short, icon: `fa_${a.id}`, cd: this.cds.faction / a.cooldown, ready: this.cds.faction <= 0 };
   }
 
   // ================================================================ what Het Oude Volk taught
@@ -1341,7 +1393,7 @@ export class Combat {
       this.floaters.add('ontweken', at.setY(at.y + 2.2), 'note', 0.8, 0.6);
       return;
     }
-    const dmg = Math.max(1, Math.round(raw * this.dmgTakenMul * (100 / (100 + d.armor * 2.2))));
+    const dmg = Math.max(1, Math.round(raw * this.dmgTakenMul * (this.ward > 0 ? 0.5 : 1) * (100 / (100 + d.armor * 2.2))));
     this.sheet.h.hp -= dmg;
     this.lastFight = this.time;
     this.floaters.add(`-${dmg}`, at.clone().setY(at.y + 2.1), 'hurt', 0.9, 1.0);

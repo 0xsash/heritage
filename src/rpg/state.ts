@@ -2,7 +2,7 @@
 // standing with the parties. Saved to this browser's local storage (a per-player convenience for
 // the prototype; accounts and cloud saves come later).
 
-import type { BackgroundId, Gear, OriginId, Slot } from './character';
+import { uniqueGear, type Gear, type Slot } from './character';
 import { RENOWN_TO_FACTION, type FactionId } from './factions';
 import type { QuestStatus } from './types';
 
@@ -22,10 +22,9 @@ export interface QuestState {
 
 export interface HeroData {
   name: string;
-  origin: OriginId;
   cloak: string;
   dragon: string;
-  // --- who you are (made in the creation screen; an older save gets the defaults: a man of his class)
+  // --- who you are (made in the creation screen; an older save gets the defaults)
   sex: 'm' | 'f';
   /** the kit body (see look.ts): man_young, man, man_stout, woman, woman_stout... */
   build: string;
@@ -37,11 +36,9 @@ export interface HeroData {
   hair: string | null;
   hairColor: string;
   beard: string | null;
-  /** wear the class's hat */
+  /** wear the outfit's hat */
   hat: boolean;
-  /** herkomst: where you are from */
-  background: BackgroundId;
-  /** the party you chose as your first loyalty */
+  /** the party you chose as your first loyalty: it also says where you come from (factions.ts FACTION_GIFTS) */
   faction: FactionId;
   /** the dragon's scale colour (see src/player/scales.ts) */
   scales: string;
@@ -52,7 +49,7 @@ export interface HeroData {
   eyes?: string | null;
   /** scar, freckles, eyepatch, weathered; null: none */
   mark?: string | null;
-  /** which of the class's outfits (index into look.ts OUTFITS) */
+  /** which outfit (index into look.ts OUTFITS) */
   outfit?: number;
   /** the outfit's main and accent dyes (palette names); absent: the outfit's own */
   main?: string;
@@ -74,7 +71,7 @@ export interface HeroData {
 
 export interface SaveData {
   /** the format's version (SAVE_VERSION); loadSave walks an older one up through MIGRATE */
-  v: 3;
+  v: 4;
   /** false until the character has been made */
   created: boolean;
   hero: HeroData;
@@ -138,7 +135,7 @@ const BROKEN_KEY = 'belfort-save-v2-broken';
 const OWNER_KEY = 'belfort-save-v2-owner';
 
 /** The save format's version. A change to the format adds a step to MIGRATE and raises this by one. */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /**
  * Numbered steps that bring an older save up to date: MIGRATE[n] turns a version-n save into version n+1,
@@ -161,16 +158,46 @@ const MIGRATE: Record<number, (d: Record<string, unknown>) => void> = {
     life.migrated = true;
     delete d.renown;
   },
+  // 3 -> 4: no classes and no origin. Skills come from the weapon you carry and your faction says where you
+  // are from. A hero without a weapon gets the starting weapon of the class they had (so they keep its
+  // skills); the old class's three outfits now sit in one wardrobe of nine; class and origin are dropped.
+  3: (d) => {
+    const hero = isObj(d.hero) ? d.hero : null;
+    if (!hero) return;
+    const cls = typeof hero.origin === 'string' ? hero.origin : 'schutter';
+    const gear = isObj(hero.gear) ? hero.gear : (hero.gear = {});
+    // the class weapons were swords underneath: give them their own kind of base
+    const fix = (g: unknown) => {
+      if (!isObj(g) || g.slot !== 'wapen') return;
+      if (g.name === 'Clapper Staff' && g.base === 'roestig_zwaard') g.base = 'klepelstaf';
+      if (g.name === 'Poniard' && g.base === 'korte_degen') g.base = 'ponjaard';
+    };
+    fix(gear.wapen);
+    if (Array.isArray(hero.bag)) hero.bag.forEach(fix);
+    if (!isObj(gear.wapen) && d.created) {
+      const w = uniqueGear(OLD_CLASS_WEAPON[cls] ?? 'gildezwaard');
+      if (w) gear.wapen = w;
+    }
+    const at = OLD_CLASSES.indexOf(cls);
+    if (at > 0 && typeof hero.outfit === 'number') hero.outfit = at * 3 + Math.max(0, Math.min(2, Math.round(hero.outfit)));
+    else if (at > 0 && hero.outfit === undefined) hero.outfit = at * 3;
+    delete hero.origin;
+    delete hero.background;
+  },
 };
+
+/** The classes of saves before version 4, in the order their outfits now sit in the wardrobe (look.ts). */
+const OLD_CLASSES = ['schutter', 'klokkenluider', 'smokkelaar'];
+const OLD_CLASS_WEAPON: Record<string, string> = { schutter: 'gildezwaard', klokkenluider: 'klepelstaf', smokkelaar: 'ponjaard' };
 
 export function freshSave(): SaveData {
   return {
     v: SAVE_VERSION,
     created: false,
     hero: {
-      name: 'Lieven', origin: 'schutter', cloak: '#8c2a1e', dragon: 'Gloed', level: 1, xp: 0, hp: 100, gear: {}, bag: [],
+      name: 'Lieven', cloak: '#8c2a1e', dragon: 'Gloed', level: 1, xp: 0, hp: 100, gear: {}, bag: [],
       sex: 'm', build: 'man_young', face: {}, skin: 1, hair: 'hair_long', hairColor: 'h_brown', beard: 'moustache', hat: true,
-      background: 'diest', faction: 'gilden', scales: 'demer',
+      faction: 'gilden', scales: 'demer',
     },
     quests: {},
     flags: {},

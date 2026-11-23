@@ -1,10 +1,10 @@
-// The character sheet: origins, attributes, levels, gear and loot.
+// The character sheet: attributes, weapon skills, levels, gear and loot.
 // Numbers follow the usual ARPG shape (see docs/research): quick early levels,
 // a steady curve after; loot in four rarities, coloured as players expect.
 
 import type { HeroData } from './state';
+import { FACTION_GIFTS, type PublicFactionId } from './factions';
 
-export type OriginId = 'schutter' | 'klokkenluider' | 'smokkelaar';
 export type Slot = 'wapen' | 'harnas' | 'talisman';
 export type Stat = 'kracht' | 'klank' | 'list' | 'taaiheid';
 export type Stats = Record<Stat, number>;
@@ -31,128 +31,48 @@ export interface SkillDef {
   level: number;
 }
 
-export interface OriginDef {
-  id: OriginId;
+/**
+ * There are no classes. The two combat skills come from the weapon in your hand: a sword cuts wide, a bell
+ * staff rings, a light blade leaves a hand free for the pistol. Change the weapon and the skills change with it.
+ */
+export type WeaponKind = 'sword' | 'staff' | 'blade';
+
+export interface WeaponKit {
+  id: WeaponKind;
+  /** what the weapon type is called, for tooltips and the character panel */
   name: string;
-  tagline: string;
+  /** how it fights, in one line */
   text: string;
-  /** a paragraph for the creation screen: who they are in 1650 */
-  lore: string;
-  /** how it plays, in a few words */
-  role: string;
-  /** 1 easy .. 3 hard */
-  difficulty: 1 | 2 | 3;
-  base: Stats;
-  growth: Stats;
+  /** the prop the hero holds (src/rpg/look.ts) */
+  prop: string;
   skill: SkillDef; // right mouse
   skill2: SkillDef; // R
-  start: string; // starting weapon (catalogue id)
 }
 
-export const ORIGINS: Record<OriginId, OriginDef> = {
-  schutter: {
-    id: 'schutter',
-    name: 'Guildsman',
-    tagline: 'Sword and steel',
-    text: 'You belong to the guild of Sint-Sebastiaan. You hit hard and stand firm.',
-    lore: 'The guild of Sint-Sebastiaan has shot in its own yard since the days of the dukes. You saved a year for your oath. Your name hangs in the guildroom, under the names of the dead.',
-    role: 'close combat, takes a beating',
-    difficulty: 1,
-    base: { kracht: 8, klank: 3, list: 4, taaiheid: 7 },
-    growth: { kracht: 3, klank: 1, list: 1, taaiheid: 2 },
+export const WEAPON_KITS: Record<WeaponKind, WeaponKit> = {
+  sword: {
+    id: 'sword', name: 'Sword', prop: 'sword',
+    text: 'A sword hits hard and holds the line, the way the guilds drill on the practice field.',
     skill: { id: 'zware_slag', short: 'Cleave', name: 'Heavy Blow', text: 'A broad cut that sweeps everything aside.', cooldown: 4, cost: 0, level: 1 },
     skill2: { id: 'strijdkreet', short: 'Cry', name: 'War Cry', text: 'For eight counts you deal a third more damage, and anyone close flinches back.', cooldown: 18, cost: 40, level: 3 },
-    start: 'gildezwaard',
   },
-  klokkenluider: {
-    id: 'klokkenluider',
-    name: 'Carillonneur',
-    tagline: 'Sound as a weapon',
-    text: 'You learned the trade in Mechelen. You hear what is in the bronze.',
-    lore: 'You learned the keyboard in Mechelen, with fists and feet, under a master who went deaf from his own bells. Diest has only ordinary bells, but you hear what is in the bronze. A pure tone cuts like a knife in your hands. Since Sunday, the bronze has gone quiet.',
-    role: 'sound at range, fragile up close',
-    difficulty: 3,
-    base: { kracht: 4, klank: 9, list: 4, taaiheid: 5 },
-    growth: { kracht: 1, klank: 3, list: 1, taaiheid: 2 },
+  staff: {
+    id: 'staff', name: 'Bell staff', prop: 'bellstaff',
+    text: 'A clapper on a shaft. In the right hands the bronze still answers, and Chime makes it ring harder.',
     skill: { id: 'klokslag', short: 'Strike', name: 'Bell Strike', text: 'A boom that hits everything around you and stuns.', cooldown: 5, cost: 25, level: 1 },
     skill2: { id: 'zuivere_toon', short: 'Tone', name: 'Pure Tone', text: 'A tone so pure it cuts clean through an enemy.', cooldown: 6, cost: 30, level: 3 },
-    start: 'klepelstaf',
   },
-  smokkelaar: {
-    id: 'smokkelaar',
-    name: 'Smuggler',
-    tagline: 'Quick and dirty',
-    text: 'You know every path round the toll, and you do not fight fair.',
-    lore: 'Every bridge in Brabant has a toll house, and every toll house wants its stuiver. You know the cart tracks across the heath to the Dutch border. Three years of smuggled salt paid for your pistol. It has paid for itself already.',
-    role: 'quick and mean, lives on criticals',
-    difficulty: 2,
-    base: { kracht: 5, klank: 3, list: 9, taaiheid: 5 },
-    growth: { kracht: 2, klank: 1, list: 3, taaiheid: 1 },
+  blade: {
+    id: 'blade', name: 'Light blade', prop: 'dagger',
+    text: 'A short blade leaves your other hand free for a wheel-lock pistol. Quick, mean, and best with Guile.',
     skill: { id: 'pistoolschot', short: 'Shot', name: 'Pistol Shot', text: 'A shot from your wheel-lock pistol: hard, far and loud.', cooldown: 3, cost: 0, level: 1 },
     skill2: { id: 'rookbom', short: 'Smoke', name: 'Smoke Bomb', text: 'You vanish in smoke: enemies lose sight of you and your next strikes are critical hits.', cooldown: 16, cost: 35, level: 3 },
-    start: 'ponjaard',
   },
 };
 
-// ------------------------------------------------------------------ backgrounds
-// Origin: where you are from. Each gives one small passive and changes what
-// people say about you. All five are places and lives that existed in 1650.
-
-export type BackgroundId = 'diest' | 'kempen' | 'hageland' | 'luik' | 'tros';
-
-export interface BackgroundDef {
-  id: BackgroundId;
-  /** what you are called: a man, a woman */
-  name: [string, string];
-  /** the place, for lists */
-  place: string;
-  lore: string;
-  /** the passive, as the screen states it */
-  perk: string;
-  perkName: string;
-  /** what people say about where you are from */
-  said: string[];
-  /** added to the sheet */
-  bonus: Partial<Stats> & { hp?: number; armor?: number; crit?: number; power?: number };
-}
-
-export const BACKGROUNDS: Record<BackgroundId, BackgroundDef> = {
-  diest: {
-    id: 'diest', name: ['Diest-born', 'Diest-born'], place: 'Diest and the Demer meadows',
-    lore: 'You were born on a farm just outside the walls, in sight of Sint-Sulpitius. Diest once sold cloth in every great market; now it mostly brews beer. A prince of Orange lies buried in the choir. The living princes never come.',
-    perkName: 'Bell Child', perk: '+5% power of bell magic and dragonfire.',
-    said: ['From here? Then you always knew the hour. Until Sunday.', 'Someone from Diest, with a dragon. My mother will never believe it.'],
-    bonus: { power: 0.05 },
-  },
-  kempen: {
-    id: 'kempen', name: ['Kempen-born', 'Kempen-born'], place: 'the Kempen, north of the Demer',
-    lore: 'North of the Demer the sand begins. Your parents kept sheep on heath that was once forest, and cut peat for a lord they never saw. Nobody in the Kempen complains about the weather. The weather does not listen.',
-    perkName: 'Tough as Heather', perk: '+15 health.',
-    said: ['From the Kempen? They eat sand there and still say thank you.', 'A man of the Kempen keeps walking after the horse lies down.'],
-    bonus: { hp: 15 },
-  },
-  hageland: {
-    id: 'hageland', name: ['Hageland-born', 'Hageland-born'], place: 'the Hageland, south of Diest',
-    lore: 'South of Diest lie the hills of the Hageland, with vineyards on the sunny side. The brown ironstone the churches are built from comes from its quarries. You carried stone before you could read. Your back remembers.',
-    perkName: 'Stonecarrier\'s Arms', perk: '+2 Might.',
-    said: ['Hageland folk are sour as their wine and hard as their stone.', 'From the hills? Bring wine next time. Or no, don\'t.'],
-    bonus: { kracht: 2 },
-  },
-  luik: {
-    id: 'luik', name: ['Luik-born', 'Luik-born'], place: 'the prince-bishopric of Luik',
-    lore: 'Luik belongs neither to Spain nor to Brabant but to a prince-bishop, who means to stay neutral. The city sells arms to every army. You grew up among anvils and musket barrels. You know what a barrel costs, and who pays.',
-    perkName: 'Knows Steel', perk: '+5 armour.',
-    said: ['From Luik. Count your fingers after the handshake.', 'From Luik? Then have a look at the lock on my door.'],
-    bonus: { armor: 5 },
-  },
-  tros: {
-    id: 'tros', name: ['Camp child', 'Camp child'], place: 'the army\'s baggage train',
-    lore: 'Behind every army marches a second: sutlers, laundresses, servants, children. You were born on a cart in Henegouwen. In 1648 peace came with the Dutch, but not with France. The baggage train still moves on.',
-    perkName: 'Fighting Dirty', perk: '+5% critical chance.',
-    said: ['From the baggage train? Keep your hands where I can see them.', 'A soldier\'s child. Lock up the chickens.'],
-    bonus: { crit: 5 },
-  },
-};
+/** Everyone starts the same and grows the same: what you carry and who you serve make the difference. */
+const BASE_STATS: Stats = { kracht: 6, klank: 5, list: 5, taaiheid: 6 };
+const GROWTH: Stats = { kracht: 2, klank: 2, list: 2, taaiheid: 2 };
 
 export const LEVEL_CAP = 20;
 /** XP needed to go from `level` to the next. */
@@ -186,14 +106,18 @@ export interface Gear {
   from?: string;
 }
 
-interface Base { id: string; name: string; slot: Slot; ilvl: number; dmg?: [number, number]; armor?: number }
+interface Base { id: string; name: string; slot: Slot; ilvl: number; dmg?: [number, number]; armor?: number; kind?: WeaponKind }
 const BASES: Base[] = [
-  { id: 'roestig_zwaard', name: 'Rusty Sword', slot: 'wapen', ilvl: 1, dmg: [3, 6] },
-  { id: 'korte_degen', name: 'Short Sword', slot: 'wapen', ilvl: 2, dmg: [4, 7] },
-  { id: 'rapier', name: 'Rapier', slot: 'wapen', ilvl: 3, dmg: [5, 9] },
-  { id: 'slagzwaard', name: 'Heavy Sword', slot: 'wapen', ilvl: 5, dmg: [8, 14] },
-  { id: 'schutterszwaard', name: 'Guildsman\'s Sword', slot: 'wapen', ilvl: 7, dmg: [11, 18] },
-  { id: 'officiersdegen', name: 'Officer\'s Blade', slot: 'wapen', ilvl: 9, dmg: [14, 22] },
+  { id: 'roestig_zwaard', name: 'Rusty Sword', slot: 'wapen', ilvl: 1, dmg: [3, 6], kind: 'sword' },
+  { id: 'korte_degen', name: 'Short Sword', slot: 'wapen', ilvl: 2, dmg: [4, 7], kind: 'sword' },
+  { id: 'rapier', name: 'Rapier', slot: 'wapen', ilvl: 3, dmg: [5, 9], kind: 'blade' },
+  { id: 'slagzwaard', name: 'Heavy Sword', slot: 'wapen', ilvl: 5, dmg: [8, 14], kind: 'sword' },
+  { id: 'schutterszwaard', name: 'Guildsman\'s Sword', slot: 'wapen', ilvl: 7, dmg: [11, 18], kind: 'sword' },
+  { id: 'officiersdegen', name: 'Officer\'s Blade', slot: 'wapen', ilvl: 9, dmg: [14, 22], kind: 'blade' },
+  { id: 'ponjaard', name: 'Poniard', slot: 'wapen', ilvl: 1, dmg: [3, 6], kind: 'blade' },
+  { id: 'klepelstaf', name: 'Clapper Staff', slot: 'wapen', ilvl: 1, dmg: [3, 6], kind: 'staff' },
+  { id: 'beiaardstaf', name: 'Carillon Staff', slot: 'wapen', ilvl: 4, dmg: [6, 10], kind: 'staff' },
+  { id: 'bronsstaf', name: 'Bell-Bronze Staff', slot: 'wapen', ilvl: 8, dmg: [11, 18], kind: 'staff' },
   { id: 'linnen_wambuis', name: 'Linen Doublet', slot: 'harnas', ilvl: 1, armor: 4 },
   { id: 'leren_kolder', name: 'Leather Jerkin', slot: 'harnas', ilvl: 2, armor: 8 },
   { id: 'buffeljas', name: 'Buff Coat', slot: 'harnas', ilvl: 4, armor: 14 },
@@ -218,14 +142,30 @@ const RARE_NAMES = ['Demerthorn', 'Bellheart', 'Weaver\'s Thanks', 'Gallows Rest
 /** Named pieces: starting gear and quest rewards. */
 const UNIQUE: Record<string, Omit<Gear, 'uid'>> = {
   gildezwaard: { base: 'korte_degen', name: 'Guild Sword', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [4, 7], mods: {}, text: 'The practice sword of the guild of Sint-Sebastiaan. It is blunt, but honest.' },
-  klepelstaf: { base: 'roestig_zwaard', name: 'Clapper Staff', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [3, 6], mods: { klank: 2 }, text: 'An old bell clapper on an ash-wood shaft.' },
-  ponjaard: { base: 'korte_degen', name: 'Poniard', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [3, 6], mods: { crit: 3 }, text: 'Short, sharp and easy to hide.' },
+  klepelstaf: { base: 'klepelstaf', name: 'Clapper Staff', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [3, 6], mods: { klank: 2 }, text: 'An old bell clapper on an ash-wood shaft.' },
+  garnizoenszwaard: { base: 'korte_degen', name: 'Garrison Sword', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [4, 7], mods: {}, text: 'Issued in Brussel, stamped with the king\'s mark. Nobody ever asked for it back.' },
+  drossaardsdegen: { base: 'rapier', name: 'Drossaard\'s Rapier', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [3, 6], mods: { list: 1 }, text: 'A thin blade with the arms of Nassau filed off the guard. The prince\'s men carry it quietly.' },
+  ponjaard: { base: 'ponjaard', name: 'Poniard', slot: 'wapen', rarity: 0, ilvl: 1, dmg: [3, 6], mods: { crit: 3 }, text: 'Short, sharp and easy to hide.' },
   pelgrimsmantel: { base: 'linnen_wambuis', name: 'Pilgrim\'s Cloak', slot: 'harnas', rarity: 1, ilvl: 2, armor: 6, mods: { taaiheid: 2 }, text: 'Blessed in Scherpenheuvel. It still smells of incense.' },
   roelofs_slagzwaard: { base: 'slagzwaard', name: 'Lambrecht\'s Heavy Sword', slot: 'wapen', rarity: 3, ilvl: 5, dmg: [11, 18], mods: { kracht: 4, crit: 5 }, text: 'Lambrecht the Red plundered three villages with it. The sword remembers.' },
   kluddevel: { base: 'buffeljas', name: 'Kludde Hide', slot: 'harnas', rarity: 3, ilvl: 5, armor: 20, mods: { taaiheid: 4, hp: 25 }, text: 'The pelt of the Kludde. It is still wet and still warm.' },
   eikenhart: { base: 'eiken_beeldje', name: 'Oakheart', slot: 'talisman', rarity: 3, ilvl: 4, mods: { klank: 5, fire: 20, hp: 15 }, text: 'Wood of the holy oak. It hums when the bells fall silent.' },
   zegelring: { base: 'pelgrimsinsigne', name: 'Weaver\'s Signet', slot: 'talisman', rarity: 2, ilvl: 3, mods: { list: 3, crit: 4 }, text: 'The seal of the weavers\' guild. It opens doors in every cloth hall.' },
 };
+
+const KIND_OF_BASE: Record<string, WeaponKind> = Object.fromEntries(BASES.filter((b) => b.kind).map((b) => [b.id, b.kind!]));
+
+/** What kind of weapon this is (and so which two skills it gives): no weapon, or an unknown one, fights as a sword. */
+export function weaponKind(g: Gear | null | undefined): WeaponKind {
+  return (g && KIND_OF_BASE[g.base]) || 'sword';
+}
+
+/** The two skills a weapon gives, for tooltips. */
+export function weaponSkillLine(g: Gear): string | null {
+  if (g.slot !== 'wapen') return null;
+  const k = WEAPON_KITS[weaponKind(g)];
+  return `${k.name}: ${k.skill.name} and ${k.skill2.name}`;
+}
 
 let uidCounter = Date.now() % 100000;
 const uid = () => `g${(uidCounter++).toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`;
@@ -301,25 +241,26 @@ export interface Derived extends Stats {
 export class Sheet {
   constructor(public h: HeroData) {}
 
-  get origin() {
-    return ORIGINS[this.h.origin];
+  /** the two skills of the weapon in your hand */
+  get kit(): WeaponKit {
+    return WEAPON_KITS[weaponKind(this.h.gear.wapen)];
   }
 
-  get background() {
-    return BACKGROUNDS[this.h.background] ?? BACKGROUNDS.diest;
+  /** what your first loyalty gives: a small passive, a signature ability and where you come from */
+  get gift() {
+    return FACTION_GIFTS[this.h.faction as PublicFactionId] ?? FACTION_GIFTS.gilden;
   }
 
   derived(): Derived {
-    const o = this.origin;
     const L = this.h.level - 1;
     const st: Stats = {
-      kracht: o.base.kracht + o.growth.kracht * L,
-      klank: o.base.klank + o.growth.klank * L,
-      list: o.base.list + o.growth.list * L,
-      taaiheid: o.base.taaiheid + o.growth.taaiheid * L,
+      kracht: BASE_STATS.kracht + GROWTH.kracht * L,
+      klank: BASE_STATS.klank + GROWTH.klank * L,
+      list: BASE_STATS.list + GROWTH.list * L,
+      taaiheid: BASE_STATS.taaiheid + GROWTH.taaiheid * L,
     };
-    // where you are from: one small passive
-    const bg = this.background.bonus;
+    // your faction: one small passive
+    const bg = this.gift.bonus;
     for (const k of ['kracht', 'klank', 'list', 'taaiheid'] as Stat[]) st[k] += bg[k] ?? 0;
     let hpMod = bg.hp ?? 0, critMod = bg.crit ?? 0, fireMod = 0, armor = bg.armor ?? 0;
     let dmg: [number, number] = [2, 4];
@@ -377,10 +318,10 @@ export class Sheet {
   /**
    * How strong the hero is with these stats, in one number to compare gear by: the damage of an average
    * hit (with crits), how much it takes to bring you down (life and armour, as combat counts them), and,
-   * weighed lightly, dragon fire. Bell skills scale with Klank, so it counts for the Beiaardier's hits too.
+   * weighed lightly, dragon fire. Bell skills scale with Chime, so with a bell staff in hand it counts for the hits too.
    */
   private worth(d: Derived) {
-    const hit = ((d.dmg[0] + d.dmg[1]) / 2) * (1 + (0.75 * d.crit) / 100) * (this.h.origin === 'klokkenluider' ? Math.sqrt(d.power) : 1);
+    const hit = ((d.dmg[0] + d.dmg[1]) / 2) * (1 + (0.75 * d.crit) / 100) * (weaponKind(this.h.gear.wapen) === 'staff' ? Math.sqrt(d.power) : 1);
     const life = d.maxHp * (1 + (d.armor * 2.2) / 100);
     const fire = d.power * (1 + d.fire / 100);
     return Math.log(hit) + 0.5 * Math.log(life) + 0.1 * Math.log(fire);

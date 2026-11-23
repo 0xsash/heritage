@@ -208,15 +208,14 @@ The short loops still exist inside all of this: spot something from the air, lan
 - **The front end:**
   - a title screen;
   - five painted story slides;
-  - character creation: name, one of three origins, cloak colour, your dragon's name.
-- **The origins:**
-  - *Schuttersgezel* (sword);
-  - *Klokkenluiderskind* (bell magic);
-  - *Smokkelaarsjong* (pistol and smoke).
+  - character creation: your looks (body, face, hair, clothes), your faction, your dragon and both names. There are no classes and no separate origin.
+- **No classes: the weapon gives the skills, the faction gives the rest.**
+  - the two combat skills come from the weapon in your hand, so changing weapon changes them: a *sword* gives Heavy Blow and War Cry, a *bell staff* Bell Strike and Pure Tone, a *light blade* (poniard, rapier) Pistol Shot and Smoke Bomb. The second skill opens at level 3;
+  - your faction is where you come from (one line of backstory), your first weapon, a small passive and one signature ability on V / R3, on a cooldown: De Gilden *Guild Oath* (half damage for six seconds), De Kerk *Beguine's Blessing* (heal a third of your health), De Kroon *In the King's Name* (stun everything close for two seconds), Oranje *Rally to Orange* (+50 Resonance), De Vrije Lieden *Slip Away* (a moment untouchable, enemies close lose sight of you). The hidden Oude Volk teaches dragon skills instead.
 - **Combat:**
   - a three-hit sword combo with buffering and target assist;
   - a dodge roll you can't be hit during;
-  - two skills per origin;
+  - two skills from the weapon you carry, one from your faction;
   - dragon fire from the air;
   - hitstop, white flashes, knockback, damage numbers.
 - **Enemies:**

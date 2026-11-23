@@ -5,7 +5,7 @@
 // beards, headwear and mantles; a kit made before those existed still works
 // (the hero is then dressed from what that kit has).
 
-import type { OriginId } from './character';
+import { WEAPON_KITS, weaponKind } from './character';
 import type { HeroData } from './state';
 import type { FolkSpec, TownsfolkKit } from './townsfolk';
 
@@ -110,7 +110,7 @@ export const NAMES: Record<Sex, string[]> = {
 };
 export const DRAGONS = ['Gloed', 'Sintel', 'Vonk', 'Brons', 'Goudvleugel', 'Beiaard', 'Demerdraak', 'Gouden Griet', 'Roet', 'Heidebrand'];
 
-// ------------------------------------------------------------------ the class outfits
+// ------------------------------------------------------------------ the outfits
 
 /** In `wear`, 'main' and 'accent' take the chosen colours; a palette name is fixed; null is as painted. */
 export interface Outfit {
@@ -126,10 +126,12 @@ export interface Outfit {
 const O = (name: string, wear: Record<string, string | null>, main: string, accent: string, hat: string | null, prop: string): Outfit => ({ name, wear, main, accent, hat, prop });
 
 /**
- * Three outfits per class and sex. The women's are cut for women (jak, lijfje, rok over onderrok, schort, kraag):
- * no piece a man wears. The first men's outfit of each class is the one the hero wore before there was a choice.
+ * The wardrobe, in three groups of three per sex (militia, town, road: once the clothes of three classes, and
+ * still in that order, so a save from before version 4 keeps its outfit; see MIGRATE[3] in state.ts). The women's
+ * are cut for women (jak, lijfje, rok over onderrok, schort, kraag): no piece a man wears. The prop listed is
+ * only a fallback: the hero holds the weapon they carry.
  */
-export const OUTFITS: Record<OriginId, Record<Sex, Outfit[]>> = {
+const WARDROBE: Record<'schutter' | 'klokkenluider' | 'smokkelaar', Record<Sex, Outfit[]>> = {
   schutter: {
     m: [
       O('Buff Coat', { doublet: 'main', buff_coat: null, sash: 'accent', breeches: 'slate', stockings: 'grey', boots: null }, 'madder_dk', 'madder', null, 'sword'),
@@ -166,6 +168,11 @@ export const OUTFITS: Record<OriginId, Record<Sex, Outfit[]>> = {
       O('Dark Jacket', { jak: 'main', kraag_f: null, skirt: 'accent', boots_f: null }, 'black', 'green_dk', 'bontmuts', 'dagger'),
     ],
   },
+};
+
+export const OUTFITS: Record<Sex, Outfit[]> = {
+  m: [...WARDROBE.schutter.m, ...WARDROBE.klokkenluider.m, ...WARDROBE.smokkelaar.m],
+  f: [...WARDROBE.schutter.f, ...WARDROBE.klokkenluider.f, ...WARDROBE.smokkelaar.f],
 };
 
 /** What a sex may choose, from the kit's hero section or from what the kit has today. */
@@ -209,26 +216,26 @@ export function heroOptions(kit: TownsfolkKit | null): HeroOptions {
   return { bodies, hair, beards: beards.length ? beards : [null], headwear, mantles: mantles.length ? mantles : ['mantle'], heroKit: !!H?.outfits };
 }
 
-/** The outfits a class offers this sex in this kit (an older kit lacks the women's pieces: then what it has). */
-export function outfitsFor(kit: TownsfolkKit | null, origin: OriginId, sex: Sex): Outfit[] {
-  const all = OUTFITS[origin]?.[sex] ?? OUTFITS.schutter[sex];
+/** The outfits this sex may wear in this kit (an older kit lacks the women's pieces: then what it has). */
+export function outfitsFor(kit: TownsfolkKit | null, sex: Sex): Outfit[] {
+  const all = OUTFITS[sex];
   if (!kit) return all;
   const body = sex === 'f' ? 'woman' : 'man';
   const ok = all.filter((o) => Object.keys(o.wear).every((p) => kit.fits(p, body)));
   if (ok.length) return ok;
   // a kit from before phase E: the women in bodice and skirt (their own cut, at least), the men as they were
   if (sex === 'f') return [O('Bodice', { bodice: 'main', kerchief: null, skirt: 'accent', shoes: null }, 'woad_dk', 'black', 'coif', all[0].prop)];
-  return [O(all[0].name, Object.fromEntries(Object.entries(kit.m.hero?.outfits?.[origin === 'klokkenluider' ? 'beiaardier' : origin]?.wear ?? {}).map(([k, v]) => [k, v])), all[0].main, all[0].accent, null, all[0].prop)];
+  return [O(all[0].name, Object.fromEntries(Object.entries(kit.m.hero?.outfits?.schutter?.wear ?? {}).map(([k, v]) => [k, v])), all[0].main, all[0].accent, null, all[0].prop)];
 }
 
 /** The outfit a saved hero wears (index clamped; old saves have none: the first). */
-export function outfitOf(kit: TownsfolkKit | null, h: Pick<HeroData, 'origin' | 'sex'> & { outfit?: number }) {
-  const list = outfitsFor(kit, h.origin, h.sex === 'f' ? 'f' : 'm');
+export function outfitOf(kit: TownsfolkKit | null, h: Pick<HeroData, 'sex'> & { outfit?: number }) {
+  const list = outfitsFor(kit, h.sex === 'f' ? 'f' : 'm');
   return list[Math.max(0, Math.min(list.length - 1, Math.round(h.outfit ?? 0)))];
 }
 
 /** The headwear a hero wears: chosen, or (an older save) the outfit's own when the hat was on. */
-export function headwearOf(kit: TownsfolkKit | null, h: Pick<HeroData, 'origin' | 'sex' | 'hat'> & { outfit?: number; headwear?: string | null }) {
+export function headwearOf(kit: TownsfolkKit | null, h: Pick<HeroData, 'sex' | 'hat'> & { outfit?: number; headwear?: string | null }) {
   if (h.headwear !== undefined) return h.headwear;
   return h.hat === false ? null : outfitOf(kit, h).hat;
 }
@@ -264,7 +271,7 @@ export function heroSpec(kit: TownsfolkKit, h: HeroData): FolkSpec {
   if (h.mark === 'eyepatch' && kit.fits('eyepatch', body)) wear.eyepatch = null;
   const scale = Math.max(0.92, Math.min(1.08, h.height ?? 1));
   return {
-    body, wear, prop: outfit.prop, role: 'burgher', face: h.face, skin: h.skin, accent,
+    body, wear, prop: h.gear?.wapen ? WEAPON_KITS[weaponKind(h.gear.wapen)].prop : outfit.prop, role: 'burgher', face: h.face, skin: h.skin, accent,
     eyes: h.eyes ?? null, mark: h.mark && h.mark !== 'eyepatch' ? h.mark : null, scale, hide, unhide: flat ? ['hair_crown'] : undefined,
   };
 }

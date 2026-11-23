@@ -15,7 +15,7 @@ import { Post } from './render/post';
 import { loadModel } from './render/models';
 import { loadMaterialSet, type MaterialInfo } from './render/textures';
 import { Actors } from './rpg/actors';
-import { RARITY, type Gear, rollGear, uniqueGear } from './rpg/character';
+import { RARITY, type Gear, rollGear, uniqueGear, weaponKind } from './rpg/character';
 import { stuivers } from './rpg/money';
 import { Crowd } from './rpg/crowd';
 import { loadTownsfolk } from './rpg/townsfolk';
@@ -136,7 +136,7 @@ async function boot() {
   const dragonP = kitP.then(() => loadModel('models/dragon.glb'));
   const front = skipFront
     ? Promise.resolve({ mode: 'continue' as const })
-    : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, origin: peek.hero.origin, sex: peek.hero.sex, background: peek.hero.background } : null, () => sound.start(), kitP, dragonP, () => menu.openSettings('title'));
+    : runFrontEnd(uiRoot, peek.created ? { name: peek.hero.name, level: peek.hero.level, faction: peek.hero.faction, sex: peek.hero.sex } : null, () => sound.start(), kitP, dragonP, () => menu.openSettings('title'));
 
   // --- load everything
   const [data, meta] = await Promise.all([
@@ -247,10 +247,10 @@ async function boot() {
     xp: (_n, levels) => {
       if (!levels) return;
       const L = quests.s.hero.level;
-      const o = quests.sheet.origin;
+      const o = quests.sheet.kit;
       late.banner?.show('level', 'LEVEL UP', levels > 1 ? `Level ${L - levels} → ${L}` : `Level ${L}`, [
         'You grow stronger. Your health is full again.',
-        L - levels < o.skill2.level && L >= o.skill2.level ? `New skill: ${o.skill2.name} (${input.device === 'pad' ? 'B' : 'R'})` : '',
+        L - levels < o.skill2.level && L >= o.skill2.level ? `Every weapon's second skill is open to you now: ${o.skill2.name} (${input.device === 'pad' ? 'B' : 'R'})` : '',
       ]);
       sound.levelUp();
       combat.fx.ring(player.onFoot ? player.heroPos : player.pos, 6, '#c8a8ff', 0.8);
@@ -277,8 +277,8 @@ async function boot() {
   const d0 = quests.sheet.derived();
   if (quests.s.hero.hp > d0.maxHp || quests.s.hero.hp <= 0) quests.s.hero.hp = d0.maxHp;
   if (isNew && !quests.s.hero.gear.wapen) {
-    // starting gear for the origin
-    const w = uniqueGear(quests.sheet.origin.start);
+    // the first weapon: your faction hands it to you (and with it your first two skills)
+    const w = uniqueGear(quests.sheet.gift.start);
     if (w) quests.s.hero.gear.wapen = w;
     quests.s.hero.hp = quests.sheet.derived().maxHp;
   }
@@ -424,7 +424,16 @@ async function boot() {
   const chapterCard = new ChapterCard(uiRoot);
   const dialogue = new DialogueUI(uiRoot, quests);
   const journal = (late.journal = new JournalUI(uiRoot, quests));
-  const chars = (late.chars = new CharacterPanel(uiRoot, quests, () => player.hero.setCloak(quests.s.hero.cloak), () => sound.coins()));
+    // a weapon of another kind changes your skills and what the hero holds: dress them again
+  let heldKind = weaponKind(quests.s.hero.gear.wapen);
+  const chars = (late.chars = new CharacterPanel(uiRoot, quests, () => {
+    player.hero.setCloak(quests.s.hero.cloak);
+    const k = weaponKind(quests.s.hero.gear.wapen);
+    if (k !== heldKind && townsfolk) {
+      heldKind = k;
+      void dressHero(player.hero, townsfolk, quests.s.hero, rider).then(() => player.hero.setCloak(quests.s.hero.cloak));
+    }
+  }, () => sound.coins()));
   // merchants, guides, the notice board, things in the streets, talk with anyone (src/life)
   const life = (late.life = new Life({
     quests, kroniek, world, crowd, kit: townsfolk, combat, hud, chars, dialogue, sound, ui: uiRoot,
@@ -965,7 +974,7 @@ async function boot() {
         talking: dialogue.open, bookOpen: journal.open || kroniekUI.open, nearGiver: false,
         quests: Object.keys(quests.s.quests).length, inCombat: combat.inCombat,
         hpFrac: quests.s.hero.hp / quests.sheet.derived().maxHp, salves: quests.s.inv.salve ?? 0,
-        tally: combat.tally, dragon: quests.s.hero.dragon, skill: quests.sheet.origin.skill.name, uiOpen: uiOpen(),
+        tally: combat.tally, dragon: quests.s.hero.dragon, skill: quests.sheet.kit.skill.name, uiOpen: uiOpen(),
         spare: !!combat.spareHint, dragonFly: combat.dragonSlots(true).length > 0, dragonCall: combat.dragonSlots(false).length > 0,
       });
       crowd?.update(sdt, px, pz, player.onFoot ? 0 : player.altitude(), rig.camera, {
@@ -1071,7 +1080,7 @@ async function boot() {
     else hud.setPrompt(null);
 
     // the player frame and action bar
-    const o = quests.sheet.origin;
+    const o = quests.sheet.kit; // the two skills of the weapon in hand
     const flying = !player.onFoot;
     const slots: SlotView[] = flying
       ? [
@@ -1083,6 +1092,7 @@ async function boot() {
           { key: 'LMB', name: 'Strike', icon: 'sword', cd: 0, ready: true },
           { key: 'RMB', name: o.skill.short, icon: o.skill.id, cd: combat.cds.skill / o.skill.cooldown, ready: combat.cds.skill <= 0 && combat.resonance >= o.skill.cost },
           { key: 'R', name: o.skill2.short, icon: o.skill2.id, cd: combat.cds.skill2 / o.skill2.cooldown, ready: combat.cds.skill2 <= 0 && combat.resonance >= o.skill2.cost, locked: quests.s.hero.level < o.skill2.level ? `level ${o.skill2.level}` : undefined },
+          combat.factionSlot(), // your faction's ability (src/rpg/factions.ts)
           { key: 'SPACE', name: 'Roll', icon: 'roll', cd: 0, ready: combat.inCombat },
           ...combat.dragonSlots(false),
           { key: 'Q', name: 'Salve', icon: 'salve', cd: combat.cds.potion / 12, ready: combat.cds.potion <= 0, count: quests.s.inv.salve ?? 0 },

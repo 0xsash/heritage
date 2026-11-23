@@ -76,3 +76,59 @@ export function tierOf(points: number) {
 
 /** Older saves kept renown per place; those places belong to a party (state.ts carries it over when it loads one). */
 export const RENOWN_TO_FACTION: Record<string, FactionId> = { Diest: 'gilden', Begijnhof: 'kerk', Scherpenheuvel: 'kerk', Kaggevinne: 'vrije' };
+
+// ------------------------------------------------------------------ what your first loyalty gives
+// There are no classes and no separate origin: who you serve says where you come from (one line of
+// backstory), adds one small passive, and gives one signature ability on its own key (V / R3).
+
+export type PublicFactionId = Exclude<FactionId, 'oudevolk'>;
+export type FactionAbilityId = 'eed' | 'zegen' | 'halt' | 'oproep' | 'wegwezen';
+
+export interface FactionAbility {
+  id: FactionAbilityId;
+  name: string;
+  /** one word for the action bar */
+  short: string;
+  text: string;
+  /** seconds */
+  cooldown: number;
+}
+
+export interface FactionGift {
+  /** where you come from, one line (it replaces the old choice of origin) */
+  backstory: string;
+  /** the passive, as the screen states it */
+  perk: string;
+  bonus: { kracht?: number; klank?: number; list?: number; taaiheid?: number; hp?: number; armor?: number; crit?: number; power?: number };
+  ability: FactionAbility;
+  /** the weapon (catalogue id in character.ts) a new character starts with */
+  start: string;
+}
+
+export const FACTION_GIFTS: Record<PublicFactionId, FactionGift> = {
+  gilden: {
+    backstory: 'You were born inside the walls and swore your oath to the guild of Sint-Sebastiaan. Your name hangs in the guildroom, under the names of the dead.',
+    perk: '+2 Might.', bonus: { kracht: 2 }, start: 'gildezwaard',
+    ability: { id: 'eed', name: 'Guild Oath', short: 'Oath', cooldown: 30, text: 'You plant your feet the way the militia drills. For six counts every blow that reaches you does half its damage.' },
+  },
+  kerk: {
+    backstory: 'The beguines took you in after the fever of 1636. You learned the psalms, the herbs, and which bells the chapter keeps.',
+    perk: '+15 health.', bonus: { hp: 15 }, start: 'klepelstaf',
+    ability: { id: 'zegen', name: 'Beguine\'s Blessing', short: 'Bless', cooldown: 35, text: 'The prayer the beguines say over the sick. A third of your health comes back over a few counts.' },
+  },
+  kroon: {
+    backstory: 'Your father came north with a Spanish tercio and never went home. You grew up in a billet, among soldiers, orders and debts.',
+    perk: '+5 armour.', bonus: { armor: 5 }, start: 'garnizoenszwaard',
+    ability: { id: 'halt', name: 'In the King\'s Name', short: 'Halt', cooldown: 28, text: 'You shout the garrison\'s order. Everything close to you stands still for two counts.' },
+  },
+  oranje: {
+    backstory: 'Your family has served the drossaard\'s house for three generations. You collect what an absent prince is owed, and you remember who paid.',
+    perk: '+5% power of bell magic and dragonfire.', bonus: { power: 0.05 }, start: 'drossaardsdegen',
+    ability: { id: 'oproep', name: 'Rally to Orange', short: 'Rally', cooldown: 30, text: 'You call the old rallying cry under your breath. Half your Resonance fills at once.' },
+  },
+  vrije: {
+    backstory: 'You were born on a cart on the heath road. You know every path around every toll house in Brabant, and you have never paid one.',
+    perk: '+5% critical chance.', bonus: { crit: 5 }, start: 'ponjaard',
+    ability: { id: 'wegwezen', name: 'Slip Away', short: 'Slip', cooldown: 24, text: 'You know when to leave. For a moment nothing touches you, and everyone close loses sight of you.' },
+  },
+};

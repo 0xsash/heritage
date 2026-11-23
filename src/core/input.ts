@@ -13,8 +13,9 @@ export type Action =
   | 'kroniek' // K — the chronicle
   | 'paint' // P — the view as a painting
   | 'attack' // left mouse / RT on foot, LB flying — sword (on foot), fire (flying; RT is the throttle there)
-  | 'skill' // right mouse / LT — origin skill
-  | 'skill2' // R / B on foot — second skill
+  | 'skill' // right mouse / LT — the first skill of the weapon you carry
+  | 'skill2' // R / B on foot — the weapon's second skill
+  | 'faction' // V / R3 on foot — your faction's ability
   | 'potion' // Q / d-pad down — drink a salve
   | 'dragon' // G / d-pad left — call the dragon to your side in a fight (once Het Oude Volk taught it)
   | 'character' // I, Tab / d-pad right — character and bag
@@ -35,6 +36,7 @@ const KEYMAP: Record<string, Action> = {
   KeyK: 'kroniek',
   KeyP: 'paint',
   KeyR: 'skill2',
+  KeyV: 'faction',
   KeyQ: 'potion',
   KeyG: 'dragon',
   KeyI: 'character',
@@ -63,8 +65,9 @@ export const CONTROLS: { group: string; when: 'fly' | 'foot' | 'any' | 'screen';
     { what: 'Jump · roll away in a fight', kbd: 'Space', pad: 'A' },
     { what: 'Talk · pick up · read', kbd: 'E', pad: 'Y' },
     { what: 'Call and mount your dragon', kbd: 'E', pad: 'Y' },
-    { what: 'Sword strike', kbd: 'Left mouse', pad: 'RT' },
-    { what: 'Class skills', kbd: 'Right mouse · R', pad: 'LT · B' },
+    { what: 'Strike', kbd: 'Left mouse', pad: 'RT' },
+    { what: 'Weapon skills (they change with the weapon)', kbd: 'Right mouse · R', pad: 'LT · B' },
+    { what: 'Your faction\'s ability', kbd: 'V', pad: 'R3' },
     { what: 'Call your dragon to your side', kbd: 'G', pad: '◀ D-pad' },
   ] },
   { group: 'Always', when: 'any', rows: [
@@ -257,6 +260,7 @@ export class Input {
         [13, 'potion'],
         [14, 'dragon'],
         [1, 'skill2'],
+        [11, 'faction'],
         [9, 'menu'],
         [12, 'time'],
         [15, 'character'],

@@ -247,6 +247,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .gcard .gn { font-family: var(--display); font-size: 16px; }
 .gcard .gt { font-size: 13px; color: var(--ink-dim); margin-bottom: 4px; }
 .gcard .gl { font-size: 16px; color: #cfe0ff; }
+.gcard .gl.gskill { color: #e8c98a; font-size: 15px; border-bottom: none; cursor: default; }
+.gcard .gl.gskill.new { color: #a8d890; font-style: italic; }
 .gcard .gx { font-size: 15px; font-style: italic; color: #c8b48a; margin-top: 4px; }
 .gcard .gb { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
 .gcard .up { color: #7dff9a; font-size: 15px; }
@@ -539,6 +541,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .cc-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 16px; line-height: 1.28; margin: 2px 0 5px; color: var(--ink); }
 .cc-skills b { display: block; margin: 0; }
 .cc-skills i { color: var(--ink-dim); }
+.cc-skills > div:only-child { grid-column: 1 / -1; }
 .cc-dot { display: inline-block; width: 10px; height: 10px; transform: rotate(45deg); margin: 0 9px 1px 2px; border: 1px solid rgba(0, 0, 0, 0.5); flex: none; }
 .cc-row { display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: center; min-height: 31px; }
 .cc-row > label { font-family: var(--display); font-size: 13px; letter-spacing: 0.04em; color: var(--ink-dim); white-space: nowrap; }
@@ -566,6 +569,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0b09; col
 .cc-derived span { white-space: nowrap; }
 .cc-derived b { color: var(--ink); font-weight: 600; }
 .cc-list { display: flex; flex-direction: column; gap: 3px; }
+.cc-note { margin: 10px 2px 0; font-size: 14px; line-height: 1.4; color: var(--ink-dim); }
 .cc-opt { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 9px; border: 1px solid rgba(214, 173, 87, 0.16); background: rgba(0, 0, 0, 0.28); border-left: 3px solid transparent; }
 .cc-opt b { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: 0.03em; color: #e9dcc0; white-space: nowrap; }
 /* the subtitle wraps onto a second line rather than lose its end (faction taglines, origin perks) */

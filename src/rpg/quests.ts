@@ -75,7 +75,7 @@ export class QuestEngine {
     if (!s.created || !fromEarlierVisit() || s.flags.prologue || s.quests.main_arrive) return;
     s.flags.prologue = true;
     if (!s.hero.gear.wapen) {
-      const w = uniqueGear(this.sheet.origin.start);
+      const w = uniqueGear(this.sheet.gift.start);
       if (w) s.hero.gear.wapen = w;
     }
     if (!s.kroniek.includes('mens:neelke')) s.kroniek.push('mens:neelke');

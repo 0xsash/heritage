@@ -1365,6 +1365,8 @@ Filled in as the overhaul proceeds: which loops from section 3 were walked, on w
 
 Filled in as the overhaul proceeds: each change, the problem or loop it answers, the files touched and how it was checked.
 
+- **No classes, no origins (save version 4).** The owner found three choices at creation (class, faction, origin) confusing. Classes and origins are gone: the two combat skills come from the equipped weapon's kind (character.ts `WEAPON_KITS`, `weaponKind`: sword, bell staff, light blade, reusing the old class kits), and the faction gives a backstory line, a first weapon, a small passive (the old origin bonuses) and one ability on V / R3 (factions.ts `FACTION_GIFTS`, combat.ts `factionAbility`). Creation is looks, faction, dragon and names. `MIGRATE[3]` gives an old hero without a weapon their class's weapon, moves their outfit index into the single wardrobe and drops `origin` and `background`. Files: rpg/character, factions, state, look, quests; combat/combat; core/input; ui/creation, gamehud, style.css; main.ts. Checked with tsc, vite build, the smoke test and a Playwright run (scratchpad `noclass/`).
+
 ## 8. What remains
 
 Filled in as the overhaul proceeds: the biggest changes made, and the remaining high-value issues in ranked order.

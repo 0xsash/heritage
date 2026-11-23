@@ -5,8 +5,8 @@
 // your hero in the middle, a lore panel that teaches the world, and one
 // button. Every choice has a default, so BEGIN works at once.
 
-import { BACKGROUNDS, type BackgroundId, ORIGINS, type OriginId, STAT_NAMES, type Stat, Sheet, uniqueGear, gearLines } from '../rpg/character';
-import { FACTIONS, type FactionId, tierOf } from '../rpg/factions';
+import { STAT_NAMES, type Stat, Sheet, WEAPON_KITS, uniqueGear, gearLines, weaponKind } from '../rpg/character';
+import { FACTIONS, FACTION_GIFTS, type FactionId, type PublicFactionId, tierOf } from '../rpg/factions';
 import {
   CLOAKS, DRAGONS, DYES, EYES, FACES, FACES_BY_SEX, HAIR_COLORS, MARKS, MORPH_NAMES, NAMES, type Sex, beardName, buildName, faceName, hairName,
   headwearName, headwearOf, heroOptions, heroSpec, mantleName, outfitsFor,
@@ -19,12 +19,12 @@ import { HeroPreview } from './preview';
 import { hint, nav } from './nav';
 
 /** What creation decides; the rest of HeroData starts fresh. */
-export type NewHero = Pick<HeroData, 'name' | 'origin' | 'cloak' | 'dragon' | 'sex' | 'build' | 'face' | 'skin' | 'hair' | 'hairColor' | 'beard' | 'hat' | 'background' | 'faction' | 'scales'
+export type NewHero = Pick<HeroData, 'name' | 'cloak' | 'dragon' | 'sex' | 'build' | 'face' | 'skin' | 'hair' | 'hairColor' | 'beard' | 'hat' | 'faction' | 'scales'
   | 'height' | 'eyes' | 'mark' | 'outfit' | 'main' | 'accent' | 'headwear' | 'mantle' | 'dragonBelly' | 'dragonEyes' | 'dragonHorns'>;
 
 export type FrontEndResult = { mode: 'continue' } | { mode: 'new'; hero: NewHero };
 
-export interface SaveSummary { name: string; level: number; origin: string; sex?: string; background?: string }
+export interface SaveSummary { name: string; level: number; faction?: string; sex?: string }
 
 /** The standing your first loyalty starts at (the "Bekende" tier). */
 export const FIRST_LOYALTY = 12;
@@ -39,8 +39,6 @@ const SLIDES: [string, string, string][] = [
 ];
 
 const pick = <T,>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)];
-const DIFF = ['', 'easy', 'moderate', 'hard'];
-const dots = (n: number) => '●'.repeat(n) + '○'.repeat(3 - n);
 /** approximate painted skin, for the swatch next to the tone */
 const SKIN_BASE = [0.88, 0.69, 0.56];
 /** a first hair style that shows what the kit can do: long hair for him, the 1640s ringlets for her */
@@ -52,7 +50,7 @@ const TAB_LORE: Record<Tab, [string, string]> = {
   body: ['Body', 'Man or woman, your build, your height and your skin. What life has left on your face is chosen here too.'],
   face: ['Face', 'Choose a face, then fine-tune it: nose, jaw, chin, cheeks, eyes and mouth.'],
   hair: ['Hair', 'Your hairstyle, its colour and what you put on your head.'],
-  clothes: ['Clothes', 'Every class has its own clothes. Choose what you wear, in which colours, and your travelling cloak.'],
+  clothes: ['Clothes', 'Militia coats, town clothes and road clothes. Choose what you wear, in which colours, and your travelling cloak.'],
   dragon: ['Your dragon', 'The dragon that chose you. Choose the colour of his scales, his belly and wings, his eyes and his horns.'],
 };
 const LOOK: Record<string, [string, string]> = {
@@ -68,7 +66,7 @@ const LOOK: Record<string, [string, string]> = {
   hairColor: ['Hair colour', 'Your beard takes that colour too.'],
   beard: ['Beard', 'A moustache or pointed beard is the fashion in 1650. Look at the portraits of Van Dyck.'],
   hat: ['Headwear', 'Hat, cap or nothing. Whoever goes out without a hat in 1650 is poor, in a hurry or up to something.'],
-  outfit: ['Outfit', 'Every class has three kinds of clothes, and men and women each have their own cut.'],
+  outfit: ['Outfit', 'Nine kinds of clothes: the militia\'s, the town\'s and the road\'s. Men and women each have their own cut.'],
   main: ['Main colour', 'Dye costs money. Madder gives red, woad blue, weld yellow. Whoever does not pay wears the colour of the sheep.'],
   accent: ['Accent colour', 'The colour of the underskirt, the cuffs, the ribbons and the breeches. Choose something to match your main colour, or not.'],
   mantle: ['Mantle', 'Calf-length, hip-length, or long with a hood down your back. On the dragon it streams out behind you.'],
@@ -77,7 +75,7 @@ const LOOK: Record<string, [string, string]> = {
   dragonBelly: ['Belly and membrane', 'The belly plates and the membrane between the fingers of his wings. When he flies over you, this is the colour you mostly see.'],
   dragonEyes: ['Eyes', 'His eyes glow in the dark. Choose the colour you see above the Demer at night.'],
   dragonHorns: ['Horns', 'A dragon from the reeds has horns like an old ram, or a crown of spikes. Nobody dares ask him why.'],
-  random: ['Random', 'A different look in one click. Class, origin, faction and your dragon stay as they are.'],
+  random: ['Random', 'A different look in one click. Your faction and your dragon stay as they are.'],
 };
 const OUTFIT_LORE: Record<string, string> = {
   'Buff Coat': 'A buff-leather coat over the doublet, and the red sash of the Spanish army. This is how a guildsman goes about in 1650.',
@@ -100,11 +98,9 @@ const OUTFIT_LORE: Record<string, string> = {
   'Dark Jacket': 'A black jacket with a white collar, a long skirt and a fur cap. This is how a widow looks, and nobody looks at a widow for long.',
 };
 
-/** "Kempen-born · Smuggler" and the like, for the title screen and the character panel. */
-export function heroLine(h: { sex?: string; background?: string; origin: string }) {
-  const bg = BACKGROUNDS[h.background as BackgroundId];
-  const cls = ORIGINS[h.origin as OriginId]?.name ?? '';
-  return bg ? `${bg.name[h.sex === 'f' ? 1 : 0]} · ${cls}` : cls;
+/** "De Gilden" and the like, for the title screen: who the saved hero serves. */
+export function heroLine(h: { faction?: string }) {
+  return FACTIONS[h.faction as FactionId]?.name ?? '';
 }
 
 export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirstGesture: () => void, kitP: Promise<TownsfolkKit | null> = Promise.resolve(null), dragonP: Promise<GLTF | null> = Promise.resolve(null), openSettings?: () => void): Promise<FrontEndResult> {
@@ -274,14 +270,14 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
       let kitState: 'loading' | 'ok' | 'none' = 'loading';
       let opts = heroOptions(null);
       const h: NewHero = {
-        name: pick(NAMES.m), origin: 'schutter', cloak: CLOAKS[0][0], dragon: pick(DRAGONS),
+        name: pick(NAMES.m), cloak: CLOAKS[0][0], dragon: pick(DRAGONS),
         sex: 'm', build: opts.bodies.m[1] ?? opts.bodies.m[0], face: { ...FACES[0][1] }, skin: 1, hair: 'hair_long', hairColor: 'h_brown', beard: 'moustache', hat: true,
-        background: 'diest', faction: 'gilden', scales: 'demer',
+        faction: 'gilden', scales: 'demer',
         height: 1, eyes: null, mark: null, outfit: 0, mantle: 'mantle', dragonBelly: null, dragonEyes: null, dragonHorns: 'gewoon',
       };
       let nameTouched = false;
       /** what the lore panel shows when nothing is hovered: the last thing chosen */
-      let pinned: string = 'origin:schutter';
+      let pinned: string = 'faction:gilden';
       let tab: Tab = 'body';
 
       const back = `radial-gradient(ellipse 55% 65% at 50% 40%, rgba(130, 78, 32, 0.38), transparent 70%), linear-gradient(rgba(10, 7, 4, 0.84), rgba(8, 6, 4, 0.93)), url(${asset('ui/intro/diest-living-town.jpg')})`;
@@ -299,9 +295,8 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
           <div class="cc-stats"></div>
         </div>
         <div class="cc-right">
-          <h3>ORIGIN</h3><div class="cc-list cc-bgs"></div>
-          <h3>CLASS</h3><div class="cc-list cc-classes"></div>
           <h3>FACTION</h3><div class="cc-list cc-factions"></div>
+          <p class="cc-note">Your faction is where you come from and who you answer to. It gives you a first weapon, one ability of its own and a small gift. Your two combat skills come from the weapon in your hand: pick up a different kind and they change.</p>
         </div>
         <div class="cc-bottom">
           <label class="cc-field" data-lore="name:you"><span>YOUR NAME</span><div><input class="cc-name" maxlength="18" list="cc-names" value="${esc(h.name)}" spellcheck="false"><button class="cc-dice" data-dice="name" title="Another name">⚄</button></div></label>
@@ -320,33 +315,19 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
       // ------------------------------------------------ the lore panel
       const lore = (key: string): string => {
         const [kind, id] = key.split(':');
-        const fem = h.sex === 'f';
-        if (kind === 'origin') {
-          const o = ORIGINS[id as OriginId];
-          const w = uniqueGear(o.start);
-          return `<div class="k">CLASS · ${dots(o.difficulty)} ${DIFF[o.difficulty]}</div>
-            <h4>${esc(o.name)} <em>${esc(o.role)}</em></h4>
-            <p>${esc(o.lore)}</p>
-            <div class="cc-skills">
-              <div><b>${hint('Right mouse', 'LT')} · ${esc(o.skill.name)}</b>${esc(o.skill.text)}</div>
-              <div><b>${hint('R', 'B')} · ${esc(o.skill2.name)}</b><i>from level ${o.skill2.level}.</i> ${esc(o.skill2.text)}</div>
-            </div>
-            ${w ? `<div class="m"><b>Starts with</b> ${esc(w.name)}, ${esc(gearLines(w).join(', '))}.</div>` : ''}`;
-        }
-        if (kind === 'bg') {
-          const b = BACKGROUNDS[id as BackgroundId];
-          return `<div class="k">ORIGIN · ${esc(b.place)}</div>
-            <h4>${esc(b.name[fem ? 1 : 0])}</h4>
-            <p>${esc(b.lore)}</p>
-            <div class="m"><b>${esc(b.perkName)}</b> ${esc(b.perk)}</div>
-            <div class="q">${b.said.map((x) => `«${esc(x)}»`).join(' ')}</div>`;
-        }
         if (kind === 'faction') {
           const f = FACTIONS[id as FactionId];
+          const g = FACTION_GIFTS[id as PublicFactionId];
+          const w = uniqueGear(g.start);
+          const k = WEAPON_KITS[weaponKind(w)];
           return `<div class="k">FACTION · first loyalty</div>
             <h4><i class="cc-dot" style="background:${f.color}"></i>${esc(f.name)} <em>${esc(f.tagline)}</em></h4>
-            <p>${esc(f.text)}</p>
-            <div class="m">You start with them as <b>${tierOf(FIRST_LOYALTY).name}</b>. The other factions do not know you yet. What you do changes that.</div>`;
+            <p>${esc(g.backstory)}</p>
+            <div class="cc-skills">
+              <div><b>${hint('V', 'R3')} · ${esc(g.ability.name)}</b>${esc(g.ability.text)}</div>
+            </div>
+            ${w ? `<div class="m"><b>Starts with</b> ${esc(w.name)} (${esc(k.name.toLowerCase())}, ${esc(gearLines(w).join(', '))}): ${esc(k.skill.name)} and ${esc(k.skill2.name)}.</div>` : ''}
+            <div class="m"><b>Gift</b> ${esc(g.perk)} You start with them as <b>${tierOf(FIRST_LOYALTY).name}</b>; the other factions do not know you yet.</div>`;
         }
         if (kind === 'name' && id === 'dragon')
           return `<div class="k">THE DRAGON</div><h4>${esc(dragonIn.value || '…')}</h4>
@@ -362,7 +343,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         }
         if (kind === 'outfit') {
           const o = outfits()[Math.min(outfits().length - 1, h.outfit ?? 0)];
-          return `<div class="k">CLOTHES · ${esc(ORIGINS[h.origin].name)}</div><h4>${esc(o?.name ?? '')}</h4><p>${esc(OUTFIT_LORE[o?.name ?? ''] ?? LOOK.outfit[1])}</p>`;
+          return `<div class="k">CLOTHES</div><h4>${esc(o?.name ?? '')}</h4><p>${esc(OUTFIT_LORE[o?.name ?? ''] ?? LOOK.outfit[1])}</p>`;
         }
         const [t, x] = LOOK[id] ?? ['', ''];
         const k = id.startsWith('dragon') ? 'THE DRAGON' : 'APPEARANCE';
@@ -390,7 +371,8 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
       };
 
       // ------------------------------------------------ the figure
-      const full = (): HeroData => ({ ...h, level: 1, xp: 0, hp: 1, gear: {}, bag: [] });
+      const startWeapon = () => uniqueGear(FACTION_GIFTS[h.faction as PublicFactionId].start) ?? undefined;
+      const full = (): HeroData => ({ ...h, level: 1, xp: 0, hp: 1, gear: { wapen: startWeapon() }, bag: [] });
       const refreshFigure = () => {
         if (!preview || !kit) return;
         preview.show(heroSpec(kit, full()));
@@ -402,7 +384,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
       const tones = (): [number, number, number][] => kit?.m.skinTones ?? new Array(8).fill([1, 1, 1]);
       const toneCss = (t: [number, number, number]) => `rgb(${t.map((v, i) => Math.round(Math.min(1, v * SKIN_BASE[i]) * 255)).join(',')})`;
       const hex = (k: string | null | undefined) => (k ? kit?.colour(k) ?? (k.startsWith('#') ? k : '#777') : '#777');
-      const outfits = () => outfitsFor(kit, h.origin, h.sex);
+      const outfits = () => outfitsFor(kit, h.sex);
       const outfit = () => outfits()[Math.min(outfits().length - 1, h.outfit ?? 0)];
       const faces = () => FACES_BY_SEX[h.sex];
       const cycle = <T,>(list: readonly T[], cur: T, d: number) => list[(Math.max(0, list.indexOf(cur)) + d + list.length) % list.length];
@@ -578,43 +560,27 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
 
       // ------------------------------------------------ who you are
       const renderLists = () => {
-        const fem = h.sex === 'f';
-        $('.cc-bgs').innerHTML = (Object.keys(BACKGROUNDS) as BackgroundId[])
-          .map((id) => { const b = BACKGROUNDS[id]; return `<button class="cc-opt${h.background === id ? ' on' : ''}" data-bg="${id}" data-lore="bg:${id}"><b>${esc(b.name[fem ? 1 : 0])}</b><small>${esc(b.perk.replace(/\.$/, ''))}</small></button>`; })
-          .join('');
-        $('.cc-classes').innerHTML = (Object.keys(ORIGINS) as OriginId[])
-          .map((id) => { const o = ORIGINS[id]; return `<button class="cc-opt${h.origin === id ? ' on' : ''}" data-origin="${id}" data-lore="origin:${id}"><b>${esc(o.name)}</b><small>${esc(o.tagline)} <span class="cc-diff" title="difficulty">${dots(o.difficulty)}</span></small></button>`; })
-          .join('');
         $('.cc-factions').innerHTML = (Object.keys(FACTIONS) as FactionId[])
           .map((id) => { const f = FACTIONS[id]; return `<button class="cc-opt${h.faction === id ? ' on' : ''}" data-faction="${id}" data-lore="faction:${id}"><b><i class="cc-dot" style="background:${f.color}"></i>${esc(f.name.replace(/^De /, ''))}</b><small>${esc(f.tagline)}</small></button>`; })
           .join('');
       };
       el.querySelector('.cc-right')!.addEventListener('click', (e) => {
         const b = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
-        if (!b) return;
-        if (b.dataset.bg) { h.background = b.dataset.bg as BackgroundId; pin(`bg:${h.background}`); }
-        else if (b.dataset.origin) {
-          h.origin = b.dataset.origin as OriginId;
-          h.main = undefined;
-          h.accent = undefined;
-          h.headwear = undefined;
-          h.hat = true;
-          pin(`origin:${h.origin}`);
-          renderRows();
-          refreshFigure();
-        }
-        else if (b.dataset.faction) { h.faction = b.dataset.faction as FactionId; pin(`faction:${h.faction}`); }
+        if (!b?.dataset.faction) return;
+        h.faction = b.dataset.faction as FactionId;
+        pin(`faction:${h.faction}`);
         renderLists();
         renderStats();
+        refreshFigure(); // the first weapon is in their hand
       });
 
       // ------------------------------------------------ what it adds up to
       const renderStats = () => {
-        const sheet = new Sheet({ ...full(), gear: { wapen: uniqueGear(ORIGINS[h.origin].start) ?? undefined } });
+        const sheet = new Sheet(full());
         const d = sheet.derived();
-        const bonus = BACKGROUNDS[h.background].bonus;
+        const bonus = sheet.gift.bonus;
         $('.cc-stats').innerHTML = (['kracht', 'klank', 'list', 'taaiheid'] as Stat[])
-          .map((k) => `<div class="cc-st" data-lore="origin:${h.origin}"><span>${STAT_NAMES[k]}</span><i><em style="width:${Math.min(100, d[k] * 9)}%"></em></i><b>${d[k]}${bonus[k] ? '<sup>+</sup>' : ''}</b></div>`)
+          .map((k) => `<div class="cc-st" data-lore="faction:${h.faction}"><span>${STAT_NAMES[k]}</span><i><em style="width:${Math.min(100, d[k] * 9)}%"></em></i><b>${d[k]}${bonus[k] ? '<sup>+</sup>' : ''}</b></div>`)
           .join('') +
           `<div class="cc-derived"><span>Health <b>${d.maxHp}</b></span><span>Armour <b>${d.armor}</b></span><span>Critical <b>${Math.round(d.crit)}%</b></span></div>`;
       };
@@ -624,7 +590,7 @@ export function runFrontEnd(root: HTMLElement, save: SaveSummary | null, onFirst
         $('#cc-names').innerHTML = NAMES[h.sex].map((n) => `<option value="${esc(n)}">`).join('');
       };
       const updateTexts = () => {
-        if (shown.startsWith('name:') || shown.startsWith('bg:')) { const k = shown; shown = ''; showLore(k); }
+        if (shown.startsWith('name:')) { const k = shown; shown = ''; showLore(k); }
       };
       nameIn.addEventListener('input', () => { nameTouched = true; updateTexts(); });
       dragonIn.addEventListener('input', updateTexts);

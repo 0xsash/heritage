@@ -9,7 +9,7 @@
 import { bookTabs, closeBtn } from './kroniekui';
 import { hint, nav } from './nav';
 import * as THREE from 'three';
-import { type Gear, LEVEL_CAP, RARITY, STAT_HELP, STAT_NAMES, type Stat, gearLines, gearValue, rollGear, sellValue, xpToNext } from '../rpg/character';
+import { type Gear, LEVEL_CAP, RARITY, STAT_HELP, STAT_NAMES, type Stat, type WeaponKind, WEAPON_KITS, gearLines, gearValue, rollGear, sellValue, weaponKind, xpToNext } from '../rpg/character';
 import type { QuestEngine } from '../rpg/quests';
 import { FACTIONS } from '../rpg/factions';
 import { stuivers } from '../rpg/money';
@@ -144,6 +144,12 @@ const ICONS: Record<string, string> = {
   zuivere_toon: '<path d="M2 12h3l2.500-7 3.500 14 3-10 2 5 1.500-2H22"/>',
   pistoolschot: '<circle cx="12" cy="12" r="6.500"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
   rookbom: '<path d="M7 18a4 4 0 0 1-.500-8 5.500 5.500 0 0 1 10.600-1.200A4.600 4.600 0 0 1 17 18z"/><path d="M9 21h6"/>',
+  // the factions' abilities (src/rpg/factions.ts FACTION_GIFTS)
+  fa_eed: '<path d="M12 3l7 3v5c0 4.500-3 8-7 10-4-2-7-5.500-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+  fa_zegen: '<path d="M12 3v18M7 8h10"/><path d="M5 17c2 1.500 4.500 2 7 2s5-.500 7-2"/>',
+  fa_halt: '<path d="M7 21V4M7 4h10l-2.500 3.500L17 11H7"/>',
+  fa_oproep: '<path d="M4 15l9-9 2 2-9 9zM13 6l3-3 5 5-3 3"/><path d="M4 20h7"/>',
+  fa_wegwezen: '<path d="M4 18c3-6 7-9 14-10"/><path d="M14 4l4 4-4 4"/><path d="M4 12c1.500-2 3-3 5-3.500"/>',
   roll: '<path d="M19.500 12a7.500 7.500 0 1 1-2.600-5.700"/><path d="M17.500 2.500v4.300h-4.300"/>',
   salve: '<path d="M8 9h8l1.500 3v7.500a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V12zM9.500 5h5v4h-5zM10 15h4M12 13v4"/>',
   // the dragon's skills, taught by Het Oude Volk (src/player/dragonskills.ts): mist, the wing, the call
@@ -166,7 +172,7 @@ export interface SlotView {
 }
 
 /** The pad's button for a keyboard key the game shows (action bar, panels, hints). */
-export const PAD_KEY: Record<string, string> = { LMB: 'RT', RMB: 'LT', R: 'B', SPACE: 'A', Q: '▼', G: '◀', E: 'Y', I: '▶', J: 'RB' };
+export const PAD_KEY: Record<string, string> = { LMB: 'RT', RMB: 'LT', R: 'B', V: 'R3', SPACE: 'A', Q: '▼', G: '◀', E: 'Y', I: '▶', J: 'RB' };
 
 /** A key cap, or a little mouse with the button lit for LMB / RMB. */
 export function keyGlyph(key: string) {
@@ -227,7 +233,7 @@ export class PlayerFrame {
     const top = h.level >= LEVEL_CAP;
     this.xp.style.width = top ? '100%' : `${Math.min(100, (100 * h.xp) / need)}%`;
     this.xpText.textContent = top ? `Level ${h.level} · top level` : `Level ${h.level} · ${h.xp} / ${need} experience`;
-    const who = `${esc(h.name)} <span>${esc(q.sheet.origin.name)} · level ${h.level}</span><b>${stuivers(q.s.florins)}</b>`;
+    const who = `${esc(h.name)} <span>${esc(FACTIONS[h.faction]?.name ?? '')} · level ${h.level}</span><b>${stuivers(q.s.florins)}</b>`;
     if (this.who.innerHTML !== who) this.who.innerHTML = who;
     const sig = slots.map((s) => `${s.key}${s.name}${s.count ?? ''}${s.locked ?? ''}`).join('|');
     if (sig !== this.lastSig) {
@@ -286,10 +292,16 @@ export class Banner {
 }
 
 // ================================================================ character & shop
-function gearCard(g: Gear, extra = '') {
+/** `held`: the kind of weapon in your hand now, so a weapon of another kind says that it changes your skills. */
+function gearCard(g: Gear, extra = '', held?: WeaponKind) {
+  const kind = g.slot === 'wapen' ? weaponKind(g) : null;
+  const k = kind ? WEAPON_KITS[kind] : null;
+  const skills = k
+    ? `<div class="gl gskill">${esc(k.name)} skills: ${hint('Right mouse', 'LT')} ${esc(k.skill.name)} · ${hint('R', 'B')} ${esc(k.skill2.name)}</div>${held && held !== kind ? '<div class="gl gskill new">Equip it and your two skills change to these.</div>' : ''}`
+    : '';
   return `<div class="gcard r${g.rarity}"><div class="gn" style="color:${RARITY[g.rarity].color}">${esc(g.name)}</div>
-    <div class="gt">${RARITY[g.rarity].name} · ${g.slot === 'wapen' ? 'Weapon' : g.slot === 'harnas' ? 'Armour' : 'Talisman'} · level ${g.ilvl}</div>
-    ${gearLines(g).map((l) => `<div class="gl">${esc(l)}</div>`).join('')}
+    <div class="gt">${RARITY[g.rarity].name} · ${k ? esc(k.name) : g.slot === 'harnas' ? 'Armour' : 'Talisman'} · level ${g.ilvl}</div>
+    ${gearLines(g).map((l) => `<div class="gl">${esc(l)}</div>`).join('')}${skills}
     ${g.text ? `<div class="gx">${esc(g.text)}</div>` : ''}${extra}</div>`;
 }
 
@@ -388,7 +400,9 @@ export class CharacterPanel {
     if (!this.open) return;
     const h = this.q.s.hero;
     const d = this.q.sheet.derived();
-    const o = this.q.sheet.origin;
+    const o = this.q.sheet.kit;
+    const gift = this.q.sheet.gift;
+    const held = weaponKind(h.gear.wapen);
     const stat = (k: Stat) => `<div class="st" title="${esc(STAT_HELP[k])}"><span>${STAT_NAMES[k]}</span><b>${d[k]}</b></div>`;
     const worn = (['wapen', 'harnas', 'talisman'] as const)
       .map((s) => (h.gear[s] ? gearCard(h.gear[s]!) : `<div class="gcard empty">${s === 'wapen' ? 'No weapon' : s === 'harnas' ? 'No armour' : 'No talisman'}</div>`))
@@ -401,7 +415,7 @@ export class CharacterPanel {
             // a rare or unique piece asks once more; what you sell can be bought back today (from a merchant)
             const warn = sure ? `<div class="gsure">A ${RARITY[g.rarity].name.toLowerCase()} piece. Sell it for good? ${this.vendor?.sold ? 'You can buy it back today at the same price.' : 'Sold is sold.'}</div>` : '';
             const sell = this.shop ? `<button data-sell="${g.uid}"${sure ? ' class="warn"' : ''}>${sure ? 'YES, SELL' : 'SELL'} · ${price} st.</button>` : '';
-            return gearCard(g, `${warn}<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ better</span>' : ''}<button data-eq="${g.uid}">EQUIP</button>${sell}</div>`);
+            return gearCard(g, `${warn}<div class="gb">${this.q.sheet.better(g) ? '<span class="up">▲ better</span>' : ''}<button data-eq="${g.uid}">EQUIP</button>${sell}</div>`, held);
           })
           .join('')
       : '<div class="empty">Your bag is empty. Beaten enemies sometimes drop something.</div>';
@@ -422,7 +436,7 @@ export class CharacterPanel {
         </div>`
       : '';
     const sellRate = v?.sellRate ?? 1;
-    this.el.innerHTML = `<header>${this.shop ? '' : bookTabs('character')}<h2>${esc(h.name)}</h2>${closeBtn()}<span><b class="ch-who" title="${esc(`${this.q.sheet.background.perkName}: ${this.q.sheet.background.perk} Born loyal to: ${FACTIONS[h.faction]?.name ?? ''}.`)}">${esc(this.q.sheet.background.name[h.sex === 'f' ? 1 : 0])} · ${esc(FACTIONS[h.faction]?.name ?? '')}</b> · ${esc(o.name)} · level ${h.level} · ${stuivers(this.q.s.florins)} · ${this.q.s.inv.salve ?? 0} salve</span></header>
+    this.el.innerHTML = `<header>${this.shop ? '' : bookTabs('character')}<h2>${esc(h.name)}</h2>${closeBtn()}<span><b class="ch-who" title="${esc(`${gift.backstory} ${gift.perk}`)}">${esc(FACTIONS[h.faction]?.name ?? '')}</b> · level ${h.level} · ${stuivers(this.q.s.florins)} · ${this.q.s.inv.salve ?? 0} salve</span></header>
       <div class="cols${this.shop ? ' shopcols' : ''}">
         <div class="col stats"${this.shop ? " hidden" : ""}><h3>ATTRIBUTES</h3>${(['kracht', 'klank', 'list', 'taaiheid'] as Stat[]).map(stat).join('')}
           <div class="st"><span>Health</span><b>${d.maxHp}</b></div>
@@ -430,9 +444,10 @@ export class CharacterPanel {
           <div class="st"><span>Armour</span><b>${d.armor}</b></div>
           <div class="st"><span>Critical</span><b>${d.crit.toFixed(0)}%</b></div>
           <h3>SKILLS</h3>
-          <p class="res-note">Resonance, the gold bar under your health, grows with every hit that lands and drains outside a fight. Your skills cost Resonance.</p>
+          <p class="res-note">Your two skills come from the weapon in your hand: ${esc(o.name.toLowerCase())}. Resonance, the gold bar under your health, grows with every hit that lands and drains outside a fight. Skills cost Resonance.</p>
           <div class="sk"><b>${hint('Right mouse', 'LT')} · ${esc(o.skill.name)}</b><p>${esc(o.skill.text)}</p></div>
           <div class="sk${h.level < o.skill2.level ? ' locked' : ''}"><b>${hint('R', 'B')} · ${esc(o.skill2.name)}${h.level < o.skill2.level ? ` (level ${o.skill2.level})` : ''}</b><p>${esc(o.skill2.text)}</p></div>
+          <div class="sk"><b>${hint('V', 'R3')} · ${esc(gift.ability.name)}</b><p>${esc(gift.ability.text)} Gift of ${esc(FACTIONS[h.faction]?.name ?? '')}; ready again after ${gift.ability.cooldown} s.</p></div>
           <div class="sk"><b>${hint('Left mouse', 'LB')} in the air · Dragonfire</b><p>${esc(h.dragon)} breathes fire where you look.</p></div>
           ${(() => {
             // what Het Oude Volk taught the dragon, in one entry (the panel has to fit at 1280 x 720)
