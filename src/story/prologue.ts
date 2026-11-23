@@ -51,30 +51,30 @@ export interface PrologueDeps {
 
 /** Every spoken line, by id: [speaker, text]. {name} and {dragon} are filled in. */
 export const PROLOGUE_LINES: Record<string, [string, string]> = {
-  pro_n1: ['', 'Ze zeggen dat je de laatste gewone avond van je leven niet herkent. De mijne rook naar natte klaver, en mijn zusje liep te klagen.'],
-  pro_s1: ['Neelke', 'Je loopt te rap. Mijn benen zijn korter dan de jouwe.'],
-  pro_n2: ['', 'Neelke telde alles. Stappen, sterren, de slagen van de klok. Ze zei dat de wereld dan niet kon weglopen.'],
-  pro_s2: ['Neelke', 'Twaalf slagen. Als we voor de laatste binnen zijn, heeft moeder niets gemerkt.'],
-  pro_s3: ['Neelke', 'Zeven. Het is middernacht. Waar blijven de andere vijf?'],
-  pro_n3: ['', 'Zolang er een Diest was, hadden de klokken elk uur geslagen. Door pest, door brand, door drie legers. Niemand wist nog waarom dat moest.'],
-  pro_s4: ['Neelke', 'Kijk. Er branden lichtjes op het water.'],
-  pro_n4: ['', 'Ik riep haar naam. Ze draaide zich niet om. Ze telde.'],
+  pro_n1: ['', 'They say you never recognise the last ordinary evening of your life. Mine smelled of wet clover, and my little sister was complaining.'],
+  pro_s1: ['Neelke', 'You walk too fast. My legs are shorter than yours.'],
+  pro_n2: ['', "Neelke counted everything. Steps, stars, the strokes of the bell. She said that way the world couldn't walk off."],
+  pro_s2: ['Neelke', "Twelve strokes. If we're inside before the last one, Mother will never know."],
+  pro_s3: ['Neelke', "Seven. It's midnight. Where are the other five?"],
+  pro_n3: ['', 'For as long as there had been a Diest, its bells had struck every hour. Through plague, through fire, through three armies. Nobody remembered why they had to.'],
+  pro_s4: ['Neelke', 'Look. There are lights on the water.'],
+  pro_n4: ['', "I called her name. She didn't turn around. She was counting."],
   pro_s5: ['Neelke', '{name}!'],
-  pro_n5: ['', 'Het water nam haar zoals het alles neemt. Zonder haast. Zonder geluid.'],
-  pro_n6: ['', 'Grootmoeder had hem een naam gegeven, bij het vuur, om ons binnen te houden. De Kludde. Ik had erom gelachen.'],
-  pro_n7: ['', 'De klokken hadden alles in slaap gehouden wat ouder was dan de stad. Het ergste. En, zo bleek, niet alleen het ergste.'],
-  pro_n8: ['', 'Hij rook naar riet en naar een smidse. Hij keek me aan zoals je iemand aankijkt op wie je lang hebt gewacht.'],
-  pro_n9: ['', 'Ik heb hem {dragon} genoemd. Hij heeft het toegelaten.'],
-  pro_n10: ['', 'Later zou een oude vrouw het me zeggen: als alle klokken van het land weer samen luiden, gaat alles slapen wat wakker is geworden. De Kludde. En hij.'],
-  pro_n11: ['', 'Dat was later. Die ochtend wist ik maar één ding. Wat het water neemt, geeft het soms terug. Ik zou het gaan halen.'],
+  pro_n5: ['', 'The water took her the way it takes everything. Without hurry. Without a sound.'],
+  pro_n6: ['', 'Grandmother had given him a name by the fire, to keep us indoors at night. The Kludde. I had laughed at her.'],
+  pro_n7: ['', 'The bells had kept everything older than the town asleep. The worst things. And, as it turned out, not only the worst.'],
+  pro_n8: ['', 'He smelled of reeds and of a forge. He looked at me the way you look at someone you have waited for a very long time.'],
+  pro_n9: ['', 'I named him {dragon}. He allowed it.'],
+  pro_n10: ['', 'Later an old woman would tell me: when every bell in the land rings together again, everything that woke will sleep. The Kludde. And him.'],
+  pro_n11: ['', 'That was later. That morning I knew one thing only. What the water takes, it sometimes gives back. I was going to get her.'],
 };
 
 /** Neelke, as the character kit makes her (the intro's last shots show her too). */
 export const NEELKE: FolkSpec = { body: 'girl', role: 'child', seed: 1650, wear: { hair_bun: 'h_blond', coif: null, bodice: 'woad', kerchief: null, skirt: 'russet', apron: 'linen', clogs: null } };
 
 /** Alone on black, before the place card. */
-const EPIGRAPH = '<div class="pc-title pc-epi">Dit land is op het water veroverd.<br>Het water is dat niet vergeten.</div>';
-const PLACE = '<div class="pc-kick">DE DEMER, BIJ DIEST</div><div class="pc-title">De nacht van zaterdag op zondag</div><div class="pc-sub">anno 1650</div>';
+const EPIGRAPH = '<div class="pc-title pc-epi">This land was taken from the water.<br>The water has not forgotten.</div>';
+const PLACE = '<div class="pc-kick">THE DEMER, NEAR DIEST</div><div class="pc-title">The night before Sunday</div><div class="pc-sub">1650</div>';
 
 type Stage = 'card' | 'walk' | 'bells' | 'silence' | 'lure' | 'rise' | 'gone' | 'hunt' | 'down' | 'dragon' | 'meet' | 'mount' | 'dawn' | 'done';
 
@@ -137,7 +137,7 @@ export class Prologue {
     this.card.className = 'pro-card';
     this.cine.className = 'cine';
     // the prologue is played, so Escape pauses it as always (and the pause menu can skip it); Backspace held skips it
-    this.cine.innerHTML = `<div class="cine-obj"></div><div class="cine-sub"></div><div class="cine-skip">${hint('Houd <kbd>Backspace</kbd> ingedrukt om over te slaan · <kbd>Esc</kbd> pauze', '<kbd>Start</kbd> pauze · daar kun je de proloog overslaan')}</div>`;
+    this.cine.innerHTML = `<div class="cine-obj"></div><div class="cine-sub"></div><div class="cine-skip">${hint('Hold <kbd>Backspace</kbd> to skip · <kbd>Esc</kbd> pause', '<kbd>Start</kbd> pause · you can skip the prologue from there')}</div>`;
     this.sub = this.cine.querySelector('.cine-sub')!;
     this.obj = this.cine.querySelector('.cine-obj')!;
     window.addEventListener('keydown', (e) => {
@@ -257,7 +257,7 @@ export class Prologue {
         if (t > 9) {
           this.card.classList.remove('show');
           this.setFade(0, 2.4);
-          this.objective = 'Breng Neelke naar huis';
+          this.objective = 'Take Neelke home';
           this.target = HOME;
           this.go('walk');
         }
@@ -277,7 +277,7 @@ export class Prologue {
           this.tolls++;
           this.tollT = 1.75;
           d.bell(this.tolls === 1);
-          const words = ['Eén', 'twee', 'drie', 'vier', 'vijf', 'zes', 'zeven'];
+          const words = ['One', 'two', 'three', 'four', 'five', 'six', 'seven'];
           this.sub.innerHTML = `<b>Neelke</b>${words.slice(0, this.tolls).join('… ')}…`;
           this.sub.classList.add('show');
           this.subLeft = 2.2;
@@ -305,7 +305,7 @@ export class Prologue {
         if (t > 11.5) {
           this.say('pro_s4');
           this.sisGoal = BANK;
-          this.objective = 'Haal Neelke terug';
+          this.objective = 'Get Neelke back';
           this.go('lure');
         }
         break;
@@ -352,7 +352,7 @@ export class Prologue {
         }
         if (t > 5) {
           d.howl();
-          this.objective = 'Loop!';
+          this.objective = 'Run!';
           this.target = HOME;
           this.go('hunt');
         }
@@ -424,9 +424,9 @@ export class Prologue {
         if (t > 6.5) this.say('pro_n9');
         if (t > 9.5) {
           this.allowMount = true;
-          this.objective = `Klim op ${d.dragon}`;
+          this.objective = `Climb onto ${d.dragon}`;
           this.target = { x: p.pos.x, z: p.pos.z };
-          this.prompt = p.distanceToDragon() < 7 ? `<kbd>${hint('E', 'Y')}</kbd>Klim op ${d.dragon}` : null;
+          this.prompt = p.distanceToDragon() < 7 ? `<kbd>${hint('E', 'Y')}</kbd>Climb onto ${d.dragon}` : null;
         }
         if (p.mode === 'fly') {
           this.prompt = null;
@@ -441,7 +441,7 @@ export class Prologue {
           this.said.add('sky');
           d.faceTown?.();
           void d.setSky('golden').then(() => {
-            this.card.innerHTML = '<div class="pc-big">BELFORT</div><div class="pc-sub">Het hertogdom Brabant · anno 1650</div>';
+            this.card.innerHTML = '<div class="pc-big">BELFORT</div><div class="pc-sub">The Duchy of Brabant · 1650</div>';
             this.card.classList.add('show', 'title');
             this.setFade(0, 3);
             this.t = 3;
